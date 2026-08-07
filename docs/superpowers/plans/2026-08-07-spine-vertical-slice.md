@@ -2122,18 +2122,12 @@ This replaces the stub created in Task 12.
 
 - [ ] **Step 2: Create the e2e fixture**
 
+Use a real PNG already in the repo. It is a genuine 1600×1280 RGBA screenshot, which exercises the decoder far better than a synthetic swatch would.
+
 ```bash
 mkdir -p e2e/fixtures
-pnpm dlx tsx -e "
-const { writeFileSync } = require('node:fs');
-const { createCanvas } = require('canvas');
-" 2>/dev/null || true
-```
-
-If `canvas` is unavailable, generate the fixture with ImageMagick or copy any real PNG:
-
-```bash
 cp docs/design/webm-to-mp4.png e2e/fixtures/diagram.png
+test -s e2e/fixtures/diagram.png && echo "fixture ready"
 ```
 
 - [ ] **Step 3: Write the failing e2e test**
@@ -2233,7 +2227,20 @@ describe('jsquash-webp fidelity', () => {
 
     expect(decoded.width).toBe(original.width)
     expect(decoded.height).toBe(original.height)
-    expect(Array.from(decoded.data)).toEqual(Array.from(original.data))
+    expect(decoded.data.length).toBe(original.data.length)
+
+    // Scan rather than deep-equal: this fixture is ~8.2M subpixels, and
+    // Array.from on both sides would allocate two 8M-element arrays before
+    // comparing. The scan also reports WHERE fidelity broke, not just that
+    // it did.
+    let firstMismatch = -1
+    for (let i = 0; i < original.data.length; i += 1) {
+      if (decoded.data[i] !== original.data[i]) {
+        firstMismatch = i
+        break
+      }
+    }
+    expect(firstMismatch, `first differing subpixel at index ${firstMismatch}`).toBe(-1)
   })
 
   it('reports monotonically increasing progress ending at 1', async () => {
