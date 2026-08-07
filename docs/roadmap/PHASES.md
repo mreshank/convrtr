@@ -104,7 +104,29 @@ lives here; this phase ends with a system that can run *any* tool the registry d
 - [ ] Offline behaviour + PWA manifest + install prompt
 - [ ] Service worker: precache shell, runtime-cache engines
 
-### 0.11 Verification harness
+### 0.11 Quality & options model
+
+The two-tier control surface from spec §5.9. This is spine work, not per-pack work: every
+tool in every later phase inherits it, so it must be generic before Phase 1 starts.
+
+- [ ] `QualityModel` type: preset list, parameter surface, defaults, lossless availability
+- [ ] Preset engine: `Lossless` / `Visually lossless` / `Balanced` / `Smallest` / `Target size` / `Custom`
+- [ ] **Common tier** renders presets as outcomes, with a one-line plain explanation per preset
+- [ ] **Live consequence read-out**: estimated output size, delta vs source, perceptual score
+- [ ] Perceptual scoring: SSIM (and butteraugli where affordable) computed locally on a sample
+- [ ] Estimation without full conversion — sample-encode a representative region, extrapolate
+- [ ] **Advanced tier**: collapsible disclosure, parameter groups, every engine knob exposed
+- [ ] Control set: stepper, slider, select, toggle, numeric entry — all keyboard-operable
+- [ ] Engine default shown alongside every advanced control; per-group and global reset
+- [ ] Any advanced edit flips the active preset to `Custom` — never misreport the state
+- [ ] `Target size` mode: binary-search the encoder to hit a user-named size
+- [ ] Per-tool config persistence in `localStorage`, with one-click reset
+- [ ] Full configuration encoded in the URL for sharing/bookmarking (no server involved)
+- [ ] Fidelity badge derives from the *current setting*, live-updating as the dial moves
+- [ ] `INHERENTLY LOSSY` state with a one-line reason where lossless is impossible
+- [ ] Batch: one configuration across the set, with per-file override
+
+### 0.12 Verification harness
 - [ ] Golden-file test utility (byte-exact and perceptual comparison)
 - [ ] **Fidelity assertion harness** — any tool declaring `LOSSLESS` must prove round-trip equality
 - [ ] **Network assertion test** — zero bytes leave during conversion

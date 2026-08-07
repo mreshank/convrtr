@@ -15,9 +15,11 @@ Web Workers on the user's own machine.
 
 Two properties define the product:
 
-1. **Lossless by default.** We never re-encode when a copy will do. Lossy output happens
-   only when the user explicitly asks for it, and the interface always says which one
-   they're getting.
+1. **Optimal by default, controllable to the extreme.** The default on every tool is the
+   best practical outcome — truly lossless where that is achievable at a sensible size,
+   visually lossless where it is not. From there the user decides how much loss they will
+   trade for size, on *every* tool, and the interface always states plainly what they are
+   getting. Lossless is the starting point, never a cage.
 2. **Provably private.** Not a privacy policy — an architectural fact. A user can open the
    network tab and watch nothing happen.
 
@@ -87,8 +89,8 @@ type Tool = {
   accept: { mime: string[]; ext: string[]; maxBytes?: number }
   output: { ext: string; mime: string }
   engines: EngineRef[]          // ranked; first supported one wins
-  options: OptionSchema         // zod schema → renders the options panel
-  fidelity: FidelityClass       // drives the LOSSLESS / LOSSY badge
+  quality: QualityModel         // presets + full parameter surface — see §5.9
+  options: OptionSchema         // zod schema → renders both option tiers
   seo: {
     title: string
     h1: string
@@ -188,6 +190,58 @@ unavailable.
 
 PWA with a service worker precaching the shell and caching engines on first use. After one
 visit, tools work with no network at all.
+
+### 5.9 The quality model — two tiers of control
+
+Every tool, without exception, lets the user decide how much loss they will accept. The
+difference between a novice and an expert is not *whether* they get control, but which
+vocabulary the control is expressed in.
+
+**Tier 1 — Common (always visible, 3–5 controls, outcome-framed).**
+
+Presets phrased as consequences, not parameters:
+
+| Preset | Meaning |
+|---|---|
+| `Lossless` | Bit-exact or mathematically reversible. Offered whenever the format supports it. |
+| `Visually lossless` | No perceptible difference at 100% zoom / normal listening. Usually the default. |
+| `Balanced` | Clearly smaller, quality loss hard to notice in normal use. |
+| `Smallest` | Aggressive. The interface says so. |
+| `Target size…` | The user names a size; we binary-search the encoder to hit it. |
+| `Custom` | Set automatically the moment any advanced parameter deviates. |
+
+Alongside the preset, a **live consequence read-out**: estimated output size, delta against
+the source, and — where computable — a perceptual score (SSIM / butteraugli for images,
+measured against the source). This is what turns "how much loss?" from a vibe into a number.
+
+**Tier 2 — Advanced (collapsible, parameter-framed, exhaustive).**
+
+Every knob the underlying engine exposes, grouped by concern, with engine defaults shown and
+a per-group reset. Nothing is hidden because it is "too technical" — that is precisely the
+audience this tier exists for. Representative surfaces:
+
+| Format | Advanced parameters |
+|---|---|
+| JPEG | quality, progressive, chroma subsampling (4:4:4 / 4:2:2 / 4:2:0), trellis quantisation, optimise coding, smoothing, custom quant tables |
+| PNG | oxipng level 0–6, zopfli iterations, interlace, bit-depth reduction, palette reduction, filter strategy |
+| WebP | quality, method 0–6, alpha quality, near-lossless, filter strength, segments, SNS |
+| AVIF | quality, speed 0–10, subsampling, bit depth, tiling, denoise |
+| JXL | distance (0 = lossless), effort 1–9, progressive, modular vs VarDCT |
+| Video | rate control (CQ / VBR / CBR), CRF, bitrate, preset, profile, level, GOP size, B-frames, reference frames, tune, pixel format, colour primaries / transfer / matrix, two-pass |
+| Audio | bitrate, VBR quality, joint stereo, sample rate, bit depth, dither, channel layout |
+
+**Rules binding the two tiers**
+
+- Changing any advanced parameter flips the preset to `Custom`. The user is never lied to
+  about which preset is active.
+- Advanced settings persist per tool in `localStorage`, and reset is always one click.
+- The full configuration is encodable in the URL, so a setup can be shared or bookmarked
+  without a server ever seeing it.
+- The fidelity badge reflects the **current setting**, not the tool: `LOSSLESS`,
+  `VISUALLY LOSSLESS`, or `LOSSY · Q78`. It updates as the user moves the dial.
+- Where a tool *cannot* be lossless (e.g. → GIF), the badge says `INHERENTLY LOSSY` and the
+  reason is stated in one line rather than buried.
+- Batch jobs apply one configuration across the set, with per-file override available.
 
 ---
 
