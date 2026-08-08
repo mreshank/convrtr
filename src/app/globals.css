@@ -1,6 +1,15 @@
 @import "../styles/tokens.css";
 @import "tailwindcss";
 
+/*
+ * Controller-directed: Tailwind v4's `dark:` variant defaults to
+ * `prefers-color-scheme`, which would silently disagree with an explicit
+ * theme override made through our [data-theme] attribute. Redefining the
+ * variant here makes `dark:` utilities agree with [data-theme="dark"] in
+ * both directions, everywhere in the app.
+ */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 html {
 	font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
 }
