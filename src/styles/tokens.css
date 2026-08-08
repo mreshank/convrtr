@@ -1,0 +1,70 @@
+:root {
+	--surface-base: #fafaf8;
+	--surface-raised: #ffffff;
+	--surface-overlay: #ffffff;
+	--hairline: rgba(0, 0, 0, 0.1);
+	--text-primary: #16161a;
+	--text-muted: #6b6b73;
+	--signal: #5c7000;
+	--lossy: #9a6b00;
+	--error: #c62a1c;
+
+	--radius: 4px;
+	--hairline-width: 1px;
+	--space-1: 4px;
+	--space-2: 8px;
+	--space-3: 12px;
+	--space-4: 16px;
+	--space-6: 24px;
+	--space-8: 32px;
+}
+
+:root[data-theme="dark"] {
+	--surface-base: #0b0b0c;
+	--surface-raised: #121214;
+	--surface-overlay: #1a1a1d;
+	--hairline: rgba(255, 255, 255, 0.1);
+	--text-primary: #f2f2f0;
+	--text-muted: #8a8a92;
+	--signal: #ccff00;
+	--lossy: #ffb020;
+	--error: #ff4d3d;
+}
+
+/*
+ * No-JS / pre-hydration fallback (controller decision, not in the original brief).
+ *
+ * ThemeScript sets [data-theme] on the client before paint, but a visitor with
+ * JavaScript disabled never gets that attribute, so without this block they
+ * would always see light mode regardless of "system" being the stated default
+ * preference. This mirrors the dark values above exactly.
+ *
+ * The explicit [data-theme] attribute still wins in both directions:
+ * - [data-theme="dark"] has the same specificity as this rule and agrees with
+ *   it whenever both match, so there is never a conflict.
+ * - [data-theme="light"] is excluded by :not(...), so an explicit light choice
+ *   overrides a dark system preference even with JS disabled.
+ */
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) {
+		--surface-base: #0b0b0c;
+		--surface-raised: #121214;
+		--surface-overlay: #1a1a1d;
+		--hairline: rgba(255, 255, 255, 0.1);
+		--text-primary: #f2f2f0;
+		--text-muted: #8a8a92;
+		--signal: #ccff00;
+		--lossy: #ffb020;
+		--error: #ff4d3d;
+	}
+}
+
+body {
+	background: var(--surface-base);
+	color: var(--text-primary);
+}
+
+.mono {
+	font-family: var(--font-mono);
+	font-variant-numeric: tabular-nums;
+}
