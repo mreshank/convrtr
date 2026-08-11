@@ -12,6 +12,8 @@
 		"typecheck": "next typegen && tsc --noEmit"
 	},
 	"dependencies": {
+		"@jsquash/png": "^3.1.1",
+		"@jsquash/webp": "^1.5.0",
 		"next": "16.3.0",
 		"react": "19.2.8",
 		"react-dom": "19.2.8",
@@ -21,6 +23,8 @@
 		"@biomejs/biome": "^2.5.7",
 		"@playwright/test": "^1.62.1",
 		"@tailwindcss/postcss": "^4",
+		"@testing-library/dom": "^10.4.1",
+		"@testing-library/react": "^16.3.2",
 		"@types/node": "^20",
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
