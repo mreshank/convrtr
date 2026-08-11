@@ -235,7 +235,17 @@ export function formatBytes(bytes: number): string {
     value /= 1000
     unit += 1
   }
-  const decimals = value < 10 ? 2 : 1
+  let decimals = value < 10 ? 2 : 1
+  // The loop tests the UNROUNDED value, so rounding can still carry the result
+  // past a boundary: 999_970 B → 999.97 KB → "1000.0 KB", and 9_996_000 B →
+  // 9.996 MB → "10.00 MB" with two decimals. Re-check once after rounding.
+  if (Number(value.toFixed(decimals)) >= 1000 && unit < UNITS.length - 1) {
+    value /= 1000
+    unit += 1
+    decimals = value < 10 ? 2 : 1
+  } else if (decimals === 2 && Number(value.toFixed(decimals)) >= 10) {
+    decimals = 1
+  }
   return `${value.toFixed(decimals)} ${UNITS[unit]}`
 }
 
@@ -353,7 +363,9 @@ export function resolveTheme(
   --text-primary: #16161a;
   --text-muted: #6b6b73;
   --signal: #5c7000;
-  --lossy: #9a6b00;
+  /* #9a6b00 measured 4.49:1 on --surface-base — under the AA floor for the
+     11px LOSSY badge. Darkened to clear 4.5:1 with margin (~5.35:1). */
+  --lossy: #8a6000;
   --error: #c62a1c;
 
   --radius: 4px;

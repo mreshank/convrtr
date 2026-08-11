@@ -8,7 +8,12 @@ const script = `
 			(pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
 		document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
 	} catch (e) {
-		document.documentElement.setAttribute('data-theme', 'light');
+		/* Deliberately does NOT set data-theme.
+		 * Writing 'light' here would satisfy the :not([data-theme="light"])
+		 * exclusion in tokens.css and switch OFF the prefers-color-scheme
+		 * fallback — forcing a dark-preferring visitor into light mode
+		 * *because* JavaScript ran, which is worse than the no-JS path.
+		 * Leaving the attribute unset lets the CSS media query resolve it. */
 	}
 })();
 `;
