@@ -1,0 +1,128 @@
+import type { Tool } from "../types";
+
+export const pngToWebp: Tool = {
+	id: "image/png-to-webp",
+	slug: "png-to-webp",
+	category: "image",
+	kind: "convert",
+	accept: { mime: ["image/png"], ext: ["png"] },
+	output: { ext: "webp", mime: "image/webp" },
+	engines: ["jsquash-webp"],
+	quality: {
+		losslessAvailable: true,
+		defaultPreset: "lossless",
+		presets: [
+			{
+				id: "lossless",
+				label: "Lossless",
+				explanation: "Bit-exact. The original pixels are recoverable.",
+				params: { lossless: 1, quality: 100, method: 4 },
+			},
+			{
+				id: "visually-lossless",
+				label: "Visually lossless",
+				explanation:
+					"No difference you can see at 100% zoom. Noticeably smaller.",
+				params: { lossless: 0, quality: 92, method: 4 },
+			},
+			{
+				id: "balanced",
+				label: "Balanced",
+				explanation: "Clearly smaller. Loss is hard to spot in normal use.",
+				params: { lossless: 0, quality: 78, method: 4 },
+			},
+			{
+				id: "smallest",
+				label: "Smallest",
+				explanation: "Aggressive. Visible artefacts on detailed images.",
+				params: { lossless: 0, quality: 55, method: 6 },
+			},
+		],
+		advanced: [
+			{
+				control: "stepper",
+				key: "method",
+				label: "Method",
+				group: "Encoder",
+				min: 0,
+				max: 6,
+				step: 1,
+				default: 4,
+			},
+			{
+				control: "slider",
+				key: "near_lossless",
+				label: "Near lossless",
+				group: "Encoder",
+				min: 0,
+				max: 100,
+				step: 1,
+				default: 100,
+			},
+			{
+				control: "slider",
+				key: "alpha_quality",
+				label: "Alpha quality",
+				group: "Encoder",
+				min: 0,
+				max: 100,
+				step: 1,
+				default: 100,
+			},
+			{
+				control: "stepper",
+				key: "filter_strength",
+				label: "Filter strength",
+				group: "Encoder",
+				min: 0,
+				max: 100,
+				step: 1,
+				default: 60,
+			},
+			{
+				control: "stepper",
+				key: "segments",
+				label: "Segments",
+				group: "Output",
+				min: 1,
+				max: 4,
+				step: 1,
+				default: 4,
+			},
+			{
+				control: "stepper",
+				key: "sns_strength",
+				label: "SNS strength",
+				group: "Output",
+				min: 0,
+				max: 100,
+				step: 1,
+				default: 50,
+			},
+			{
+				control: "toggle",
+				key: "exif",
+				label: "Keep EXIF orientation",
+				group: "Image",
+				default: true,
+			},
+		],
+	},
+	seo: {
+		title: "Convert PNG to WebP — free, private, in your browser | convrtr",
+		h1: "Convert PNG to WebP",
+		intent:
+			"Convert PNG images to WebP without uploading them. The conversion runs inside your browser, so your files never leave your device. Lossless by default.",
+		faq: [
+			{
+				q: "Is WebP lossless?",
+				a: "WebP supports both lossless and lossy compression. convrtr defaults to lossless, which typically produces files around 26% smaller than PNG with pixel-identical output.",
+			},
+			{
+				q: "Are my images uploaded anywhere?",
+				a: "No. convrtr has no server. The conversion runs in your browser using WebAssembly, and you can confirm it by opening your browser network tab while converting.",
+			},
+		],
+		related: [],
+	},
+};
