@@ -9,7 +9,8 @@
 		"start": "next start",
 		"test": "vitest run",
 		"lint": "biome check .",
-		"typecheck": "next typegen && tsc --noEmit"
+		"typecheck": "next typegen && tsc --noEmit",
+		"ci": "pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm playwright test"
 	},
 	"dependencies": {
 		"@jsquash/png": "^3.1.1",
