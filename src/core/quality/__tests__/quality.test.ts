@@ -40,6 +40,22 @@ describe("setParam", () => {
 		const state = setParam(pngToWebp, initialQuality(pngToWebp), "method", 4);
 		expect(state.preset).toBe("lossless");
 	});
+
+	it("flips back to the preset when a parameter returns to its preset value", () => {
+		let state = setParam(pngToWebp, initialQuality(pngToWebp), "method", 6);
+		expect(state.preset).toBe("custom");
+		state = setParam(pngToWebp, state, "method", 4);
+		expect(state.preset).toBe("lossless");
+	});
+
+	it("recognises a configuration that matches a different preset", () => {
+		const balanced = applyPreset(pngToWebp, "balanced");
+		const state = setParam(pngToWebp, initialQuality(pngToWebp), "quality", 78);
+		// initialQuality is lossless (lossless:1); changing only quality must NOT
+		// claim to be balanced, because balanced also sets lossless:0.
+		expect(state.preset).toBe("custom");
+		expect(balanced.preset).toBe("balanced");
+	});
 });
 
 describe("describeFidelity", () => {

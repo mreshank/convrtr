@@ -31,6 +31,20 @@ export function initialQuality(tool: Tool): QualityState {
 	return applyPreset(tool, tool.quality.defaultPreset);
 }
 
+function matchesPreset(
+	tool: Tool,
+	preset: QualityPreset,
+	params: Record<string, ParamValue>,
+): boolean {
+	const candidate = {
+		...advancedDefaults(tool),
+		...presetParams(tool, preset),
+	};
+	const keys = new Set([...Object.keys(candidate), ...Object.keys(params)]);
+	for (const key of keys) if (candidate[key] !== params[key]) return false;
+	return true;
+}
+
 export function setParam(
 	tool: Tool,
 	state: QualityState,
@@ -38,12 +52,10 @@ export function setParam(
 	value: ParamValue,
 ): QualityState {
 	const params = { ...state.params, [key]: value };
-	const baseline = {
-		...advancedDefaults(tool),
-		...presetParams(tool, state.preset),
-	};
-	const deviates = Object.keys(params).some((k) => params[k] !== baseline[k]);
-	return { preset: deviates ? "custom" : state.preset, params };
+	const match = tool.quality.presets.find((p) =>
+		matchesPreset(tool, p.id, params),
+	);
+	return { preset: match?.id ?? "custom", params };
 }
 
 export function describeFidelity(tool: Tool, state: QualityState): string {
