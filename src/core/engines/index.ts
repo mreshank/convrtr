@@ -1,11 +1,15 @@
-import { jsquashPngToWebp } from "./jsquash-png-to-webp";
+import { createImagePipelineEngine } from "./image";
 import type { Engine } from "./types";
 
+export * from "./image";
 export * from "./types";
 
-export const ENGINES = new Map<string, Engine>([
-	[jsquashPngToWebp.id, jsquashPngToWebp],
-]);
+// The image pack's entire tool matrix is composed from decoders × encoders
+// (see `src/core/engines/image/`), so wiring one up here costs a single
+// line, not a bespoke engine file per format pair.
+const pngToWebp = createImagePipelineEngine("png", "webp");
+
+export const ENGINES = new Map<string, Engine>([[pngToWebp.id, pngToWebp]]);
 
 export function getEngine(id: string): Engine | undefined {
 	return ENGINES.get(id);

@@ -2,12 +2,17 @@ import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
-import { jsquashPngToWebp } from "../jsquash-png-to-webp";
+import { createImagePipelineEngine } from "../image/pipeline";
+
+// This engine is the composition of the PNG decoder and WebP encoder under
+// test — see `src/core/engines/image/`. It is exactly the engine registered
+// under `image:png->webp` in `ENGINES`.
+const pngToWebp = createImagePipelineEngine("png", "webp");
 
 // jSquash ships its WASM binaries as sibling files under each package's
 // `codec/` directory, but its `decode`/`encode` entry points load them via
 // `fetch()`. Under Node/vitest there is no `file://` fetch, so
-// `jsquashPngToWebp.run(...)` throws `NotSupportedError` unless the WASM is
+// `pngToWebp.run(...)` throws `NotSupportedError` unless the WASM is
 // preloaded manually before any test touches the engine.
 //
 // We resolve the on-disk WASM paths through `require.resolve` on each
@@ -51,9 +56,9 @@ beforeAll(async () => {
 	await webpDecMod.init({ wasmBinary: readFileSync(WEBP_DEC_WASM) } as never);
 }, 60000);
 
-describe("jsquash-png-to-webp fidelity", () => {
+describe("image:png->webp fidelity", () => {
 	it("produces a valid WebP with the RIFF/WEBP signature", async () => {
-		const out = await jsquashPngToWebp.run(
+		const out = await pngToWebp.run(
 			input.slice(0),
 			{ lossless: 1, quality: 100 },
 			() => {},
@@ -70,7 +75,7 @@ describe("jsquash-png-to-webp fidelity", () => {
 		const { default: decodeWebp } = await import("@jsquash/webp/decode");
 
 		const original = await decodePng(input.slice(0));
-		const encoded = await jsquashPngToWebp.run(
+		const encoded = await pngToWebp.run(
 			input.slice(0),
 			{ lossless: 1, quality: 100 },
 			() => {},
@@ -100,9 +105,7 @@ describe("jsquash-png-to-webp fidelity", () => {
 
 	it("reports monotonically increasing progress ending at 1", async () => {
 		const ticks: number[] = [];
-		await jsquashPngToWebp.run(input.slice(0), { lossless: 1 }, (r) =>
-			ticks.push(r),
-		);
+		await pngToWebp.run(input.slice(0), { lossless: 1 }, (r) => ticks.push(r));
 		expect(ticks.at(-1)).toBe(1);
 		expect(ticks).toEqual([...ticks].sort((a, b) => a - b));
 	}, 60000);

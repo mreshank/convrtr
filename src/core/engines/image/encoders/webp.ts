@@ -1,26 +1,22 @@
 import type { ParamValue } from "@/core/quality";
-import type { Engine } from "./types";
+import type { ImageEncoder } from "../types";
 
-export const jsquashPngToWebp: Engine = {
-	id: "jsquash-png-to-webp",
+export const webpEncoder: ImageEncoder = {
+	id: "webp",
+	mime: "image/webp",
 
 	async probe() {
 		return typeof WebAssembly === "object";
 	},
 
-	async run(
-		input: ArrayBuffer,
+	async encode(
+		image: ImageData,
 		params: Record<string, ParamValue>,
-		onProgress: (ratio: number, phase: string) => void,
-	) {
-		const { default: decodePng } = await import("@jsquash/png/decode");
-		const { default: encodeWebp } = await import("@jsquash/webp/encode");
-
-		onProgress(0.1, "DECODE");
-		const imageData = await decodePng(input);
-		onProgress(0.5, "ENCODE");
-
-		const encoded = await encodeWebp(imageData, {
+	): Promise<ArrayBuffer> {
+		// Dynamic import: the WebP WASM codec is several hundred KB and must
+		// only download when a conversion actually needs it.
+		const { default: encode } = await import("@jsquash/webp/encode");
+		return encode(image, {
 			lossless: Number(params.lossless ?? 0),
 			quality: Number(params.quality ?? 92),
 			method: Number(params.method ?? 4),
@@ -30,8 +26,5 @@ export const jsquashPngToWebp: Engine = {
 			segments: Number(params.segments ?? 4),
 			sns_strength: Number(params.sns_strength ?? 50),
 		});
-
-		onProgress(1, "ENCODE");
-		return encoded;
 	},
 };

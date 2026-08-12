@@ -7,7 +7,7 @@ export const pngToWebp: Tool = {
 	kind: "convert",
 	accept: { mime: ["image/png"], ext: ["png"] },
 	output: { ext: "webp", mime: "image/webp" },
-	engines: ["jsquash-png-to-webp"],
+	engines: ["image:png->webp"],
 	quality: {
 		losslessAvailable: true,
 		defaultPreset: "lossless",
