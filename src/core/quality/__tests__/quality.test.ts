@@ -3,6 +3,7 @@ import { pngToWebp } from "@/core/registry/tools/png-to-webp";
 import {
 	applyPreset,
 	describeFidelity,
+	fidelityScore,
 	initialQuality,
 	setParam,
 } from "../index";
@@ -89,5 +90,65 @@ describe("describeFidelity", () => {
 			20,
 		);
 		expect(describeFidelity(pngToWebp, custom)).toBe("LOSSLESS");
+	});
+});
+
+describe("fidelityScore", () => {
+	it("scores the lossless preset at 100", () => {
+		expect(fidelityScore(pngToWebp, initialQuality(pngToWebp))).toBe(100);
+	});
+
+	it("scores visually-lossless at its quality value, 92", () => {
+		expect(
+			fidelityScore(pngToWebp, applyPreset(pngToWebp, "visually-lossless")),
+		).toBe(92);
+	});
+
+	it("scores balanced at its quality value, 78", () => {
+		expect(fidelityScore(pngToWebp, applyPreset(pngToWebp, "balanced"))).toBe(
+			78,
+		);
+	});
+
+	it("scores smallest at its quality value, 55", () => {
+		expect(fidelityScore(pngToWebp, applyPreset(pngToWebp, "smallest"))).toBe(
+			55,
+		);
+	});
+
+	it("drops off 100 when a custom edit disables lossless", () => {
+		const disabled = setParam(
+			pngToWebp,
+			initialQuality(pngToWebp),
+			"lossless",
+			0,
+		);
+		const custom = setParam(pngToWebp, disabled, "quality", 80);
+		expect(custom.preset).toBe("custom");
+		expect(fidelityScore(pngToWebp, custom)).toBe(80);
+	});
+
+	it("clamps an out-of-range quality value into 0-100", () => {
+		const custom = setParam(
+			pngToWebp,
+			setParam(pngToWebp, initialQuality(pngToWebp), "lossless", 0),
+			"quality",
+			150,
+		);
+		expect(fidelityScore(pngToWebp, custom)).toBe(100);
+	});
+
+	it("falls back to 50 when neither lossless nor a numeric quality is set", () => {
+		const custom = setParam(
+			pngToWebp,
+			initialQuality(pngToWebp),
+			"lossless",
+			0,
+		);
+		const withoutQuality = {
+			...custom,
+			params: { ...custom.params, quality: "unset" },
+		};
+		expect(fidelityScore(pngToWebp, withoutQuality)).toBe(50);
 	});
 });

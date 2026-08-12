@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# convrtr
 
-## Getting Started
+A file conversion hub where every conversion runs inside the browser. No file is ever
+uploaded, because there is no server to upload it to — the site is a static build, and the
+conversion engines are WebAssembly modules and native browser codecs executing in Web Workers
+on the user's own machine.
 
-First, run the development server:
+Every tool is lossless by default wherever that is achievable at a sensible size, and
+visually lossless where it is not. From there, a quality dial lets the user trade fidelity for
+size explicitly — the interface always states plainly what they are getting.
+
+## Running it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Before merging any change, run the full gate:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+pnpm run ci
+```
 
-## Learn More
+This runs, in order: typecheck, lint (Biome), unit tests (Vitest), the static production
+build, and end-to-end tests (Playwright) — including the network assertion that fails the
+build if any file byte would leave the browser.
 
-To learn more about Next.js, take a look at the following resources:
+## Architecture
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Each tool is a declaration in `src/core/registry` — its accepted/output formats, quality
+presets, advanced parameters, and SEO copy — with nothing hand-coded per tool in `src/app`.
+`src/core/engines` holds one self-contained adapter per codec (currently a jSquash/WASM
+PNG-to-WebP engine); `selectEngine` probes a tool's declared engines in order and picks the
+first one the browser can actually run. `src/core/pipeline` is the worker boundary: it posts a
+job to a Web Worker, streams progress and cancellation across `postMessage`, and never touches
+a specific file format itself. `src/core/io` handles reading the input file and writing the
+result back to disk (via the File System Access API where available, falling back to an
+anchor-click download), also without format-specific knowledge.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The intended invariant: adding a new conversion touches only `core/registry` (and, if it needs
+a new codec, `core/engines`) — never `src/app`.
 
-## Deploy on Vercel
+The site is exported statically (`output: "export"`) and served with the
+`Cross-Origin-Opener-Policy`/`Cross-Origin-Embedder-Policy` headers required for
+`SharedArrayBuffer`-backed WASM codecs (see `vercel.json`).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Documentation
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See [`docs/`](./docs) for the full design spec, the tool catalogue, and the phased roadmap.

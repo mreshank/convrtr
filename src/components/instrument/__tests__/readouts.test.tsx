@@ -1,6 +1,5 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { FidelityBadge } from "../FidelityBadge";
 import { FileReadout } from "../FileReadout";
 import { ProgressBar } from "../ProgressBar";
 
@@ -11,22 +10,6 @@ describe("FileReadout", () => {
 		);
 		expect(screen.getByTestId("facts").textContent).toBe(
 			"PNG · RGBA8 · 1.84 MB",
-		);
-	});
-});
-
-describe("FidelityBadge", () => {
-	it("uses the signal colour for lossless", () => {
-		render(<FidelityBadge label="LOSSLESS" />);
-		expect(screen.getByText("LOSSLESS").getAttribute("data-tone")).toBe(
-			"lossless",
-		);
-	});
-
-	it("uses the lossy tone for anything else", () => {
-		render(<FidelityBadge label="LOSSY · Q61" />);
-		expect(screen.getByText("LOSSY · Q61").getAttribute("data-tone")).toBe(
-			"lossy",
 		);
 	});
 });

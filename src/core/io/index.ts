@@ -57,5 +57,8 @@ export async function saveOutput(
 	anchor.href = url;
 	anchor.download = filename;
 	anchor.click();
-	URL.revokeObjectURL(url);
+	// Firefox and Safari have historically cancelled a download that is still
+	// starting when the object URL backing it is revoked synchronously.
+	// Deferring the revoke lets the browser pick up the click first.
+	setTimeout(() => URL.revokeObjectURL(url), 0);
 }

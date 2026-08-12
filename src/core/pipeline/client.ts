@@ -1,4 +1,25 @@
-import { isJobEvent, type JobEvent, type JobRequest } from "./protocol";
+import {
+	type ErrorCode,
+	isJobEvent,
+	type JobEvent,
+	type JobRequest,
+} from "./protocol";
+
+/**
+ * An error raised by a job that carries the worker's `ErrorCode` (see
+ * `protocol.ts`) rather than discarding it. Without this, every rejection at
+ * the client boundary collapsed to a bare `Error`, making the taxonomy the
+ * worker carefully assigns unreachable by any caller.
+ */
+export class JobError extends Error {
+	readonly code: ErrorCode;
+
+	constructor(code: ErrorCode, message: string) {
+		super(message);
+		this.name = "JobError";
+		this.code = code;
+	}
+}
 
 export function runJob(
 	request: JobRequest,
@@ -39,13 +60,13 @@ export function runJob(
 
 			if (message.type === "error") {
 				cleanup();
-				reject(new Error(message.message));
+				reject(new JobError(message.code, message.message));
 			}
 		};
 
 		worker.onerror = (event: ErrorEvent) => {
 			cleanup();
-			reject(new Error(event.message || "Worker failed"));
+			reject(new JobError("ENGINE_FAILURE", event.message || "Worker failed"));
 		};
 
 		worker.postMessage(request, [request.input]);

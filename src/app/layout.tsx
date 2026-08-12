@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
+import { ThemeToggle } from "@/components/instrument/ThemeToggle";
 import { ThemeScript } from "@/components/ThemeScript";
 import "./globals.css";
 
@@ -31,7 +32,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 			<head>
 				<ThemeScript />
 			</head>
-			<body className="min-h-full flex flex-col">{children}</body>
+			<body className="min-h-full flex flex-col">
+				<div className="flex justify-end p-4">
+					<ThemeToggle />
+				</div>
+				{children}
+			</body>
 		</html>
 	);
 }

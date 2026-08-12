@@ -17,8 +17,8 @@ self.onmessage = async (event: MessageEvent<JobRequest>) => {
 			return;
 		}
 
-		const output = await engine.run(input, params, (ratio) =>
-			post({ type: "progress", id, ratio, phase: engine.id }),
+		const output = await engine.run(input, params, (ratio, phase) =>
+			post({ type: "progress", id, ratio, phase }),
 		);
 		post({ type: "done", id, output });
 	} catch (error) {

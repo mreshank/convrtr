@@ -1,9 +1,11 @@
-import { jsquashWebp } from "./jsquash-webp";
+import { jsquashPngToWebp } from "./jsquash-png-to-webp";
 import type { Engine } from "./types";
 
 export * from "./types";
 
-export const ENGINES = new Map<string, Engine>([[jsquashWebp.id, jsquashWebp]]);
+export const ENGINES = new Map<string, Engine>([
+	[jsquashPngToWebp.id, jsquashPngToWebp],
+]);
 
 export function getEngine(id: string): Engine | undefined {
 	return ENGINES.get(id);

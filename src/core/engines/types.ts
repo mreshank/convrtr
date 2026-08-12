@@ -6,6 +6,6 @@ export interface Engine {
 	run(
 		input: ArrayBuffer,
 		params: Record<string, ParamValue>,
-		onProgress: (ratio: number) => void,
+		onProgress: (ratio: number, phase: string) => void,
 	): Promise<ArrayBuffer>;
 }

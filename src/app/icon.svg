@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+	<title>convrtr</title>
+	<rect width="32" height="32" fill="#0b0b0c" />
+	<path
+		d="M11 7 L23 16 L11 25"
+		fill="none"
+		stroke="#ccff00"
+		stroke-width="4"
+		stroke-linecap="square"
+		stroke-linejoin="miter"
+	/>
+</svg>

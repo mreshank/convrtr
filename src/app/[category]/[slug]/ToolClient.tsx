@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { DropField } from "@/components/instrument/DropField";
-import { FidelityBadge } from "@/components/instrument/FidelityBadge";
+import { FidelityScore } from "@/components/instrument/FidelityScore";
 import { FileReadout } from "@/components/instrument/FileReadout";
 import { OptionsPanel } from "@/components/instrument/OptionsPanel";
 import { ProgressBar } from "@/components/instrument/ProgressBar";
@@ -11,6 +11,7 @@ import { runJob } from "@/core/pipeline/client";
 import { makeJobId } from "@/core/pipeline/protocol";
 import {
 	describeFidelity,
+	fidelityScore,
 	initialQuality,
 	type QualityState,
 } from "@/core/quality";
@@ -100,6 +101,17 @@ export function ToolClient({ toolId }: { toolId: string }) {
 		controllerRef.current?.abort();
 	};
 
+	const replace = () => {
+		if (converting) return;
+		setFile(null);
+		setQuality(initialQuality(tool));
+		setResult(null);
+		setError(null);
+		setRatio(0);
+		setPhase("");
+		setElapsed(0);
+	};
+
 	const save = async () => {
 		if (!file || !result) return;
 		await saveOutput(
@@ -113,7 +125,10 @@ export function ToolClient({ toolId }: { toolId: string }) {
 		<main className="mx-auto flex max-w-4xl flex-col gap-6 p-8">
 			<div className="flex items-start justify-between">
 				<h1 className="text-[28px] tracking-[-0.02em]">{tool.seo.h1}</h1>
-				<FidelityBadge label={describeFidelity(tool, quality)} />
+				<FidelityScore
+					score={fidelityScore(tool, quality)}
+					label={describeFidelity(tool, quality)}
+				/>
 			</div>
 
 			{!file && (
@@ -132,13 +147,29 @@ export function ToolClient({ toolId }: { toolId: string }) {
 						borderRadius: "var(--radius)",
 					}}
 				>
-					<FileReadout
-						name={file.name}
-						facts={[
-							(tool.accept.ext[0] ?? tool.output.ext).toUpperCase(),
-							formatBytes(file.size),
-						]}
-					/>
+					<div className="flex items-start justify-between gap-4">
+						<FileReadout
+							name={file.name}
+							facts={[
+								(tool.accept.ext[0] ?? tool.output.ext).toUpperCase(),
+								formatBytes(file.size),
+							]}
+						/>
+						<button
+							type="button"
+							onClick={replace}
+							disabled={converting}
+							className="mono border px-3 py-1 text-[11px]"
+							style={{
+								color: "var(--text-muted)",
+								borderColor: "var(--hairline)",
+								borderRadius: "var(--radius)",
+								background: "transparent",
+							}}
+						>
+							REPLACE
+						</button>
+					</div>
 
 					<OptionsPanel tool={tool} state={quality} onChange={setQuality} />
 
@@ -162,6 +193,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 
 					{!converting && error && (
 						<span
+							data-testid="error"
 							className="mono text-[12px]"
 							style={{ color: "var(--error)" }}
 						>

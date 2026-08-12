@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
 	return (
 		<main className="mx-auto flex w-full max-w-4xl flex-col gap-4 p-8">
@@ -5,6 +7,17 @@ export default function Home() {
 			<p className="text-[14px]" style={{ color: "var(--text-muted)" }}>
 				Convert anything. Nothing leaves your device.
 			</p>
+			<Link
+				href="/image/png-to-webp"
+				className="mono self-start border px-4 py-2 text-[12px]"
+				style={{
+					color: "var(--text-primary)",
+					borderColor: "var(--hairline)",
+					borderRadius: "var(--radius)",
+				}}
+			>
+				PNG {"→"} WEBP
+			</Link>
 			<span className="mono text-[11px]" style={{ color: "var(--text-muted)" }}>
 				LOCAL ONLY · 0 BYTES UPLOADED · WORKS OFFLINE
 			</span>

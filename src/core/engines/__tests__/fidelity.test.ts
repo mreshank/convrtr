@@ -2,12 +2,12 @@ import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
-import { jsquashWebp } from "../jsquash-webp";
+import { jsquashPngToWebp } from "../jsquash-png-to-webp";
 
 // jSquash ships its WASM binaries as sibling files under each package's
 // `codec/` directory, but its `decode`/`encode` entry points load them via
 // `fetch()`. Under Node/vitest there is no `file://` fetch, so
-// `jsquashWebp.run(...)` throws `NotSupportedError` unless the WASM is
+// `jsquashPngToWebp.run(...)` throws `NotSupportedError` unless the WASM is
 // preloaded manually before any test touches the engine.
 //
 // We resolve the on-disk WASM paths through `require.resolve` on each
@@ -51,9 +51,9 @@ beforeAll(async () => {
 	await webpDecMod.init({ wasmBinary: readFileSync(WEBP_DEC_WASM) } as never);
 }, 60000);
 
-describe("jsquash-webp fidelity", () => {
+describe("jsquash-png-to-webp fidelity", () => {
 	it("produces a valid WebP with the RIFF/WEBP signature", async () => {
-		const out = await jsquashWebp.run(
+		const out = await jsquashPngToWebp.run(
 			input.slice(0),
 			{ lossless: 1, quality: 100 },
 			() => {},
@@ -70,7 +70,7 @@ describe("jsquash-webp fidelity", () => {
 		const { default: decodeWebp } = await import("@jsquash/webp/decode");
 
 		const original = await decodePng(input.slice(0));
-		const encoded = await jsquashWebp.run(
+		const encoded = await jsquashPngToWebp.run(
 			input.slice(0),
 			{ lossless: 1, quality: 100 },
 			() => {},
@@ -100,7 +100,7 @@ describe("jsquash-webp fidelity", () => {
 
 	it("reports monotonically increasing progress ending at 1", async () => {
 		const ticks: number[] = [];
-		await jsquashWebp.run(input.slice(0), { lossless: 1 }, (r) =>
+		await jsquashPngToWebp.run(input.slice(0), { lossless: 1 }, (r) =>
 			ticks.push(r),
 		);
 		expect(ticks.at(-1)).toBe(1);

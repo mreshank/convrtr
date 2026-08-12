@@ -1,4 +1,6 @@
 :root {
+	color-scheme: light;
+
 	--surface-base: #fafaf8;
 	--surface-raised: #ffffff;
 	--surface-overlay: #ffffff;
@@ -20,6 +22,8 @@
 }
 
 :root[data-theme="dark"] {
+	color-scheme: dark;
+
 	--surface-base: #0b0b0c;
 	--surface-raised: #121214;
 	--surface-overlay: #1a1a1d;
@@ -47,6 +51,8 @@
  */
 @media (prefers-color-scheme: dark) {
 	:root:not([data-theme="light"]) {
+		color-scheme: dark;
+
 		--surface-base: #0b0b0c;
 		--surface-raised: #121214;
 		--surface-overlay: #1a1a1d;

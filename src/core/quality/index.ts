@@ -66,3 +66,21 @@ export function describeFidelity(tool: Tool, state: QualityState): string {
 	const quality = state.params.quality;
 	return typeof quality === "number" ? `LOSSY · Q${quality}` : "LOSSY";
 }
+
+/**
+ * A 0-100 losslessness figure for the current quality state, meant to drive
+ * a plain visual indicator (a fidelity ring) rather than to be read as a
+ * measured quality metric.
+ *
+ * This is a *declared* figure — it comes straight from the preset/parameter
+ * values the user chose, not from comparing output pixels to input pixels.
+ * Spec §5.9 anticipates swapping this for a measured perceptual score
+ * (SSIM/butteraugli) once an engine can produce one; callers take a plain
+ * number precisely so that swap needs no UI change.
+ */
+export function fidelityScore(_tool: Tool, state: QualityState): number {
+	if (state.params.lossless === 1 || state.params.lossless === true) return 100;
+	const quality = state.params.quality;
+	if (typeof quality === "number") return Math.min(100, Math.max(0, quality));
+	return 50;
+}
