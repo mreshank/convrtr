@@ -78,9 +78,23 @@ export function describeFidelity(tool: Tool, state: QualityState): string {
  * (SSIM/butteraugli) once an engine can produce one; callers take a plain
  * number precisely so that swap needs no UI change.
  */
-export function fidelityScore(_tool: Tool, state: QualityState): number {
-	if (state.params.lossless === 1 || state.params.lossless === true) return 100;
+export function fidelityScore(tool: Tool, state: QualityState): number {
+	// A tool that cannot be lossless must never score 100, whatever its params
+	// happen to say. Without this, a format like GIF — where `describeFidelity`
+	// correctly reports INHERENTLY LOSSY — could still render a full ring, and
+	// the two indicators would contradict each other on the same screen.
+	const ceiling = tool.quality.losslessAvailable ? 100 : 99;
+
+	if (
+		tool.quality.losslessAvailable &&
+		(state.params.lossless === 1 || state.params.lossless === true)
+	) {
+		return 100;
+	}
+
 	const quality = state.params.quality;
-	if (typeof quality === "number") return Math.min(100, Math.max(0, quality));
-	return 50;
+	if (typeof quality === "number") {
+		return Math.min(ceiling, Math.max(0, quality));
+	}
+	return Math.min(ceiling, 50);
 }

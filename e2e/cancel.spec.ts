@@ -7,10 +7,16 @@ test("cancelling a conversion leaves the file loaded and ready to re-run, with n
 	await page.goto("/image/png-to-webp");
 	await page.setInputFiles("input[type=file]", "e2e/fixtures/diagram.png");
 
-	// CPU-throttle the page so the WASM decode/encode work is slow enough to
-	// reliably land a CANCEL click mid-flight, instead of racing completion.
-	// This is reset once CANCEL has been clicked; nothing after that point
-	// depends on throttled execution.
+	// Throttle the renderer so a CANCEL click lands mid-flight rather than
+	// racing completion.
+	//
+	// Note on what this actually does: setCPUThrottlingRate suspends the
+	// renderer's MAIN thread. The WASM decode/encode runs on a dedicated
+	// Worker thread and is NOT throttled. What the throttle buys is a slower
+	// main thread on both sides of the race — it delays React processing the
+	// worker's `done` message as well as delaying our own click round-trip.
+	// Do not "fix" flakiness here by raising the rate expecting the codec to
+	// slow down; it will not.
 	const client = await context.newCDPSession(page);
 	await client.send("Emulation.setCPUThrottlingRate", { rate: 40 });
 
@@ -18,6 +24,12 @@ test("cancelling a conversion leaves the file loaded and ready to re-run, with n
 	await page.getByRole("button", { name: "CANCEL" }).click();
 
 	await client.send("Emulation.setCPUThrottlingRate", { rate: 1 });
+
+	// The cancel must actually have cancelled something. Without this the test
+	// passes vacuously if the job settles in the gap between Playwright's
+	// actionability check and the mouse dispatch: abort() on a settled promise
+	// is a no-op, the result renders, and every assertion below still holds.
+	await expect(page.getByTestId("result")).toHaveCount(0);
 
 	// (a) no error text is shown — cancellation is not an error.
 	await expect(page.getByTestId("error")).toHaveCount(0);

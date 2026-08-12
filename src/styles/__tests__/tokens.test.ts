@@ -82,6 +82,13 @@ describe("tokens.css dark-theme parity", () => {
 });
 
 describe("design-system invariants", () => {
+	it("still declares the 4px radius token the system is built on", () => {
+		// The sweep below only flags values ABOVE 4px, so deleting --radius
+		// entirely would pass it silently while every component's
+		// `borderRadius: var(--radius)` quietly resolved to nothing.
+		expect(css).toMatch(/--radius\s*:\s*4px/);
+	});
+
 	it("never declares a CSS custom radius property above 4px", () => {
 		// Every `--radius*` custom property, anywhere in `src`, must stay
 		// within the design system's 4px ceiling. A future `--radius-lg: 12px`

@@ -152,3 +152,41 @@ describe("fidelityScore", () => {
 		expect(fidelityScore(pngToWebp, withoutQuality)).toBe(50);
 	});
 });
+
+describe("fidelityScore on a tool that cannot be lossless", () => {
+	// A format like GIF can never round-trip bit-exactly. describeFidelity
+	// already reports INHERENTLY LOSSY for such a tool; the score must agree,
+	// or the ring and the label would contradict each other on screen.
+	const inherentlyLossy = {
+		...pngToWebp,
+		quality: { ...pngToWebp.quality, losslessAvailable: false },
+	};
+
+	it("never scores 100 even when the params claim lossless", () => {
+		const state = initialQuality(inherentlyLossy);
+		expect(state.params.lossless).toBe(1);
+		expect(fidelityScore(inherentlyLossy, state)).toBeLessThan(100);
+	});
+
+	it("caps a quality of 100 below a perfect ring", () => {
+		const state = {
+			preset: "custom" as const,
+			params: { lossless: 0, quality: 100 },
+		};
+		expect(fidelityScore(inherentlyLossy, state)).toBe(99);
+	});
+
+	it("still reports ordinary quality values unchanged", () => {
+		const state = {
+			preset: "custom" as const,
+			params: { lossless: 0, quality: 78 },
+		};
+		expect(fidelityScore(inherentlyLossy, state)).toBe(78);
+	});
+
+	it("agrees with describeFidelity's INHERENTLY LOSSY verdict", () => {
+		const state = initialQuality(inherentlyLossy);
+		expect(describeFidelity(inherentlyLossy, state)).toBe("INHERENTLY LOSSY");
+		expect(fidelityScore(inherentlyLossy, state)).toBeLessThan(100);
+	});
+});
