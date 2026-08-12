@@ -2,13 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { DropField } from "@/components/instrument/DropField";
+import { ErrorPanel } from "@/components/instrument/ErrorPanel";
 import { FidelityScore } from "@/components/instrument/FidelityScore";
 import { FileReadout } from "@/components/instrument/FileReadout";
 import { OptionsPanel } from "@/components/instrument/OptionsPanel";
 import { ProgressBar } from "@/components/instrument/ProgressBar";
 import { outputFilename, readFile, saveOutput } from "@/core/io";
-import { runJob } from "@/core/pipeline/client";
-import { makeJobId } from "@/core/pipeline/protocol";
+import { JobError, runJob } from "@/core/pipeline/client";
+import { type ErrorCode, makeJobId } from "@/core/pipeline/protocol";
 import {
 	describeFidelity,
 	fidelityScore,
@@ -33,7 +34,10 @@ export function ToolClient({ toolId }: { toolId: string }) {
 	const [phase, setPhase] = useState("");
 	const [elapsed, setElapsed] = useState(0);
 	const [result, setResult] = useState<Result | null>(null);
-	const [error, setError] = useState<string | null>(null);
+	const [error, setError] = useState<{
+		code: ErrorCode;
+		detail?: string;
+	} | null>(null);
 
 	// Held so CANCEL has something to call .abort() on — an inline
 	// `new AbortController().signal` at the call site would make the signal
@@ -87,9 +91,13 @@ export function ToolClient({ toolId }: { toolId: string }) {
 			// A cancellation is not an error: the input file stays loaded and
 			// re-runnable, with no error message shown.
 			if (!cancelled) {
-				setError(
-					caught instanceof Error ? caught.message : "Conversion failed",
-				);
+				// The worker assigns a taxonomy code and JobError carries it to
+				// here; anything else that escapes is genuinely an unclassified
+				// converter failure.
+				setError({
+					code: caught instanceof JobError ? caught.code : "ENGINE_FAILURE",
+					detail: caught instanceof Error ? caught.message : undefined,
+				});
 			}
 		} finally {
 			controllerRef.current = null;
@@ -192,13 +200,13 @@ export function ToolClient({ toolId }: { toolId: string }) {
 					)}
 
 					{!converting && error && (
-						<span
-							data-testid="error"
-							className="mono text-[12px]"
-							style={{ color: "var(--error)" }}
-						>
-							{error}
-						</span>
+						<ErrorPanel
+							code={error.code}
+							detail={error.detail}
+							inputFormat={tool.accept.ext[0]?.toUpperCase()}
+							onRetry={convert}
+							onDismiss={() => setError(null)}
+						/>
 					)}
 
 					{!converting && result && (

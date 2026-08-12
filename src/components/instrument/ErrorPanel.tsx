@@ -94,6 +94,11 @@ export function ErrorPanel({
 
 	return (
 		<div
+			// The test id lives on this root rather than on a wrapper in the
+			// caller, so that returning null for USER_CANCELLED renders nothing
+			// at all. A wrapper would still match `getByTestId("error")` while
+			// empty, and the cancel e2e asserts that count is zero.
+			data-testid="error"
 			role="alert"
 			className="flex flex-col gap-3 border-l-2 p-4"
 			style={{
