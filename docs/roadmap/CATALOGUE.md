@@ -47,8 +47,8 @@ Outputs: `JPEG` `PNG` `WebP` `AVIF` `JXL` `GIF` `BMP` `TIFF` `ICO` `QOI` `PDF` `
 | HEIC → JPG / PNG / WebP | libheif-wasm → jSquash | `LOSSY-ON-REQUEST` | `SOLVED` |
 | PNG ↔ WebP (lossless mode) | jSquash (libwebp) | `LOSSLESS` | `SOLVED` |
 | PNG → AVIF | jSquash (libavif) | `LOSSLESS-CAPABLE` | `SOLVED` |
-| JPEG → JXL (lossless recompression, ~20% smaller, fully reversible) | libjxl-wasm | `LOSSLESS` | `SOLVED` |
-| JXL → JPEG (exact original restored) | libjxl-wasm | `LOSSLESS` | `SOLVED` |
+| JPEG → JXL (lossless recompression, ~20% smaller, fully reversible) | libjxl-wasm | `LOSSLESS` | `BLOCKED` — see note |
+| JXL → JPEG (exact original restored) | libjxl-wasm | `LOSSLESS` | `BLOCKED` — see note |
 | Any raster → PNG / WebP / AVIF / JXL / TIFF / BMP / QOI | wasm-vips / jSquash | varies | `SOLVED` |
 | SVG → PNG / JPG / WebP (at any scale) | Canvas + resvg-wasm | `LOSSLESS` (vector→raster at chosen DPI) | `SOLVED` |
 | Raster → SVG (vector trace) | potrace-wasm / imagetracerjs | `INHERENTLY-LOSSY` | `SOLVED` |
@@ -57,6 +57,15 @@ Outputs: `JPEG` `PNG` `WebP` `AVIF` `JXL` `GIF` `BMP` `TIFF` `ICO` `QOI` `PDF` `
 | TIFF ↔ PNG (multi-page aware) | UTIF.js / wasm-vips | `LOSSLESS` | `SOLVED` |
 | EXR / HDR → PNG / JPG (tone-mapped) | tinyexr-wasm | `INHERENTLY-LOSSY` | `HARD` |
 | XCF → PNG | — | — | `BLOCKED` (no viable WASM port) |
+
+> **Correction (verified during implementation).** The two JXL lossless-JPEG
+> rows above were optimistic. `@jsquash/jxl` 1.3.0 exposes neither a raw
+> `distance` parameter nor libjxl's JPEG-recompression entry point, so the
+> reversible ~20% JPEG shrink is **not reachable through the current binding** —
+> and a tool claiming it would make the fidelity score read 100 on lossy output,
+> which is exactly the dishonesty the quality model exists to prevent. JXL ships
+> as a lossy encoder for now, declared truthfully as such. Revisit if jSquash
+> exposes the API or if we build a direct libjxl-wasm binding.
 
 ### 1.2 Compression & optimisation
 
