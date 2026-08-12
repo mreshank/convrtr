@@ -25,9 +25,10 @@ will silently fall back to single-threaded and be several times slower.
 ## One-time setup
 
 1. Go to **vercel.com/new** and import `mreshank/convrtr`.
-2. Vercel detects Next.js and pnpm from `pnpm-lock.yaml`. **Leave every build
-   setting at its default** — do not override the output directory. Next's
-   `output: "export"` is handled by Vercel's Next.js builder.
+2. **Leave every build setting at its default.** `vercel.json` already pins the
+   build command, the output directory, and the framework preset, so nothing in
+   the dashboard needs changing — and dashboard overrides would take precedence
+   over the committed config, which is the opposite of what you want.
 3. Deploy. You get a `*.vercel.app` URL.
 4. **Project Settings → Domains** → add `convrtr.mreshank.com`.
 5. At whoever hosts DNS for `mreshank.com`, add the record Vercel shows you —
@@ -57,12 +58,43 @@ Then open the page and actually convert a PNG, with DevTools' Network tab open.
 **You should see the app's own assets load and nothing else.** That is the whole
 product promise, and it is checkable by eye in ten seconds.
 
+## Why the config is explicit
+
+The first deploy failed with:
+
+```
+Error: No Output Directory named "public" found after the Build completed.
+```
+
+Two things combined to cause it. Next's `output: "export"` writes to `out/`, not
+`public/` — and `public/` is empty in this repo (its only contents were the
+create-next-app SVGs, deleted during review), so **git does not track it and
+Vercel's clone had no `public/` at all**. Vercel fell back to a preset expecting
+one.
+
+`vercel.json` now names all three explicitly:
+
+```json
+"buildCommand": "pnpm build",
+"outputDirectory": "out",
+"framework": null
+```
+
+`framework: null` is deliberate. This *is* a plain static site once built, and
+it is exactly what the e2e suite tests — `scripts/serve-static.mjs` serves `out/`
+as static files with the same two headers. Making the host do the same thing
+removes a class of "works locally, differs in production" surprises. Nothing is
+lost: `images.unoptimized` is already set, so no Next.js runtime feature is in
+use.
+
+`src/__tests__/deploy-config.test.ts` asserts these values, so a regression here
+fails CI rather than a deploy.
+
 ## If the headers do not appear
 
-Vercel occasionally ignores `vercel.json` headers when a framework preset owns
-the response. Fallback: set the framework preset to **Other** and the output
-directory to `out`, redeploy, and re-check. The site is plain static files, so
-nothing else changes.
+Check that no **dashboard** override is set — Project Settings values take
+precedence over `vercel.json`. Clear any override for build command or output
+directory and redeploy so the committed config wins.
 
 ## Cost
 
