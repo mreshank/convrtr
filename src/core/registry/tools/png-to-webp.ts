@@ -1,113 +1,15 @@
-import type { Tool } from "../types";
+import { defineImageConversion } from "./image/defineImageConversion";
 
-export const pngToWebp: Tool = {
-	id: "image/png-to-webp",
-	slug: "png-to-webp",
-	category: "image",
-	kind: "convert",
-	accept: { mime: ["image/png"], ext: ["png"] },
-	output: { ext: "webp", mime: "image/webp" },
-	engines: ["image:png->webp"],
-	quality: {
-		losslessAvailable: true,
-		defaultPreset: "lossless",
-		presets: [
-			{
-				id: "lossless",
-				label: "Lossless",
-				explanation: "Bit-exact. The original pixels are recoverable.",
-				params: { lossless: 1, quality: 100, method: 4 },
-			},
-			{
-				id: "visually-lossless",
-				label: "Visually lossless",
-				explanation:
-					"No difference you can see at 100% zoom. Noticeably smaller.",
-				params: { lossless: 0, quality: 92, method: 4 },
-			},
-			{
-				id: "balanced",
-				label: "Balanced",
-				explanation: "Clearly smaller. Loss is hard to spot in normal use.",
-				params: { lossless: 0, quality: 78, method: 4 },
-			},
-			{
-				id: "smallest",
-				label: "Smallest",
-				explanation: "Aggressive. Visible artefacts on detailed images.",
-				params: { lossless: 0, quality: 55, method: 6 },
-			},
-		],
-		advanced: [
-			{
-				control: "stepper",
-				key: "method",
-				label: "Method",
-				group: "Encoder",
-				min: 0,
-				max: 6,
-				step: 1,
-				default: 4,
-			},
-			{
-				control: "slider",
-				key: "near_lossless",
-				label: "Near lossless",
-				group: "Encoder",
-				min: 0,
-				max: 100,
-				step: 1,
-				default: 100,
-			},
-			{
-				control: "slider",
-				key: "alpha_quality",
-				label: "Alpha quality",
-				group: "Encoder",
-				min: 0,
-				max: 100,
-				step: 1,
-				default: 100,
-			},
-			{
-				control: "stepper",
-				key: "filter_strength",
-				label: "Filter strength",
-				group: "Encoder",
-				min: 0,
-				max: 100,
-				step: 1,
-				default: 60,
-			},
-			{
-				control: "stepper",
-				key: "segments",
-				label: "Segments",
-				group: "Output",
-				min: 1,
-				max: 4,
-				step: 1,
-				default: 4,
-			},
-			{
-				control: "stepper",
-				key: "sns_strength",
-				label: "SNS strength",
-				group: "Output",
-				min: 0,
-				max: 100,
-				step: 1,
-				default: 50,
-			},
-			{
-				control: "toggle",
-				key: "exif",
-				label: "Keep EXIF orientation",
-				group: "Image",
-				default: true,
-			},
-		],
-	},
+// Migrated onto `defineImageConversion` so PNG->WebP shares one code path
+// with every other image tool instead of hand-rolling its own schema. The
+// id ("image/png-to-webp"), slug ("png-to-webp"), and engine id
+// ("image:png->webp") are unchanged — a live URL and the e2e suite depend
+// on them — and the quality block (`IMAGE_QUALITY_PROFILES.webp`) is the
+// original values verbatim, so every existing assertion on preset labels,
+// numbers, and explanation strings still holds.
+export const pngToWebp = defineImageConversion({
+	from: { decoder: "png" },
+	to: "webp",
 	seo: {
 		title: "Convert PNG to WebP — free, private, in your browser | convrtr",
 		h1: "Convert PNG to WebP",
@@ -123,6 +25,8 @@ export const pngToWebp: Tool = {
 				a: "No. convrtr has no server. The conversion runs in your browser using WebAssembly, and you can confirm it by opening your browser network tab while converting.",
 			},
 		],
-		related: [],
+		// The inverse conversion first, then the siblings someone comparing
+		// output formats would most plausibly want next.
+		related: ["image/webp-to-png", "image/png-to-jpg", "image/png-to-avif"],
 	},
-};
+});

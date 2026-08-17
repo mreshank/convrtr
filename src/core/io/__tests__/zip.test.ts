@@ -83,9 +83,19 @@ describe("zipOutputs", () => {
 		expect(new TextDecoder().decode(unzipped["photo (2).webp"])).toBe("second");
 	});
 
+	// Observed failing once during a full-suite run on a machine under heavy
+	// load from several concurrent build processes, then passing 5/5 in
+	// isolation and on every subsequent full run. The error text was not
+	// captured, so this is not a confirmed diagnosis — but the test allocates
+	// ~2 MB and round-trips it through deflate/inflate against vitest's 5s
+	// default, which is a plausible thing to exceed under contention. The
+	// explicit timeout is cheap insurance; if it ever fails again it should
+	// fail as a clear timeout rather than ambiguously.
+	//
+	// The size itself is load-bearing and must not be reduced to "fix" a
+	// flake: below the 1 MiB chunk boundary this stops exercising the
+	// multi-push path it exists to cover.
 	it("round-trips a payload spanning multiple internal chunks", async () => {
-		// Larger than the 1 MiB chunk size zipOutputs pushes at a time, so this
-		// exercises the multi-push path for a single entry.
 		const size = 1024 * 1024 + 12_345;
 		const data = new Uint8Array(size);
 		data.fill(7);
@@ -95,7 +105,7 @@ describe("zipOutputs", () => {
 		const unzipped = unzipSync(await blobBytes(blob));
 
 		expect(unzipped["big.bin"]).toEqual(data);
-	});
+	}, 30_000);
 
 	it("stores already-compressed formats instead of deflating them, unlike a genuinely compressible format", async () => {
 		const size = 1024 * 1024 + 1_000;

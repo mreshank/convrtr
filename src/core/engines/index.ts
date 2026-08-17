@@ -1,15 +1,36 @@
 import { createImagePipelineEngine } from "./image";
+import { IMAGE_DECODERS, IMAGE_ENCODERS } from "./image/registry";
 import type { Engine } from "./types";
 
 export * from "./image";
 export * from "./types";
 
-// The image pack's entire tool matrix is composed from decoders × encoders
-// (see `src/core/engines/image/`), so wiring one up here costs a single
-// line, not a bespoke engine file per format pair.
-const pngToWebp = createImagePipelineEngine("png", "webp");
+/**
+ * Every decoder pairs with every encoder, so the full cross product is
+ * registered rather than a hand-written list of the pairs we happen to expose
+ * as tools today.
+ *
+ * This is where the decoder/encoder decomposition pays off: adding one decoder
+ * enables conversion from that format to every output we support, and adding
+ * one encoder enables it from every input — with no wiring here at all. The
+ * alternative, one bespoke engine per pair, would grow multiplicatively and
+ * would need editing on every codec addition.
+ *
+ * Same-format pairs (e.g. `image:png->png`) are included deliberately: they are
+ * the re-encode/optimise path, which for PNG means lossless oxipng compression.
+ */
+function buildImageEngines(): Map<string, Engine> {
+	const engines = new Map<string, Engine>();
+	for (const decoder of IMAGE_DECODERS.values()) {
+		for (const encoder of IMAGE_ENCODERS.values()) {
+			const engine = createImagePipelineEngine(decoder.id, encoder.id);
+			engines.set(engine.id, engine);
+		}
+	}
+	return engines;
+}
 
-export const ENGINES = new Map<string, Engine>([[pngToWebp.id, pngToWebp]]);
+export const ENGINES: Map<string, Engine> = buildImageEngines();
 
 export function getEngine(id: string): Engine | undefined {
 	return ENGINES.get(id);
