@@ -58,6 +58,37 @@ Then open the page and actually convert a PNG, with DevTools' Network tab open.
 **You should see the app's own assets load and nothing else.** That is the whole
 product promise, and it is checkable by eye in ten seconds.
 
+## Why the build is pinned to webpack
+
+`package.json`'s build script is `next build --webpack`, not the Next 16 default
+of Turbopack. This is deliberate; do not "modernise" it without reading this.
+
+Two separate problems surfaced together while adding the image pack, and the
+second hid the first:
+
+1. **A real bug.** `libheif-js`'s default entry is its Node build, which
+   `require`s `fs`. Pulled into a browser worker bundle it cannot resolve. The
+   fix was to import `libheif-js/wasm-bundle` — the entry the package README
+   points browser bundlers at (real WebAssembly, binary inlined, no Node
+   built-ins).
+
+2. **A tooling difference.** Webpack reported that unresolved `fs` in seconds
+   with a full import trace. **Turbopack instead stalled indefinitely at 0% CPU,
+   printing a bare `undefined` and no diagnostic.** Even after the import was
+   fixed, Turbopack continued to stall on this dependency graph where webpack
+   builds cleanly.
+
+Since this is a static export, Turbopack's speed advantage is worth little and
+its silence is expensive. Webpack builds all 20 pages reliably.
+
+**Generalisable lesson:** when a build hangs with no output, switch bundlers
+before bisecting your own code. One `--webpack` run prints the answer.
+
+If you ever want to try Turbopack again, do it as a deliberate experiment on a
+machine that is not under memory pressure — concurrent swap exhaustion (swap was
+over 24 GB in use) produced identical-looking hangs on unrelated commits,
+including a known-good baseline, which made the bisect signal worthless.
+
 ## Why the config is explicit
 
 The first deploy failed with:

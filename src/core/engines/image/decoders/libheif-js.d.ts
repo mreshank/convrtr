@@ -92,3 +92,18 @@ declare module "libheif-js" {
 	const libheif: LibheifModule;
 	export default libheif;
 }
+
+/**
+ * The `wasm-bundle` entry point — the one `heic.ts` actually imports, and the
+ * one the package README directs browser bundlers to. It exposes the same API
+ * surface as the bare package; only the underlying build differs (real
+ * WebAssembly with the binary inlined, and no Node built-ins, so it resolves
+ * inside a browser worker bundle where the default build's `require("fs")`
+ * does not).
+ */
+declare module "libheif-js/wasm-bundle" {
+	import type { LibheifModule } from "libheif-js";
+
+	const libheif: LibheifModule;
+	export default libheif;
+}

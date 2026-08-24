@@ -6,23 +6,26 @@ export const heicDecoder: ImageDecoder = {
 	mime: ["image/heic", "image/heif"],
 
 	async probe() {
-		// `libheif-js`'s default build (`import("libheif-js")`, used below)
-		// compiles to asm.js, not WebAssembly — verified by grepping the
-		// installed bundle for the string "WebAssembly" and finding zero
-		// occurrences (the package also ships `libheif-js/wasm` and
-		// `libheif-js/wasm-bundle` entry points that *do* use real
-		// WebAssembly, but the brief names the bare `libheif-js` package, and
-		// its default export is this pure-JS build). Gating on
-		// `typeof WebAssembly` would therefore test a capability this build
-		// doesn't use; the real requirement is typed-array support, which
-		// every runtime this ships to (Worker, browser, Node for tests) has.
-		return typeof Uint8ClampedArray === "function";
+		// The `wasm-bundle` entry point used below is real WebAssembly with the
+		// binary inlined into the JS, so gate on WebAssembly support.
+		return typeof WebAssembly === "object";
 	},
 
 	async decode(input: ArrayBuffer): Promise<ImageData> {
-		// Dynamic import: even the pure-JS build is ~2MB uncompressed and
-		// must only download when a HEIC conversion actually needs it.
-		const { default: libheif } = await import("libheif-js");
+		// `libheif-js/wasm-bundle`, NOT the bare `libheif-js`.
+		//
+		// The package's default entry is its Node build, which `require`s `fs`.
+		// Pulling that into a browser worker bundle fails to resolve — webpack
+		// reports "Module not found: Can't resolve 'fs'", and Turbopack instead
+		// stalls indefinitely at 0% CPU with no diagnostic, which cost hours to
+		// track down. The `wasm-bundle` entry is the one the package README
+		// directs browser bundlers to: real WebAssembly with the .wasm inlined,
+		// and no Node built-ins. Verified: zero `require("fs")` occurrences in
+		// wasm-bundle.js, one in the default build.
+		//
+		// Still dynamically imported — the bundle is multi-megabyte and must
+		// only download when a HEIC conversion actually needs it.
+		const { default: libheif } = await import("libheif-js/wasm-bundle");
 
 		const context = libheif.heif_context_alloc();
 		try {
