@@ -35,15 +35,64 @@ pinned that claim to a falsifiable test.
 | Engine decomposition (decoders × encoders) | done | `7bf660c` |
 | Error taxonomy UI, wired | done | `0d63939` |
 | `/tools` index + category hubs + search | done | `0d63939` |
-| Image codecs — jpeg, avif, jxl, webp, heic | in progress | |
-| Batch conversion + worker pool + ZIP | in progress | |
-| PWA + service worker + offline e2e | in progress | |
-| Tool registry entries (the ~48) | pending | |
-| Resize / crop / rotate | pending | |
+| Batch conversion core + worker pool + streamed ZIP | done | `277c046` |
+| Image codecs — jpeg, avif, jxl, webp, heic | done | `a1c787e` |
+| 15 image tools + PWA offline + registry wiring | done | `13c6d53` |
+| libheif browser build + webpack pin | done | `4e9664f` |
+| Batch UI (per-file rows, save-all) | in progress | |
+| Resize / crop / rotate — needs a transform stage, see below | pending | |
 | EXIF view / strip / GPS scrub | pending | |
 | Compress-to-target-size | pending | |
 | Favicon pack, images↔PDF, SVG, animated GIF→WebP | pending | |
 | OPFS streaming for files larger than RAM | pending | |
+
+Deployed: 20 prerendered pages, 218 unit tests, service worker and PWA icons.
+
+## The pipeline needs a transform stage before resize can land
+
+`createImagePipelineEngine(decoderId, encoderId)` composes exactly two steps:
+decode then encode. Resize, crop and rotate are neither — they operate on the
+decoded `ImageData` in between.
+
+The extension is small and should be done deliberately rather than by bolting
+resize into an encoder:
+
+```ts
+interface ImageTransform {
+  id: string;
+  apply(image: ImageData, params: Record<string, ParamValue>): Promise<ImageData>;
+}
+
+createImagePipelineEngine(decoderId, encoderId, transforms?: ImageTransform[])
+```
+
+Engine ids gain the transform chain, e.g. `image:png-[resize]->jpeg`. Progress
+gains a `TRANSFORM` phase between `DECODE` and `ENCODE`. `@jsquash/resize` is
+already installed and does proper resampling — not canvas bilinear, which is
+what makes downscaled photos look soft on competing tools.
+
+Doing this properly also unlocks chained operations later (resize → compress →
+strip metadata) without a bespoke engine per combination — the same N+M argument
+that made the decoder/encoder split worth it.
+
+## Two hard-won operational lessons
+
+### When a build hangs, switch tools before bisecting
+
+`libheif-js` resolves by default to its Node build, which `require`s `fs` — it
+cannot resolve inside a browser worker bundle. Webpack reported this in seconds
+with a full import trace. **Turbopack stalled indefinitely at 0% CPU printing a
+bare `undefined`**, and kept stalling on this dependency graph even after the
+import was corrected. The build is pinned to `--webpack` for that reason; see
+`docs/DEPLOY.md`.
+
+### Verify the environment before bisecting the code
+
+Concurrent swap exhaustion (over 24 GB in use) produced hangs indistinguishable
+from a code fault — including on a known-good commit that had built in one
+second hours earlier. Four bisects were run against that noise before anyone
+tested the baseline. **Test that the last known-good commit still builds before
+concluding anything about new code.**
 
 ## Coordination rules for parallel agents
 
