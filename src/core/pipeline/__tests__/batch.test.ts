@@ -242,8 +242,50 @@ describe("runBatch", () => {
 
 		expect(events).toEqual([
 			{ id: "a", type: "progress", ratio: 0.5, phase: "encode" },
-			{ id: "a", type: "done" },
+			// The done event carries the converted bytes, not just a status.
+			// Callers key a per-file SAVE action off this, so a finished file
+			// is saveable immediately rather than when the slowest file in the
+			// batch settles.
+			{
+				id: "a",
+				type: "done",
+				output: output("a"),
+				outputName: "a.webp",
+				inputSize: 1,
+				outputSize: output("a").byteLength,
+			},
 		]);
+	});
+
+	it("carries output bytes on the done event, matching the final outcome", async () => {
+		const items = [item("a")];
+		const runItem: BatchItemRunner = async (batchItem) => ({
+			output: output(batchItem.id),
+			inputSize: 7,
+		});
+
+		const events: BatchItemEvent[] = [];
+		const controller = new AbortController();
+		const outcomes = await runBatch(
+			items,
+			{ engines: ["x"], params: {}, outputExt: "webp", runItem },
+			(event) => events.push(event),
+			controller.signal,
+		);
+
+		const doneEvent = events.find((e) => e.type === "done");
+		const outcome = outcomes[0];
+		expect(doneEvent).toBeDefined();
+		expect(outcome?.status).toBe("done");
+		if (doneEvent?.type !== "done" || outcome?.status !== "done") return;
+
+		// The event and the final outcome must not diverge: the UI saves from
+		// the event, and any mismatch would mean saving different bytes than
+		// the batch reports it produced.
+		expect(doneEvent.output).toBe(outcome.output);
+		expect(doneEvent.outputName).toBe(outcome.outputName);
+		expect(doneEvent.inputSize).toBe(outcome.inputSize);
+		expect(doneEvent.outputSize).toBe(outcome.outputSize);
 	});
 
 	it("computes outputName from outputExt and reports byte sizes", async () => {

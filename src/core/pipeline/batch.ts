@@ -21,7 +21,23 @@ export type BatchOutcome =
 /** Per-item events, so a caller can render one progress row per file. */
 export type BatchItemEvent =
 	| { id: string; type: "progress"; ratio: number; phase: string }
-	| { id: string; type: "done" }
+	| {
+			id: string;
+			type: "done";
+			/**
+			 * The converted bytes, carried on the event rather than only in the
+			 * final `BatchOutcome[]`.
+			 *
+			 * Without this a caller cannot offer a per-file save until the whole
+			 * batch settles — convert 200 photos and none are saveable until the
+			 * 200th finishes, which makes per-row status pointless. The data
+			 * already exists at the emit site, so passing it costs nothing.
+			 */
+			output: ArrayBuffer;
+			outputName: string;
+			inputSize: number;
+			outputSize: number;
+	  }
 	| { id: string; type: "error"; code: ErrorCode; message: string }
 	| { id: string; type: "cancelled" };
 
@@ -138,15 +154,27 @@ export async function runBatch(
 					onItemEvent({ id: item.id, type: "progress", ratio, phase }),
 				signal,
 			);
-			onItemEvent({ id: item.id, type: "done" });
-			return {
+			const outcome = {
 				id: item.id,
-				status: "done",
+				status: "done" as const,
 				output: result.output,
 				outputName: outputFilename(item.file.name, config.outputExt),
 				inputSize: result.inputSize,
 				outputSize: result.output.byteLength,
 			};
+			// Constructed explicitly rather than spreading `outcome`: that would
+			// also copy its `status` field, which the event type does not
+			// declare, so the emitted object would silently carry a property no
+			// consumer is typed to expect.
+			onItemEvent({
+				id: outcome.id,
+				type: "done",
+				output: outcome.output,
+				outputName: outcome.outputName,
+				inputSize: outcome.inputSize,
+				outputSize: outcome.outputSize,
+			});
+			return outcome;
 		} catch (error) {
 			if (isAbortError(error)) {
 				onItemEvent({ id: item.id, type: "cancelled" });

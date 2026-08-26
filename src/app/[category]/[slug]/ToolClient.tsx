@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import {
+	type BatchRowState,
+	BatchTable,
+} from "@/components/instrument/BatchTable";
 import { DropField } from "@/components/instrument/DropField";
 import { ErrorPanel } from "@/components/instrument/ErrorPanel";
 import { FidelityScore } from "@/components/instrument/FidelityScore";
@@ -8,6 +12,9 @@ import { FileReadout } from "@/components/instrument/FileReadout";
 import { OptionsPanel } from "@/components/instrument/OptionsPanel";
 import { ProgressBar } from "@/components/instrument/ProgressBar";
 import { outputFilename, readFile, saveOutput } from "@/core/io";
+import { type ZipEntry, zipOutputs } from "@/core/io/zip";
+import type { BatchItem } from "@/core/pipeline/batch";
+import { runBatch } from "@/core/pipeline/batch";
 import { JobError, runJob } from "@/core/pipeline/client";
 import { type ErrorCode, makeJobId } from "@/core/pipeline/protocol";
 import {
@@ -25,7 +32,14 @@ export function ToolClient({ toolId }: { toolId: string }) {
 	const tool = getTool(toolId);
 	if (!tool) throw new Error(`Unknown tool ${toolId}`);
 
-	const [file, setFile] = useState<File | null>(null);
+	// `items` is the source of truth for what's loaded, single file or many.
+	// `file` below derives the single-file case from it so the rest of the
+	// single-file block — state, handlers, and JSX — is untouched from
+	// before batch support existed: same variable, same branches, same
+	// `data-testid`s the existing Playwright suite drives.
+	const [items, setItems] = useState<BatchItem[]>([]);
+	const file = items.length === 1 ? (items[0]?.file ?? null) : null;
+
 	const [quality, setQuality] = useState<QualityState>(() =>
 		initialQuality(tool),
 	);
@@ -45,6 +59,24 @@ export function ToolClient({ toolId }: { toolId: string }) {
 	const controllerRef = useRef<AbortController | null>(null);
 	const startedAtRef = useRef(0);
 
+	// --- Batch (2+ files) state. Entirely additive: the single-file state
+	// above is never read or written by anything below this point. ---
+	const [batchRows, setBatchRows] = useState<BatchRowState[]>([]);
+	const [batchConverting, setBatchConverting] = useState(false);
+	const [batchElapsed, setBatchElapsed] = useState(0);
+	// Driven directly by `onItemEvent`, not derived from `batchRows` — see
+	// the comment inside `batchConvert` on why the two can lag each other.
+	const [batchSettledCount, setBatchSettledCount] = useState(0);
+	const batchControllerRef = useRef<AbortController | null>(null);
+	const batchStartedAtRef = useRef(0);
+	// Output bytes live outside React state: they are write-once per item,
+	// never rendered directly (only their derived size is), and keeping
+	// multi-megabyte ArrayBuffers out of state avoids re-render churn as
+	// other rows keep progressing.
+	const batchOutputsRef = useRef<
+		Map<string, { output: ArrayBuffer; outputName: string }>
+	>(new Map());
+
 	useEffect(() => {
 		if (!converting) return;
 		const timer = window.setInterval(() => {
@@ -52,6 +84,34 @@ export function ToolClient({ toolId }: { toolId: string }) {
 		}, 100);
 		return () => window.clearInterval(timer);
 	}, [converting]);
+
+	useEffect(() => {
+		if (!batchConverting) return;
+		const timer = window.setInterval(() => {
+			setBatchElapsed((Date.now() - batchStartedAtRef.current) / 1000);
+		}, 100);
+		return () => window.clearInterval(timer);
+	}, [batchConverting]);
+
+	const handleFiles = (dropped: File[]) => {
+		const newItems: BatchItem[] = dropped.map((droppedFile) => ({
+			id: makeJobId(),
+			file: droppedFile,
+		}));
+		setItems(newItems);
+		batchOutputsRef.current = new Map();
+		setBatchSettledCount(0);
+		setBatchRows(
+			newItems.length > 1
+				? newItems.map((item) => ({
+						id: item.id,
+						name: item.file.name,
+						inputSize: item.file.size,
+						status: "queued" as const,
+					}))
+				: [],
+		);
+	};
 
 	const convert = async () => {
 		if (!file || converting) return;
@@ -110,8 +170,11 @@ export function ToolClient({ toolId }: { toolId: string }) {
 	};
 
 	const replace = () => {
-		if (converting) return;
-		setFile(null);
+		if (converting || batchConverting) return;
+		setItems([]);
+		setBatchRows([]);
+		batchOutputsRef.current = new Map();
+		setBatchSettledCount(0);
 		setQuality(initialQuality(tool));
 		setResult(null);
 		setError(null);
@@ -129,6 +192,204 @@ export function ToolClient({ toolId }: { toolId: string }) {
 		);
 	};
 
+	// --- Batch handlers ---
+
+	const batchConvert = async () => {
+		if (items.length <= 1 || batchConverting) return;
+
+		const controller = new AbortController();
+		batchControllerRef.current = controller;
+
+		batchOutputsRef.current = new Map();
+		setBatchRows(
+			items.map((item) => ({
+				id: item.id,
+				name: item.file.name,
+				inputSize: item.file.size,
+				status: "queued",
+			})),
+		);
+		batchStartedAtRef.current = Date.now();
+		setBatchElapsed(0);
+		setBatchSettledCount(0);
+		setBatchConverting(true);
+
+		// Counts settlements as `onItemEvent` reports them, independent of
+		// `batchRows` state, so the aggregate progress bar below ticks up per
+		// file in real time rather than jumping from 0 to N only once the
+		// whole batch (see the comment on `runBatch`'s return below) settles.
+		const settledIds = new Set<string>();
+
+		const outcomes = await runBatch(
+			items,
+			{
+				engines: tool.engines,
+				params: quality.params,
+				outputExt: tool.output.ext,
+			},
+			(event) => {
+				if (event.type === "progress") {
+					setBatchRows((prev) =>
+						prev.map((row) =>
+							row.id === event.id
+								? {
+										id: row.id,
+										name: row.name,
+										inputSize: row.inputSize,
+										status: "converting",
+										ratio: event.ratio,
+										phase: event.phase,
+									}
+								: row,
+						),
+					);
+					return;
+				}
+
+				settledIds.add(event.id);
+				setBatchSettledCount(settledIds.size);
+
+				// `error` and `cancelled` events carry everything a final row
+				// needs, so they can flip immediately. `done` cannot: the
+				// event says an item finished, but its output bytes only
+				// become available once every item in the batch has settled
+				// and `runBatch` returns them below — so a `done` row here
+				// deliberately still omits `outputSize` (see `BatchRowState`)
+				// and the final pass after the await fills it in.
+				if (event.type === "error") {
+					setBatchRows((prev) =>
+						prev.map((row) =>
+							row.id === event.id
+								? {
+										id: row.id,
+										name: row.name,
+										inputSize: row.inputSize,
+										status: "error",
+										code: event.code,
+										message: event.message,
+									}
+								: row,
+						),
+					);
+				} else if (event.type === "cancelled") {
+					setBatchRows((prev) =>
+						prev.map((row) =>
+							row.id === event.id
+								? {
+										id: row.id,
+										name: row.name,
+										inputSize: row.inputSize,
+										status: "cancelled",
+									}
+								: row,
+						),
+					);
+				} else if (event.type === "done") {
+					// The event now carries the converted bytes, so a finished
+					// file becomes saveable the moment it finishes rather than
+					// when the slowest file in the batch does. On a folder of
+					// 200 photos that is the difference between per-row actions
+					// meaning something and being decorative.
+					setBatchRows((prev) =>
+						prev.map((row) =>
+							row.id === event.id
+								? {
+										id: row.id,
+										name: row.name,
+										inputSize: row.inputSize,
+										status: "done",
+										outputSize: event.outputSize,
+									}
+								: row,
+						),
+					);
+					batchOutputsRef.current.set(event.id, {
+						output: event.output,
+						outputName: event.outputName,
+					});
+				}
+			},
+			controller.signal,
+		);
+
+		for (const outcome of outcomes) {
+			if (outcome.status === "done") {
+				batchOutputsRef.current.set(outcome.id, {
+					output: outcome.output,
+					outputName: outcome.outputName,
+				});
+			}
+		}
+
+		setBatchRows((prev) =>
+			prev.map((row): BatchRowState => {
+				const outcome = outcomes.find((candidate) => candidate.id === row.id);
+				if (!outcome) return row;
+				if (outcome.status === "done") {
+					return {
+						id: row.id,
+						name: row.name,
+						inputSize: row.inputSize,
+						status: "done",
+						outputSize: outcome.outputSize,
+					};
+				}
+				if (outcome.status === "error") {
+					return {
+						id: row.id,
+						name: row.name,
+						inputSize: row.inputSize,
+						status: "error",
+						code: outcome.code,
+						message: outcome.message,
+					};
+				}
+				return {
+					id: row.id,
+					name: row.name,
+					inputSize: row.inputSize,
+					status: "cancelled",
+				};
+			}),
+		);
+
+		batchControllerRef.current = null;
+		setBatchConverting(false);
+	};
+
+	const batchCancel = () => {
+		batchControllerRef.current?.abort();
+	};
+
+	const saveRow = async (id: string) => {
+		const output = batchOutputsRef.current.get(id);
+		if (!output) return;
+		await saveOutput(output.output, output.outputName, tool.output.mime);
+	};
+
+	const saveAllZip = async () => {
+		const entries: ZipEntry[] = [];
+		for (const row of batchRows) {
+			if (row.status !== "done") continue;
+			const output = batchOutputsRef.current.get(row.id);
+			if (!output) continue;
+			entries.push({ name: output.outputName, data: output.output });
+		}
+		if (entries.length === 0) return;
+		const blob = await zipOutputs(entries);
+		const bytes = await blob.arrayBuffer();
+		await saveOutput(bytes, `${tool.slug}.zip`, "application/zip");
+	};
+
+	const batchDoneCount = batchSettledCount;
+	const batchAggregateRatio =
+		batchRows.length > 0 ? batchDoneCount / batchRows.length : 0;
+	const batchHasSaveable = batchRows.some((row) => row.status === "done");
+	const batchFidelity = {
+		score: fidelityScore(tool, quality),
+		label: describeFidelity(tool, quality),
+	};
+
 	return (
 		<main className="mx-auto flex max-w-4xl flex-col gap-6 p-8">
 			<div className="flex items-start justify-between">
@@ -139,11 +400,11 @@ export function ToolClient({ toolId }: { toolId: string }) {
 				/>
 			</div>
 
-			{!file && (
+			{items.length === 0 && (
 				<DropField
 					accept={tool.accept}
 					formats={tool.accept.ext.map((ext) => ext.toUpperCase())}
-					onFiles={(files) => setFile(files[0] ?? null)}
+					onFiles={handleFiles}
 				/>
 			)}
 
@@ -235,6 +496,95 @@ export function ToolClient({ toolId }: { toolId: string }) {
 						>
 							CONVERT
 						</button>
+					)}
+				</div>
+			)}
+
+			{items.length > 1 && (
+				<div
+					className="flex flex-col gap-6 border p-6"
+					style={{
+						borderColor: "var(--hairline)",
+						borderRadius: "var(--radius)",
+					}}
+				>
+					<div className="flex items-start justify-between gap-4">
+						<FileReadout
+							name={`${items.length} FILES`}
+							facts={[
+								(tool.accept.ext[0] ?? tool.output.ext).toUpperCase(),
+								formatBytes(
+									items.reduce((sum, item) => sum + item.file.size, 0),
+								),
+							]}
+						/>
+						<button
+							type="button"
+							onClick={replace}
+							disabled={batchConverting}
+							className="mono border px-3 py-1 text-[11px]"
+							style={{
+								color: "var(--text-muted)",
+								borderColor: "var(--hairline)",
+								borderRadius: "var(--radius)",
+								background: "transparent",
+							}}
+						>
+							REPLACE
+						</button>
+					</div>
+
+					<OptionsPanel tool={tool} state={quality} onChange={setQuality} />
+
+					<BatchTable
+						rows={batchRows}
+						fidelity={batchFidelity}
+						onSaveRow={saveRow}
+						inputFormat={tool.accept.ext[0]?.toUpperCase()}
+					/>
+
+					{batchConverting && (
+						<div className="flex flex-col gap-3">
+							<ProgressBar
+								ratio={batchAggregateRatio}
+								phase={`${batchDoneCount}/${batchRows.length} FILES`}
+								elapsedSeconds={batchElapsed}
+							/>
+							<button
+								type="button"
+								onClick={batchCancel}
+								className="mono self-end border px-4 py-2 text-[12px]"
+								style={{ color: "var(--error)", borderColor: "var(--error)" }}
+							>
+								CANCEL
+							</button>
+						</div>
+					)}
+
+					{!batchConverting && (
+						<div className="flex items-center justify-end gap-3">
+							{batchHasSaveable && (
+								<button
+									type="button"
+									onClick={saveAllZip}
+									className="mono border px-4 py-2 text-[12px]"
+									style={{
+										color: "var(--signal)",
+										borderColor: "var(--signal)",
+									}}
+								>
+									SAVE ALL (ZIP)
+								</button>
+							)}
+							<button
+								type="button"
+								onClick={batchConvert}
+								className="mono border px-4 py-2 text-[12px]"
+								style={{ color: "var(--signal)", borderColor: "var(--signal)" }}
+							>
+								CONVERT
+							</button>
+						</div>
 					)}
 				</div>
 			)}

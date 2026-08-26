@@ -41,7 +41,7 @@
 //     new deploy can't strand a visitor on old chunks — the classic
 //     service-worker footgun this guards against.
 
-import { mkdir, readdir, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -88,18 +88,39 @@ async function main() {
  * number to remember to bump.
  */
 async function readBuildId() {
+	// Read Next's own BUILD_ID rather than inferring it from directory names.
+	//
+	// The previous approach scanned out/_next/static for "the directory that
+	// isn't chunks or media". That is a denylist, and it broke the moment the
+	// build emitted a `css/` directory: `css` sorted first, so every cache was
+	// named `convrtr-shell-css` and stayed that way across deploys. Since the
+	// activate handler only deletes caches outside the current set, constant
+	// names mean stale caches are NEVER purged — ship a fix and users keep the
+	// old app indefinitely. A denylist of known-bad names cannot survive the
+	// build tool adding a new one.
+	const buildIdFile = join(process.cwd(), ".next", "BUILD_ID");
+	const buildId = (await readFile(buildIdFile, "utf8")).trim();
+
+	if (!buildId) {
+		throw new Error(`generate-sw: ${buildIdFile} is empty`);
+	}
+
+	// Cross-check that the id actually names a directory in the export. If it
+	// does not, the two have diverged and the cache key would not track the
+	// deployed assets — better to fail the build than to ship a service worker
+	// that silently never updates.
 	const staticDir = join(outDir, "_next", "static");
 	const entries = await readdir(staticDir, { withFileTypes: true });
-	const buildIdDir = entries.find(
-		(entry) =>
-			entry.isDirectory() && entry.name !== "chunks" && entry.name !== "media",
+	const present = entries.some(
+		(entry) => entry.isDirectory() && entry.name === buildId,
 	);
-	if (!buildIdDir) {
+	if (!present) {
 		throw new Error(
-			`generate-sw: could not find the Next.js build-id directory under ${staticDir} — did \`next build\` run first?`,
+			`generate-sw: BUILD_ID "${buildId}" has no matching directory under ${staticDir} — did \`next build\` run first?`,
 		);
 	}
-	return buildIdDir.name;
+
+	return buildId;
 }
 
 async function collectPrecacheUrls() {
