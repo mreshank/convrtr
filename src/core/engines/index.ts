@@ -27,6 +27,20 @@ function buildImageEngines(): Map<string, Engine> {
 			engines.set(engine.id, engine);
 		}
 	}
+
+	// Same-format resize variants. Registered only where a format can be both
+	// read and written, since a resize writes the image back in the format it
+	// arrived in. The resize transform early-returns before touching WASM when
+	// no dimensions are set, so these cost nothing when a caller does not ask
+	// for a resize.
+	for (const decoder of IMAGE_DECODERS.values()) {
+		if (!IMAGE_ENCODERS.has(decoder.id)) continue;
+		const engine = createImagePipelineEngine(decoder.id, decoder.id, {
+			transforms: ["resize"],
+		});
+		engines.set(engine.id, engine);
+	}
+
 	return engines;
 }
 

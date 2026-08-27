@@ -11,6 +11,9 @@ import { pngToAvif } from "./tools/png-to-avif";
 import { pngToJpg } from "./tools/png-to-jpg";
 import { pngToJxl } from "./tools/png-to-jxl";
 import { pngToWebp } from "./tools/png-to-webp";
+import { resizeJpg } from "./tools/resize-jpg";
+import { resizePng } from "./tools/resize-png";
+import { resizeWebp } from "./tools/resize-webp";
 import { webpToJpg } from "./tools/webp-to-jpg";
 import { webpToPng } from "./tools/webp-to-png";
 import type { Category, Tool } from "./types";
@@ -41,6 +44,9 @@ export const TOOLS: Tool[] = [
 	webpToPng,
 	avifToJpg,
 	avifToPng,
+	resizePng,
+	resizeJpg,
+	resizeWebp,
 ];
 
 export function getTool(id: string): Tool | undefined {

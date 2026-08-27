@@ -13,12 +13,32 @@ import { TOOLS } from "@/core/registry";
  * runtime dependency used to. A test file can import both sides freely: it is
  * never part of the app bundle.
  */
+/**
+ * Engine ids are `image:<decoder>-><encoder>`, or
+ * `image:<decoder>-[<transform>,...]-><encoder>` once a transform chain is
+ * involved. Splitting naively would read the decoder of a resize engine as
+ * "png-[resize]", so the chain is stripped here.
+ */
+function parseEngineId(
+	engineId: string | undefined,
+): { decoder: string; encoder: string } | undefined {
+	if (!engineId) return undefined;
+	const match = engineId.match(
+		/^image:([a-z0-9]+)(?:-\[[^\]]*\])?->([a-z0-9]+)$/,
+	);
+	const decoder = match?.[1];
+	const encoder = match?.[2];
+	if (!decoder || !encoder) return undefined;
+	return { decoder, encoder };
+}
+
 describe("registry/engine MIME parity", () => {
 	it("declares the same input MIME types the decoders advertise", () => {
 		for (const tool of TOOLS) {
-			const decoderId = tool.engines[0]?.split(":")[1]?.split("->")[0];
-			expect(decoderId, `${tool.id} has a parseable engine id`).toBeDefined();
-			if (!decoderId) continue;
+			const parsed = parseEngineId(tool.engines[0]);
+			expect(parsed, `${tool.id} has a parseable engine id`).toBeDefined();
+			if (!parsed) continue;
+			const decoderId = parsed.decoder;
 
 			const decoder = IMAGE_DECODERS.get(decoderId);
 			expect(
@@ -33,9 +53,10 @@ describe("registry/engine MIME parity", () => {
 
 	it("declares the same output MIME type the encoders advertise", () => {
 		for (const tool of TOOLS) {
-			const encoderId = tool.engines[0]?.split("->")[1];
-			expect(encoderId, `${tool.id} has a parseable engine id`).toBeDefined();
-			if (!encoderId) continue;
+			const parsed = parseEngineId(tool.engines[0]);
+			expect(parsed, `${tool.id} has a parseable engine id`).toBeDefined();
+			if (!parsed) continue;
+			const encoderId = parsed.encoder;
 
 			const encoder = IMAGE_ENCODERS.get(encoderId);
 			expect(
@@ -43,6 +64,20 @@ describe("registry/engine MIME parity", () => {
 				`${tool.id} references encoder "${encoderId}"`,
 			).toBeDefined();
 			expect(tool.output.mime, tool.id).toBe(encoder?.mime);
+		}
+	});
+});
+
+describe("engine id references", () => {
+	it("names an engine that is actually registered", async () => {
+		// A tool naming an unregistered engine builds and deploys fine, then
+		// fails at runtime the first time a user clicks CONVERT. Catching it
+		// here is the difference between a red test and a broken page.
+		const { ENGINES } = await import("@/core/engines");
+		for (const tool of TOOLS) {
+			for (const engineId of tool.engines) {
+				expect(ENGINES.has(engineId), `${tool.id} -> ${engineId}`).toBe(true);
+			}
 		}
 	});
 });
