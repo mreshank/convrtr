@@ -12,6 +12,7 @@ import { FileReadout } from "@/components/instrument/FileReadout";
 import { OptionsPanel } from "@/components/instrument/OptionsPanel";
 import { ProgressBar } from "@/components/instrument/ProgressBar";
 import { outputFilename, readFile, saveOutput } from "@/core/io";
+import { preflight } from "@/core/io/preflight";
 import { type ZipEntry, zipOutputs } from "@/core/io/zip";
 import type { BatchItem } from "@/core/pipeline/batch";
 import { runBatch } from "@/core/pipeline/batch";
@@ -94,6 +95,27 @@ export function ToolClient({ toolId }: { toolId: string }) {
 	}, [batchConverting]);
 
 	const handleFiles = (dropped: File[]) => {
+		// Check capacity at the moment the file arrives, not when CONVERT is
+		// pressed. Reading a file this device cannot hold kills the tab with no
+		// error at all — the user sees a crash they would reasonably blame on
+		// the site. Refusing here means they find out while they can still do
+		// something about it.
+		const largest = dropped.reduce(
+			(worst, candidate) => (candidate.size > worst.size ? candidate : worst),
+			dropped[0] ?? new File([], ""),
+		);
+		const verdict = preflight(largest.size);
+		if (!verdict.ok) {
+			setItems([]);
+			setBatchRows([]);
+			setError({
+				code: "OUT_OF_MEMORY",
+				detail: `${verdict.reason} ${verdict.suggestion}`,
+			});
+			return;
+		}
+
+		setError(null);
 		const newItems: BatchItem[] = dropped.map((droppedFile) => ({
 			id: makeJobId(),
 			file: droppedFile,
