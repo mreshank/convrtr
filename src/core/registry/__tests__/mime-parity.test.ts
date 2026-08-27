@@ -46,7 +46,10 @@ function isRecognisedEngineId(engineId: string | undefined): boolean {
 		/^metadata:strip-[a-z]+$/.test(engineId) ||
 		// One-to-many pack engines emit a ZIP and have no single
 		// decoder/encoder pair, so MIME parity does not apply to them either.
-		/^image:[a-z-]+-pack$/.test(engineId)
+		/^image:[a-z-]+-pack$/.test(engineId) ||
+		// PDF engines embed an image stream rather than decoding it, so they
+		// have no decoder/encoder pair either.
+		/^pdf:[a-z-]+$/.test(engineId)
 	);
 }
 

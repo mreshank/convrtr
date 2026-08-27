@@ -7,11 +7,13 @@ import { heicToPng } from "./tools/heic-to-png";
 import { heicToWebp } from "./tools/heic-to-webp";
 import { jpgToAvif } from "./tools/jpg-to-avif";
 import { jpgToJxl } from "./tools/jpg-to-jxl";
+import { jpgToPdf } from "./tools/jpg-to-pdf";
 import { jpgToPng } from "./tools/jpg-to-png";
 import { jpgToWebp } from "./tools/jpg-to-webp";
 import { pngToAvif } from "./tools/png-to-avif";
 import { pngToJpg } from "./tools/png-to-jpg";
 import { pngToJxl } from "./tools/png-to-jxl";
+import { pngToPdf } from "./tools/png-to-pdf";
 import { pngToWebp } from "./tools/png-to-webp";
 import { removeExifJpg } from "./tools/remove-exif-jpg";
 import { removeMetadataPng } from "./tools/remove-metadata-png";
@@ -55,6 +57,8 @@ export const TOOLS: Tool[] = [
 	removeMetadataPng,
 	compressJpg,
 	faviconPack,
+	jpgToPdf,
+	pngToPdf,
 ];
 
 export function getTool(id: string): Tool | undefined {

@@ -2,6 +2,7 @@ import { createImagePipelineEngine } from "./image";
 import { faviconPackEngine } from "./image/packs/favicon";
 import { IMAGE_DECODERS, IMAGE_ENCODERS } from "./image/registry";
 import { METADATA_ENGINES } from "./metadata";
+import { imageToPdfEngine } from "./pdf/image-to-pdf";
 import type { Engine } from "./types";
 
 export * from "./image";
@@ -52,6 +53,10 @@ function buildImageEngines(): Map<string, Engine> {
 	// One-to-many: emits a ZIP so the pipeline, batch runner and save path
 	// need no special case for a tool that produces several files.
 	engines.set(faviconPackEngine.id, faviconPackEngine);
+
+	// Embeds the image stream directly; never rasterises, so the picture inside
+	// the PDF is byte-identical to the input.
+	engines.set(imageToPdfEngine.id, imageToPdfEngine);
 
 	return engines;
 }
