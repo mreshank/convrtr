@@ -11,7 +11,7 @@ describe("memoryBudgetBytes", () => {
 	it("budgets a fraction of reported device memory, not all of it", () => {
 		// A tab never gets the whole machine — the OS, the browser and other
 		// tabs are all competing, and browsers cap a single tab's heap anyway.
-		const nav = { deviceMemory: 8 } as Navigator;
+		const nav = { deviceMemory: 8 } as unknown as Navigator;
 		expect(memoryBudgetBytes(nav)).toBeLessThan(8 * GB);
 		expect(memoryBudgetBytes(nav)).toBeGreaterThan(0);
 	});
@@ -19,7 +19,7 @@ describe("memoryBudgetBytes", () => {
 	it("assumes a reasonable default when the API is unavailable", () => {
 		// deviceMemory is absent in Safari and Firefox. Refusing all large work
 		// there would be worse than assuming a mid-range machine.
-		const nav = {} as Navigator;
+		const nav = {} as unknown as Navigator;
 		expect(memoryBudgetBytes(nav)).toBe(4 * GB * 0.25);
 	});
 });
