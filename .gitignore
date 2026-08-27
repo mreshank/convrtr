@@ -48,3 +48,4 @@ next-env.d.ts
 
 # agent scratch space — never commit
 /.superpowers/
+/.worktrees/
