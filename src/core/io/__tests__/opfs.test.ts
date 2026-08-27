@@ -46,7 +46,15 @@ function fakeOpfs() {
 						});
 					},
 					async getFile() {
-						return new File([files.get(name) ?? new Uint8Array()], name);
+						// Copy into a fresh Uint8Array so its buffer is typed as a
+						// plain ArrayBuffer. What Map.get returns is
+						// Uint8Array<ArrayBufferLike>, which TypeScript 5.9 rejects
+						// as a BlobPart because it could be backed by a
+						// SharedArrayBuffer.
+						const stored = files.get(name) ?? new Uint8Array();
+						const copy = new Uint8Array(stored.length);
+						copy.set(stored);
+						return new File([copy], name);
 					},
 				} as unknown as FileSystemFileHandle;
 			},
