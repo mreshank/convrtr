@@ -35,18 +35,46 @@ pinned that claim to a falsifiable test.
 | Engine decomposition (decoders × encoders) | done | `7bf660c` |
 | Error taxonomy UI, wired | done | `0d63939` |
 | `/tools` index + category hubs + search | done | `0d63939` |
-| Batch conversion core + worker pool + streamed ZIP | done | `277c046` |
+| Batch core + worker pool + streamed ZIP | done | `277c046` |
 | Image codecs — jpeg, avif, jxl, webp, heic | done | `a1c787e` |
-| 15 image tools + PWA offline + registry wiring | done | `13c6d53` |
+| 15 conversions + PWA offline | done | `13c6d53` |
 | libheif browser build + webpack pin | done | `4e9664f` |
-| Batch UI (per-file rows, save-all) | in progress | |
-| Resize / crop / rotate — needs a transform stage, see below | pending | |
-| EXIF view / strip / GPS scrub | pending | |
-| Compress-to-target-size | pending | |
-| Favicon pack, images↔PDF, SVG, animated GIF→WebP | pending | |
+| Batch UI + per-file save + SW cache-key fix | done | `4a4d705` |
+| ImageTransform stage + Lanczos resize | done | `650e479` |
+| Resize tools (PNG/JPG/WebP) | done | `16c1f13` |
+| EXIF/metadata strip, byte-level | done | `73e7363` |
+| Compress to target size | done | `597bb0b` |
+| Favicon generator | done | `5965d63` |
+| Images ↔ PDF | pending | |
+| SVG optimise | pending | |
+| Animated GIF → WebP | pending | |
 | OPFS streaming for files larger than RAM | pending | |
 
-Deployed: 20 prerendered pages, 218 unit tests, service worker and PWA icons.
+**22 tools, 27 prerendered pages, 258 tests.** Phase 1's hardening and the
+substantial image work are complete; what remains is the tail.
+
+## What the tests have actually caught
+
+Worth recording, because it argues for keeping the verification layer heavy
+even as the tool count grows. Every one of these builds cleanly and passes
+typecheck:
+
+- **A tool whose `id` and `slug` disagreed** (favicon generator). Routes derive
+  from `slug`, lookups use `id`, so the page rendered and then failed to find
+  its own tool — visible only to users.
+- **A preset that could never return from `custom`**, so the fidelity badge
+  lied about what the encoder was doing.
+- **A service worker whose cache key never changed between deploys**, which
+  would have stranded every returning user on a stale app forever.
+- **A registry importing engine values at runtime**, dragging nine codec
+  modules into every page's build graph and hanging the build.
+- **A network-assertion test that could not fail** for the most common
+  exfiltration shape, while appearing to guard the product's core promise.
+
+Three of those are invisible until after deployment, and two only affect
+*returning* users — the hardest class of bug to notice or reproduce.
+
+## Two hard-won operational lessons
 
 ## The pipeline needs a transform stage before resize can land
 
