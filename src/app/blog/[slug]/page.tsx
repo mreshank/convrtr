@@ -43,7 +43,9 @@ export default async function BlogPostPage({
 	// Single-branch import only: a ternary here forces the bundler to build a
 	// context glob for each branch, and the unused .tsx glob fails to resolve
 	// since no .tsx content files exist, 500ing the route.
-	const { default: Content } = await import(`@/content/blog/${slug}/content.mdx`);
+	const { default: Content } = await import(
+		`@/content/blog/${slug}/content.mdx`
+	);
 
 	return (
 		<>
