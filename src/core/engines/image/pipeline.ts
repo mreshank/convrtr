@@ -1,6 +1,7 @@
 import type { ParamValue } from "@/core/quality";
 import type { Engine } from "../types";
 import { IMAGE_DECODERS, IMAGE_ENCODERS } from "./registry";
+import { encodeToTargetSize } from "./target-size";
 import { IMAGE_TRANSFORMS } from "./transforms/registry";
 import type { ImageDecoder, ImageEncoder, ImageTransform } from "./types";
 
@@ -95,6 +96,28 @@ export function createImagePipelineEngine(
 			for (const [index, transform] of pair.transforms.entries()) {
 				onProgress(0.4 + (0.2 * index) / pair.transforms.length, "TRANSFORM");
 				image = await transform.apply(image, params);
+			}
+
+			const targetBytes = Number(params.targetBytes ?? 0);
+			if (targetBytes > 0) {
+				// Each attempt is a full encode, so report them individually —
+				// a target-size search on a large photo takes visibly longer
+				// than a single encode and silence would look like a hang.
+				const result = await encodeToTargetSize(
+					pair.encoder,
+					image,
+					params,
+					targetBytes,
+					(attempt, _quality, _size) => {
+						onProgress(0.6 + (0.35 * attempt) / 7, "SEARCH");
+					},
+				);
+				// The phase names the outcome so the UI can say plainly that the
+				// target could not be met. Handing back an oversized file as
+				// though it had succeeded is the failure this guards against —
+				// a photo that misses an upload limit is useless.
+				onProgress(1, result.achieved ? "ENCODE" : "TARGET_MISSED");
+				return result.output;
 			}
 
 			onProgress(0.6, "ENCODE");

@@ -1,5 +1,6 @@
 import { avifToJpg } from "./tools/avif-to-jpg";
 import { avifToPng } from "./tools/avif-to-png";
+import { compressJpg } from "./tools/compress-jpg";
 import { heicToJpg } from "./tools/heic-to-jpg";
 import { heicToPng } from "./tools/heic-to-png";
 import { heicToWebp } from "./tools/heic-to-webp";
@@ -51,6 +52,7 @@ export const TOOLS: Tool[] = [
 	resizeWebp,
 	removeExifJpg,
 	removeMetadataPng,
+	compressJpg,
 ];
 
 export function getTool(id: string): Tool | undefined {
