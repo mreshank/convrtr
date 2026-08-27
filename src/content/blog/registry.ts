@@ -1,5 +1,6 @@
 import type { BlogPostMeta } from "./types";
 import { meta as howMlwEncryptionWorks } from "./how-mlw-encryption-works/meta";
+import { meta as recoveringCourseVideosAfterAPlatformShutsDown } from "./recovering-course-videos-after-a-platform-shuts-down/meta";
 
 /**
  * Metadata only — every entry here is a plain object imported from a
@@ -10,7 +11,10 @@ import { meta as howMlwEncryptionWorks } from "./how-mlw-encryption-works/meta";
  * the same class of bug `core/registry`'s module-boundary test guards
  * against for tools.
  */
-export const BLOG_POSTS: BlogPostMeta[] = [howMlwEncryptionWorks];
+export const BLOG_POSTS: BlogPostMeta[] = [
+	howMlwEncryptionWorks,
+	recoveringCourseVideosAfterAPlatformShutsDown,
+];
 
 export function getPost(
 	slug: string,
