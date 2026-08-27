@@ -11,6 +11,8 @@ import { pngToAvif } from "./tools/png-to-avif";
 import { pngToJpg } from "./tools/png-to-jpg";
 import { pngToJxl } from "./tools/png-to-jxl";
 import { pngToWebp } from "./tools/png-to-webp";
+import { removeExifJpg } from "./tools/remove-exif-jpg";
+import { removeMetadataPng } from "./tools/remove-metadata-png";
 import { resizeJpg } from "./tools/resize-jpg";
 import { resizePng } from "./tools/resize-png";
 import { resizeWebp } from "./tools/resize-webp";
@@ -47,6 +49,8 @@ export const TOOLS: Tool[] = [
 	resizePng,
 	resizeJpg,
 	resizeWebp,
+	removeExifJpg,
+	removeMetadataPng,
 ];
 
 export function getTool(id: string): Tool | undefined {

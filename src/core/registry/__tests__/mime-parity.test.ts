@@ -32,11 +32,37 @@ function parseEngineId(
 	return { decoder, encoder };
 }
 
+/**
+ * Not every engine is an image pipeline. Metadata strippers
+ * (`metadata:strip-jpeg`) work on file bytes and have no decoder or encoder,
+ * so MIME parity does not apply to them — but a *malformed* image id must not
+ * be waved through as "probably a metadata engine", so anything that is
+ * neither shape is a failure.
+ */
+function isRecognisedEngineId(engineId: string | undefined): boolean {
+	if (!engineId) return false;
+	return (
+		parseEngineId(engineId) !== undefined ||
+		/^metadata:strip-[a-z]+$/.test(engineId)
+	);
+}
+
 describe("registry/engine MIME parity", () => {
+	it("gives every tool a recognisable engine id", () => {
+		for (const tool of TOOLS) {
+			for (const engineId of tool.engines) {
+				expect(
+					isRecognisedEngineId(engineId),
+					`${tool.id} -> ${engineId}`,
+				).toBe(true);
+			}
+		}
+	});
+
 	it("declares the same input MIME types the decoders advertise", () => {
 		for (const tool of TOOLS) {
 			const parsed = parseEngineId(tool.engines[0]);
-			expect(parsed, `${tool.id} has a parseable engine id`).toBeDefined();
+			// Metadata strippers have no decoder; covered by the test above.
 			if (!parsed) continue;
 			const decoderId = parsed.decoder;
 
@@ -54,7 +80,6 @@ describe("registry/engine MIME parity", () => {
 	it("declares the same output MIME type the encoders advertise", () => {
 		for (const tool of TOOLS) {
 			const parsed = parseEngineId(tool.engines[0]);
-			expect(parsed, `${tool.id} has a parseable engine id`).toBeDefined();
 			if (!parsed) continue;
 			const encoderId = parsed.encoder;
 

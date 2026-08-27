@@ -1,5 +1,6 @@
 import { createImagePipelineEngine } from "./image";
 import { IMAGE_DECODERS, IMAGE_ENCODERS } from "./image/registry";
+import { METADATA_ENGINES } from "./metadata";
 import type { Engine } from "./types";
 
 export * from "./image";
@@ -38,6 +39,12 @@ function buildImageEngines(): Map<string, Engine> {
 		const engine = createImagePipelineEngine(decoder.id, decoder.id, {
 			transforms: ["resize"],
 		});
+		engines.set(engine.id, engine);
+	}
+
+	// Byte-level metadata strippers. Not image pipelines: they never decode,
+	// which is what lets them remove EXIF without recompressing the photo.
+	for (const engine of METADATA_ENGINES) {
 		engines.set(engine.id, engine);
 	}
 
