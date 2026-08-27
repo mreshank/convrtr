@@ -1,6 +1,7 @@
 import type { BlogPostMeta } from "./types";
 import { meta as howMlwEncryptionWorks } from "./how-mlw-encryption-works/meta";
 import { meta as recoveringCourseVideosAfterAPlatformShutsDown } from "./recovering-course-videos-after-a-platform-shuts-down/meta";
+import { meta as isExtractingMlwVideoLegal } from "./is-extracting-mlw-video-legal/meta";
 
 /**
  * Metadata only — every entry here is a plain object imported from a
@@ -14,6 +15,7 @@ import { meta as recoveringCourseVideosAfterAPlatformShutsDown } from "./recover
 export const BLOG_POSTS: BlogPostMeta[] = [
 	howMlwEncryptionWorks,
 	recoveringCourseVideosAfterAPlatformShutsDown,
+	isExtractingMlwVideoLegal,
 ];
 
 export function getPost(

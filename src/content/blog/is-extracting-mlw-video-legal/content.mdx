@@ -1,0 +1,65 @@
+<Callout kind="warning">
+  This is a plain-English explanation of a real distinction in how these
+  laws are usually applied, written by the people who built this tool — not
+  legal advice, and not a substitute for a lawyer if your situation is
+  high-stakes or your jurisdiction is unusual.
+</Callout>
+
+The short version: laws like the US DMCA's anti-circumvention provisions
+target breaking a **technological protection measure** — something that
+actually controls or gates *access* to copyrighted content. MLW's container
+doesn't do that, and the difference is concrete, not just semantic.
+
+## What would count as circumvention
+
+Real DRM — Widevine, FairPlay, PlayReady — ties decryption to something the
+attacker doesn't have: a per-device or per-session key negotiated with a
+license server, hardware-backed key storage, and (for the higher security
+tiers) execution inside a hardware-isolated environment the OS itself can't
+inspect. Breaking that requires defeating an actual access-control system.
+It's illegal to circumvent in most jurisdictions specifically because it
+*is* functioning as access control — someone without a valid license
+genuinely cannot get the plaintext.
+
+## What MLW actually does
+
+[As covered in the technical writeup](/blog/how-mlw-encryption-works), every
+copy of the app that produces MLW files ships with the exact same AES-128
+key, hardcoded into the client. There's no license server, no per-device
+negotiation, no hardware key store. The app itself has to hold the key
+locally just to play the video you already downloaded — which means the
+"protection" isn't controlling access at all. It's controlling
+*convenience*: it stops you from casually renaming the file and opening it
+in VLC, but it does nothing that a person with the file and a
+general-purpose computer can't reverse, because the app proves every single
+day that decryption requires nothing more than the file plus a key that
+ships with every install.
+
+<FAQ items={[
+  {
+    q: "Am I decrypting something I don't have access to?",
+    a: "No — you already have full, paid access to the file. The app on your own device decrypts it every time you press play; this tool does the same math, just outside that app.",
+  },
+  {
+    q: "Does the shared key make this 'hacking'?",
+    a: "It makes it byte-level file-format work, the same category as any tool that reads a proprietary document format. There's no server involved, no account being accessed, and no protection being defeated that wasn't already defeated by the app's own player every time it opens a file.",
+  },
+  {
+    q: "Would this tool work on real DRM, like a streaming service's video?",
+    a: "No, and it isn't built to. Real DRM systems don't have a single static key sitting in the client — there's no equivalent shortcut, and this tool doesn't attempt one.",
+  },
+  {
+    q: "What about the app's terms of service?",
+    a: "A terms-of-service violation and a DMCA circumvention claim are different things — a ToS violation is a contract matter between you and the provider, not a question of whether extracting a file you already have is a protection-measure bypass. Read your provider's terms if that distinction matters for your situation.",
+  },
+]} />
+
+## The practical test
+
+If an app's own player can decrypt a file locally, on your device, offline,
+using only what shipped in the app install — no network call to a license
+server, no hardware key that never leaves a secure chip — then a tool doing
+the same decryption isn't defeating access control. It's doing the same
+local computation the app was always doing, just without the app.
+
+<ToolCTA toolId="video/mlw-to-mp4" />
