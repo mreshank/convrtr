@@ -122,12 +122,22 @@ Outputs: `JPEG` `PNG` `WebP` `AVIF` `JXL` `GIF` `BMP` `TIFF` `ICO` `QOI` `PDF` `
 
 | Tool | Engine | Fidelity | Feasibility |
 |---|---|---|---|
-| GIF → WebP / AVIF / APNG (animated) | vips / libwebp | `LOSSLESS-CAPABLE` | `SOLVED` |
+| GIF → WebP / AVIF / APNG (animated) | vips / libwebp | `LOSSLESS-CAPABLE` | `BLOCKED` — see note |
 | GIF → MP4 / WebM | WebCodecs + muxer | `LOSSY-ON-REQUEST` | `SOLVED` |
 | Video → GIF (with optimal palette generation) | WebCodecs + gifenc | `INHERENTLY-LOSSY` | `SOLVED` |
 | APNG ↔ animated WebP | libwebp | `LOSSLESS` | `SOLVED` |
 | Split animation into frames | vips | `LOSSLESS` | `SOLVED` |
 | Frames → animated GIF / WebP | gifenc / libwebp | `LOSSLESS-CAPABLE` | `SOLVED` |
+
+> **Correction (verified during implementation).** Animated output is not
+> reachable with the codecs currently installed. `@jsquash/webp` exposes no
+> animation API whatsoever — no frame, loop, or timing options in its encode
+> typings — so animated WebP cannot be produced, and the same applies to
+> animated AVIF and APNG. Reaching these needs either a libwebp build
+> compiled with `WEBP_ANIMATION` support or a different encoder entirely,
+> which is a dependency decision rather than a coding task. Checked before
+> building a frame-sequence abstraction, so that no architecture was written
+> for output that cannot be produced.
 
 ### 1.7 ML-assisted (frontier)
 
