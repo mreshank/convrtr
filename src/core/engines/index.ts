@@ -1,5 +1,6 @@
 import { createImagePipelineEngine } from "./image";
 import { faviconPackEngine } from "./image/packs/favicon";
+import { gifFramesEngine } from "./image/packs/gif-frames";
 import { IMAGE_DECODERS, IMAGE_ENCODERS } from "./image/registry";
 import { METADATA_ENGINES } from "./metadata";
 import { mlwToMp4Engine } from "./mlw";
@@ -55,6 +56,10 @@ function buildImageEngines(): Map<string, Engine> {
 	// One-to-many: emits a ZIP so the pipeline, batch runner and save path
 	// need no special case for a tool that produces several files.
 	engines.set(faviconPackEngine.id, faviconPackEngine);
+
+	// Uses the platform GIF decoder, so it is unavailable in Firefox — probe()
+	// feature-detects and the engine simply is not selected there.
+	engines.set(gifFramesEngine.id, gifFramesEngine);
 
 	// Embeds the image stream directly; never rasterises, so the picture inside
 	// the PDF is byte-identical to the input.
