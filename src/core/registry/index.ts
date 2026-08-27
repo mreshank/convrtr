@@ -10,6 +10,7 @@ import { jpgToJxl } from "./tools/jpg-to-jxl";
 import { jpgToPdf } from "./tools/jpg-to-pdf";
 import { jpgToPng } from "./tools/jpg-to-png";
 import { jpgToWebp } from "./tools/jpg-to-webp";
+import { optimiseSvg } from "./tools/optimise-svg";
 import { pngToAvif } from "./tools/png-to-avif";
 import { pngToJpg } from "./tools/png-to-jpg";
 import { pngToJxl } from "./tools/png-to-jxl";
@@ -20,6 +21,7 @@ import { removeMetadataPng } from "./tools/remove-metadata-png";
 import { resizeJpg } from "./tools/resize-jpg";
 import { resizePng } from "./tools/resize-png";
 import { resizeWebp } from "./tools/resize-webp";
+import { mlwToMp4 } from "./tools/video/mlw-to-mp4";
 import { webpToJpg } from "./tools/webp-to-jpg";
 import { webpToPng } from "./tools/webp-to-png";
 import type { Category, Tool } from "./types";
@@ -59,6 +61,8 @@ export const TOOLS: Tool[] = [
 	faviconPack,
 	jpgToPdf,
 	pngToPdf,
+	optimiseSvg,
+	mlwToMp4,
 ];
 
 export function getTool(id: string): Tool | undefined {

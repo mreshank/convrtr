@@ -2,7 +2,9 @@ import { createImagePipelineEngine } from "./image";
 import { faviconPackEngine } from "./image/packs/favicon";
 import { IMAGE_DECODERS, IMAGE_ENCODERS } from "./image/registry";
 import { METADATA_ENGINES } from "./metadata";
+import { mlwToMp4Engine } from "./mlw";
 import { imageToPdfEngine } from "./pdf/image-to-pdf";
+import { svgOptimiseEngine } from "./svg/optimise";
 import type { Engine } from "./types";
 
 export * from "./image";
@@ -57,6 +59,13 @@ function buildImageEngines(): Map<string, Engine> {
 	// Embeds the image stream directly; never rasterises, so the picture inside
 	// the PDF is byte-identical to the input.
 	engines.set(imageToPdfEngine.id, imageToPdfEngine);
+
+	// Text in, text out — SVGO on the SVG source, no raster step at all.
+	engines.set(svgOptimiseEngine.id, svgOptimiseEngine);
+
+	// Format-specific extractors: byte-offset parsing plus Web Crypto, no
+	// decode/encode pipeline at all.
+	engines.set(mlwToMp4Engine.id, mlwToMp4Engine);
 
 	return engines;
 }

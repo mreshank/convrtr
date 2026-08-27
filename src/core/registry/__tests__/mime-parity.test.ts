@@ -49,7 +49,13 @@ function isRecognisedEngineId(engineId: string | undefined): boolean {
 		/^image:[a-z-]+-pack$/.test(engineId) ||
 		// PDF engines embed an image stream rather than decoding it, so they
 		// have no decoder/encoder pair either.
-		/^pdf:[a-z-]+$/.test(engineId)
+		/^pdf:[a-z-]+$/.test(engineId) ||
+		// SVG optimisation is text-in/text-out with no raster stage, so it has
+		// no decoder/encoder pair either.
+		/^svg:[a-z-]+$/.test(engineId) ||
+		// Format-specific extractors parse a proprietary container by byte
+		// offset; there is no decoder/encoder pair to check parity against.
+		/^extract:[a-z0-9-]+$/.test(engineId)
 	);
 }
 
