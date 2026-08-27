@@ -1,6 +1,7 @@
 import { avifToJpg } from "./tools/avif-to-jpg";
 import { avifToPng } from "./tools/avif-to-png";
 import { compressJpg } from "./tools/compress-jpg";
+import { faviconPack } from "./tools/favicon-pack";
 import { heicToJpg } from "./tools/heic-to-jpg";
 import { heicToPng } from "./tools/heic-to-png";
 import { heicToWebp } from "./tools/heic-to-webp";
@@ -53,6 +54,7 @@ export const TOOLS: Tool[] = [
 	removeExifJpg,
 	removeMetadataPng,
 	compressJpg,
+	faviconPack,
 ];
 
 export function getTool(id: string): Tool | undefined {

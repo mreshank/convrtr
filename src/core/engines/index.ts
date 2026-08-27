@@ -1,4 +1,5 @@
 import { createImagePipelineEngine } from "./image";
+import { faviconPackEngine } from "./image/packs/favicon";
 import { IMAGE_DECODERS, IMAGE_ENCODERS } from "./image/registry";
 import { METADATA_ENGINES } from "./metadata";
 import type { Engine } from "./types";
@@ -47,6 +48,10 @@ function buildImageEngines(): Map<string, Engine> {
 	for (const engine of METADATA_ENGINES) {
 		engines.set(engine.id, engine);
 	}
+
+	// One-to-many: emits a ZIP so the pipeline, batch runner and save path
+	// need no special case for a tool that produces several files.
+	engines.set(faviconPackEngine.id, faviconPackEngine);
 
 	return engines;
 }
