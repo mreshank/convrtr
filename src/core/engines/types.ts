@@ -23,6 +23,16 @@ export type WriteChunk = {
 /** Where a streaming engine writes its output. */
 export type OutputSink = WritableStream<WriteChunk>;
 
+/**
+ * Something the user needs to know about a finished conversion, as opposed to
+ * something that went wrong.
+ *
+ * Progress phases were the only channel an engine had, and phases flash past:
+ * the "DROPPING: ..." message warning that a subtitle track had been discarded
+ * was displayed inside a progress bar that is removed the moment the
+ * conversion ends. Nobody reads a warning that is only visible while they are
+ * waiting. Notices persist next to the result instead.
+ */
 export interface Engine {
 	id: string;
 	probe(): Promise<boolean>;
@@ -30,6 +40,7 @@ export interface Engine {
 		input: ArrayBuffer,
 		params: Record<string, ParamValue>,
 		onProgress: (ratio: number, phase: string) => void,
+		onNotice?: (message: string) => void,
 	): Promise<ArrayBuffer>;
 
 	/**
@@ -56,6 +67,7 @@ export interface Engine {
 		params: Record<string, ParamValue>,
 		onProgress: (ratio: number, phase: string) => void,
 		sink: OutputSink,
+		onNotice?: (message: string) => void,
 	): Promise<void>;
 }
 

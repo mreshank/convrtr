@@ -1,6 +1,6 @@
 import type { ParamValue } from "@/core/quality";
 import type { Engine, OutputSink } from "../types";
-import type { Container } from "./compatibility";
+import { type Container, playbackCaveat } from "./compatibility";
 
 /**
  * Type-only handle on the library so the shared conversion routine below can
@@ -63,6 +63,7 @@ async function executeConversion(
 	target: OutputContainer,
 	forceTranscode: boolean,
 	onProgress: (ratio: number, phase: string) => void,
+	onNotice?: (message: string) => void,
 ): Promise<void> {
 	const conversion = await lib.Conversion.init({
 		input,
@@ -89,7 +90,11 @@ async function executeConversion(
 		const dropped = conversion.discardedTracks
 			.map((track) => track.reason)
 			.join("; ");
-		onProgress(0.05, `DROPPING: ${dropped}`);
+		// A notice, not a progress phase. As a phase this was displayed inside
+		// the progress bar, which is removed the instant the conversion ends —
+		// so the warning that a track had been thrown away was only visible
+		// while the user was waiting for the thing that threw it away.
+		onNotice?.(`Some tracks could not be carried over: ${dropped}.`);
 	}
 
 	// Whether this will actually copy packets, which is not the same question as
@@ -119,6 +124,21 @@ async function executeConversion(
 		(audioTrack.codec !== null &&
 			format.getSupportedAudioCodecs().includes(audioTrack.codec));
 	const willCopy = !forceTranscode && videoCopyable && audioCopyable;
+
+	// Copying a spec-legal but badly-supported combination is the right default
+	// — nothing is lost — but the user has to be told, because the file may not
+	// open in their player and that is not obvious from a successful
+	// conversion.
+	if (willCopy) {
+		for (const codec of [videoTrack?.codec, audioTrack?.codec]) {
+			const caveat = codec ? playbackCaveat(target, codec) : undefined;
+			if (caveat) {
+				onNotice?.(
+					`${caveat}. The streams were copied so no quality was lost — re-run with "Force re-encode" if your player rejects the file.`,
+				);
+			}
+		}
+	}
 
 	conversion.onProgress = (progress) => {
 		// mediabunny reports 0-1 across the whole conversion; reserve the
@@ -151,6 +171,7 @@ export function createVideoConversionEngine(
 			input: ArrayBuffer,
 			params: Record<string, ParamValue>,
 			onProgress: (ratio: number, phase: string) => void,
+			onNotice?: (message: string) => void,
 		) {
 			const lib = await import("mediabunny");
 			onProgress(0.02, "DEMUX");
@@ -172,6 +193,7 @@ export function createVideoConversionEngine(
 				target,
 				params.forceTranscode === true,
 				onProgress,
+				onNotice,
 			);
 
 			const buffer = output.target.buffer;
@@ -206,6 +228,7 @@ export function createVideoConversionEngine(
 			params: Record<string, ParamValue>,
 			onProgress: (ratio: number, phase: string) => void,
 			sink: OutputSink,
+			onNotice?: (message: string) => void,
 		) {
 			const lib = await import("mediabunny");
 			onProgress(0.02, "DEMUX");
@@ -227,6 +250,7 @@ export function createVideoConversionEngine(
 				target,
 				params.forceTranscode === true,
 				onProgress,
+				onNotice,
 			);
 
 			// No buffer to check and nothing to return: the bytes are already at

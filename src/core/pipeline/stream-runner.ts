@@ -27,9 +27,10 @@ export async function runStreamingConversion(
 	onProgress: (ratio: number, phase: string) => void,
 	sink: FileSink,
 	handle: FileSystemFileHandle,
+	onNotice?: (message: string) => void,
 ): Promise<number> {
 	try {
-		await engine.runStream(input, params, onProgress, sink.sink);
+		await engine.runStream(input, params, onProgress, sink.sink, onNotice);
 	} catch (error) {
 		await sink.discard();
 		throw error;

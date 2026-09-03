@@ -150,6 +150,9 @@ describe("runStreamingConversion", () => {
 			{ forceTranscode: true },
 			expect.any(Function),
 			sink.sink,
+			// The notice channel is threaded through too; a conversion that
+			// warns about a discarded track must be able to say so from here.
+			undefined,
 		);
 	});
 });

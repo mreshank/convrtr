@@ -48,29 +48,34 @@ describe("planRemux — the cases that matter", () => {
 		expect(isPureRemux(plan)).toBe(true);
 	});
 
-	it("re-encodes VP9 into MP4 by default, and says why", () => {
-		// Spec-legal but widely unplayable. A lossless copy that produces a file
-		// the user cannot open is worse than an honest re-encode, so the default
-		// transcodes and the reason is surfaced rather than buried.
+	it("copies VP9 into MP4 by default, and warns that it may not play", () => {
+		// Spec-legal but widely unplayable. The earlier policy re-encoded here,
+		// on the reasoning that an unopenable file is worse than a re-encode.
+		// That trade is the wrong way round: a copy that some player rejects is
+		// discovered immediately and fixed by re-running, while a re-encode
+		// destroys quality permanently to solve a problem this user may not
+		// have. So it copies, and the caveat is stated rather than buried.
 		const plan = planRemux(
 			{ container: "webm", video: "vp9", audio: "opus" },
 			"mp4",
 		);
-		expect(plan.video?.action).toBe("transcode");
+		expect(plan.video?.action).toBe("copy");
 		expect(plan.caveat).toMatch(/many players/i);
-		expect(isPureRemux(plan)).toBe(false);
+		expect(plan.caveat).toMatch(/nothing was lost/i);
+		expect(isPureRemux(plan)).toBe(true);
 	});
 
-	it("allows the VP9-into-MP4 copy when the caller opts in", () => {
-		// Someone who knows their playback target should not be forced to
-		// re-encode.
+	it("re-encodes VP9 into MP4 when the caller needs it to play everywhere", () => {
+		// The opt-out, for someone who needs the output to open anywhere and
+		// accepts the loss to get it.
 		const plan = planRemux(
 			{ container: "webm", video: "vp9", audio: "opus" },
 			"mp4",
 			true,
 		);
-		expect(plan.video?.action).toBe("copy");
-		expect(isPureRemux(plan)).toBe(true);
+		expect(plan.video?.action).toBe("transcode");
+		expect(plan.caveat).toMatch(/for compatibility/i);
+		expect(isPureRemux(plan)).toBe(false);
 	});
 
 	it("re-encodes H.264 into WebM, which cannot carry it", () => {

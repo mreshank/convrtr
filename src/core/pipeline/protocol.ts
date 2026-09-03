@@ -45,6 +45,7 @@ export type JobEvent =
 	| { type: "progress"; id: string; ratio: number; phase: string }
 	| { type: "done"; id: string; output: ArrayBuffer }
 	| { type: "streamed"; id: string; bytes: number }
+	| { type: "notice"; id: string; message: string }
 	| { type: "error"; id: string; code: ErrorCode; message: string };
 
 export function makeJobId(): string {
@@ -65,6 +66,8 @@ export function isJobEvent(value: unknown): value is JobEvent {
 			return event.output instanceof ArrayBuffer;
 		case "streamed":
 			return typeof event.bytes === "number";
+		case "notice":
+			return typeof event.message === "string";
 		case "error":
 			return (
 				typeof event.code === "string" && typeof event.message === "string"

@@ -55,11 +55,21 @@ const CONTAINER_AUDIO: Record<Container, AudioCodec[]> = {
  * Combinations that are spec-legal but poorly played in practice.
  *
  * VP9 in MP4 is the important case: the specification permits it, but many
- * players, editors and platform decoders choke on it. Copying VP9 into MP4
- * would technically be lossless and would hand the user a file that does not
- * open — a worse outcome than an honest re-encode. So the default transcodes,
- * and the caveat is surfaced rather than hidden, letting someone who knows
- * their playback target opt into the copy.
+ * players, editors and platform decoders choke on it.
+ *
+ * This originally transcoded such combinations by default, reasoning that a
+ * lossless file which will not open is worse than an honest re-encode. That
+ * was the wrong call, and the engine never implemented it — mediabunny copies
+ * whatever the container can legally carry, so the policy described here and
+ * the behaviour that shipped disagreed, with the policy being the dead half.
+ *
+ * Copying is now the documented default too, because re-encoding by default
+ * destroys quality that cannot be recovered in order to fix a problem the user
+ * may not have — their player may handle VP9-in-MP4 perfectly well. The cost
+ * of copying is a file that might not open, which the user discovers
+ * immediately and can fix by re-running with a re-encode. The cost of
+ * transcoding is quality gone for good, discovered never. So: copy, name the
+ * caveat plainly, and leave the re-encode available.
  */
 const POORLY_SUPPORTED: Array<{
 	container: Container;
@@ -105,6 +115,28 @@ export interface RemuxPlan {
 	caveat?: string;
 }
 
+/**
+ * The playback caveat for a container/codec pair, if there is one.
+ *
+ * Exported so the conversion engine warns using the same table this module
+ * plans with. Two copies of "which combinations play badly" would drift, and
+ * the drift would show up as a missing warning rather than as a crash.
+ */
+export function playbackCaveat(
+	container: Container,
+	// A plain string rather than this module's codec unions: the caller reads
+	// codec names off mediabunny's tracks, and its union is wider than the set
+	// this module plans with. Narrowing at the boundary would mean casting a
+	// value that may legitimately not be in the local union, which is exactly
+	// how an unrecognised codec would turn into a crash instead of "no
+	// caveat".
+	codec: string,
+): string | undefined {
+	return POORLY_SUPPORTED.find(
+		(entry) => entry.container === container && entry.codec === codec,
+	)?.note;
+}
+
 function poorNote(
 	container: Container,
 	codec: VideoCodec | AudioCodec,
@@ -117,8 +149,9 @@ function poorNote(
 /**
  * @param source            the file's container and the codecs it actually holds
  * @param target            the container being written
- * @param allowPoorSupport  copy even where playback support is known to be
- *                          patchy — for a caller who knows their target player
+ * @param avoidPoorSupport  re-encode rather than copy where playback support
+ *                          is known to be patchy — for a caller who needs the
+ *                          output to open everywhere and accepts the loss
  */
 export function planRemux(
 	source: {
@@ -127,7 +160,7 @@ export function planRemux(
 		audio?: AudioCodec;
 	},
 	target: Container,
-	allowPoorSupport = false,
+	avoidPoorSupport = false,
 ): RemuxPlan {
 	const plan: RemuxPlan = { lossless: true };
 	let caveat: string | undefined;
@@ -136,14 +169,19 @@ export function planRemux(
 		const legal = CONTAINER_VIDEO[target].includes(source.video);
 		const poor = poorNote(target, source.video);
 
-		if (legal && (!poor || allowPoorSupport)) {
+		if (legal && (!poor || !avoidPoorSupport)) {
+			// Copied even where support is patchy, with the caveat attached
+			// rather than silently paid for in quality.
+			if (poor) {
+				caveat = `${poor}. The streams were copied so nothing was lost — re-run with a re-encode if your player rejects the file.`;
+			}
 			plan.video = {
 				action: "copy",
 				reason: `${source.video} is carried natively by ${target}`,
 			};
 		} else if (legal && poor) {
-			// Copyable in principle, deliberately not by default.
-			caveat = `${poor}. Re-encoding to ${TRANSCODE_TARGET[target].video} instead; you can override this if your player handles it.`;
+			// The caller asked to avoid patchy support and accepted the loss.
+			caveat = `${poor}. Re-encoded to ${TRANSCODE_TARGET[target].video} for compatibility, at the cost of a re-encode.`;
 			plan.video = {
 				action: "transcode",
 				to: TRANSCODE_TARGET[target].video,
@@ -164,7 +202,10 @@ export function planRemux(
 		const legal = CONTAINER_AUDIO[target].includes(source.audio);
 		const poor = poorNote(target, source.audio);
 
-		if (legal && (!poor || allowPoorSupport)) {
+		if (legal && (!poor || !avoidPoorSupport)) {
+			if (poor) {
+				caveat = `${poor}. The streams were copied so nothing was lost — re-run with a re-encode if your player rejects the file.`;
+			}
 			plan.audio = {
 				action: "copy",
 				reason: `${source.audio} is carried natively by ${target}`,

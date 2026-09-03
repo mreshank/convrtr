@@ -33,7 +33,40 @@ import {
 import { getTool } from "@/core/registry";
 import { formatBytes, formatDelta } from "@/lib/format";
 
-type Result = { bytes: ArrayBuffer; size: number };
+/**
+ * Which path a conversion actually took, as observed from the engine's own
+ * progress phases rather than inferred from the chosen preset.
+ *
+ * The preset says what was *asked* for. This says what happened — and the two
+ * can differ honestly in both directions: a WebM holding AV1 and Opus copies
+ * straight into MP4 even though `webm->mp4` conservatively declares that it
+ * usually cannot, and a container that turns out not to carry its source codec
+ * re-encodes even when a copy was requested. Only image engines emit neither
+ * phase, so `path` stays undefined for them and nothing extra is shown.
+ */
+type ConversionPath = "copy" | "encode";
+
+type Result = { bytes: ArrayBuffer; size: number; path?: ConversionPath };
+
+/**
+ * Reduces a stream of progress phases to the path taken.
+ *
+ * A single re-encoded track makes the whole operation a re-encode, so
+ * "encode" wins once seen and is never downgraded — otherwise a conversion
+ * that re-encoded the audio and then copied the video would report a copy.
+ */
+function observePath(
+	current: ConversionPath | null,
+	phase: string,
+): ConversionPath | null {
+	if (phase === "ENCODE") return "encode";
+	if (phase === "COPY" && current !== "encode") return "copy";
+	return current;
+}
+
+function describePath(path: ConversionPath): string {
+	return path === "copy" ? "STREAMS COPIED" : "RE-ENCODED";
+}
 
 export function ToolClient({ toolId }: { toolId: string }) {
 	const tool = getTool(toolId);
@@ -61,13 +94,24 @@ export function ToolClient({ toolId }: { toolId: string }) {
 	 * to preview and nothing left to save. Conflating the two would put a SAVE
 	 * button in front of a file that had already been written.
 	 */
-	const [streamed, setStreamed] = useState<{ bytes: number } | null>(null);
+	const [streamed, setStreamed] = useState<{
+		bytes: number;
+		path?: ConversionPath;
+	} | null>(null);
 	/**
 	 * What preflight decided when the file arrived. Recorded then rather than
 	 * at CONVERT time because the save dialog has to open inside the click
 	 * handler, leaving no room to work it out first.
 	 */
 	const [strategy, setStrategy] = useState<"memory" | "stream">("memory");
+	/**
+	 * Things the engine wants the user to know about a conversion that
+	 * succeeded — a track that could not be carried, or a codec combination
+	 * that is legal but may not play. Kept in state so they persist beside the
+	 * result, rather than flashing past inside a progress bar that disappears
+	 * the moment the conversion finishes.
+	 */
+	const [notices, setNotices] = useState<string[]>([]);
 	const [error, setError] = useState<{
 		code: ErrorCode;
 		detail?: string;
@@ -164,6 +208,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 		setError(null);
 		setResult(null);
 		setStreamed(null);
+		setNotices([]);
 		setRatio(0);
 		setPhase("");
 		setElapsed(0);
@@ -206,6 +251,11 @@ export function ToolClient({ toolId }: { toolId: string }) {
 		setConverting(true);
 
 		try {
+			// Accumulated in a local rather than state: a state setter read back
+			// in the same async function would see the value from this render,
+			// not the one just written.
+			let observed: ConversionPath | null = null;
+
 			if (handle) {
 				const bytes = await runStreamJob(
 					{
@@ -222,11 +272,15 @@ export function ToolClient({ toolId }: { toolId: string }) {
 						if (event.type === "progress") {
 							setRatio(event.ratio);
 							setPhase(event.phase);
+							observed = observePath(observed, event.phase);
+						}
+						if (event.type === "notice") {
+							setNotices((current) => [...current, event.message]);
 						}
 					},
 					controller.signal,
 				);
-				setStreamed({ bytes });
+				setStreamed({ bytes, path: observed ?? undefined });
 				return;
 			}
 
@@ -242,11 +296,19 @@ export function ToolClient({ toolId }: { toolId: string }) {
 					if (event.type === "progress") {
 						setRatio(event.ratio);
 						setPhase(event.phase);
+						observed = observePath(observed, event.phase);
+					}
+					if (event.type === "notice") {
+						setNotices((current) => [...current, event.message]);
 					}
 				},
 				controller.signal,
 			);
-			setResult({ bytes: output, size: output.byteLength });
+			setResult({
+				bytes: output,
+				size: output.byteLength,
+				path: observed ?? undefined,
+			});
 		} catch (caught) {
 			const cancelled =
 				caught instanceof DOMException && caught.name === "AbortError";
@@ -281,6 +343,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 		setResult(null);
 		setStreamed(null);
 		setStrategy("memory");
+		setNotices([]);
 		setError(null);
 		setRatio(0);
 		setPhase("");
@@ -579,6 +642,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 							<span data-testid="result" className="mono text-[12px]">
 								{formatBytes(file.size)} {"→"} {formatBytes(result.size)}{" "}
 								{formatDelta(file.size, result.size)}
+								{result.path ? ` · ${describePath(result.path)}` : ""}
 							</span>
 							<button
 								type="button"
@@ -595,9 +659,27 @@ export function ToolClient({ toolId }: { toolId: string }) {
 						<div className="flex items-center justify-between">
 							<span data-testid="streamed" className="mono text-[12px]">
 								{formatBytes(file.size)} {"→"} {formatBytes(streamed.bytes)}{" "}
-								{formatDelta(file.size, streamed.bytes)} {"·"} SAVED TO DISK
+								{formatDelta(file.size, streamed.bytes)}
+								{streamed.path ? ` · ${describePath(streamed.path)}` : ""} {"·"}{" "}
+								SAVED TO DISK
 							</span>
 						</div>
+					)}
+
+					{!converting && notices.length > 0 && (
+						<ul
+							data-testid="notices"
+							className="flex flex-col gap-2 border p-4 text-[13px]"
+							style={{
+								borderColor: "var(--lossy)",
+								borderRadius: "var(--radius)",
+								color: "var(--text-primary)",
+							}}
+						>
+							{notices.map((notice) => (
+								<li key={notice}>{notice}</li>
+							))}
+						</ul>
 					)}
 
 					{!converting && (

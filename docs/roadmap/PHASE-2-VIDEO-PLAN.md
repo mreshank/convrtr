@@ -128,9 +128,11 @@ agents must never race the lockfile.
   payload is **byte-identical** to the source's, proven by test, in seconds.
   — `e2e/remux.spec.ts`, verified with ffmpeg/ffprobe, which take no part in
   the conversion. Falsified by flipping the default preset to re-encode.
-- [ ] `webm→mp4` works on both paths and the UI names which one ran.
-  The engine and the decision table both exist; the UI does not yet state
-  which path it took.
+- [x] `webm→mp4` works on both paths and the UI names which one ran.
+  — the finished readout says `STREAMS COPIED` or `RE-ENCODED`, taken from the
+  engine's observed phases rather than from the chosen preset, so it is right
+  even where the registry's guess is not. Tested in both directions; falsified
+  by pinning the label.
 - [x] A file larger than available RAM converts without the tab dying.
   — `e2e/stream.spec.ts` streams a 70MB MKV (over the 64MiB threshold at which
   preflight switches strategy) straight to disk and proves the H.264 payload
@@ -151,6 +153,40 @@ why the streaming proof compares the *payload* against the source instead.
 A streamed conversion has no in-memory result, so it cannot be previewed and
 cannot be re-saved. The UI says "SAVED TO DISK" and shows no SAVE button,
 because offering one would imply bytes are being held that are not.
+
+### Poorly-supported combinations: copy and warn, not transcode
+
+`compatibility.ts` originally documented that spec-legal but badly-played
+combinations — VP9 in MP4 being the case that matters — should be transcoded by
+default, reasoning that a lossless file which will not open is worse than an
+honest re-encode. **The engine never implemented it.** mediabunny copies
+whatever the container can legally carry, so the documented policy and the
+shipped behaviour disagreed for as long as both existed, with `planRemux` being
+the dead half. Measured: a VP9+Opus WebM converts to MP4 with a 0% size change.
+
+The behaviour was right and the policy was wrong. Re-encoding by default
+destroys quality permanently to fix a problem the user may not have — their
+player may handle VP9-in-MP4 perfectly well. Copying costs a file that might
+not open, which is discovered immediately and fixed by re-running with a
+re-encode. One failure mode is recoverable and the other is not.
+
+So the policy now matches: copy, state the caveat, leave the re-encode
+available through the existing `forceTranscode` toggle. `planRemux`'s
+`allowPoorSupport` became `avoidPoorSupport` and the two tests encoding the old
+default were inverted.
+
+### Notices, because progress phases are not a warning channel
+
+The "some tracks could not be carried over" warning was emitted as a progress
+phase, which renders inside the progress bar — the element removed the instant
+the conversion ends. A warning visible only while someone waits for the thing
+that triggered it is not a warning.
+
+`Engine` gained an optional `onNotice`, carried through the worker as a
+`notice` job event and rendered beside the result. Optional so the image
+engines, which have nothing to warn about, needed no change. The panel is
+absent when there is nothing to say — asserted, because a notice panel that
+always appears trains people to ignore the one that matters.
 
 ### Audio extraction and AAC encoder pre-roll
 

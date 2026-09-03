@@ -111,3 +111,43 @@ test("a conversion that really copies says so", async ({ page }) => {
 		`a pure remux must not report re-encoding — saw: ${joined}`,
 	).not.toContain("ENCODE");
 });
+
+test("the result names the path that was actually taken", async ({ page }) => {
+	await page.goto("/video/mkv-to-mp4");
+	await page.setInputFiles("input[type=file]", "e2e/fixtures/sample.mkv");
+	await page.getByRole("button", { name: /^CONVERT/ }).click();
+
+	const result = page.getByTestId("result");
+	await expect(result).toBeVisible({ timeout: 180_000 });
+
+	// H.264/AAC into MP4 is a pure remux, and the finished readout should say
+	// so — not just the progress bar that has already disappeared by the time
+	// anyone reads it.
+	await expect(result).toContainText("STREAMS COPIED");
+	await expect(result).not.toContainText("RE-ENCODED");
+});
+
+test("a conversion the registry expects to re-encode says it re-encoded", async ({
+	page,
+}) => {
+	const work = mkdtempSync(join(tmpdir(), "convrtr-path-"));
+	const fixture = join(work, "sample.mp4");
+	execFileSync(
+		"ffmpeg",
+		["-y", "-i", "e2e/fixtures/sample.mkv", "-c", "copy", fixture],
+		{ stdio: "ignore" },
+	);
+
+	await page.goto("/video/mp4-to-webm");
+	await page.setInputFiles("input[type=file]", fixture);
+	await page.getByRole("button", { name: /^CONVERT/ }).click();
+
+	const result = page.getByTestId("result");
+	await expect(result).toBeVisible({ timeout: 180_000 });
+
+	// The other direction. Without this, always printing "STREAMS COPIED"
+	// would satisfy the test above while being a far more damaging lie than
+	// the phase label was.
+	await expect(result).toContainText("RE-ENCODED");
+	await expect(result).not.toContainText("STREAMS COPIED");
+});
