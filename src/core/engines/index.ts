@@ -7,6 +7,7 @@ import { mlwToMp4Engine } from "./mlw";
 import { imageToPdfEngine } from "./pdf/image-to-pdf";
 import { svgOptimiseEngine } from "./svg/optimise";
 import type { Engine } from "./types";
+import { createVideoConversionEngine } from "./video/convert";
 
 export * from "./image";
 export * from "./types";
@@ -71,6 +72,19 @@ function buildImageEngines(): Map<string, Engine> {
 	// Format-specific extractors: byte-offset parsing plus Web Crypto, no
 	// decode/encode pipeline at all.
 	engines.set(mlwToMp4Engine.id, mlwToMp4Engine);
+
+	// Container conversions. mediabunny copies encoded samples wherever the
+	// target can carry them and only re-encodes when it cannot, so mkv->mp4 and
+	// mov->mp4 are typically pure remuxes finishing in seconds.
+	for (const [from, to] of [
+		["mkv", "mp4"],
+		["mov", "mp4"],
+		["webm", "mp4"],
+		["mp4", "webm"],
+	] as const) {
+		const engine = createVideoConversionEngine(to, from);
+		engines.set(engine.id, engine);
+	}
 
 	return engines;
 }

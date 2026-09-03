@@ -55,7 +55,10 @@ function isRecognisedEngineId(engineId: string | undefined): boolean {
 		/^svg:[a-z-]+$/.test(engineId) ||
 		// Format-specific extractors parse a proprietary container by byte
 		// offset; there is no decoder/encoder pair to check parity against.
-		/^extract:[a-z0-9-]+$/.test(engineId)
+		/^extract:[a-z0-9-]+$/.test(engineId) ||
+		// Container conversions demux and mux whole streams; there is no
+		// image decoder/encoder pair to check parity against.
+		/^video:[a-z0-9]+->[a-z0-9]+$/.test(engineId)
 	);
 }
 
