@@ -78,6 +78,21 @@ export const ToolSchema = z.object({
 	}),
 	output: z.object({ ext: z.string(), mime: z.string() }),
 	engines: z.array(z.string()).min(1),
+	/**
+	 * Whether this tool's engines can convert without holding the file in
+	 * memory.
+	 *
+	 * Declared here, rather than asked of the engine, because the decision has
+	 * to be made on the main thread before the save dialog opens — and the
+	 * registry must never import an engine (see the module boundary rules in
+	 * the design spec; doing so drags every codec into every page bundle).
+	 *
+	 * The duplication is deliberate but not unchecked: `streamable-parity`
+	 * asserts this flag agrees with `supportsStreaming()` for every engine the
+	 * tool names, so a flag that drifts from reality fails the suite rather
+	 * than misleading a user with a file too large to buffer.
+	 */
+	streamable: z.boolean().optional(),
 	quality: z.object({
 		losslessAvailable: z.boolean(),
 		defaultPreset: z.enum(QUALITY_PRESETS),

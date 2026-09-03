@@ -1,7 +1,9 @@
+import { mp4ToM4a } from "./tools/audio/mp4-to-m4a";
 import { avifToJpg } from "./tools/avif-to-jpg";
 import { avifToPng } from "./tools/avif-to-png";
 import { compressJpg } from "./tools/compress-jpg";
 import { faviconPack } from "./tools/favicon-pack";
+import { gifFrames } from "./tools/gif-frames";
 import { heicToJpg } from "./tools/heic-to-jpg";
 import { heicToPng } from "./tools/heic-to-png";
 import { heicToWebp } from "./tools/heic-to-webp";
@@ -21,7 +23,11 @@ import { removeMetadataPng } from "./tools/remove-metadata-png";
 import { resizeJpg } from "./tools/resize-jpg";
 import { resizePng } from "./tools/resize-png";
 import { resizeWebp } from "./tools/resize-webp";
+import { mkvToMp4 } from "./tools/video/mkv-to-mp4";
 import { mlwToMp4 } from "./tools/video/mlw-to-mp4";
+import { movToMp4 } from "./tools/video/mov-to-mp4";
+import { mp4ToWebm } from "./tools/video/mp4-to-webm";
+import { webmToMp4 } from "./tools/video/webm-to-mp4";
 import { webpToJpg } from "./tools/webp-to-jpg";
 import { webpToPng } from "./tools/webp-to-png";
 import type { Category, Tool } from "./types";
@@ -62,7 +68,13 @@ export const TOOLS: Tool[] = [
 	jpgToPdf,
 	pngToPdf,
 	optimiseSvg,
+	gifFrames,
 	mlwToMp4,
+	mkvToMp4,
+	movToMp4,
+	webmToMp4,
+	mp4ToWebm,
+	mp4ToM4a,
 ];
 
 export function getTool(id: string): Tool | undefined {

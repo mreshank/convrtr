@@ -1,11 +1,14 @@
+import { createAudioExtractionEngine } from "./audio/extract";
 import { createImagePipelineEngine } from "./image";
 import { faviconPackEngine } from "./image/packs/favicon";
+import { gifFramesEngine } from "./image/packs/gif-frames";
 import { IMAGE_DECODERS, IMAGE_ENCODERS } from "./image/registry";
 import { METADATA_ENGINES } from "./metadata";
 import { mlwToMp4Engine } from "./mlw";
 import { imageToPdfEngine } from "./pdf/image-to-pdf";
 import { svgOptimiseEngine } from "./svg/optimise";
 import type { Engine } from "./types";
+import { createVideoConversionEngine } from "./video/convert";
 
 export * from "./image";
 export * from "./types";
@@ -56,6 +59,10 @@ function buildImageEngines(): Map<string, Engine> {
 	// need no special case for a tool that produces several files.
 	engines.set(faviconPackEngine.id, faviconPackEngine);
 
+	// Uses the platform GIF decoder, so it is unavailable in Firefox — probe()
+	// feature-detects and the engine simply is not selected there.
+	engines.set(gifFramesEngine.id, gifFramesEngine);
+
 	// Embeds the image stream directly; never rasterises, so the picture inside
 	// the PDF is byte-identical to the input.
 	engines.set(imageToPdfEngine.id, imageToPdfEngine);
@@ -66,6 +73,33 @@ function buildImageEngines(): Map<string, Engine> {
 	// Format-specific extractors: byte-offset parsing plus Web Crypto, no
 	// decode/encode pipeline at all.
 	engines.set(mlwToMp4Engine.id, mlwToMp4Engine);
+
+	// Container conversions. mediabunny copies encoded samples wherever the
+	// target can carry them and only re-encodes when it cannot, so mkv->mp4 and
+	// mov->mp4 are typically pure remuxes finishing in seconds.
+	for (const [from, to] of [
+		["mkv", "mp4"],
+		["mov", "mp4"],
+		["webm", "mp4"],
+		["mp4", "webm"],
+	] as const) {
+		const engine = createVideoConversionEngine(to, from);
+		engines.set(engine.id, engine);
+	}
+
+	// Audio extraction. The audio track is copied out untouched wherever the
+	// target container can carry the codec, which for MP4's AAC into .m4a is
+	// the common case — the operation almost every other converter answers
+	// with a re-encode to MP3.
+	for (const [from, to] of [
+		["mp4", "m4a"],
+		["mkv", "m4a"],
+		["mov", "m4a"],
+		["webm", "ogg"],
+	] as const) {
+		const engine = createAudioExtractionEngine(from, to);
+		engines.set(engine.id, engine);
+	}
 
 	return engines;
 }

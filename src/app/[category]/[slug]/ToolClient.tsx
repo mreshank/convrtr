@@ -11,12 +11,18 @@ import { FidelityScore } from "@/components/instrument/FidelityScore";
 import { FileReadout } from "@/components/instrument/FileReadout";
 import { OptionsPanel } from "@/components/instrument/OptionsPanel";
 import { ProgressBar } from "@/components/instrument/ProgressBar";
-import { outputFilename, readFile, saveOutput } from "@/core/io";
+import {
+	canStreamToDisk,
+	outputFilename,
+	readFile,
+	saveOutput,
+} from "@/core/io";
 import { preflight } from "@/core/io/preflight";
+import { pickSaveFile, SAVE_CANCELLED } from "@/core/io/sink";
 import { type ZipEntry, zipOutputs } from "@/core/io/zip";
 import type { BatchItem } from "@/core/pipeline/batch";
 import { runBatch } from "@/core/pipeline/batch";
-import { JobError, runJob } from "@/core/pipeline/client";
+import { JobError, runJob, runStreamJob } from "@/core/pipeline/client";
 import { type ErrorCode, makeJobId } from "@/core/pipeline/protocol";
 import {
 	describeFidelity,
@@ -49,6 +55,19 @@ export function ToolClient({ toolId }: { toolId: string }) {
 	const [phase, setPhase] = useState("");
 	const [elapsed, setElapsed] = useState(0);
 	const [result, setResult] = useState<Result | null>(null);
+	/**
+	 * A conversion that wrote straight to disk. Separate from `result` because
+	 * there are no bytes to hold: the file already exists, so there is nothing
+	 * to preview and nothing left to save. Conflating the two would put a SAVE
+	 * button in front of a file that had already been written.
+	 */
+	const [streamed, setStreamed] = useState<{ bytes: number } | null>(null);
+	/**
+	 * What preflight decided when the file arrived. Recorded then rather than
+	 * at CONVERT time because the save dialog has to open inside the click
+	 * handler, leaving no room to work it out first.
+	 */
+	const [strategy, setStrategy] = useState<"memory" | "stream">("memory");
 	const [error, setError] = useState<{
 		code: ErrorCode;
 		detail?: string;
@@ -116,6 +135,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 		}
 
 		setError(null);
+		setStrategy(verdict.strategy);
 		const newItems: BatchItem[] = dropped.map((droppedFile) => ({
 			id: makeJobId(),
 			file: droppedFile,
@@ -143,13 +163,73 @@ export function ToolClient({ toolId }: { toolId: string }) {
 
 		setError(null);
 		setResult(null);
+		setStreamed(null);
 		setRatio(0);
 		setPhase("");
 		setElapsed(0);
+
+		// Stream when the file is big enough for preflight to say so, the tool's
+		// engines can do it, and the browser can write to disk without buffering.
+		// All three have to hold: streaming a small file only costs the user an
+		// extra dialog, and claiming to stream without the capability would fail
+		// after the work rather than before it.
+		const willStream =
+			strategy === "stream" && tool.streamable === true && canStreamToDisk();
+
+		// The dialog must open in the same task as the click, so this happens
+		// before any await that is not itself part of showing it.
+		let handle: FileSystemFileHandle | null = null;
+		if (willStream) {
+			try {
+				const picked = await pickSaveFile(
+					outputFilename(file.name, tool.output.ext),
+					tool.output.mime,
+				);
+				// Dismissing the dialog means the user chose not to convert, which
+				// is not an error and must not leave a spinner running.
+				if (picked === SAVE_CANCELLED) {
+					controllerRef.current = null;
+					return;
+				}
+				handle = picked;
+			} catch (caught) {
+				setError({
+					code: "ENGINE_FAILURE",
+					detail: caught instanceof Error ? caught.message : undefined,
+				});
+				controllerRef.current = null;
+				return;
+			}
+		}
+
 		startedAtRef.current = Date.now();
 		setConverting(true);
 
 		try {
+			if (handle) {
+				const bytes = await runStreamJob(
+					{
+						id: makeJobId(),
+						engines: tool.engines,
+						// The File itself, not its bytes: the demuxer slices it as it
+						// reads, which is the whole reason this path exists.
+						input: file,
+						params: quality.params,
+						handle,
+						mode: "stream",
+					},
+					(event) => {
+						if (event.type === "progress") {
+							setRatio(event.ratio);
+							setPhase(event.phase);
+						}
+					},
+					controller.signal,
+				);
+				setStreamed({ bytes });
+				return;
+			}
+
 			const input = await readFile(file);
 			const output = await runJob(
 				{
@@ -199,6 +279,8 @@ export function ToolClient({ toolId }: { toolId: string }) {
 		setBatchSettledCount(0);
 		setQuality(initialQuality(tool));
 		setResult(null);
+		setStreamed(null);
+		setStrategy("memory");
 		setError(null);
 		setRatio(0);
 		setPhase("");
@@ -506,6 +588,15 @@ export function ToolClient({ toolId }: { toolId: string }) {
 							>
 								SAVE
 							</button>
+						</div>
+					)}
+
+					{!converting && streamed && (
+						<div className="flex items-center justify-between">
+							<span data-testid="streamed" className="mono text-[12px]">
+								{formatBytes(file.size)} {"→"} {formatBytes(streamed.bytes)}{" "}
+								{formatDelta(file.size, streamed.bytes)} {"·"} SAVED TO DISK
+							</span>
 						</div>
 					)}
 

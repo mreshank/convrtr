@@ -3,6 +3,7 @@
 	"buildCommand": "pnpm build",
 	"outputDirectory": "out",
 	"framework": null,
+	"cleanUrls": true,
 	"headers": [
 		{
 			"source": "/(.*)",
