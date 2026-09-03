@@ -124,9 +124,44 @@ agents must never race the lockfile.
 
 ## Definition of done
 
-- `mkv→mp4` on an H.264/AAC source produces a file whose video stream payload is
-  **byte-identical** to the source's, proven by test, in seconds.
-- `webm→mp4` works on both paths and the UI names which one ran.
-- A file larger than available RAM converts without the tab dying.
-- Cancellation releases GPU codec handles, verified.
-- Every lossless claim has a test, exactly as the image pack does.
+- [x] `mkv→mp4` on an H.264/AAC source produces a file whose video stream
+  payload is **byte-identical** to the source's, proven by test, in seconds.
+  — `e2e/remux.spec.ts`, verified with ffmpeg/ffprobe, which take no part in
+  the conversion. Falsified by flipping the default preset to re-encode.
+- [ ] `webm→mp4` works on both paths and the UI names which one ran.
+  The engine and the decision table both exist; the UI does not yet state
+  which path it took.
+- [x] A file larger than available RAM converts without the tab dying.
+  — `e2e/stream.spec.ts` streams a 70MB MKV (over the 64MiB threshold at which
+  preflight switches strategy) straight to disk and proves the H.264 payload
+  is byte-identical to the source's. Input is read in slices via `BlobSource`
+  and output written through `StreamTarget`, so neither side is ever resident.
+- [ ] Cancellation releases GPU codec handles, verified.
+- [ ] Every lossless claim has a test, exactly as the image pack does.
+
+### What streaming cost, and what it did not
+
+Whole-file hashes of the streamed and buffered outputs **differ**, and that is
+correct rather than a defect: a seekable stream target lays the container out
+differently from a buffer target — moov placement and interleaving — while
+carrying identical compressed video. Any test comparing the two paths
+byte-for-byte at the file level would fail while nothing was wrong, which is
+why the streaming proof compares the *payload* against the source instead.
+
+A streamed conversion has no in-memory result, so it cannot be previewed and
+cannot be re-saved. The UI says "SAVED TO DISK" and shows no SAVE button,
+because offering one would imply bytes are being held that are not.
+
+### The commit hazard, recorded because it is easy to reintroduce
+
+A muxer closes its target when it stops writing, and mediabunny does so from a
+`finally` — so it also closes after a *failed* finalize, and on cancel. For a
+`FileSystemWritableFileStream`, `close()` is what commits the file. Passing the
+file stream straight to the muxer therefore commits whatever bytes escaped a
+crash: a truncated video that plays its opening seconds and silently lacks the
+rest, which is worse than no file because it looks finished.
+
+So `createFileSink`'s `close()` is deliberately a no-op, and committing is a
+separate act taken only once the engine has resolved. `runStreamingConversion`
+owns that decision and discards on any throw. Both halves are tested, and the
+test was falsified against the naive `finally { commit() }`.
