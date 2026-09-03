@@ -5,7 +5,9 @@ import { ToolCTA } from "../ToolCTA";
 describe("ToolCTA", () => {
 	it("renders the real tool's title and links to its page", () => {
 		render(<ToolCTA toolId="video/mlw-to-mp4" />);
-		expect(screen.getByText("Extract MP4 video from an MLW file")).toBeDefined();
+		expect(
+			screen.getByText("Extract MP4 video from an MLW file"),
+		).toBeDefined();
 		const link = screen.getByRole("link");
 		expect(link.getAttribute("href")).toBe("/video/mlw-to-mp4");
 	});

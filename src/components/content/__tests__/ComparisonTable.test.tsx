@@ -7,7 +7,9 @@ describe("ComparisonTable", () => {
 		render(
 			<ComparisonTable
 				columns={["MLW", "Simple rename"]}
-				rows={[{ label: "Encryption", values: ["AES-GCM, shared key", "None"] }]}
+				rows={[
+					{ label: "Encryption", values: ["AES-GCM, shared key", "None"] },
+				]}
 			/>,
 		);
 		expect(screen.getByText("MLW")).toBeDefined();

@@ -35,9 +35,9 @@ describe("getPost", () => {
 
 describe("getPostsByTool", () => {
 	it("returns only posts whose relatedTools includes the given tool id", () => {
-		expect(getPostsByTool("video/mlw-to-mp4", fixture).map((p) => p.slug)).toEqual([
-			"post-a",
-		]);
+		expect(
+			getPostsByTool("video/mlw-to-mp4", fixture).map((p) => p.slug),
+		).toEqual(["post-a"]);
 	});
 
 	it("returns an empty array when no post references the tool", () => {

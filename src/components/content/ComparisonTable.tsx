@@ -14,7 +14,10 @@ export function ComparisonTable({
 		<table className="w-full border-collapse text-[14px]">
 			<thead>
 				<tr>
-					<th className="border-b p-2 text-left" style={{ borderColor: "var(--hairline)" }} />
+					<th
+						className="border-b p-2 text-left"
+						style={{ borderColor: "var(--hairline)" }}
+					/>
 					{columns.map((column) => (
 						<th
 							key={column}

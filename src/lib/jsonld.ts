@@ -1,5 +1,5 @@
-import type { Tool } from "@/core/registry";
 import type { BlogPostMeta } from "@/content/blog/types";
+import type { Tool } from "@/core/registry";
 
 export function buildToolJsonLd(tool: Tool, url: string) {
 	return {
