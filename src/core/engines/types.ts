@@ -1,5 +1,28 @@
 import type { ParamValue } from "@/core/quality";
 
+/**
+ * One positioned write against the output file.
+ *
+ * Muxers do not write strictly forwards. MP4 keeps its `moov` index at the
+ * front of the file but cannot know its contents until every sample has been
+ * written, so it seeks back and patches the header afterwards. That is why a
+ * chunk carries a `position` instead of being a plain byte stream: an
+ * append-only sink cannot mux MP4 without buffering the entire file first,
+ * which is the exact allocation streaming exists to avoid.
+ *
+ * The shape deliberately matches both mediabunny's `StreamTargetChunk` and
+ * `FileSystemWritableFileStream.write()`, so bytes travel from muxer to disk
+ * without an adapter in the middle keeping them alive.
+ */
+export type WriteChunk = {
+	type: "write";
+	data: Uint8Array<ArrayBuffer>;
+	position: number;
+};
+
+/** Where a streaming engine writes its output. */
+export type OutputSink = WritableStream<WriteChunk>;
+
 export interface Engine {
 	id: string;
 	probe(): Promise<boolean>;
@@ -8,4 +31,44 @@ export interface Engine {
 		params: Record<string, ParamValue>,
 		onProgress: (ratio: number, phase: string) => void,
 	): Promise<ArrayBuffer>;
+
+	/**
+	 * Converts without ever holding the whole file in memory.
+	 *
+	 * `run` takes an `ArrayBuffer` and returns one, which means peak memory is
+	 * at least input + output. For a 3GB video that is fatal on any device, and
+	 * no amount of care elsewhere rescues it — the allocation is in the
+	 * signature.
+	 *
+	 * This variant takes a `Blob` (read lazily, in slices, as the demuxer asks
+	 * for byte ranges) and writes into a sink, so peak memory is a few chunks
+	 * regardless of file size. It returns nothing: by the time it resolves the
+	 * bytes are already at their destination, so there is no result to hand
+	 * back and nothing to preview.
+	 *
+	 * Optional because most engines genuinely cannot stream. An image codec
+	 * needs the whole decoded bitmap resident to work on it at all, so
+	 * pretending otherwise would buy nothing. Callers must therefore treat its
+	 * absence as normal and fall back to `run`.
+	 */
+	runStream?(
+		input: Blob,
+		params: Record<string, ParamValue>,
+		onProgress: (ratio: number, phase: string) => void,
+		sink: OutputSink,
+	): Promise<void>;
+}
+
+/** An engine that can convert without holding the whole file. */
+export type StreamingEngine = Engine & Required<Pick<Engine, "runStream">>;
+
+/**
+ * Narrows to an engine that can stream.
+ *
+ * A type predicate rather than a boolean so callers get a `runStream` that
+ * TypeScript knows is present, instead of a non-null assertion at every call
+ * site that would survive the method being renamed.
+ */
+export function supportsStreaming(engine: Engine): engine is StreamingEngine {
+	return typeof engine.runStream === "function";
 }

@@ -54,6 +54,11 @@ export function defineVideoConversion(input: DefineVideoConversionInput): Tool {
 		},
 		output: { ext: input.to, mime: `video/${input.to}` },
 		engines: [`video:${input.from}->${input.to}`],
+		// Video is where streaming earns its keep: these are the files that do not
+		// fit in memory, and mediabunny can both read the input in slices and mux
+		// the output straight to disk. Kept in step with the engine by
+		// `streamable-parity`.
+		streamable: true,
 		quality: {
 			losslessAvailable: input.commonlyCopies,
 			defaultPreset: input.commonlyCopies ? "lossless" : "visually-lossless",

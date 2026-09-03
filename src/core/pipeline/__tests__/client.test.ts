@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { JobError, runJob } from "../client";
+import { JobError, runJob, runStreamJob } from "../client";
 import type { JobEvent } from "../protocol";
 
 /**
@@ -119,5 +119,132 @@ describe("runJob", () => {
 
 		await expect(promise).rejects.toMatchObject({ name: "AbortError" });
 		expect(worker.terminated).toBe(true);
+	});
+});
+
+describe("runStreamJob", () => {
+	function streamRequest() {
+		return {
+			id: "job-1",
+			engines: ["x"],
+			input: new Blob(["x"]),
+			params: {},
+			handle: {} as FileSystemFileHandle,
+			mode: "stream" as const,
+		};
+	}
+
+	it("rejects immediately on an already-aborted signal without creating a worker", async () => {
+		const controller = new AbortController();
+		controller.abort();
+
+		await expect(
+			runStreamJob(streamRequest(), () => {}, controller.signal),
+		).rejects.toThrow(/Cancelled/);
+		expect(lastWorker).toBeNull();
+	});
+
+	it("resolves with the size on disk rather than a buffer", async () => {
+		const promise = runStreamJob(
+			streamRequest(),
+			() => {},
+			new AbortController().signal,
+		);
+		lastWorker?.onmessage?.(
+			new MessageEvent("message", {
+				data: { type: "streamed", id: "job-1", bytes: 2048 },
+			}),
+		);
+
+		await expect(promise).resolves.toBe(2048);
+		expect(lastWorker?.terminated).toBe(true);
+	});
+
+	it("does not resolve on a buffered `done` event", async () => {
+		const settled = vi.fn();
+		const promise = runStreamJob(
+			streamRequest(),
+			() => {},
+			new AbortController().signal,
+		).then(settled, settled);
+
+		// A streaming job that received `done` would mean the worker took the
+		// buffered path after being asked to stream — silently loading a file
+		// too large for memory. Resolving here would hide that.
+		lastWorker?.onmessage?.(
+			new MessageEvent("message", {
+				data: { type: "done", id: "job-1", output: new ArrayBuffer(8) },
+			}),
+		);
+		await Promise.resolve();
+
+		expect(settled).not.toHaveBeenCalled();
+
+		lastWorker?.onmessage?.(
+			new MessageEvent("message", {
+				data: { type: "streamed", id: "job-1", bytes: 8 },
+			}),
+		);
+		await promise;
+	});
+
+	it("surfaces the worker's error code rather than a bare Error", async () => {
+		const promise = runStreamJob(
+			streamRequest(),
+			() => {},
+			new AbortController().signal,
+		);
+		lastWorker?.onmessage?.(
+			new MessageEvent("message", {
+				data: {
+					type: "error",
+					id: "job-1",
+					code: "CAPABILITY_MISSING",
+					message: "cannot stream",
+				},
+			}),
+		);
+
+		await expect(promise).rejects.toBeInstanceOf(JobError);
+		await expect(promise).rejects.toMatchObject({
+			code: "CAPABILITY_MISSING",
+		});
+	});
+
+	it("forwards progress events to the caller", async () => {
+		const events: JobEvent[] = [];
+		const promise = runStreamJob(
+			streamRequest(),
+			(event) => events.push(event),
+			new AbortController().signal,
+		);
+		lastWorker?.onmessage?.(
+			new MessageEvent("message", {
+				data: { type: "progress", id: "job-1", ratio: 0.4, phase: "COPY" },
+			}),
+		);
+		lastWorker?.onmessage?.(
+			new MessageEvent("message", {
+				data: { type: "streamed", id: "job-1", bytes: 1 },
+			}),
+		);
+		await promise;
+
+		expect(events).toEqual([
+			{ type: "progress", id: "job-1", ratio: 0.4, phase: "COPY" },
+			{ type: "streamed", id: "job-1", bytes: 1 },
+		]);
+	});
+
+	it("terminates the worker when cancelled mid-conversion", async () => {
+		const controller = new AbortController();
+		const promise = runStreamJob(streamRequest(), () => {}, controller.signal);
+
+		controller.abort();
+
+		await expect(promise).rejects.toThrow(/Cancelled/);
+		// Terminating leaves the writable neither committed nor aborted, so the
+		// browser discards it and no partial file survives.
+		expect(lastWorker?.terminated).toBe(true);
 	});
 });

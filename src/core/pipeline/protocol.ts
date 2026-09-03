@@ -13,11 +13,38 @@ export type JobRequest = {
 	engines: string[];
 	input: ArrayBuffer;
 	params: Record<string, ParamValue>;
+	mode?: "buffer";
 };
+
+/**
+ * A conversion that writes straight to disk instead of returning bytes.
+ *
+ * The input is a `Blob` rather than an `ArrayBuffer` because the point is to
+ * never hold the file whole — the demuxer slices it as it reads. The output
+ * destination is a `FileSystemFileHandle`, which is structured-cloneable, so
+ * the worker can create the writable itself and no chunk ever crosses back to
+ * the main thread.
+ *
+ * There is deliberately no `output` on the matching event. By the time the job
+ * finishes the bytes are already on disk, so there is nothing to hand back —
+ * and nothing to preview, which is a real difference the UI has to reflect
+ * rather than paper over.
+ */
+export type StreamJobRequest = {
+	id: string;
+	engines: string[];
+	input: Blob;
+	params: Record<string, ParamValue>;
+	handle: FileSystemFileHandle;
+	mode: "stream";
+};
+
+export type AnyJobRequest = JobRequest | StreamJobRequest;
 
 export type JobEvent =
 	| { type: "progress"; id: string; ratio: number; phase: string }
 	| { type: "done"; id: string; output: ArrayBuffer }
+	| { type: "streamed"; id: string; bytes: number }
 	| { type: "error"; id: string; code: ErrorCode; message: string };
 
 export function makeJobId(): string {
@@ -36,6 +63,8 @@ export function isJobEvent(value: unknown): value is JobEvent {
 			return typeof event.ratio === "number" && typeof event.phase === "string";
 		case "done":
 			return event.output instanceof ArrayBuffer;
+		case "streamed":
+			return typeof event.bytes === "number";
 		case "error":
 			return (
 				typeof event.code === "string" && typeof event.message === "string"
