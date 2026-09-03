@@ -92,10 +92,38 @@ async function executeConversion(
 		onProgress(0.05, `DROPPING: ${dropped}`);
 	}
 
+	// Whether this will actually copy packets, which is not the same question as
+	// whether a copy was *asked* for.
+	//
+	// mediabunny re-encodes whenever the target container cannot carry the
+	// source codec — H.264 into WebM, say — regardless of `forceTranscode:
+	// false`, and it does not expose that decision. Deriving the label from the
+	// flag alone therefore reported "COPY" through a conversion that was
+	// re-encoding every frame, which is the one thing this pack must never say.
+	//
+	// So the same condition is checked here against the output format's own
+	// list of supported codecs. Both streams have to be copyable for the
+	// operation as a whole to be a copy: re-encoding the audio while copying
+	// the video is still a re-encode from the user's point of view.
+	const [videoTrack, audioTrack] = await Promise.all([
+		input.getPrimaryVideoTrack(),
+		input.getPrimaryAudioTrack(),
+	]);
+	const format = output.format;
+	const videoCopyable =
+		!videoTrack ||
+		(videoTrack.codec !== null &&
+			format.getSupportedVideoCodecs().includes(videoTrack.codec));
+	const audioCopyable =
+		!audioTrack ||
+		(audioTrack.codec !== null &&
+			format.getSupportedAudioCodecs().includes(audioTrack.codec));
+	const willCopy = !forceTranscode && videoCopyable && audioCopyable;
+
 	conversion.onProgress = (progress) => {
 		// mediabunny reports 0-1 across the whole conversion; reserve the
 		// head and tail for demux setup and muxing the final structure.
-		onProgress(0.05 + progress * 0.9, forceTranscode ? "ENCODE" : "COPY");
+		onProgress(0.05 + progress * 0.9, willCopy ? "COPY" : "ENCODE");
 	};
 
 	await conversion.execute();
