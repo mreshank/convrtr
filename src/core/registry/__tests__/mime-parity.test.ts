@@ -64,7 +64,10 @@ function isRecognisedEngineId(engineId: string | undefined): boolean {
 		/^audio:[a-z0-9]+->[a-z0-9]+$/.test(engineId) ||
 		// Trimming copies packets between two points in the same container, so
 		// it has no decoder/encoder pair either.
-		/^trim:[a-z0-9]+$/.test(engineId)
+		/^trim:[a-z0-9]+$/.test(engineId) ||
+		// Frame extraction decodes video and hands the pixels to an image
+		// encoder, so it has no image *decoder* to check parity against.
+		/^frame:[a-z0-9]+$/.test(engineId)
 	);
 }
 

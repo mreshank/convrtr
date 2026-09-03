@@ -189,8 +189,11 @@ export function ToolClient({ toolId }: { toolId: string }) {
 
 		// Only for tools that need it, and only ever for the first file: a time
 		// range over a batch would mean applying one file's timeline to another.
+		// Both time controls are bounded by the file, so both need the probe.
+		// Listing only `timerange` here left the frame tool's slider stuck at a
+		// maximum of zero — the control rendered, and was simply unusable.
 		const needsDuration = tool.quality.advanced.some(
-			(param) => param.control === "timerange",
+			(param) => param.control === "timerange" || param.control === "timestamp",
 		);
 		const first = dropped[0];
 		if (needsDuration && first) {

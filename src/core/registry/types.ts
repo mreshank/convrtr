@@ -71,6 +71,16 @@ export const AdvancedParamSchema = z.discriminatedUnion("control", [
 		label: z.string(),
 		group: z.string(),
 	}),
+	/**
+	 * A single moment on the loaded file's timeline, for tools that act on one
+	 * frame rather than a span. Bounds come from the file, like `timerange`.
+	 */
+	z.object({
+		control: z.literal("timestamp"),
+		key: z.string(),
+		label: z.string(),
+		group: z.string(),
+	}),
 ]);
 export type AdvancedParam = z.infer<typeof AdvancedParamSchema>;
 

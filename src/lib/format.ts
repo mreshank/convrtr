@@ -48,3 +48,17 @@ export function formatDuration(seconds: number): string {
 export function formatPercent(ratio: number): string {
 	return `${Math.round(ratio * 100)}%`;
 }
+
+/**
+ * A position on a timeline as m:ss.dd.
+ *
+ * Hundredths because these controls exist to pick a moment, and "0:04" spans
+ * thirty frames at ordinary frame rates. Tools then report separately where a
+ * cut actually landed, which is usually not where it was asked for.
+ */
+export function formatTimecode(seconds: number): string {
+	const safe = Number.isFinite(seconds) && seconds > 0 ? seconds : 0;
+	const minutes = Math.floor(safe / 60);
+	const rest = safe - minutes * 60;
+	return `${minutes}:${rest.toFixed(2).padStart(5, "0")}`;
+}

@@ -9,6 +9,7 @@ import {
 } from "@/core/quality";
 import type { AdvancedParam, Tool } from "@/core/registry";
 import { TimeRange } from "./TimeRange";
+import { Timestamp } from "./Timestamp";
 
 type Props = {
 	tool: Tool;
@@ -69,6 +70,11 @@ function AdvancedControl({
 				</select>
 			</label>
 		);
+	}
+
+	if (param.control === "timestamp") {
+		// Rendered by the panel, which is where the file's duration lives.
+		return null;
 	}
 
 	if (param.control === "timerange") {
@@ -183,7 +189,17 @@ export function OptionsPanel({ tool, state, onChange, duration }: Props) {
 							{tool.quality.advanced
 								.filter((param) => param.group === group)
 								.map((param) =>
-									param.control === "timerange" ? (
+									param.control === "timestamp" ? (
+										<Timestamp
+											key={param.key}
+											label={param.label}
+											duration={duration ?? 0}
+											value={Number(state.params[param.key] ?? 0)}
+											onChange={(value) =>
+												onChange(setParam(tool, state, param.key, value))
+											}
+										/>
+									) : param.control === "timerange" ? (
 										<TimeRange
 											key={`${param.startKey}-${param.endKey}`}
 											label={param.label}

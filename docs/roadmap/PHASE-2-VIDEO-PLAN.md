@@ -183,6 +183,35 @@ byte-substring check needed an explicit non-empty assertion: a falsification
 run produced an unreadable output, and `indexOf` of an empty buffer is 0, which
 satisfied the comparison by being nothing at all.
 
+### Frame extraction, and a narrower fidelity claim
+
+`frame:mp4` decodes one frame and hands the pixels to the same PNG encoder
+every image tool uses, so it gets a real lossless encode with optional oxipng
+recompression rather than `canvas.toBlob`'s version. `CanvasSink` does the
+rasterising, which avoids reimplementing YUV-to-RGB — a step a hand-rolled
+version would get subtly wrong on anything but BT.709.
+
+The fidelity claim here is deliberately narrower than the trim's. The PNG is an
+exact record of the frame *as decoded*, and nothing further is lost — but the
+frame came out of a lossy codec and this cannot recover detail the video never
+had. "A PNG of a frame is the best possible copy of that frame, not a better
+version of it" is what the FAQ says, because the unqualified word "lossless"
+would be the kind of half-truth the rest of the catalogue avoids.
+
+Tested by building a fixture with one solid colour per second, so the colour of
+the extracted image says which second it came from — a check that needs no
+knowledge of either decoder. Falsified by pinning the engine to frame 0, which
+returns red at a colour distance of 361 against a threshold of 60. Colours are
+compared with tolerance because the YUV round trip is not exactly reversible:
+pure red comes back as rgb(255, 24, 0).
+
+Two bugs the tests caught. The duration probe was gated on `timerange` alone,
+so the frame tool's `timestamp` slider rendered with a maximum of zero —
+present, and unusable. And the tool's id and slug disagreed, which the
+conformance test caught for the second time in this project: routes derive from
+the slug and lookups from the id, so a page renders and then cannot find its
+own tool.
+
 ### File-dependent controls
 
 Trim needed something the registry could not express. Every control declares

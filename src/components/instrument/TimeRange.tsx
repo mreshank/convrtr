@@ -1,3 +1,5 @@
+import { formatTimecode } from "@/lib/format";
+
 type Props = {
 	label: string;
 	duration: number;
@@ -5,20 +7,6 @@ type Props = {
 	end: number;
 	onChange: (start: number, end: number) => void;
 };
-
-/**
- * Formats a position on the timeline as m:ss.dd.
- *
- * Hundredths are shown because the whole point of the control is choosing a
- * moment, and "0:04" is ambiguous across thirty frames. The tool then reports
- * separately where the cut actually landed, which is usually not where it was
- * asked for.
- */
-function timecode(value: number): string {
-	const minutes = Math.floor(value / 60);
-	const seconds = value - minutes * 60;
-	return `${minutes}:${seconds.toFixed(2).padStart(5, "0")}`;
-}
 
 /**
  * Selects a span of a loaded file's timeline.
@@ -47,7 +35,8 @@ export function TimeRange({ label, duration, start, end, onChange }: Props) {
 					className="mono text-[11px]"
 					style={{ color: "var(--text-muted)" }}
 				>
-					{timecode(start)} — {timecode(end)} ({timecode(end - start)})
+					{formatTimecode(start)} — {formatTimecode(end)} (
+					{formatTimecode(end - start)})
 				</span>
 			</div>
 

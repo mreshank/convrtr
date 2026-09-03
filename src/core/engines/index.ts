@@ -9,6 +9,7 @@ import { imageToPdfEngine } from "./pdf/image-to-pdf";
 import { svgOptimiseEngine } from "./svg/optimise";
 import type { Engine } from "./types";
 import { createVideoConversionEngine } from "./video/convert";
+import { createFrameExtractionEngine } from "./video/frame";
 import { createVideoTrimEngine } from "./video/trim";
 
 export * from "./image";
@@ -92,6 +93,14 @@ function buildImageEngines(): Map<string, Engine> {
 	// target container can carry the codec, which for MP4's AAC into .m4a is
 	// the common case — the operation almost every other converter answers
 	// with a re-encode to MP3.
+	// Single-frame extraction. This one genuinely decodes — a still cannot be
+	// made from a copied inter-frame packet — but only from the preceding
+	// keyframe forward, not through the whole file.
+	for (const container of ["mp4", "mkv", "webm"] as const) {
+		const engine = createFrameExtractionEngine(container);
+		engines.set(engine.id, engine);
+	}
+
 	// Trimming. Not a `Conversion` with a trim option — that re-encodes, since
 	// its copy path requires starting at the file's first timestamp. These copy
 	// packets directly, so a cut costs nothing in quality.

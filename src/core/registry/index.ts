@@ -23,6 +23,7 @@ import { removeMetadataPng } from "./tools/remove-metadata-png";
 import { resizeJpg } from "./tools/resize-jpg";
 import { resizePng } from "./tools/resize-png";
 import { resizeWebp } from "./tools/resize-webp";
+import { frameMp4 } from "./tools/video/frame-mp4";
 import { mkvToMp4 } from "./tools/video/mkv-to-mp4";
 import { mlwToMp4 } from "./tools/video/mlw-to-mp4";
 import { movToMp4 } from "./tools/video/mov-to-mp4";
@@ -77,6 +78,7 @@ export const TOOLS: Tool[] = [
 	mp4ToWebm,
 	mp4ToM4a,
 	trimMp4,
+	frameMp4,
 ];
 
 export function getTool(id: string): Tool | undefined {

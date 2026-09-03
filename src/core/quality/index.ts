@@ -19,6 +19,12 @@ function advancedDefaults(tool: Tool): Record<string, ParamValue> {
 			out[param.endKey] = 0;
 			continue;
 		}
+		if (param.control === "timestamp") {
+			// The first frame, which is the one someone wants often enough to be
+			// a sensible default and is always valid whatever the file's length.
+			out[param.key] = 0;
+			continue;
+		}
 		out[param.key] = param.default;
 	}
 	return out;
