@@ -1,3 +1,4 @@
+import { createAudioExtractionEngine } from "./audio/extract";
 import { createImagePipelineEngine } from "./image";
 import { faviconPackEngine } from "./image/packs/favicon";
 import { gifFramesEngine } from "./image/packs/gif-frames";
@@ -83,6 +84,20 @@ function buildImageEngines(): Map<string, Engine> {
 		["mp4", "webm"],
 	] as const) {
 		const engine = createVideoConversionEngine(to, from);
+		engines.set(engine.id, engine);
+	}
+
+	// Audio extraction. The audio track is copied out untouched wherever the
+	// target container can carry the codec, which for MP4's AAC into .m4a is
+	// the common case — the operation almost every other converter answers
+	// with a re-encode to MP3.
+	for (const [from, to] of [
+		["mp4", "m4a"],
+		["mkv", "m4a"],
+		["mov", "m4a"],
+		["webm", "ogg"],
+	] as const) {
+		const engine = createAudioExtractionEngine(from, to);
 		engines.set(engine.id, engine);
 	}
 

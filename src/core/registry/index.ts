@@ -1,3 +1,4 @@
+import { mp4ToM4a } from "./tools/audio/mp4-to-m4a";
 import { avifToJpg } from "./tools/avif-to-jpg";
 import { avifToPng } from "./tools/avif-to-png";
 import { compressJpg } from "./tools/compress-jpg";
@@ -73,6 +74,7 @@ export const TOOLS: Tool[] = [
 	movToMp4,
 	webmToMp4,
 	mp4ToWebm,
+	mp4ToM4a,
 ];
 
 export function getTool(id: string): Tool | undefined {

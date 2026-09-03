@@ -58,7 +58,10 @@ function isRecognisedEngineId(engineId: string | undefined): boolean {
 		/^extract:[a-z0-9-]+$/.test(engineId) ||
 		// Container conversions demux and mux whole streams; there is no
 		// image decoder/encoder pair to check parity against.
-		/^video:[a-z0-9]+->[a-z0-9]+$/.test(engineId)
+		/^video:[a-z0-9]+->[a-z0-9]+$/.test(engineId) ||
+		// Audio extraction demuxes a video container and muxes one audio
+		// stream, so it has no image decoder/encoder pair either.
+		/^audio:[a-z0-9]+->[a-z0-9]+$/.test(engineId)
 	);
 }
 

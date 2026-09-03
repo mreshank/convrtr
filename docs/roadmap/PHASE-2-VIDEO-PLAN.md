@@ -152,6 +152,31 @@ A streamed conversion has no in-memory result, so it cannot be previewed and
 cannot be re-saved. The UI says "SAVED TO DISK" and shows no SAVE button,
 because offering one would imply bytes are being held that are not.
 
+### Audio extraction and AAC encoder pre-roll
+
+`mp4->m4a` copies the AAC stream out byte for byte, proven by ffmpeg against
+the source. Getting there took two corrections worth keeping.
+
+First, it re-encoded. mediabunny's `trim.start` defaults to "the earliest track
+timestamp, or 0, whichever is higher". AAC carries encoder-delay priming, which
+an MP4 records as a *negative* first timestamp, so the default clamps to 0 —
+asking for the pre-roll to be trimmed, which can only be done by decoding.
+Measured: 64kbps in, 165kbps out, on a conversion advertised as a copy. Passing
+the track's real first timestamp makes the trim a no-op and the packets copy.
+
+Second, the obvious fix for the leftover pre-roll does not work. A preset that
+re-encoded in order to trim it was built and measured: the new encoder adds its
+own pre-roll and padding, so on a 2.020s source the copy came out 2.043s and
+the re-encode 2.113s — further from the original, not closer, while also being
+lossy. It was removed rather than shipped. A control whose stated benefit is
+false is worse than no control, so the tool has one honest mode and the FAQ
+states the ~23ms cost where the choice is made.
+
+The general lesson, which cost time twice in this pack: **do not keep a local
+table of what a library supports.** The first draft of the audio codec table
+was wrong three ways (claimed MP4 takes ALAC, that Ogg takes FLAC, that WAV
+never copies). `format.getSupportedAudioCodecs()` is the authority; ask it.
+
 ### The commit hazard, recorded because it is easy to reintroduce
 
 A muxer closes its target when it stops writing, and mediabunny does so from a
