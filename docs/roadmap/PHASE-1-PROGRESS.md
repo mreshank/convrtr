@@ -74,8 +74,6 @@ typecheck:
 Three of those are invisible until after deployment, and two only affect
 *returning* users — the hardest class of bug to notice or reproduce.
 
-## Two hard-won operational lessons
-
 ## The pipeline needs a transform stage before resize can land
 
 `createImagePipelineEngine(decoderId, encoderId)` composes exactly two steps:
