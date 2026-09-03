@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
+import Link from "next/link";
 import { ThemeToggle } from "@/components/instrument/ThemeToggle";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import { ThemeScript } from "@/components/ThemeScript";
@@ -35,7 +36,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 			</head>
 			<body className="min-h-full flex flex-col">
 				<ServiceWorkerRegistration />
-				<div className="flex justify-end p-4">
+				<div className="flex items-center justify-end gap-4 p-4">
+					<Link
+						href="/blog"
+						className="text-[13px] hover:underline"
+						style={{ color: "var(--text-muted)" }}
+					>
+						Blog
+					</Link>
 					<ThemeToggle />
 				</div>
 				{children}

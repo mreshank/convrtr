@@ -1,0 +1,75 @@
+Course and training apps that support offline viewing usually work the same
+way: you tap "Download," the video streams once, and a wrapped copy lands in
+the app's private storage. That's convenient right up until one of these
+happens:
+
+- The platform shuts down or gets acquired and the app disappears from the
+  store.
+- Your subscription lapses and the app now refuses to open anything,
+  including lessons you already paid for and already downloaded.
+- You switch phones, switch from iOS to Android, or move to a laptop, and
+  the app either doesn't exist on the new platform or won't recognize your
+  old download.
+
+In every one of these cases the video file is still sitting on your device
+— you're not missing data, you're missing the one app that knows how to open
+it. If that file has a `.mlw` extension, this is recoverable.
+
+## Step 1: find the files
+
+Where they live depends on how you got them off the device in the first
+place:
+
+- **Already exported/synced somewhere** (a "Files" app export, a computer
+  backup, a cloud drive folder): search that location for `.mlw`.
+- **Still on the device, app still installed**: most of these apps store
+  downloads in their own sandboxed app-data folder. On Android this is
+  usually reachable via a file manager under `Android/data/<package-name>/`;
+  on iOS it typically requires the Files app's "On My iPhone" view or a
+  computer-side backup browser, since iOS sandboxes app storage more
+  tightly. If you can't find them and the app still opens, check its
+  settings for a "Downloads" or storage-management screen — it will often
+  show you the on-disk location or offer an export option before you lose
+  access entirely.
+- **App already uninstalled or subscription already dead**: check whatever
+  backup you have — a phone backup, an old device you haven't wiped, a
+  cloud sync folder. This is the case where planning ahead (see the note
+  below) would have saved you the search.
+
+<Callout kind="note">
+  If you still have working access right now, export or back up your `.mlw`
+  files before you lose that access — a cancelled subscription or a dead app
+  can turn "five minutes of searching" into "not recoverable" if the only
+  copy was in storage you can no longer reach.
+</Callout>
+
+## Step 2: extract
+
+Once you have a `.mlw` file on a computer, open [the MLW to MP4
+tool](/video/mlw-to-mp4), drop the file in, and it decrypts to a normal
+`.mp4` entirely in your browser — nothing is uploaded, so this works even
+for content you'd rather not put on a third-party server. See [how the
+container format actually works](/blog/how-mlw-encryption-works) if you want
+the mechanism, not just the result.
+
+## Step 3: verify and archive
+
+Play the resulting `.mp4` in any standard video player to confirm it's
+intact. If it opens and plays cleanly, move it somewhere durable — a local
+folder you back up, not just the device you found it on — since you've now
+converted a single point of failure (one app, one account) into a plain file
+you fully control.
+
+If extraction fails, see [troubleshooting a failed MLW
+extraction](/blog/troubleshooting-a-failed-mlw-extraction) for what each
+error message actually means.
+
+## What this doesn't do
+
+This only recovers files you already downloaded while you had legitimate
+access. It doesn't grant access to lessons you never opened, and it doesn't
+restore an active subscription. If the app required an active subscription
+just to *play* an already-downloaded file, extracting it once and keeping
+the resulting MP4 is the difference between "permanently lost" and "yours."
+
+<ToolCTA toolId="video/mlw-to-mp4" />

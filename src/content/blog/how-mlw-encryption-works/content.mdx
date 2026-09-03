@@ -1,0 +1,79 @@
+MLW is the file extension a family of screen-recording and course-authoring
+apps use for downloaded lesson videos. Open one in a text editor and it
+looks like noise — no `ftyp` box, no recognizable video signature — which is
+exactly the impression it's designed to give. It is noise, but only after a
+fixed, findable offset. Everything before that offset is a small, completely
+readable index the app itself needs to locate your file.
+
+This is a byte-level walkthrough of that layout, written from the actual
+parser powering [the MLW to MP4 extractor](/video/mlw-to-mp4), not from a
+spec — because there isn't one. Everything below was read directly off real
+files.
+
+## The container, byte by byte
+
+An MLW file has four regions, in this order:
+
+1. **The `"Root\0"` marker** — five bytes, literally the ASCII text `Root`
+   followed by a NUL byte. It doesn't mark the start of the file; it can
+   (and does) appear preceded by other header bytes the app uses for its own
+   bookkeeping. The extractor doesn't assume it's at offset 0 — it searches
+   for the marker anywhere in the file.
+2. **A NUL-terminated filename block** — immediately after the marker,
+   readable ASCII: the original filename the app recorded, e.g.
+   `lesson-04.mp4`, ending in a single `0x00` byte.
+3. **A 12-byte gap**, then the payload. Measuring from the filename's NUL
+   terminator, the payload starts exactly 13 bytes later — meaning there are
+   12 bytes of *something* between the terminator and the payload that the
+   extractor doesn't interpret. This is worth being honest about: nobody
+   involved in building this tool knows what those 12 bytes encode. They
+   might be a checksum, a version tag, or padding. They're skipped, not
+   decoded, because skipping them is sufficient to get to working video and
+   claiming to know their meaning would be a guess dressed as a fact.
+4. **The payload**: a 12-byte AES-GCM initialization vector (IV), followed by
+   4 more bytes of similarly unidentified data, followed by the ciphertext
+   with a 16-byte authentication tag appended to its end.
+
+<Callout kind="note">
+  The two unidentified gaps (12 bytes before the IV, 4 bytes after it) are
+  the honest parts of this writeup. A tidier-looking explanation that
+  assigned them a made-up meaning would be less useful, not more — it would
+  tell you something false with total confidence.
+</Callout>
+
+## Why AES-GCM, and why it's not really "encryption" in the security sense
+
+AES-GCM is a real, strong authenticated cipher — the same algorithm TLS uses
+to protect your bank's website. Used correctly, with a secret key only the
+legitimate parties know, it's unbreakable by brute force in any practical
+sense.
+
+MLW doesn't use it correctly, in the sense that matters for calling this
+"protection." Every copy of the app that produces MLW files carries the same
+16-byte AES-128 key, embedded in the client. It isn't derived per user, per
+device, or per download — recover it once from any single copy of the app (a
+static string sitting in memory or the binary), and it decrypts every MLW
+file that app has ever produced or ever will, for every user. GCM's
+authentication tag still does its job: if a byte is corrupted or you use the
+wrong key, decryption fails loudly instead of producing silent garbage. But
+"failing loudly on the wrong key" and "keeping a secret" are different
+properties, and MLW only has the first one.
+
+This distinction matters practically, not just semantically — it's the
+entire basis for [why extracting your own MLW files doesn't cross into DRM
+circumvention](/blog/is-extracting-mlw-video-legal). A technological
+protection measure that gates access is different from a container format
+that merely obscures it.
+
+## Putting it together
+
+Decryption, once you have the four regions, is three calls to the browser's
+native Web Crypto API: import the shared 16-byte key as an AES-GCM key, then
+call `crypto.subtle.decrypt` with the IV and the ciphertext-plus-tag. No
+WASM, no native binary, no server. `crypto.subtle` ships in every modern
+browser and includes hardware-accelerated AES-GCM out of the box, so this
+runs in milliseconds even for a full lesson recording. The plaintext that
+comes out is not a re-encoded copy — it's the exact MP4 bytes the app
+recorded, because MLW never touches the video itself. It only wraps it.
+
+<ToolCTA toolId="video/mlw-to-mp4" />

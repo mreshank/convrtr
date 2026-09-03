@@ -1,0 +1,62 @@
+The [MLW to MP4 extractor](/video/mlw-to-mp4) fails loudly rather than
+producing a corrupted or silently wrong video — every failure mode maps to a
+specific, readable error message. Here's what each one actually means.
+
+## "Root marker not found — not a valid MLW file"
+
+The tool searched the entire file for the `"Root\0"` byte sequence that
+marks the start of the filename block and never found it. This almost
+always means one of:
+
+- The file isn't actually an MLW file — check that the extension wasn't
+  changed by hand or by an export tool that renamed it without converting
+  it.
+- The download is corrupted or incomplete — re-download it from the source
+  app if you still have access, or restore from a different backup.
+- The file got mangled by an intermediate step — some cloud-sync or email
+  transfer tools alter binary files (e.g. line-ending conversion meant for
+  text). Re-transfer it as a raw binary if you moved it that way.
+
+## "filename block has no NUL terminator"
+
+The `"Root\0"` marker was found, but the tool never found the `0x00` byte
+that's supposed to end the filename immediately after it. This means the
+file is truncated or corrupted starting very early — right after the
+marker. Treat it the same as a corrupted download: get a fresh copy if you
+can.
+
+## "file truncated before the IV" / "file truncated — no ciphertext after the IV"
+
+Both of these mean the file is shorter than it should be — it has a valid
+`"Root\0"` marker and filename block, but ends before the encrypted payload
+is complete. This is almost always an incomplete download or a copy that
+got cut off partway through a transfer. Compare the file size to the
+original if you have any way to check, and re-download or re-copy it.
+
+## Decryption fails with no readable video (AES-GCM authentication failure)
+
+If the file parses correctly (marker found, filename found, IV and
+ciphertext both present) but decryption itself fails, AES-GCM's built-in
+integrity check has caught one of:
+
+- **A corrupted byte somewhere in the ciphertext** — even a single flipped
+  bit anywhere in the encrypted payload makes the whole thing fail
+  authentication. Re-transfer the file exactly as originally downloaded,
+  not through anything that might alter bytes.
+- **A different app version with a different key** — [the key is fixed per
+  app build, not universal across every version that has ever
+  shipped](/blog/how-mlw-encryption-works). If the file came from a very old
+  or very new version of the source app, it's possible the key has changed.
+- **The file was never actually MLW** despite the extension — a coincidental
+  `"Root\0"` sequence appearing in an unrelated file is unlikely but not
+  impossible for a large enough file.
+
+## None of this fixed it
+
+This is a static, browser-only tool — there's no support queue behind it,
+and it works only for the specific container layout and key it was built
+against. If your file consistently fails the same check with a fresh,
+unmodified copy, it most likely came from an app version this tool hasn't
+been verified against.
+
+<ToolCTA toolId="video/mlw-to-mp4" />

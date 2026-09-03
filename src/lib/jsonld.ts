@@ -1,3 +1,4 @@
+import type { BlogPostMeta } from "@/content/blog/types";
 import type { Tool } from "@/core/registry";
 
 export function buildToolJsonLd(tool: Tool, url: string) {
@@ -40,5 +41,16 @@ export function buildToolJsonLd(tool: Tool, url: string) {
 				})),
 			},
 		],
+	};
+}
+
+export function buildBlogPostingJsonLd(post: BlogPostMeta, url: string) {
+	return {
+		"@context": "https://schema.org",
+		"@type": "BlogPosting",
+		headline: post.title,
+		description: post.description,
+		datePublished: post.publishedAt,
+		url,
 	};
 }

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { RelatedReading } from "@/components/content/RelatedReading";
+import { getPostsByTool } from "@/content/blog/registry";
 import { getTool, TOOLS } from "@/core/registry";
 import { buildToolJsonLd } from "@/lib/jsonld";
 import { ToolClient } from "./ToolClient";
@@ -39,6 +41,8 @@ export default async function ToolPage({
 	const tool = getTool(`${category}/${slug}`);
 	if (!tool) notFound();
 
+	const relatedPosts = getPostsByTool(tool.id);
+
 	return (
 		<>
 			<script
@@ -49,6 +53,7 @@ export default async function ToolPage({
 				}}
 			/>
 			<ToolClient toolId={tool.id} />
+			<RelatedReading posts={relatedPosts} />
 		</>
 	);
 }

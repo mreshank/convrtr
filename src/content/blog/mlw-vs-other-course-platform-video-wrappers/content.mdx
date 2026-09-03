@@ -1,0 +1,69 @@
+MLW isn't a one-off — it's one instance of a pattern that shows up across a
+lot of course, training, and screen-recording apps that offer offline
+downloads. Once you've seen one, the others are recognizable. Here's the
+spectrum, roughly ordered from weakest to strongest.
+
+<ComparisonTable
+  columns={["What it does", "How to spot it", "What it takes to open"]}
+  rows={[
+    {
+      label: "1. Renamed file",
+      values: [
+        "A normal video file with its extension swapped to something proprietary",
+        "The bytes at the start of the file match a known container signature (e.g. ftyp for MP4) once you look past the extension",
+        "Rename the extension back — no decryption of any kind",
+      ],
+    },
+    {
+      label: "2. Shared static key",
+      values: [
+        "The whole file (or the video stream inside a small wrapper) is encrypted with one key baked into every install of the app — MLW's tier",
+        "The file is unreadable as any known format, but every copy of the app carries an identical key you can recover once and reuse for every file",
+        "Find the container's marker/offset layout, then one decrypt call with the shared key",
+      ],
+    },
+    {
+      label: "3. Per-device derived key",
+      values: [
+        "The key is derived from something device-specific — a hardware ID, an account token, a locally-generated secret stored in the app's private storage",
+        "Files from two different devices/accounts don't decrypt with the same key, even from the same app version",
+        "Requires extracting the device- or account-specific secret from the device that downloaded the file, not just the app binary",
+      ],
+    },
+    {
+      label: "4. Real DRM",
+      values: [
+        "Widevine, FairPlay, or PlayReady — a hardware-backed license system with per-session keys negotiated against a license server",
+        "The app requires an active network check or a hardware-secured decryption path (often visible as a 'protected content' warning if you try to screen-record it)",
+        "Not addressed by tools like this one — see the legal writeup for why that's a meaningful line, not just a difficulty cliff",
+      ],
+    },
+  ]}
+/>
+
+## Where this matters in practice
+
+Tier 1 and Tier 2 are both, functionally, obscurity rather than access
+control — the difference between them is just how many steps it takes to
+reverse, not whether reversing it means defeating something that was
+actually gating access. [The legal
+distinction](/blog/is-extracting-mlw-video-legal) tracks this: a wrapper
+whose own app can decrypt entirely offline, using only what shipped in the
+install, was never really controlling access in the first place.
+
+Tier 3 is a real step up — it means the app is doing something with
+per-installation state, which is a meaningfully different (and harder)
+reverse-engineering problem than "find the marker, decrypt with the shared
+key." Tier 4 is a different category of problem entirely, and out of scope
+for a tool built around finding a byte offset and calling `crypto.subtle`.
+
+## Where MLW sits, concretely
+
+MLW is squarely Tier 2: [one shared AES-128 key, no per-device
+component](/blog/how-mlw-encryption-works), extractable with nothing but the
+file and a browser. If you've got a wrapper from a different app that
+behaves the same way — opens instantly offline, no login check, and every
+copy of the app can decrypt every file — it's very likely the same tier,
+even if the byte layout is different.
+
+<ToolCTA toolId="video/mlw-to-mp4" />

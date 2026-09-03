@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
+import type { BlogPostMeta } from "@/content/blog/types";
 import { pngToWebp } from "@/core/registry/tools/png-to-webp";
-import { buildToolJsonLd } from "../jsonld";
+import { buildBlogPostingJsonLd, buildToolJsonLd } from "../jsonld";
 
 describe("buildToolJsonLd", () => {
 	const graph = buildToolJsonLd(
@@ -28,5 +29,35 @@ describe("buildToolJsonLd", () => {
 	it("emits a HowTo node naming the tool", () => {
 		const howTo = graph["@graph"].find((n) => n["@type"] === "HowTo");
 		expect(howTo?.name).toBe(pngToWebp.seo.h1);
+	});
+});
+
+describe("buildBlogPostingJsonLd", () => {
+	const post: BlogPostMeta = {
+		slug: "example-post",
+		title: "Example post",
+		description: "An example description.",
+		publishedAt: "2026-08-27",
+		relatedTools: ["video/mlw-to-mp4"],
+		tags: [],
+		bodyFormat: "mdx",
+	};
+
+	it("emits a BlogPosting node with the post's headline, description and date", () => {
+		const jsonLd = buildBlogPostingJsonLd(
+			post,
+			"https://convrtr.mreshank.com/blog/example-post",
+		) as {
+			"@type": string;
+			headline: string;
+			description: string;
+			datePublished: string;
+			url: string;
+		};
+		expect(jsonLd["@type"]).toBe("BlogPosting");
+		expect(jsonLd.headline).toBe(post.title);
+		expect(jsonLd.description).toBe(post.description);
+		expect(jsonLd.datePublished).toBe(post.publishedAt);
+		expect(jsonLd.url).toBe("https://convrtr.mreshank.com/blog/example-post");
 	});
 });
