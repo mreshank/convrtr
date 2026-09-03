@@ -154,6 +154,50 @@ A streamed conversion has no in-memory result, so it cannot be previewed and
 cannot be re-saved. The UI says "SAVED TO DISK" and shows no SAVE button,
 because offering one would imply bytes are being held that are not.
 
+### Keyframe trim, and why `Conversion` could not do it
+
+The plan listed "trim on keyframes (stream copy)" as though mediabunny's
+`trim` option would provide it. **It does not.** `Conversion`'s copy path
+requires `firstTimestamp >= startTimestamp`, so asking for a clip that starts
+anywhere but the beginning of the file fails that check and every frame goes
+through a decoder and an encoder. Same for audio, via `needsTrimming`. That is
+correct behaviour for an API promising a cut at the exact requested time — and
+it is the trade this tool refuses.
+
+So the trim is built at the packet level: `EncodedPacketSink` reads packets out,
+`EncodedVideoPacketSource`/`EncodedAudioPacketSource` write them back with only
+their timestamps shifted. Nothing is decoded. Proven by extracting the trimmed
+file's H.264 with ffmpeg and finding it verbatim, contiguously, at a **non-zero
+offset** inside the source's stream — which says these exact bytes came out of
+that exact file, in order, untouched.
+
+The cut has to move. Most frames are stored as differences from earlier ones,
+so a copy must begin at a keyframe, and keyframes are seconds apart. The tool
+moves the start back and says by how much; a shift under 0.1s is not reported,
+because a message on every trim is a message nobody reads when it matters.
+
+Two bugs worth remembering. Tracks must all be added to an `Output` **before**
+`start()` — the first version added video, started, then added audio, and threw
+partway through; the e2e caught it only because the fixture had both. And the
+byte-substring check needed an explicit non-empty assertion: a falsification
+run produced an unreadable output, and `indexOf` of an empty buffer is 0, which
+satisfied the comparison by being nothing at all.
+
+### File-dependent controls
+
+Trim needed something the registry could not express. Every control declares
+its own `min`/`max`, but a clip's bounds are the duration of whatever file was
+just dropped — a slider with a guessed maximum is unusable on both a
+ten-second clip and a two-hour recording.
+
+`control: "timerange"` therefore carries no bounds. It names two param keys and
+the panel fills the range from a duration probe that reads the container index
+without touching media data. Defaults are `0`/`0`, which the engine reads as
+"the whole file", so an untouched control is the identity operation rather than
+an empty selection. Frame extraction and video→GIF need the same capability,
+which is why it was built as a control rather than special-cased into the trim
+page.
+
 ### Poorly-supported combinations: copy and warn, not transcode
 
 `compatibility.ts` originally documented that spec-legal but badly-played

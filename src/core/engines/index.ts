@@ -9,6 +9,7 @@ import { imageToPdfEngine } from "./pdf/image-to-pdf";
 import { svgOptimiseEngine } from "./svg/optimise";
 import type { Engine } from "./types";
 import { createVideoConversionEngine } from "./video/convert";
+import { createVideoTrimEngine } from "./video/trim";
 
 export * from "./image";
 export * from "./types";
@@ -91,6 +92,14 @@ function buildImageEngines(): Map<string, Engine> {
 	// target container can carry the codec, which for MP4's AAC into .m4a is
 	// the common case — the operation almost every other converter answers
 	// with a re-encode to MP3.
+	// Trimming. Not a `Conversion` with a trim option — that re-encodes, since
+	// its copy path requires starting at the file's first timestamp. These copy
+	// packets directly, so a cut costs nothing in quality.
+	for (const container of ["mp4", "mkv", "webm"] as const) {
+		const engine = createVideoTrimEngine(container);
+		engines.set(engine.id, engine);
+	}
+
 	for (const [from, to] of [
 		["mp4", "m4a"],
 		["mkv", "m4a"],

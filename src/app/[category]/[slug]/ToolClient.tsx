@@ -112,6 +112,11 @@ export function ToolClient({ toolId }: { toolId: string }) {
 	 * the moment the conversion finishes.
 	 */
 	const [notices, setNotices] = useState<string[]>([]);
+	/**
+	 * Length of the loaded file, for tools whose controls are bounded by it.
+	 * Undefined until the probe resolves, and for every tool that never asks.
+	 */
+	const [duration, setDuration] = useState<number | undefined>(undefined);
 	const [error, setError] = useState<{
 		code: ErrorCode;
 		detail?: string;
@@ -180,6 +185,33 @@ export function ToolClient({ toolId }: { toolId: string }) {
 
 		setError(null);
 		setStrategy(verdict.strategy);
+		setDuration(undefined);
+
+		// Only for tools that need it, and only ever for the first file: a time
+		// range over a batch would mean applying one file's timeline to another.
+		const needsDuration = tool.quality.advanced.some(
+			(param) => param.control === "timerange",
+		);
+		const first = dropped[0];
+		if (needsDuration && first) {
+			// Fire and forget. A failed probe leaves the control at zero rather
+			// than blocking the drop — the conversion itself reports a file it
+			// cannot read far more clearly than a silent failure here would.
+			void import("@/core/engines/video/probe")
+				.then(({ probeDuration }) => probeDuration(first))
+				.then((seconds) => {
+					setDuration(seconds);
+					// An untouched range means "the whole file", so seed the end
+					// handle rather than leaving it at zero, where it would read
+					// as an empty selection.
+					setQuality((current) =>
+						current.params.end === 0
+							? { ...current, params: { ...current.params, end: seconds } }
+							: current,
+					);
+				})
+				.catch(() => setDuration(undefined));
+		}
 		const newItems: BatchItem[] = dropped.map((droppedFile) => ({
 			id: makeJobId(),
 			file: droppedFile,
@@ -344,6 +376,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 		setStreamed(null);
 		setStrategy("memory");
 		setNotices([]);
+		setDuration(undefined);
 		setError(null);
 		setRatio(0);
 		setPhase("");
@@ -607,7 +640,12 @@ export function ToolClient({ toolId }: { toolId: string }) {
 						</button>
 					</div>
 
-					<OptionsPanel tool={tool} state={quality} onChange={setQuality} />
+					<OptionsPanel
+						tool={tool}
+						state={quality}
+						onChange={setQuality}
+						duration={duration}
+					/>
 
 					{converting && (
 						<div className="flex flex-col gap-3">

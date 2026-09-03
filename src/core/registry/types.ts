@@ -55,6 +55,22 @@ export const AdvancedParamSchema = z.discriminatedUnion("control", [
 		group: z.string(),
 		default: z.boolean(),
 	}),
+	/**
+	 * A start/end selection over the loaded file's timeline.
+	 *
+	 * Unlike every other control here it carries no `min`/`max`, because they
+	 * are not knowable when the tool is declared — the range is the duration of
+	 * whatever the user drops, which is read from the file itself. A slider
+	 * with a guessed maximum would be unusable on both a ten-second clip and a
+	 * two-hour one.
+	 */
+	z.object({
+		control: z.literal("timerange"),
+		startKey: z.string(),
+		endKey: z.string(),
+		label: z.string(),
+		group: z.string(),
+	}),
 ]);
 export type AdvancedParam = z.infer<typeof AdvancedParamSchema>;
 

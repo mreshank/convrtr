@@ -61,7 +61,10 @@ function isRecognisedEngineId(engineId: string | undefined): boolean {
 		/^video:[a-z0-9]+->[a-z0-9]+$/.test(engineId) ||
 		// Audio extraction demuxes a video container and muxes one audio
 		// stream, so it has no image decoder/encoder pair either.
-		/^audio:[a-z0-9]+->[a-z0-9]+$/.test(engineId)
+		/^audio:[a-z0-9]+->[a-z0-9]+$/.test(engineId) ||
+		// Trimming copies packets between two points in the same container, so
+		// it has no decoder/encoder pair either.
+		/^trim:[a-z0-9]+$/.test(engineId)
 	);
 }
 

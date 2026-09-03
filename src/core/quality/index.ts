@@ -9,7 +9,18 @@ export type QualityState = {
 
 function advancedDefaults(tool: Tool): Record<string, ParamValue> {
 	const out: Record<string, ParamValue> = {};
-	for (const param of tool.quality.advanced) out[param.key] = param.default;
+	for (const param of tool.quality.advanced) {
+		if (param.control === "timerange") {
+			// Two keys, and a default that depends on a file nothing has loaded
+			// yet. Zero for both means "from the beginning, to the end", which
+			// the engine reads as the whole file — so an untouched control is
+			// the identity operation rather than an empty selection.
+			out[param.startKey] = 0;
+			out[param.endKey] = 0;
+			continue;
+		}
+		out[param.key] = param.default;
+	}
 	return out;
 }
 

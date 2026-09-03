@@ -8,11 +8,18 @@ import {
 	setParam,
 } from "@/core/quality";
 import type { AdvancedParam, Tool } from "@/core/registry";
+import { TimeRange } from "./TimeRange";
 
 type Props = {
 	tool: Tool;
 	state: QualityState;
 	onChange: (state: QualityState) => void;
+	/**
+	 * Length of the loaded file in seconds, for controls whose bounds are the
+	 * file rather than the declaration. Undefined until the probe returns, and
+	 * for every tool that does not need it.
+	 */
+	duration?: number;
 };
 
 function AdvancedControl({
@@ -64,6 +71,13 @@ function AdvancedControl({
 		);
 	}
 
+	if (param.control === "timerange") {
+		// Rendered by the panel itself rather than here: it needs the loaded
+		// file's duration and writes two params at once, neither of which fits
+		// the single-key shape every other control has.
+		return null;
+	}
+
 	return (
 		<label className="flex items-center justify-between gap-4">
 			<span className="text-[12px]">{param.label}</span>
@@ -89,7 +103,7 @@ function AdvancedControl({
 	);
 }
 
-export function OptionsPanel({ tool, state, onChange }: Props) {
+export function OptionsPanel({ tool, state, onChange, duration }: Props) {
 	const [open, setOpen] = useState(false);
 	const active = tool.quality.presets.find(
 		(preset) => preset.id === state.preset,
@@ -168,16 +182,36 @@ export function OptionsPanel({ tool, state, onChange }: Props) {
 							</span>
 							{tool.quality.advanced
 								.filter((param) => param.group === group)
-								.map((param) => (
-									<AdvancedControl
-										key={param.key}
-										param={param}
-										value={state.params[param.key]}
-										onChange={(value) =>
-											onChange(setParam(tool, state, param.key, value))
-										}
-									/>
-								))}
+								.map((param) =>
+									param.control === "timerange" ? (
+										<TimeRange
+											key={`${param.startKey}-${param.endKey}`}
+											label={param.label}
+											duration={duration ?? 0}
+											start={Number(state.params[param.startKey] ?? 0)}
+											end={Number(state.params[param.endKey] ?? duration ?? 0)}
+											onChange={(start, end) =>
+												onChange(
+													setParam(
+														tool,
+														setParam(tool, state, param.startKey, start),
+														param.endKey,
+														end,
+													),
+												)
+											}
+										/>
+									) : (
+										<AdvancedControl
+											key={param.key}
+											param={param}
+											value={state.params[param.key]}
+											onChange={(value) =>
+												onChange(setParam(tool, state, param.key, value))
+											}
+										/>
+									),
+								)}
 						</div>
 					))}
 				</div>
