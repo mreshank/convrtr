@@ -1,11 +1,15 @@
-import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen, within } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
 import { SiteHeader } from "@/design/chrome/SiteHeader";
 
 const LINKS = [
 	{ href: "/tools", label: "Tools" },
 	{ href: "/blog", label: "Blog" },
 ];
+
+afterEach(() => {
+	document.body.style.overflow = "";
+});
 
 describe("SiteHeader", () => {
 	it("renders the wordmark as a link home", () => {
@@ -59,5 +63,55 @@ describe("SiteHeader", () => {
 		fireEvent.click(screen.getByRole("button", { name: /menu/i }));
 		const nav = screen.getByRole("navigation", { name: "Main" });
 		expect(container.querySelector("header")?.contains(nav)).toBe(false);
+	});
+
+	it("wraps Tab forward from the last link back to the toggle", () => {
+		// The overlay is opaque and covers the viewport, so anything Tab
+		// would reach outside this loop — page content behind it — is
+		// content the user cannot see while the menu is open.
+		render(<SiteHeader links={LINKS} />);
+		const toggle = screen.getByRole("button", { name: /menu/i });
+		fireEvent.click(toggle);
+		const nav = screen.getByRole("navigation", { name: "Main" });
+		const navLinks = within(nav).getAllByRole("link");
+		const lastLink = navLinks[navLinks.length - 1] as HTMLElement;
+		lastLink.focus();
+		fireEvent.keyDown(lastLink, { key: "Tab" });
+		expect(document.activeElement).toBe(toggle);
+	});
+
+	it("wraps Shift+Tab from the toggle back to the last link", () => {
+		// The toggle is the close affordance and stays visible above the
+		// overlay, so it belongs inside the loop rather than outside it.
+		render(<SiteHeader links={LINKS} />);
+		const toggle = screen.getByRole("button", { name: /menu/i });
+		fireEvent.click(toggle);
+		const nav = screen.getByRole("navigation", { name: "Main" });
+		const navLinks = within(nav).getAllByRole("link");
+		const lastLink = navLinks[navLinks.length - 1] as HTMLElement;
+		toggle.focus();
+		fireEvent.keyDown(toggle, { key: "Tab", shiftKey: true });
+		expect(document.activeElement).toBe(lastLink);
+	});
+
+	it("locks body scroll while open and restores the prior value on close", () => {
+		// Restoring to whatever was there before — not assuming blank —
+		// matters because something else may set this value later.
+		document.body.style.overflow = "scroll";
+		render(<SiteHeader links={LINKS} />);
+		const toggle = screen.getByRole("button", { name: /menu/i });
+		fireEvent.click(toggle);
+		expect(document.body.style.overflow).toBe("hidden");
+		fireEvent.click(toggle);
+		expect(document.body.style.overflow).toBe("scroll");
+	});
+
+	it("restores body scroll on unmount while still open", () => {
+		document.body.style.overflow = "scroll";
+		const { unmount } = render(<SiteHeader links={LINKS} />);
+		fireEvent.click(screen.getByRole("button", { name: /menu/i }));
+		expect(document.body.style.overflow).toBe("hidden");
+		unmount();
+		expect(document.body.style.overflow).toBe("scroll");
 	});
 });

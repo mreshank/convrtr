@@ -22,7 +22,10 @@ type Props = {
 export function SiteHeader({ links }: Props) {
 	const [open, setOpen] = useState(false);
 	const toggleRef = useRef<HTMLButtonElement | null>(null);
+	const navRef = useRef<HTMLElement | null>(null);
 
+	// Escape closes the overlay and returns focus to the toggle. Without
+	// this a keyboard user who opens the nav is stranded in it.
 	useEffect(() => {
 		if (!open) return;
 		const onKey = (event: KeyboardEvent) => {
@@ -32,6 +35,52 @@ export function SiteHeader({ links }: Props) {
 		};
 		document.addEventListener("keydown", onKey);
 		return () => document.removeEventListener("keydown", onKey);
+	}, [open]);
+
+	// The overlay is opaque and covers the whole viewport, so anything Tab
+	// reaches outside this loop — page content behind it, or the browser
+	// chrome beyond the last link — is content the user cannot see while
+	// the menu is open. The toggle is the close affordance and is drawn
+	// above the overlay, so it stays visible throughout and belongs inside
+	// the loop rather than outside it: Tab from the last link wraps to the
+	// toggle, Shift+Tab from the toggle wraps to the last link. Every other
+	// Tab press (toggle forward, any link backward or forward) already
+	// lands correctly via native DOM order, since the toggle precedes the
+	// links in the document.
+	useEffect(() => {
+		if (!open) return;
+		const onKey = (event: KeyboardEvent) => {
+			if (event.key !== "Tab") return;
+			const toggle = toggleRef.current;
+			const nav = navRef.current;
+			if (!toggle || !nav) return;
+			const links = nav.querySelectorAll<HTMLAnchorElement>("a");
+			const lastLink = links[links.length - 1];
+			if (!lastLink) return;
+			if (event.shiftKey && document.activeElement === toggle) {
+				event.preventDefault();
+				lastLink.focus();
+			} else if (!event.shiftKey && document.activeElement === lastLink) {
+				event.preventDefault();
+				toggle.focus();
+			}
+		};
+		document.addEventListener("keydown", onKey);
+		return () => document.removeEventListener("keydown", onKey);
+	}, [open]);
+
+	// The overlay is opaque and covers the viewport, but without this the
+	// page behind it can still be scrolled by wheel or touch — compounding
+	// the disorientation of an overlay a keyboard user cannot see past.
+	// The prior value is read rather than assumed blank, since something
+	// else may set it later, and it is restored on both close and unmount.
+	useEffect(() => {
+		if (!open) return;
+		const previousOverflow = document.body.style.overflow;
+		document.body.style.overflow = "hidden";
+		return () => {
+			document.body.style.overflow = previousOverflow;
+		};
 	}, [open]);
 
 	// The overlay is a SIBLING of the blended bar, never a child of it.
@@ -89,6 +138,7 @@ export function SiteHeader({ links }: Props) {
 
 			{open && (
 				<nav
+					ref={navRef}
 					aria-label="Main"
 					style={{
 						position: "fixed",
