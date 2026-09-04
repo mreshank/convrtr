@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ThemeToggle } from "@/components/instrument/ThemeToggle";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import { ThemeScript } from "@/components/ThemeScript";
+import { DifferenceCursor } from "@/design/primitives/DifferenceCursor";
 import "./globals.css";
 
 const inter = Inter({
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 			</head>
 			<body className="min-h-full flex flex-col">
 				<ServiceWorkerRegistration />
+				<DifferenceCursor />
 				<div className="flex items-center justify-end gap-4 p-4">
 					<Link
 						href="/blog"

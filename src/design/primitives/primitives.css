@@ -97,3 +97,29 @@
 [data-arrow-host]:focus-within [data-arrow] {
 	opacity: 1;
 }
+
+/*
+ * The system cursor is hidden only while DifferenceCursor is mounted — it
+ * adds this class itself. Writing `cursor: none` straight into the
+ * stylesheet would hide the pointer for anyone whose JavaScript never ran,
+ * leaving them nothing to point with.
+ *
+ * `(pointer: fine)` is belt and braces: the component already refuses to
+ * mount on a coarse pointer.
+ */
+@media (pointer: fine) {
+	body.has-custom-cursor,
+	body.has-custom-cursor * {
+		cursor: none;
+	}
+}
+
+/*
+ * DESIGN.md scales the cursor 2.5x over anything interactive. The selector
+ * lives here rather than in the component because it depends on what the
+ * pointer is over, which the component never knows.
+ */
+body.has-custom-cursor:has(a:hover, button:hover) [data-cursor] {
+	transform-origin: center;
+	scale: 2.5;
+}

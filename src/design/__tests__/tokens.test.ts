@@ -115,7 +115,14 @@ const TOKENS_FILE = join("src", "design", "tokens.css");
  * cannot reference a custom property, so `#0A0A0A` there is the only way to
  * state the value at all. Everything else in `src` goes through a token.
  */
-const LITERAL_HEX_ALLOWED = new Set([join("src", "app", "manifest.ts")]);
+const LITERAL_HEX_ALLOWED = new Set([
+	join("src", "app", "manifest.ts"),
+	// `mix-blend-mode: difference` inverts against white specifically —
+	// this is the blend operand, not a palette choice, and a token would
+	// change with the theme and break the inversion.
+	join("src", "design", "primitives", "DifferenceCursor.tsx"),
+	join("src", "design", "chrome", "SiteHeader.tsx"),
+]);
 
 /**
  * Values for a colour property that are keywords rather than colours.
