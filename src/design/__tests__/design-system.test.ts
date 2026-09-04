@@ -234,3 +234,30 @@ describe("motion and focus base rules", () => {
 		expect(globals).not.toMatch(/cursor:\s*none/);
 	});
 });
+
+describe("typeface", () => {
+	const layout = readFileSync("src/app/layout.tsx", "utf8");
+
+	it("uses Inter for the sans face", () => {
+		// DESIGN.md's Style paragraph names Inter directly. IBM Plex Sans was
+		// the Instrument-era choice it replaces.
+		expect(layout).toMatch(
+			/import \{[^}]*\bInter\b[^}]*\} from "next\/font\/google"/,
+		);
+		expect(layout).not.toMatch(/IBM_Plex_Sans/);
+	});
+
+	it("keeps a self-hosted mono with tabular figures", () => {
+		// The converter counts bytes and seconds upward live; a proportional
+		// fallback makes the digits jitter while it runs.
+		expect(layout).toMatch(/IBM_Plex_Mono/);
+		expect(layout).toMatch(/variable: "--font-mono"/);
+	});
+
+	it("self-hosts rather than linking a font CDN", () => {
+		// A runtime request to fonts.googleapis.com would put a third-party
+		// call on every page of a product whose whole claim is that nothing
+		// leaves the device.
+		expect(layout).not.toMatch(/fonts\.googleapis\.com|fonts\.gstatic\.com/);
+	});
+});

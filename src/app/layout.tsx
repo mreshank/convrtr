@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
+import { IBM_Plex_Mono, Inter } from "next/font/google";
 import Link from "next/link";
 import { ThemeToggle } from "@/components/instrument/ThemeToggle";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import { ThemeScript } from "@/components/ThemeScript";
 import "./globals.css";
 
-const ibmPlexSans = IBM_Plex_Sans({
+const inter = Inter({
 	variable: "--font-sans",
 	subsets: ["latin"],
 	display: "swap",
@@ -28,7 +28,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 	return (
 		<html
 			lang="en"
-			className={`${ibmPlexSans.variable} ${ibmPlexMono.variable} h-full antialiased`}
+			className={`${inter.variable} ${ibmPlexMono.variable} h-full antialiased`}
 			suppressHydrationWarning
 		>
 			<head>
