@@ -1,5 +1,6 @@
 import { Fragment } from "react";
 import type { ErrorCode } from "@/core/pipeline/protocol";
+import type { FidelityState } from "@/core/quality";
 import { formatBytes, formatDelta, formatPercent } from "@/lib/format";
 import { ErrorPanel } from "./ErrorPanel";
 import { FidelityScore } from "./FidelityScore";
@@ -62,8 +63,12 @@ type Props = {
 	 * every row shares the same score. Rendered per row anyway, since a
 	 * dense results table reads as one subdivided instrument, not a summary
 	 * line plus a list.
+	 *
+	 * `state` rides alongside the number because the ring's stroke pattern
+	 * is categorical — see `fidelityState` — and cannot be recovered from
+	 * the score.
 	 */
-	fidelity: { score: number; label: string };
+	fidelity: { score: number; label: string; state: FidelityState };
 	/** Called with a row's id when its SAVE action is activated. Only
 	 * reachable for `status: "done"` rows — see the disabled state below. */
 	onSaveRow: (id: string) => void;
@@ -220,6 +225,7 @@ export function BatchTable({ rows, fidelity, onSaveRow, inputFormat }: Props) {
 								<FidelityScore
 									score={fidelity.score}
 									label={fidelity.label}
+									fidelity={fidelity.state}
 									size={20}
 								/>
 							</td>

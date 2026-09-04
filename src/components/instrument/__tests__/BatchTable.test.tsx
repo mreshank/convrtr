@@ -3,7 +3,11 @@ import { describe, expect, it, vi } from "vitest";
 import { formatBytes, formatDelta } from "@/lib/format";
 import { type BatchRowState, BatchTable } from "../BatchTable";
 
-const fidelity = { score: 82, label: "LOSSY · Q82" };
+const fidelity = {
+	score: 82,
+	label: "LOSSY · Q82",
+	state: "lossy" as const,
+};
 
 const mixedRows: BatchRowState[] = [
 	{ id: "a", name: "photo-1.png", inputSize: 200_000, status: "queued" },

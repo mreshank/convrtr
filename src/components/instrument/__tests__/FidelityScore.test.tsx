@@ -1,6 +1,9 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { FidelityScore } from "../FidelityScore";
+import { fidelityState, initialQuality } from "@/core/quality";
+import { pngToJpg } from "@/core/registry/tools/png-to-jpg";
+import { pngToWebp } from "@/core/registry/tools/png-to-webp";
+import { FidelityScore, type FidelityState } from "../FidelityScore";
 
 function ringPath(container: HTMLElement): SVGPathElement | null {
 	// The <circle> is the neutral track; the <path> carries the score.
@@ -22,22 +25,34 @@ function arcCommandCount(d: string): number {
 
 describe("FidelityScore", () => {
 	it("renders the rounded score as text", () => {
-		render(<FidelityScore score={92.4} label="VISUALLY LOSSLESS" />);
+		render(
+			<FidelityScore
+				score={92.4}
+				label="VISUALLY LOSSLESS"
+				fidelity="visually-lossless"
+			/>,
+		);
 		expect(screen.getByText("92")).toBeDefined();
 	});
 
 	it("clamps a score above 100 down to 100", () => {
-		render(<FidelityScore score={140} label="LOSSLESS" />);
+		render(<FidelityScore score={140} label="LOSSLESS" fidelity="lossless" />);
 		expect(screen.getByText("100")).toBeDefined();
 	});
 
 	it("clamps a score below 0 up to 0", () => {
-		render(<FidelityScore score={-20} label="LOSSY · Q0" />);
+		render(<FidelityScore score={-20} label="LOSSY · Q0" fidelity="lossy" />);
 		expect(screen.getByText("0")).toBeDefined();
 	});
 
 	it("exposes role=img with a label containing the score and the given label", () => {
-		render(<FidelityScore score={92} label="VISUALLY LOSSLESS" />);
+		render(
+			<FidelityScore
+				score={92}
+				label="VISUALLY LOSSLESS"
+				fidelity="visually-lossless"
+			/>,
+		);
 		const el = screen.getByRole("img");
 		expect(el.getAttribute("aria-label")).toContain("92");
 		expect(el.getAttribute("aria-label")).toContain("VISUALLY LOSSLESS");
@@ -48,7 +63,7 @@ describe("monochrome state encoding", () => {
 	it("draws every score in the same ink, so colour encodes nothing", () => {
 		const strokes = [100, 92, 55, 10].map((score) => {
 			const { container } = render(
-				<FidelityScore score={score} label={`Q${score}`} />,
+				<FidelityScore score={score} label={`Q${score}`} fidelity="lossless" />,
 			);
 			return ringPath(container)?.getAttribute("stroke");
 		});
@@ -60,24 +75,44 @@ describe("monochrome state encoding", () => {
 		]);
 	});
 
-	it("draws a solid ring at and above the lossy threshold", () => {
-		for (const score of [75, 92, 100]) {
-			const { container } = render(
-				<FidelityScore score={score} label={`Q${score}`} />,
-			);
-			expect(ringPath(container)?.getAttribute("stroke-dasharray")).toBeNull();
-		}
+	function dashArray(
+		score: number,
+		fidelity: FidelityState,
+	): string | null | undefined {
+		const { container } = render(
+			<FidelityScore score={score} label="—" fidelity={fidelity} />,
+		);
+		return ringPath(container)?.getAttribute("stroke-dasharray");
+	}
+
+	it("draws a solid ring only for the two states that gave nothing visible up", () => {
+		expect(dashArray(100, "lossless")).toBeNull();
+		expect(dashArray(92, "visually-lossless")).toBeNull();
 	});
 
-	it("breaks the ring into dashes below the lossy threshold", () => {
-		for (const score of [74, 55, 10]) {
-			const { container } = render(
-				<FidelityScore score={score} label={`Q${score}`} />,
-			);
-			expect(
-				ringPath(container)?.getAttribute("stroke-dasharray"),
-			).not.toBeNull();
-		}
+	it("breaks the ring for both lossy states, whatever the score says", () => {
+		// The scores here are the point. 78 and 92 sit high on the dial and
+		// a numeric threshold would draw them solid — but a quantised JPEG
+		// gave something up, and a solid ring in this design system is a
+		// claim that nothing was.
+		expect(dashArray(78, "lossy")).not.toBeNull();
+		expect(dashArray(92, "inherently-lossy")).not.toBeNull();
+		expect(dashArray(99, "inherently-lossy")).not.toBeNull();
+		expect(dashArray(10, "lossy")).not.toBeNull();
+	});
+
+	it("dashes the ring the shipped default JPEG conversion actually draws", () => {
+		// Not a hand-picked state: this is `balanced`, the default preset of
+		// the most-used conversion on the site, read straight out of the
+		// registry. It scores 78 — the exact case the old numeric threshold
+		// drew solid.
+		const quality = initialQuality(pngToJpg);
+		expect(dashArray(78, fidelityState(pngToJpg, quality))).not.toBeNull();
+	});
+
+	it("leaves the shipped default WebP conversion solid, because it is lossless", () => {
+		const quality = initialQuality(pngToWebp);
+		expect(dashArray(100, fidelityState(pngToWebp, quality))).toBeNull();
 	});
 
 	it("sets the large-arc flag only once the sweep passes halfway", () => {
@@ -89,7 +124,7 @@ describe("monochrome state encoding", () => {
 		// way round, and getting it backwards is the classic arc bug.
 		const largeArcFlag = (score: number): string | undefined => {
 			const { container } = render(
-				<FidelityScore score={score} label={`Q${score}`} />,
+				<FidelityScore score={score} label={`Q${score}`} fidelity="lossless" />,
 			);
 			const d = ringPath(container)?.getAttribute("d") ?? "";
 			return d.match(/A [\d.]+ [\d.]+ 0 (\d)/)?.[1];
@@ -101,7 +136,7 @@ describe("monochrome state encoding", () => {
 
 	it("draws a full ring at 100 and no ring at 0", () => {
 		const { container: full } = render(
-			<FidelityScore score={100} label="LOSSLESS" />,
+			<FidelityScore score={100} label="LOSSLESS" fidelity="lossless" />,
 		);
 		const fullD = full.querySelector("path")?.getAttribute("d") ?? "";
 		// Not `.toContain("A")`: a single 360-degree arc also contains the
@@ -111,7 +146,7 @@ describe("monochrome state encoding", () => {
 		expect(arcCommandCount(fullD)).toBe(2);
 
 		const { container: empty } = render(
-			<FidelityScore score={0} label="LOSSY · Q0" />,
+			<FidelityScore score={0} label="LOSSY · Q0" fidelity="lossy" />,
 		);
 		expect(empty.querySelector("path")).toBeNull();
 	});
@@ -137,7 +172,9 @@ describe("monochrome state encoding", () => {
 		const expectedEndX = center + radius; // 33.2
 		const expectedEndY = center; // 18
 
-		const { container } = render(<FidelityScore score={25} label="Q25" />);
+		const { container } = render(
+			<FidelityScore score={25} label="Q25" fidelity="lossless" />,
+		);
 		const d = ringPath(container)?.getAttribute("d") ?? "";
 
 		expect(arcCommandCount(d)).toBe(1);

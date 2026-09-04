@@ -1,25 +1,41 @@
+import type { FidelityState } from "@/core/quality";
+
+export type { FidelityState };
+
 type Props = {
 	/** 0-100; 100 = bit-exact lossless. Out-of-range input is clamped. */
 	score: number;
 	/** Accessible name only, e.g. "LOSSLESS" — never rendered inside the ring. */
 	label: string;
+	/**
+	 * What kind of conversion this is, from `fidelityState` in
+	 * `@/core/quality`. Required, not derived: the ring's stroke pattern is
+	 * a claim about whether anything was given up, and this component has no
+	 * way to know that from the score alone.
+	 */
+	fidelity: FidelityState;
 	/** Diameter in px. */
 	size?: number;
 };
 
 /**
- * Below this score the ring is drawn broken rather than solid.
+ * The two states the ring may be drawn solid for.
  *
  * The design system is strictly monochrome, so the difference between a
  * result that gave nothing up and one that did cannot be a hue — it is the
  * continuity of the line itself. A solid ring reads as intact; a dashed one
  * reads as something lost, without needing a legend.
  *
- * This threshold is the component's own, not `describeFidelity`'s: that
- * function keys off preset and parameters rather than the numeric score, so
- * the two answer different questions and are deliberately not coupled.
+ * This keys off the state, never off the score. A numeric threshold looks
+ * equivalent and is not: `balanced` JPEG declares quality 78, so any
+ * threshold at or below 78 draws a solid ring — a claim that nothing was
+ * given up — over a DCT-quantised image, on the default setting of the
+ * site's most-used conversion. Spec §4.5 requires a dashed ring for both
+ * `LOSSY` and `INHERENTLY LOSSY` regardless of how high the number is.
  */
-const LOSSY_THRESHOLD = 75;
+function isSolid(fidelity: FidelityState): boolean {
+	return fidelity === "lossless" || fidelity === "visually-lossless";
+}
 
 /**
  * The stroked arc for a 0-1 sweep, starting at twelve o'clock and running
@@ -60,7 +76,7 @@ function round2(value: number): number {
  * whether anything was given up, with the score printed in the middle. Pure
  * presentation — no knowledge of tools, engines, or presets.
  */
-export function FidelityScore({ score, label, size = 36 }: Props) {
+export function FidelityScore({ score, label, fidelity, size = 36 }: Props) {
 	const clamped = Math.min(100, Math.max(0, score));
 	const rounded = Math.round(clamped);
 
@@ -70,6 +86,7 @@ export function FidelityScore({ score, label, size = 36 }: Props) {
 	const center = size / 2;
 
 	const d = arcPath(center, radius, clamped / 100);
+	const solid = isSolid(fidelity);
 	// Six dashes and six gaps around the full circumference: coarse enough to
 	// read as deliberately broken at 36px rather than as a rendering artefact.
 	const dash = round2((2 * Math.PI * radius) / 12);
@@ -102,10 +119,8 @@ export function FidelityScore({ score, label, size = 36 }: Props) {
 						fill="none"
 						stroke="var(--ink)"
 						strokeWidth={strokeWidth}
-						strokeLinecap={clamped < LOSSY_THRESHOLD ? "butt" : "round"}
-						{...(clamped < LOSSY_THRESHOLD
-							? { strokeDasharray: `${dash} ${dash}` }
-							: {})}
+						strokeLinecap={solid ? "round" : "butt"}
+						{...(solid ? {} : { strokeDasharray: `${dash} ${dash}` })}
 					/>
 				)}
 			</svg>

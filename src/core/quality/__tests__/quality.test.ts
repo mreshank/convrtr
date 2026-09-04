@@ -1,9 +1,12 @@
 import { describe, expect, it } from "vitest";
+import { TOOLS } from "@/core/registry";
+import { pngToJpg } from "@/core/registry/tools/png-to-jpg";
 import { pngToWebp } from "@/core/registry/tools/png-to-webp";
 import {
 	applyPreset,
 	describeFidelity,
 	fidelityScore,
+	fidelityState,
 	initialQuality,
 	setParam,
 } from "../index";
@@ -188,5 +191,99 @@ describe("fidelityScore on a tool that cannot be lossless", () => {
 		const state = initialQuality(inherentlyLossy);
 		expect(describeFidelity(inherentlyLossy, state)).toBe("INHERENTLY LOSSY");
 		expect(fidelityScore(inherentlyLossy, state)).toBeLessThan(100);
+	});
+});
+
+/**
+ * The categorical state behind the ring's stroke pattern.
+ *
+ * `fidelityScore` answers "how much", `fidelityState` answers "what kind" —
+ * and only the second one may decide whether the ring is drawn solid or
+ * broken. A numeric threshold cannot: `balanced` JPEG scores 78, which
+ * would draw a solid ring for a DCT-quantised image, telling the user
+ * nothing was given up when something was.
+ */
+describe("fidelityState", () => {
+	it("reports a lossless preset as lossless", () => {
+		expect(fidelityState(pngToWebp, initialQuality(pngToWebp))).toBe(
+			"lossless",
+		);
+	});
+
+	it("reports the visually-lossless preset as its own state", () => {
+		expect(
+			fidelityState(pngToWebp, applyPreset(pngToWebp, "visually-lossless")),
+		).toBe("visually-lossless");
+	});
+
+	it("reports a quality-driven preset as lossy", () => {
+		expect(fidelityState(pngToWebp, applyPreset(pngToWebp, "balanced"))).toBe(
+			"lossy",
+		);
+	});
+
+	it("reports a hand-set lossless flag as lossless", () => {
+		const custom = setParam(
+			pngToWebp,
+			applyPreset(pngToWebp, "balanced"),
+			"lossless",
+			1,
+		);
+		expect(fidelityState(pngToWebp, custom)).toBe("lossless");
+	});
+
+	it("reports every state of a tool with no lossless mode as inherently lossy", () => {
+		const states = [
+			initialQuality(pngToJpg),
+			applyPreset(pngToJpg, "visually-lossless"),
+			applyPreset(pngToJpg, "smallest"),
+			setParam(pngToJpg, initialQuality(pngToJpg), "quality", 100),
+		];
+		for (const state of states) {
+			expect(fidelityState(pngToJpg, state)).toBe("inherently-lossy");
+		}
+	});
+
+	it("agrees with describeFidelity on every shipped preset of every tool", () => {
+		// One source of truth, two renderings. If these ever disagree, the
+		// ring and the label are telling the user different stories about
+		// the same conversion.
+		const expected: Record<string, RegExp> = {
+			lossless: /^LOSSLESS$/,
+			"visually-lossless": /^VISUALLY LOSSLESS$/,
+			lossy: /^LOSSY(?: · Q\d+)?$/,
+			"inherently-lossy": /^INHERENTLY LOSSY$/,
+		};
+		for (const tool of TOOLS) {
+			for (const preset of tool.quality.presets) {
+				const state = applyPreset(tool, preset.id);
+				const pattern = expected[fidelityState(tool, state)];
+				expect(
+					describeFidelity(tool, state),
+					`${tool.id} / ${preset.id}`,
+				).toMatch(pattern as RegExp);
+			}
+		}
+	});
+});
+
+/**
+ * The default preset is what almost every visitor actually gets, so it is
+ * the one state where a wrong answer does the most damage. JPEG and WebP
+ * both default to a preset that gives something up, and the ring must say
+ * so without waiting for anyone to open the options panel.
+ */
+describe("the shipped defaults", () => {
+	it("does not call the default JPEG conversion lossless", () => {
+		const state = initialQuality(pngToJpg);
+		expect(state.preset).toBe("balanced");
+		expect(state.params.quality).toBe(78);
+		expect(fidelityState(pngToJpg, state)).toBe("inherently-lossy");
+	});
+
+	it("calls the default WebP conversion lossless, because it is", () => {
+		expect(fidelityState(pngToWebp, initialQuality(pngToWebp))).toBe(
+			"lossless",
+		);
 	});
 });

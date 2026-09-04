@@ -28,6 +28,7 @@ import { type ErrorCode, makeJobId } from "@/core/pipeline/protocol";
 import {
 	describeFidelity,
 	fidelityScore,
+	fidelityState,
 	initialQuality,
 	type QualityState,
 } from "@/core/quality";
@@ -624,6 +625,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 	const batchFidelity = {
 		score: fidelityScore(tool, quality),
 		label: describeFidelity(tool, quality),
+		state: fidelityState(tool, quality),
 	};
 
 	return (
@@ -633,6 +635,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 				<FidelityScore
 					score={fidelityScore(tool, quality)}
 					label={describeFidelity(tool, quality)}
+					fidelity={fidelityState(tool, quality)}
 				/>
 			</div>
 
