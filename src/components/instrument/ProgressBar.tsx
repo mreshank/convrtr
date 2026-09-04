@@ -15,7 +15,10 @@ export function ProgressBar({ ratio, phase, elapsedSeconds }: Props) {
 			>
 				<div
 					className="h-full"
-					style={{ width: `${ratio * 100}%`, background: "var(--signal)" }}
+					style={{
+						width: `${ratio * 100}%`,
+						background: "var(--text-primary)",
+					}}
 				/>
 			</div>
 			<span data-testid="progress-readout" className="mono text-[12px]">

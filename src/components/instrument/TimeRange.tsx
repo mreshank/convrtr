@@ -53,7 +53,7 @@ export function TimeRange({ label, duration, start, end, onChange }: Props) {
 					style={{
 						left: `${leftPercent}%`,
 						width: `${widthPercent}%`,
-						background: "var(--signal)",
+						background: "var(--text-primary)",
 					}}
 				/>
 				<input
