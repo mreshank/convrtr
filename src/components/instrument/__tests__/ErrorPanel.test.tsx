@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { ErrorPanel } from "../ErrorPanel";
@@ -133,5 +134,32 @@ describe("ErrorPanel", () => {
 		render(<ErrorPanel code="ENGINE_FAILURE" />);
 		expect(screen.queryByRole("button", { name: /retry/i })).toBeNull();
 		expect(screen.queryByRole("button", { name: /dismiss/i })).toBeNull();
+	});
+});
+
+describe("monochrome state encoding", () => {
+	it("renders as an inverted block rather than a coloured one", () => {
+		render(
+			<ErrorPanel
+				code="ENGINE_FAILURE"
+				onRetry={() => {}}
+				onDismiss={() => {}}
+			/>,
+		);
+		// Selected by testid, not by DOM position: the root carries
+		// `data-testid="error"` deliberately — its own comment explains the
+		// cancel e2e depends on nothing rendering for USER_CANCELLED — and a
+		// positional selector breaks the moment anything wraps the panel.
+		const panel = screen.getByTestId("error");
+		expect(panel.style.background).toBe("var(--text-primary)");
+		expect(panel.style.color).toBe("var(--surface-base)");
+	});
+
+	it("references no semantic colour token", () => {
+		const source = readFileSync(
+			"src/components/instrument/ErrorPanel.tsx",
+			"utf8",
+		);
+		expect(source).not.toMatch(/--error|--lossy|--signal/);
 	});
 });

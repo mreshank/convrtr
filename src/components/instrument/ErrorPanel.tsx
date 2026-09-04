@@ -102,24 +102,26 @@ export function ErrorPanel({
 			role="alert"
 			className="flex flex-col gap-3 border-l p-4"
 			style={{
-				borderColor: "var(--hairline)",
-				borderLeftColor: "var(--error)",
+				background: "var(--text-primary)",
+				color: "var(--surface-base)",
 				borderRadius: "var(--radius)",
-				background: "var(--surface-raised)",
 			}}
 		>
 			<span
 				className="mono text-[11px] tracking-[0.08em]"
-				style={{ color: "var(--error)" }}
+				style={{ color: "var(--surface-base)" }}
 			>
 				{copy.title}
 			</span>
 
-			<span className="text-[13px]" style={{ color: "var(--text-primary)" }}>
+			<span className="text-[13px]" style={{ color: "var(--surface-base)" }}>
 				{copy.explain(inputFormat)}
 			</span>
 
-			<span className="text-[13px]" style={{ color: "var(--text-muted)" }}>
+			<span
+				className="text-[13px]"
+				style={{ color: "var(--surface-base)", opacity: 0.7 }}
+			>
 				{copy.action}
 			</span>
 
@@ -129,7 +131,7 @@ export function ErrorPanel({
 						type="button"
 						onClick={onRetry}
 						className="mono text-[11px] tracking-[0.08em]"
-						style={{ color: "var(--text-primary)", background: "transparent" }}
+						style={{ color: "var(--surface-base)", background: "transparent" }}
 					>
 						RETRY
 					</button>
@@ -139,7 +141,11 @@ export function ErrorPanel({
 						type="button"
 						onClick={onDismiss}
 						className="mono text-[11px] tracking-[0.08em]"
-						style={{ color: "var(--text-muted)", background: "transparent" }}
+						style={{
+							color: "var(--surface-base)",
+							opacity: 0.7,
+							background: "transparent",
+						}}
 					>
 						DISMISS
 					</button>
@@ -149,21 +155,25 @@ export function ErrorPanel({
 			{detail && (
 				<div
 					className="flex flex-col gap-2 border-t pt-3"
-					style={{ borderColor: "var(--hairline)" }}
+					style={{ borderColor: "var(--surface-base)" }}
 				>
 					<button
 						type="button"
 						onClick={() => setDetailOpen((value) => !value)}
 						aria-expanded={detailOpen}
 						className="mono self-start text-[11px] tracking-[0.08em]"
-						style={{ color: "var(--text-muted)", background: "transparent" }}
+						style={{
+							color: "var(--surface-base)",
+							opacity: 0.7,
+							background: "transparent",
+						}}
 					>
 						TECHNICAL DETAIL {detailOpen ? "−" : "+"}
 					</button>
 					{detailOpen && (
 						<span
 							className="mono text-[12px]"
-							style={{ color: "var(--text-muted)" }}
+							style={{ color: "var(--surface-base)", opacity: 0.7 }}
 						>
 							{detail}
 						</span>
