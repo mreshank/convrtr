@@ -1,5 +1,6 @@
 import { createAudioExtractionEngine } from "./audio/extract";
 import { createFlacDecodeEngine, createFlacEncodeEngine } from "./audio/flac";
+import { createMp3EncodeEngine } from "./audio/mp3";
 import { createImagePipelineEngine } from "./image";
 import { faviconPackEngine } from "./image/packs/favicon";
 import { gifFramesEngine } from "./image/packs/gif-frames";
@@ -89,6 +90,14 @@ function buildImageEngines(): Map<string, Engine> {
 		["mp4", "webm"],
 	] as const) {
 		const engine = createVideoConversionEngine(to, from);
+		engines.set(engine.id, engine);
+	}
+
+	// MP3. The most-asked-for audio conversion, and the one that cannot be
+	// lossless — the tool says so, and points at FLAC for anyone who wanted
+	// "smaller" rather than "smaller and lossy".
+	{
+		const engine = createMp3EncodeEngine();
 		engines.set(engine.id, engine);
 	}
 

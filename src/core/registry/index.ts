@@ -1,6 +1,7 @@
 import { flacToWav } from "./tools/audio/flac-to-wav";
 import { mp4ToM4a } from "./tools/audio/mp4-to-m4a";
 import { wavToFlac } from "./tools/audio/wav-to-flac";
+import { wavToMp3 } from "./tools/audio/wav-to-mp3";
 import { avifToJpg } from "./tools/avif-to-jpg";
 import { avifToPng } from "./tools/avif-to-png";
 import { compressJpg } from "./tools/compress-jpg";
@@ -87,6 +88,7 @@ export const TOOLS: Tool[] = [
 	aviToMp4,
 	wavToFlac,
 	flacToWav,
+	wavToMp3,
 ];
 
 export function getTool(id: string): Tool | undefined {

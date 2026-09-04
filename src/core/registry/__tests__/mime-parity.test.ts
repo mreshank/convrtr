@@ -76,7 +76,9 @@ function isRecognisedEngineId(engineId: string | undefined): boolean {
 		/^ffmpeg:[a-z0-9]+->[a-z0-9]+$/.test(engineId) ||
 		// FLAC encode/decode work on PCM samples, not an image decoder/encoder
 		// pair, so MIME parity does not apply to them either.
-		/^flac:(encode|decode)$/.test(engineId)
+		/^flac:(encode|decode)$/.test(engineId) ||
+		// MP3 encoding takes PCM samples, not an image decoder/encoder pair.
+		/^mp3:encode$/.test(engineId)
 	);
 }
 

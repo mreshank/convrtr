@@ -142,3 +142,24 @@ see the spec's deployment section. Not needed yet.
 A single working tool at `/image/png-to-webp`, plus the home page. Every route
 is prerendered HTML with its own title, description, canonical URL and JSON-LD,
 generated from the registry.
+
+## Third-party licences shipped to the browser
+
+Two dependencies are LGPL-3.0 and reach users as part of the bundle, so they
+are worth recording rather than discovering later:
+
+- **ffmpeg.wasm core** (`@ffmpeg/core`) — the legacy-video tier. Served from
+  `public/ffmpeg/`, downloaded only on consent.
+- **@breezystack/lamejs** — the MP3 encoder, bundled into the audio chunk.
+
+Both are used unmodified, which is the condition that keeps LGPL compliance
+straightforward for a web app: the obligation is to let a user replace the
+library, and an unmodified, separately identifiable dependency satisfies that
+far more cleanly than a patched fork would. Neither has been forked or altered,
+and both should stay that way — patching either turns a simple attribution into
+a distribution obligation.
+
+MP3's patents expired in 2017, so encoding carries no patent question; the
+licence is the only consideration.
+
+Everything else in the bundle is MIT, Apache-2.0 or BSD.

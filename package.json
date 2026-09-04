@@ -15,6 +15,7 @@
 		"node": ">=20"
 	},
 	"dependencies": {
+		"@breezystack/lamejs": "^1.2.7",
 		"@ffmpeg/ffmpeg": "^0.12.15",
 		"@ffmpeg/util": "^0.12.2",
 		"@jsquash/avif": "^2.1.1",
