@@ -2,6 +2,10 @@ import { createCoverExtractEngine } from "./audio/cover";
 import { createAudioExtractionEngine } from "./audio/extract";
 import { createFlacDecodeEngine, createFlacEncodeEngine } from "./audio/flac";
 import { createMp3EncodeEngine } from "./audio/mp3";
+import {
+	createFlacNormaliseEngine,
+	createWavNormaliseEngine,
+} from "./audio/normalise";
 import { createOpusEncodeEngine } from "./audio/opus";
 import { createFlacTrimEngine, createWavTrimEngine } from "./audio/trim";
 import { createImagePipelineEngine } from "./image";
@@ -93,6 +97,15 @@ function buildImageEngines(): Map<string, Engine> {
 		["mp4", "webm"],
 	] as const) {
 		const engine = createVideoConversionEngine(to, from);
+		engines.set(engine.id, engine);
+	}
+
+	// Loudness normalisation to EBU R128. The one audio tool that changes every
+	// sample on purpose — and refuses to clip in order to hit a target.
+	for (const engine of [
+		createWavNormaliseEngine(),
+		createFlacNormaliseEngine(),
+	]) {
 		engines.set(engine.id, engine);
 	}
 

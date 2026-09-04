@@ -81,7 +81,10 @@ function isRecognisedEngineId(engineId: string | undefined): boolean {
 		/^mp3:encode$/.test(engineId) ||
 		// Opus encoding takes PCM samples through WebCodecs, not an image
 		// decoder/encoder pair.
-		/^opus:encode$/.test(engineId)
+		/^opus:encode$/.test(engineId) ||
+		// Loudness normalisation works on PCM samples, not an image
+		// decoder/encoder pair.
+		/^normalise:[a-z0-9]+$/.test(engineId)
 	);
 }
 

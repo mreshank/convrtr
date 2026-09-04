@@ -2,6 +2,8 @@ import { coverArtFLAC } from "./tools/audio/flac-cover-art";
 import { flacToWav } from "./tools/audio/flac-to-wav";
 import { coverArtMP3 } from "./tools/audio/mp3-cover-art";
 import { mp4ToM4a } from "./tools/audio/mp4-to-m4a";
+import { normaliseFLAC } from "./tools/audio/normalise-flac";
+import { normaliseWAV } from "./tools/audio/normalise-wav";
 import { removeTagsFlac } from "./tools/audio/remove-tags-flac";
 import { removeTagsMp3 } from "./tools/audio/remove-tags-mp3";
 import { trimFlac } from "./tools/audio/trim-flac";
@@ -103,6 +105,8 @@ export const TOOLS: Tool[] = [
 	removeTagsFlac,
 	coverArtMP3,
 	coverArtFLAC,
+	normaliseWAV,
+	normaliseFLAC,
 ];
 
 export function getTool(id: string): Tool | undefined {
