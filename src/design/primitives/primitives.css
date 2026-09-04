@@ -36,3 +36,24 @@
 		transform: translateY(0);
 	}
 }
+
+/*
+ * The marquee. Each track translates by exactly its own width, at which
+ * point its duplicate occupies the position it started from — so the reset
+ * to 0% is invisible.
+ *
+ * Hover pauses from the viewport, because the pointer is over the
+ * container rather than over whichever track happens to be under it.
+ */
+@keyframes marquee-scroll {
+	from {
+		transform: translateX(0);
+	}
+	to {
+		transform: translateX(-100%);
+	}
+}
+
+[data-marquee-viewport]:hover [data-marquee] {
+	animation-play-state: paused;
+}
