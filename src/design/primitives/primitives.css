@@ -82,3 +82,18 @@
 		transform: none;
 	}
 }
+
+/*
+ * The arrow fades in when its item is hovered or holds focus. Opacity
+ * rather than display, so the layout never shifts as it appears — and
+ * `--dur-min` is DESIGN.md's 500ms floor for hover states.
+ */
+[data-arrow] {
+	opacity: 0;
+	transition: opacity var(--dur-min) var(--ease);
+}
+
+[data-arrow-host]:hover [data-arrow],
+[data-arrow-host]:focus-within [data-arrow] {
+	opacity: 1;
+}
