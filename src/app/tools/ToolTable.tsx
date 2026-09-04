@@ -33,10 +33,10 @@ export function ToolTable({
 			<style>{`
 				.convrtr-tool-table table { width: 100%; border-collapse: collapse; }
 				.convrtr-tool-table tbody tr:not(:first-child) { border-top: var(--hairline-width) solid var(--hairline); }
-				.convrtr-tool-table tbody td:first-child { border-left: 2px solid transparent; }
+				.convrtr-tool-table tbody td:first-child { border-left: 1px solid transparent; }
 				.convrtr-tool-table tbody tr:hover td:first-child,
 				.convrtr-tool-table tbody tr:focus-within td:first-child {
-					border-left-color: var(--signal);
+					border-left-color: var(--text-primary);
 				}
 			`}</style>
 			<table>

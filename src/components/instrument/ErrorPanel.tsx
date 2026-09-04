@@ -100,7 +100,7 @@ export function ErrorPanel({
 			// empty, and the cancel e2e asserts that count is zero.
 			data-testid="error"
 			role="alert"
-			className="flex flex-col gap-3 border-l-2 p-4"
+			className="flex flex-col gap-3 border-l p-4"
 			style={{
 				borderColor: "var(--hairline)",
 				borderLeftColor: "var(--error)",
