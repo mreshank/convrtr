@@ -10,6 +10,7 @@ import { svgOptimiseEngine } from "./svg/optimise";
 import type { Engine } from "./types";
 import { createVideoConversionEngine } from "./video/convert";
 import { createFrameExtractionEngine } from "./video/frame";
+import { createGifEngine } from "./video/gif";
 import { createVideoTrimEngine } from "./video/trim";
 
 export * from "./image";
@@ -93,6 +94,14 @@ function buildImageEngines(): Map<string, Engine> {
 	// target container can carry the codec, which for MP4's AAC into .m4a is
 	// the common case — the operation almost every other converter answers
 	// with a re-encode to MP3.
+	// Video to animated GIF. The only video tool that cannot claim losslessness
+	// — GIF holds 256 colours where the source holds millions — so the options
+	// are about how that loss is spent rather than whether it happens.
+	for (const container of ["mp4", "mkv", "webm"] as const) {
+		const engine = createGifEngine(container);
+		engines.set(engine.id, engine);
+	}
+
 	// Single-frame extraction. This one genuinely decodes — a still cannot be
 	// made from a copied inter-frame packet — but only from the preceding
 	// keyframe forward, not through the whole file.

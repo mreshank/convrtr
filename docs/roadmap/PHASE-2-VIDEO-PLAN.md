@@ -183,6 +183,44 @@ byte-substring check needed an explicit non-empty assertion: a falsification
 run produced an unreadable output, and `indexOf` of an empty buffer is 0, which
 satisfied the comparison by being nothing at all.
 
+### Video to GIF: the one tool that cannot claim losslessness
+
+GIF holds at most 256 colours per frame against the source's millions, so every
+GIF made from video is a heavy approximation. `losslessAvailable: false`, and
+the FAQ says so in the first answer — an honest exception matters more here
+than anywhere, because it is what makes the lossless claims elsewhere worth
+believing.
+
+The options are therefore about how the loss is spent. The default builds one
+palette from pixels sampled evenly across the clip and shares it between
+frames: per-frame palettes give each frame better colours in isolation but
+disagree with each other, so flat areas crawl and shimmer — more distracting
+than the colour error they fix, and larger, since each frame then carries its
+own colour table. ffmpeg's `palettegen`/`paletteuse` pair works this way for
+the same reason. Per-frame stays available for clips whose subject changes
+completely partway through.
+
+Frame delays are stored in hundredths of a second, so most frame rates cannot
+be expressed exactly — 15fps becomes 14.3. The tool says so when the difference
+exceeds half a frame rather than letting someone wonder why their GIF runs
+slow. Frames are capped at 300 because a shared palette cannot be computed
+until every frame has been decoded and held.
+
+Dependency added: `gifenc` (MIT, pure JS, no WASM). It ships no types, so
+`src/types/gifenc.d.ts` declares the surface actually used, written from its
+source rather than its README.
+
+The stack-overflow worth remembering: `sampled.push(...frame.data)` passes
+every pixel as a separate argument — half a million per 480px frame — and dies
+with "Maximum call stack size exceeded" and no hint of where. Copy into a
+pre-sized `Uint8Array` with `set()` instead.
+
+Tested against a fixture of one solid colour per second, so ffprobe can report
+which colours appear and in what order — pinning down both the section taken
+and the direction of time without knowing anything about the encoder.
+Falsified by reversing the frames, which reports
+`yellow -> blue -> lime -> red`.
+
 ### Frame extraction, and a narrower fidelity claim
 
 `frame:mp4` decodes one frame and hands the pixels to the same PNG encoder

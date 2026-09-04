@@ -67,7 +67,10 @@ function isRecognisedEngineId(engineId: string | undefined): boolean {
 		/^trim:[a-z0-9]+$/.test(engineId) ||
 		// Frame extraction decodes video and hands the pixels to an image
 		// encoder, so it has no image *decoder* to check parity against.
-		/^frame:[a-z0-9]+$/.test(engineId)
+		/^frame:[a-z0-9]+$/.test(engineId) ||
+		// Video to GIF decodes frames and writes an animation, so it has no
+		// image decoder/encoder pair either.
+		/^gif:[a-z0-9]+$/.test(engineId)
 	);
 }
 

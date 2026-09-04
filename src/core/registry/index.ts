@@ -27,6 +27,7 @@ import { frameMp4 } from "./tools/video/frame-mp4";
 import { mkvToMp4 } from "./tools/video/mkv-to-mp4";
 import { mlwToMp4 } from "./tools/video/mlw-to-mp4";
 import { movToMp4 } from "./tools/video/mov-to-mp4";
+import { mp4ToGif } from "./tools/video/mp4-to-gif";
 import { mp4ToWebm } from "./tools/video/mp4-to-webm";
 import { trimMp4 } from "./tools/video/trim-mp4";
 import { webmToMp4 } from "./tools/video/webm-to-mp4";
@@ -79,6 +80,7 @@ export const TOOLS: Tool[] = [
 	mp4ToM4a,
 	trimMp4,
 	frameMp4,
+	mp4ToGif,
 ];
 
 export function getTool(id: string): Tool | undefined {
