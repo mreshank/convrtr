@@ -70,6 +70,37 @@ describe("radius system", () => {
 	});
 });
 
+/**
+ * Applies the CSS-property border-width sweep to one file's contents.
+ * Extracted so the regexes' behaviour can be pinned directly against a table
+ * of fixtures (see "CSS border-weight regex" below), rather than only being
+ * observed indirectly through whatever `src` happens to contain today — a
+ * corpus that can look clean while the regex underneath it is wrong.
+ */
+function findOversizedCssBorders(content: string): string[] {
+	const offenders: string[] = [];
+	// Kebab-case CSS: `border: 1px`, `border-left: 2px`, `border-top-width: 3px`.
+	// The side word is a closed set (top/right/bottom/left/block/inline, with
+	// an optional logical start/end suffix) so `radius`, `color`, `style` and
+	// `spacing` can never be mistaken for a width.
+	for (const match of content.matchAll(
+		/border(?:-(?:top|right|bottom|left|block|inline)(?:-(?:start|end))?)?(?:-width)?\s*:\s*["']?(\d+(?:\.\d+)?)px/g,
+	)) {
+		if (Number(match[1]) > 1) offenders.push(match[0].trim());
+	}
+	// camelCase JSX style props: `borderWidth: "1px"`, `borderLeftWidth: "2px"`.
+	// No `i` flag on either pattern is deliberate: case is what separates this
+	// syntax from the kebab-case one above, so mixing them back together would
+	// reopen the same hole — a bare `border` fragment could match whichever
+	// pattern's optional groups happened to collapse to nothing.
+	for (const match of content.matchAll(
+		/border(?:Top|Right|Bottom|Left|Block|Inline)?(?:Start|End)?(?:Width)?\s*:\s*["']?(\d+(?:\.\d+)?)px/g,
+	)) {
+		if (Number(match[1]) > 1) offenders.push(match[0].trim());
+	}
+	return offenders;
+}
+
 describe("border weight", () => {
 	// DESIGN.md: "DO NOT: Use borders heavier than 1px." Elevation is a
 	// hairline, never a shadow — so the hairline itself has to stay a
@@ -85,10 +116,8 @@ describe("border weight", () => {
 	it("declares no CSS border wider than 1px", () => {
 		const offenders: string[] = [];
 		for (const { path, content } of sourceFileContents) {
-			for (const match of content.matchAll(
-				/border(?:-[a-z]+)?(?:Width)?:\s*["']?(\d+(?:\.\d+)?)px/gi,
-			)) {
-				if (Number(match[1]) > 1) offenders.push(`${path}: ${match[0].trim()}`);
+			for (const hit of findOversizedCssBorders(content)) {
+				offenders.push(`${path}: ${hit}`);
 			}
 		}
 		expect(offenders).toEqual([]);
@@ -109,6 +138,43 @@ describe("border weight", () => {
 			}
 		}
 		expect(offenders).toEqual([]);
+	});
+});
+
+describe("CSS border-weight regex", () => {
+	// Pins findOversizedCssBorders's behaviour against fixture strings
+	// directly, rather than relying on whatever `src` happens to contain
+	// today. A sweep whose corpus doesn't currently exercise a given shape
+	// can look correct while the regex underneath it is wrong — which is
+	// exactly how a single loose pattern shipped that flagged
+	// `border-radius: 40px` as an over-weight border, defeating the point of
+	// admitting DESIGN.md's own card radii.
+	const mustFlag = [
+		"border: 2px",
+		"border-left: 2px",
+		"border-top-width: 3px",
+		'borderWidth: "2px"',
+		'borderLeftWidth: "2px"',
+	];
+
+	const mustNotFlag = [
+		"border-radius: 40px",
+		"border-radius: 100px",
+		"border-top-left-radius: 100px",
+		'borderRadius: "40px"',
+		'borderTopLeftRadius: "100px"',
+		"border-color: var(--hairline)",
+		"border-spacing: 2px",
+		"border: 1px",
+		'borderWidth: "1px"',
+	];
+
+	it.each(mustFlag)("flags %j as an over-weight border", (input) => {
+		expect(findOversizedCssBorders(input).length).toBeGreaterThan(0);
+	});
+
+	it.each(mustNotFlag)("does not flag %j", (input) => {
+		expect(findOversizedCssBorders(input)).toEqual([]);
 	});
 });
 
