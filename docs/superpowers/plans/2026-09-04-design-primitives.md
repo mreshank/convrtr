@@ -322,6 +322,30 @@ describe("Reveal", () => {
 });
 ```
 
+> **Corrections, recorded during execution.** Three defects in this task's
+> text were found by the implementer and confirmed by review:
+>
+> 1. **The test and the component contradicted each other.** The test asserts a
+>    word-mode fragment's `textContent` is `"convert"`, while the component put
+>    the inter-word space *inside* the span. The component was changed rather
+>    than the test — the span is the animated unit, so a trailing space inside
+>    it would animate too, and `[data-reveal-part]` should map 1:1 onto the
+>    semantic unit.
+> 2. **The JSX carried two Biome violations** and would not have linted: an
+>    `aria-label` requiring `role="img"`, and an array-index key. Both were
+>    fixed using patterns already established in `FidelityScore.tsx` and
+>    `ComparisonTable.tsx`.
+> 3. **The dangling-custom-property guard needed widening.** `--reveal-i` is set
+>    per fragment by this component rather than declared in `tokens.css`, so the
+>    sweep flagged it. Allowlisting is the right treatment here and does not
+>    weaken the guard: the property is written by the same component that reads
+>    it, and `var(--reveal-i, 0)` carries an explicit fallback, so the silent
+>    evaporation the guard exists to catch cannot occur.
+>
+> **The authoritative version is the code**, in `src/design/primitives/Reveal.tsx`
+> and its test — deliberately not duplicated here, so there is one source of
+> truth rather than two that can drift.
+
 - [ ] **Step 2: Run the test to verify it fails**
 
 Run: `pnpm exec vitest run src/design/__tests__/Reveal.test.tsx`
