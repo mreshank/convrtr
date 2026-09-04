@@ -4,6 +4,30 @@ import { createFileSink } from "@/core/io/sink";
 import type { AnyJobRequest, JobEvent } from "./protocol";
 import { runStreamingConversion } from "./stream-runner";
 
+/**
+ * Turns whatever a failing engine threw into something a person can act on.
+ *
+ * Not every library rejects with an `Error`. ffmpeg.wasm rejects with plain
+ * values, and the previous version collapsed all of them to "Unknown failure"
+ * — which told the user nothing and, worse, told *us* nothing while debugging
+ * the tier that produces them.
+ */
+function describeFailure(error: unknown): string {
+	if (error instanceof Error) return error.message;
+	if (typeof error === "string" && error.length > 0) return error;
+	if (error && typeof error === "object") {
+		const message = (error as { message?: unknown }).message;
+		if (typeof message === "string" && message.length > 0) return message;
+		try {
+			const encoded = JSON.stringify(error);
+			if (encoded && encoded !== "{}") return encoded;
+		} catch {
+			// Circular or otherwise unserialisable; fall through.
+		}
+	}
+	return `The converter failed without an error message (${String(error)}).`;
+}
+
 self.onmessage = async (event: MessageEvent<AnyJobRequest>) => {
 	const request = event.data;
 	const { id, engines, params } = request;
@@ -66,7 +90,7 @@ self.onmessage = async (event: MessageEvent<AnyJobRequest>) => {
 			type: "error",
 			id,
 			code: "ENGINE_FAILURE",
-			message: error instanceof Error ? error.message : "Unknown failure",
+			message: describeFailure(error),
 		});
 	}
 };

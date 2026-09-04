@@ -57,6 +57,9 @@ const outDir = join(here, "..", "out");
 // would not even be valid JavaScript if it were.
 const EXCLUDED_EXTENSIONS = new Set([".wasm", ".map", ".ts"]);
 
+// Directories never precached, whatever they contain.
+const EXCLUDED_PREFIXES = ["ffmpeg/"];
+
 async function main() {
 	const buildId = await readBuildId();
 	const precacheUrls = await collectPrecacheUrls();
@@ -130,6 +133,14 @@ async function collectPrecacheUrls() {
 		const relativePath = relative(outDir, absolutePath).split(sep).join("/");
 		const ext = extname(relativePath);
 		if (EXCLUDED_EXTENSIONS.has(ext)) continue;
+		// The ffmpeg.wasm core, whole directory. Its .wasm is already excluded
+		// by extension, but its 109KB loader is a .js and would otherwise be
+		// fetched on install by every visitor — including the overwhelming
+		// majority who never open a legacy-video tool. This tier is opt-in by
+		// design; precaching any part of it would quietly undo that.
+		if (EXCLUDED_PREFIXES.some((prefix) => relativePath.startsWith(prefix))) {
+			continue;
+		}
 		urls.push(`/${relativePath}`);
 	}
 	urls.sort();

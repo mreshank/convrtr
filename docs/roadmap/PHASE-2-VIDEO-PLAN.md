@@ -183,6 +183,50 @@ byte-substring check needed an explicit non-empty assertion: a falsification
 run produced an unreadable output, and `indexOf` of an empty buffer is 0, which
 satisfied the comparison by being nothing at all.
 
+### The ffmpeg.wasm tier, and what it cost to wire up
+
+AVI, FLV and WMV cannot be read by any browser API, so they need a real
+ffmpeg. The core is 31MB — two orders of magnitude beyond every other engine
+here — which drives every decision about it:
+
+- **Not in git.** `scripts/copy-ffmpeg-core.mjs` copies it out of
+  `node_modules` at build time and `public/ffmpeg/` is ignored. It is pinned in
+  the lockfile and reproducible from it; committing 31MB would tax every clone
+  forever.
+- **Not precached.** The service worker excludes the whole `ffmpeg/` prefix.
+  The `.wasm` was already excluded by extension, but the 109KB loader is a
+  `.js` and would have been fetched on install by every visitor, quietly
+  undoing the opt-in.
+- **Not downloaded without asking.** `Tool.heavyDownloadMb` drives a consent
+  gate that stands *in place of* the CONVERT button, so there is no path to the
+  download that skips it. The e2e asserts zero `/ffmpeg/` requests before the
+  gate is accepted, rather than assuming it.
+- **Copy first.** An AVI usually holds MPEG-4 and MP3, both legal in MP4, so
+  the streams copy across untouched and the result is genuinely lossless. Only
+  when ffmpeg rejects the copy does it re-encode, and it says which happened.
+
+Three failures on the way in, each with a misleading error:
+
+1. `"failed to import ffmpeg-core.js"` — the UMD core was copied. The wrapper's
+   worker is a *module* worker where `importScripts` does not exist, so it falls
+   back to `await import(coreURL)` and reads `.default`, which a UMD bundle does
+   not have. Use `dist/esm`.
+2. `"Cannot find module '/ffmpeg/ffmpeg-core.js'"` — webpack bundles the
+   wrapper's `worker.js` (its own source comments say the code is duplicated
+   there *so that* webpack can), which rewrites the dynamic import into
+   webpack's module loader, and that cannot resolve a runtime URL. Self-host
+   the worker and pass `classWorkerURL`.
+3. `"Script at 'file:///ffmpeg/worker.js' cannot be accessed"` — root-relative
+   URLs are resolved with `new URL(path, import.meta.url)`, and inside a
+   webpack worker bundle `import.meta.url` is a `file:` URL. Build absolute
+   URLs from `self.location.origin`.
+
+The first of those surfaced only as "Unknown failure", because the pipeline
+worker collapsed every non-`Error` rejection to that string — ffmpeg.wasm
+rejects with plain values. `describeFailure()` now recovers a message from
+strings, `{ message }` objects and JSON, which the *user* needed as much as
+this debugging did.
+
 ### Video to GIF: the one tool that cannot claim losslessness
 
 GIF holds at most 256 colours per frame against the source's millions, so every

@@ -49,3 +49,6 @@ next-env.d.ts
 # agent scratch space — never commit
 /.superpowers/
 /.worktrees/
+
+# ffmpeg.wasm core, copied from node_modules at build time (31MB)
+public/ffmpeg/

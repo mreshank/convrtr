@@ -119,6 +119,18 @@ export const ToolSchema = z.object({
 	 * than misleading a user with a file too large to buffer.
 	 */
 	streamable: z.boolean().optional(),
+	/**
+	 * Megabytes this tool must download before it can run at all.
+	 *
+	 * Set only for the ffmpeg.wasm tier, whose core is 31MB — two orders of
+	 * magnitude beyond every other engine here. A download that large should
+	 * be a decision rather than a surprise, so the UI asks before spending it
+	 * and remembers the answer.
+	 *
+	 * Absent means "downloads what it needs without asking", which is the right
+	 * default for a few hundred kilobytes of codec.
+	 */
+	heavyDownloadMb: z.number().positive().optional(),
 	quality: z.object({
 		losslessAvailable: z.boolean(),
 		defaultPreset: z.enum(QUALITY_PRESETS),

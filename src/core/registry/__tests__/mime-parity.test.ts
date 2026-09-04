@@ -70,7 +70,10 @@ function isRecognisedEngineId(engineId: string | undefined): boolean {
 		/^frame:[a-z0-9]+$/.test(engineId) ||
 		// Video to GIF decodes frames and writes an animation, so it has no
 		// image decoder/encoder pair either.
-		/^gif:[a-z0-9]+$/.test(engineId)
+		/^gif:[a-z0-9]+$/.test(engineId) ||
+		// The ffmpeg.wasm tier converts whole containers, so it has no image
+		// decoder/encoder pair either.
+		/^ffmpeg:[a-z0-9]+->[a-z0-9]+$/.test(engineId)
 	);
 }
 

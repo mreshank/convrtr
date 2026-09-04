@@ -9,6 +9,7 @@ import { DropField } from "@/components/instrument/DropField";
 import { ErrorPanel } from "@/components/instrument/ErrorPanel";
 import { FidelityScore } from "@/components/instrument/FidelityScore";
 import { FileReadout } from "@/components/instrument/FileReadout";
+import { HeavyDownloadGate } from "@/components/instrument/HeavyDownloadGate";
 import { OptionsPanel } from "@/components/instrument/OptionsPanel";
 import { ProgressBar } from "@/components/instrument/ProgressBar";
 import {
@@ -44,6 +45,8 @@ import { formatBytes, formatDelta } from "@/lib/format";
  * re-encodes even when a copy was requested. Only image engines emit neither
  * phase, so `path` stays undefined for them and nothing extra is shown.
  */
+const HEAVY_DOWNLOAD_KEY = "convrtr:heavy-download-allowed";
+
 type ConversionPath = "copy" | "encode";
 
 type Result = { bytes: ArrayBuffer; size: number; path?: ConversionPath };
@@ -117,6 +120,36 @@ export function ToolClient({ toolId }: { toolId: string }) {
 	 * Undefined until the probe resolves, and for every tool that never asks.
 	 */
 	const [duration, setDuration] = useState<number | undefined>(undefined);
+
+	/**
+	 * Whether the user has agreed to this tool's large one-time download.
+	 *
+	 * Remembered per browser: the file it pays for is cached by the browser
+	 * afterwards, so asking again would be asking about a cost that has already
+	 * been paid. Read lazily rather than in an initialiser because localStorage
+	 * throws in some privacy modes, and a converter that will not render is a
+	 * far worse outcome than one that asks twice.
+	 */
+	const [downloadAllowed, setDownloadAllowed] = useState(false);
+	useEffect(() => {
+		if (!tool.heavyDownloadMb) return;
+		try {
+			if (localStorage.getItem(HEAVY_DOWNLOAD_KEY) === "yes") {
+				setDownloadAllowed(true);
+			}
+		} catch {
+			// Storage unavailable; the gate simply shows each session.
+		}
+	}, [tool.heavyDownloadMb]);
+
+	const allowHeavyDownload = () => {
+		setDownloadAllowed(true);
+		try {
+			localStorage.setItem(HEAVY_DOWNLOAD_KEY, "yes");
+		} catch {
+			// Not remembering the choice is survivable; refusing to convert is not.
+		}
+	};
 	const [error, setError] = useState<{
 		code: ErrorCode;
 		detail?: string;
@@ -723,7 +756,18 @@ export function ToolClient({ toolId }: { toolId: string }) {
 						</ul>
 					)}
 
-					{!converting && (
+					{!converting && tool.heavyDownloadMb && !downloadAllowed && (
+						<HeavyDownloadGate
+							megabytes={tool.heavyDownloadMb}
+							formatLabel={(tool.accept.ext[0] ?? "").toUpperCase()}
+							onAccept={() => {
+								allowHeavyDownload();
+								void convert();
+							}}
+						/>
+					)}
+
+					{!converting && !(tool.heavyDownloadMb && !downloadAllowed) && (
 						<button
 							type="button"
 							onClick={convert}

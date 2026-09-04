@@ -11,6 +11,7 @@ import type { Engine } from "./types";
 import { createVideoConversionEngine } from "./video/convert";
 import { createFrameExtractionEngine } from "./video/frame";
 import { createGifEngine } from "./video/gif";
+import { createLegacyConversionEngine } from "./video/legacy";
 import { createVideoTrimEngine } from "./video/trim";
 
 export * from "./image";
@@ -94,6 +95,14 @@ function buildImageEngines(): Map<string, Engine> {
 	// target container can carry the codec, which for MP4's AAC into .m4a is
 	// the common case — the operation almost every other converter answers
 	// with a re-encode to MP3.
+	// The ffmpeg.wasm tier, for containers no browser API can read. Registered
+	// like any other engine, but its 31MB core is fetched only after the user
+	// agrees — see `heavyDownloadMb` on the tools that use it.
+	for (const from of ["avi", "flv", "wmv"] as const) {
+		const engine = createLegacyConversionEngine(from, "mp4");
+		engines.set(engine.id, engine);
+	}
+
 	// Video to animated GIF. The only video tool that cannot claim losslessness
 	// — GIF holds 256 colours where the source holds millions — so the options
 	// are about how that loss is spent rather than whether it happens.
