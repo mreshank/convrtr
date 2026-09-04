@@ -50,9 +50,9 @@ html {
  * `*`: pausing every animation would freeze reveals at their *initial*
  * state, hiding the very content the duration collapse exists to reveal.
  *
- * `[data-marquee]` is the hook; the marquee component that spec §4.6
- * describes does not exist yet, so this rule matches nothing today and
- * becomes true the moment it does.
+ * `[data-marquee]` is the hook the `Marquee` primitive sets on its two
+ * scrolling tracks (never on the viewport that contains them, which has no
+ * animation of its own to pause) — see `src/design/primitives/Marquee.tsx`.
  *
  * `0.01ms` rather than `0` so animation end events still fire — a reveal
  * that waits on `animationend` to remove a clip would otherwise hang
