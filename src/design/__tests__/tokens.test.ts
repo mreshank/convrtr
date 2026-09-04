@@ -93,6 +93,60 @@ const ALLOWED_COLOURS = new Set([
 	"#8a8a92",
 ]);
 
+/**
+ * The corpus the palette guard sweeps.
+ *
+ * Reading `tokens.css` alone was never enough. This codebase's dominant
+ * styling idiom is inline `style={{ ... }}` in `.tsx`, so a literal
+ * `color: "#3B82F6"` written into any component satisfied every guard on
+ * the branch while putting a hue straight onto the page. Spec §4.5 claims
+ * the palette "cannot quietly regress"; scoped to one file, it could.
+ */
+const PALETTE_CORPUS = collectSourceFiles("src", [".tsx", ".ts", ".css"])
+	.filter((path) => !path.includes("__tests__"))
+	.map((path) => ({ path, content: readFileSync(path, "utf8") }));
+
+const TOKENS_FILE = join("src", "design", "tokens.css");
+
+/**
+ * The one file allowed to write a colour as a literal.
+ *
+ * A PWA manifest is JSON consumed by the operating system, not CSS — it
+ * cannot reference a custom property, so `#0A0A0A` there is the only way to
+ * state the value at all. Everything else in `src` goes through a token.
+ */
+const LITERAL_HEX_ALLOWED = new Set([join("src", "app", "manifest.ts")]);
+
+/**
+ * Values for a colour property that are keywords rather than colours.
+ * Anything else written as a bare word — `red`, `white`, `rebeccapurple` —
+ * is a hue (or an off-token grey) entering the system by the one route the
+ * hex and colour-function checks cannot see.
+ */
+const COLOUR_KEYWORDS = new Set([
+	"transparent",
+	"currentcolor",
+	"inherit",
+	"initial",
+	"unset",
+	"revert",
+	"revert-layer",
+	"none",
+	"auto",
+]);
+
+// Inline styles and SVG presentation attributes, e.g. `color: "red"` and
+// `stroke="red"`. Values wrapping a `var(...)` cannot match — the closing
+// quote has to follow the bare identifier directly.
+const TSX_COLOUR_VALUE =
+	/\b(?:color|background|backgroundColor|outlineColor|caretColor|accentColor|fill|stroke|border[A-Za-z]*Color)\s*[:=]\s*"([a-zA-Z-]+)"/g;
+
+// The same properties in kebab-case, as a stylesheet declaration. Anchored
+// to a rule or declaration boundary so `animation-fill-mode` and friends
+// cannot be mistaken for `fill`.
+const CSS_COLOUR_VALUE =
+	/(?:^|[;{])\s*(?:color|background|background-color|outline-color|caret-color|accent-color|fill|stroke|border-color|border-(?:top|right|bottom|left)-color)\s*:\s*([a-zA-Z-]+)\s*(?:;|\}|$)/gm;
+
 describe("palette closure", () => {
 	it("declares no hex value outside the monochrome set", () => {
 		const offenders = [...css.matchAll(/#[0-9a-fA-F]{3,8}\b/g)]
@@ -101,17 +155,57 @@ describe("palette closure", () => {
 		expect(offenders).toEqual([]);
 	});
 
-	it("declares no saturated colour function", () => {
-		// rgb() is permitted only for the two 10%-opacity rules, which are
-		// pure black and pure white. Anything else — hsl, oklch, a coloured
-		// rgb — is a hue entering the system.
-		const rgbUses = [...css.matchAll(/rgb\(([^)]*)\)/g)].map((m) =>
-			(m[1] ?? "").trim(),
-		);
-		for (const use of rgbUses) {
-			expect(use).toMatch(/^(0 0 0|255 255 255) \/ (0\.1|\.10)$/);
+	it("writes no literal hex anywhere in src but the token file", () => {
+		// Even a monochrome literal is a token bypass: it is the shape a
+		// `#3B82F6` arrives in, and the shape that survives a rename of
+		// whatever token it was standing in for.
+		const offenders: string[] = [];
+		for (const { path, content } of PALETTE_CORPUS) {
+			if (path === TOKENS_FILE) continue;
+			if (LITERAL_HEX_ALLOWED.has(path)) continue;
+			for (const match of content.matchAll(/#[0-9a-fA-F]{3,8}\b/g)) {
+				offenders.push(`${path}: ${match[0]}`);
+			}
 		}
-		expect(css).not.toMatch(/\b(hsl|oklch|lab|lch|color-mix)\(/);
+		expect(offenders).toEqual([]);
+	});
+
+	it("writes no saturated colour function anywhere in src", () => {
+		// rgb() and rgba() are permitted only for the 10%-opacity rules,
+		// which are pure black and pure white. The old check spelled this
+		// `/rgb\(/`, which never matched `rgba(` at all — so
+		// `rgba(0, 128, 0, 0.5)` slipped past both this and the hex check.
+		const offenders: string[] = [];
+		for (const { path, content } of PALETTE_CORPUS) {
+			for (const match of content.matchAll(/\brgba?\(([^)]*)\)/g)) {
+				const args = (match[1] ?? "").trim();
+				if (!/^(0 0 0|255 255 255) \/ (0\.1|\.10)$/.test(args)) {
+					offenders.push(`${path}: ${match[0]}`);
+				}
+			}
+			for (const match of content.matchAll(
+				/\b(?:hsla?|hwb|lab|lch|oklch|oklab|color-mix)\(/g,
+			)) {
+				offenders.push(`${path}: ${match[0]}`);
+			}
+		}
+		expect(offenders).toEqual([]);
+	});
+
+	it("names no colour anywhere in src", () => {
+		const offenders: string[] = [];
+		for (const { path, content } of PALETTE_CORPUS) {
+			const pattern = path.endsWith(".css")
+				? CSS_COLOUR_VALUE
+				: TSX_COLOUR_VALUE;
+			for (const match of content.matchAll(pattern)) {
+				const value = (match[1] ?? "").toLowerCase();
+				if (!COLOUR_KEYWORDS.has(value)) {
+					offenders.push(`${path}: ${match[0].trim()}`);
+				}
+			}
+		}
+		expect(offenders).toEqual([]);
 	});
 
 	it("declares exactly one easing, and it is DESIGN.md's", () => {
@@ -120,6 +214,46 @@ describe("palette closure", () => {
 			(m) => m[0],
 		);
 		expect(new Set(easings).size).toBe(1);
+	});
+});
+
+/**
+ * Pins the two value patterns against fixtures rather than against whatever
+ * `src` happens to contain — the same reasoning as the REFERENCE table below.
+ * A guard whose corpus is currently clean proves nothing about the guard.
+ */
+describe("named-colour patterns", () => {
+	function captures(pattern: RegExp, input: string): string[] {
+		return Array.from(input.matchAll(pattern), (match) => match[1] ?? "");
+	}
+
+	const tsxCases: Array<[string, string[]]> = [
+		['color: "red"', ["red"]],
+		['background: "transparent"', ["transparent"]],
+		['borderLeftColor: "rebeccapurple"', ["rebeccapurple"]],
+		['stroke="red"', ["red"]],
+		// A token reference must not register: the bare-identifier capture
+		// cannot span `var(--ink)`, so these produce nothing at all.
+		['color: "var(--ink)"', []],
+		['label: "LOSSLESS"', []],
+	];
+
+	it.each(tsxCases)("reads %j as %j", (input, expected) => {
+		expect(captures(TSX_COLOUR_VALUE, input)).toEqual(expected);
+	});
+
+	const cssCases: Array<[string, string[]]> = [
+		["color: red;", ["red"]],
+		["{ background: white; }", ["white"]],
+		["border-left-color: goldenrod;", ["goldenrod"]],
+		["background: var(--ground);", []],
+		// The near-miss the anchor exists for: a longer property that merely
+		// contains one of the names.
+		["animation-fill-mode: forwards;", []],
+	];
+
+	it.each(cssCases)("reads %j as %j", (input, expected) => {
+		expect(captures(CSS_COLOUR_VALUE, input)).toEqual(expected);
 	});
 });
 
