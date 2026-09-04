@@ -75,13 +75,49 @@ export function setParam(
 	return { preset: match?.id ?? "custom", params };
 }
 
-export function describeFidelity(tool: Tool, state: QualityState): string {
-	if (!tool.quality.losslessAvailable) return "INHERENTLY LOSSY";
+/**
+ * What kind of conversion this is, as a closed set rather than a sentence.
+ *
+ * Spec §4.5 encodes fidelity as stroke pattern — solid means nothing was
+ * given up, dashed means something was — and that is a *categorical* claim,
+ * so it has to be driven by a categorical answer. The 0-100 figure from
+ * `fidelityScore` cannot stand in for it at any threshold: `balanced` JPEG
+ * declares quality 78, and a threshold that calls 78 intact would draw a
+ * solid ring over a DCT-quantised image on the site's most-used conversion.
+ *
+ * `describeFidelity` is the human-readable rendering of this same answer, so
+ * the ring and the label can never disagree.
+ */
+export type FidelityState =
+	| "lossless"
+	| "visually-lossless"
+	| "lossy"
+	| "inherently-lossy";
+
+export function fidelityState(tool: Tool, state: QualityState): FidelityState {
+	// Checked first, and unconditionally: a tool whose encoder has no
+	// lossless path cannot be talked into one by a preset name or a quality
+	// of 100, so no later branch is allowed to overrule this.
+	if (!tool.quality.losslessAvailable) return "inherently-lossy";
 	if (state.params.lossless === 1 || state.params.lossless === true)
-		return "LOSSLESS";
-	if (state.preset === "visually-lossless") return "VISUALLY LOSSLESS";
-	const quality = state.params.quality;
-	return typeof quality === "number" ? `LOSSY · Q${quality}` : "LOSSY";
+		return "lossless";
+	if (state.preset === "visually-lossless") return "visually-lossless";
+	return "lossy";
+}
+
+export function describeFidelity(tool: Tool, state: QualityState): string {
+	switch (fidelityState(tool, state)) {
+		case "inherently-lossy":
+			return "INHERENTLY LOSSY";
+		case "lossless":
+			return "LOSSLESS";
+		case "visually-lossless":
+			return "VISUALLY LOSSLESS";
+		default: {
+			const quality = state.params.quality;
+			return typeof quality === "number" ? `LOSSY · Q${quality}` : "LOSSY";
+		}
+	}
 }
 
 /**

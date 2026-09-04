@@ -29,7 +29,7 @@ export default function ToolsIndexPage() {
 		<main className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-8">
 			<div className="flex flex-col gap-2">
 				<h1 className="text-[28px] tracking-[-0.02em]">All tools</h1>
-				<p className="text-[14px]" style={{ color: "var(--text-muted)" }}>
+				<p className="text-[14px]" style={{ color: "var(--ink-muted)" }}>
 					{rows.length} {rows.length === 1 ? "conversion" : "conversions"}, all
 					running in your browser. Nothing is uploaded.
 				</p>

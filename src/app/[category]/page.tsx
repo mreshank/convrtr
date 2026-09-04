@@ -71,7 +71,7 @@ export default async function CategoryPage({
 		<main className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-8">
 			<div className="flex flex-col gap-2">
 				<h1 className="text-[28px] tracking-[-0.02em]">{label(category)}</h1>
-				<p className="text-[14px]" style={{ color: "var(--text-muted)" }}>
+				<p className="text-[14px]" style={{ color: "var(--ink-muted)" }}>
 					{tools.length} {tools.length === 1 ? "tool" : "tools"} for converting{" "}
 					{category} files, all running in your browser.
 				</p>

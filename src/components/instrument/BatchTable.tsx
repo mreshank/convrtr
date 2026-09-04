@@ -1,5 +1,6 @@
 import { Fragment } from "react";
 import type { ErrorCode } from "@/core/pipeline/protocol";
+import type { FidelityState } from "@/core/quality";
 import { formatBytes, formatDelta, formatPercent } from "@/lib/format";
 import { ErrorPanel } from "./ErrorPanel";
 import { FidelityScore } from "./FidelityScore";
@@ -62,8 +63,12 @@ type Props = {
 	 * every row shares the same score. Rendered per row anyway, since a
 	 * dense results table reads as one subdivided instrument, not a summary
 	 * line plus a list.
+	 *
+	 * `state` rides alongside the number because the ring's stroke pattern
+	 * is categorical — see `fidelityState` — and cannot be recovered from
+	 * the score.
 	 */
-	fidelity: { score: number; label: string };
+	fidelity: { score: number; label: string; state: FidelityState };
 	/** Called with a row's id when its SAVE action is activated. Only
 	 * reachable for `status: "done"` rows — see the disabled state below. */
 	onSaveRow: (id: string) => void;
@@ -92,18 +97,18 @@ function statusLabel(row: BatchRowState): string {
 function statusColor(row: BatchRowState): string {
 	switch (row.status) {
 		case "done":
-			return "var(--signal)";
+			return "var(--ink)";
 		case "error":
-			return "var(--error)";
+			return "var(--ink)";
 		case "converting":
-			return "var(--text-primary)";
+			return "var(--ink)";
 		default:
-			return "var(--text-muted)";
+			return "var(--ink-muted)";
 	}
 }
 
 const cellStyle = {
-	borderColor: "var(--hairline)",
+	borderColor: "var(--rule)",
 } as const;
 
 /**
@@ -118,7 +123,7 @@ export function BatchTable({ rows, fidelity, onSaveRow, inputFormat }: Props) {
 		<table
 			data-testid="batch-table"
 			className="mono w-full border-collapse text-[12px]"
-			style={{ borderColor: "var(--hairline)" }}
+			style={{ borderColor: "var(--rule)" }}
 		>
 			<caption className="sr-only">Batch conversion results</caption>
 			<thead>
@@ -126,49 +131,49 @@ export function BatchTable({ rows, fidelity, onSaveRow, inputFormat }: Props) {
 					<th
 						scope="col"
 						className="border-b px-2 py-2 text-left font-normal"
-						style={{ ...cellStyle, color: "var(--text-muted)" }}
+						style={{ ...cellStyle, color: "var(--ink-muted)" }}
 					>
 						FILE
 					</th>
 					<th
 						scope="col"
 						className="border-b px-2 py-2 text-right font-normal"
-						style={{ ...cellStyle, color: "var(--text-muted)" }}
+						style={{ ...cellStyle, color: "var(--ink-muted)" }}
 					>
 						IN
 					</th>
 					<th
 						scope="col"
 						className="border-b px-2 py-2 text-right font-normal"
-						style={{ ...cellStyle, color: "var(--text-muted)" }}
+						style={{ ...cellStyle, color: "var(--ink-muted)" }}
 					>
 						OUT
 					</th>
 					<th
 						scope="col"
 						className="border-b px-2 py-2 text-right font-normal"
-						style={{ ...cellStyle, color: "var(--text-muted)" }}
+						style={{ ...cellStyle, color: "var(--ink-muted)" }}
 					>
 						DELTA
 					</th>
 					<th
 						scope="col"
 						className="border-b px-2 py-2 text-center font-normal"
-						style={{ ...cellStyle, color: "var(--text-muted)" }}
+						style={{ ...cellStyle, color: "var(--ink-muted)" }}
 					>
 						FIDELITY
 					</th>
 					<th
 						scope="col"
 						className="border-b px-2 py-2 text-left font-normal"
-						style={{ ...cellStyle, color: "var(--text-muted)" }}
+						style={{ ...cellStyle, color: "var(--ink-muted)" }}
 					>
 						STATUS
 					</th>
 					<th
 						scope="col"
 						className="border-b px-2 py-2 text-right font-normal"
-						style={{ ...cellStyle, color: "var(--text-muted)" }}
+						style={{ ...cellStyle, color: "var(--ink-muted)" }}
 					>
 						<span className="sr-only">Actions</span>
 					</th>
@@ -178,7 +183,20 @@ export function BatchTable({ rows, fidelity, onSaveRow, inputFormat }: Props) {
 				{rows.map((row) => (
 					<Fragment key={row.id}>
 						<tr data-testid="batch-row" data-status={row.status}>
-							<td className="border-b px-2 py-2 text-left" style={cellStyle}>
+							<td
+								className={`border-b px-2 py-2 text-left${
+									row.status === "error" ? " border-l" : ""
+								}`}
+								style={
+									row.status === "error"
+										? {
+												...cellStyle,
+												borderLeftColor: "var(--ink)",
+												borderLeftStyle: "dashed",
+											}
+										: cellStyle
+								}
+							>
 								{row.name}
 							</td>
 							<td
@@ -207,6 +225,7 @@ export function BatchTable({ rows, fidelity, onSaveRow, inputFormat }: Props) {
 								<FidelityScore
 									score={fidelity.score}
 									label={fidelity.label}
+									fidelity={fidelity.state}
 									size={20}
 								/>
 							</td>
@@ -224,8 +243,8 @@ export function BatchTable({ rows, fidelity, onSaveRow, inputFormat }: Props) {
 										aria-label={`Save ${row.name}`}
 										className="mono border px-2 py-1 text-[11px]"
 										style={{
-											color: "var(--signal)",
-											borderColor: "var(--signal)",
+											color: "var(--ink)",
+											borderColor: "var(--ink)",
 											borderRadius: "var(--radius)",
 											background: "transparent",
 										}}

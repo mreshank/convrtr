@@ -26,17 +26,17 @@ export function ToolTable({
 		<div
 			className="convrtr-tool-table border"
 			style={{
-				borderColor: "var(--hairline)",
+				borderColor: "var(--rule)",
 				borderRadius: "var(--radius)",
 			}}
 		>
 			<style>{`
 				.convrtr-tool-table table { width: 100%; border-collapse: collapse; }
-				.convrtr-tool-table tbody tr:not(:first-child) { border-top: var(--hairline-width) solid var(--hairline); }
-				.convrtr-tool-table tbody td:first-child { border-left: 2px solid transparent; }
+				.convrtr-tool-table tbody tr:not(:first-child) { border-top: var(--rule-width) solid var(--rule); }
+				.convrtr-tool-table tbody td:first-child { border-left: 1px solid transparent; }
 				.convrtr-tool-table tbody tr:hover td:first-child,
 				.convrtr-tool-table tbody tr:focus-within td:first-child {
-					border-left-color: var(--signal);
+					border-left-color: var(--ink);
 				}
 			`}</style>
 			<table>
@@ -46,21 +46,21 @@ export function ToolTable({
 						<th
 							scope="col"
 							className="mono px-4 py-2 text-left text-[11px] tracking-[0.08em]"
-							style={{ color: "var(--text-muted)" }}
+							style={{ color: "var(--ink-muted)" }}
 						>
 							TOOL
 						</th>
 						<th
 							scope="col"
 							className="mono px-4 py-2 text-left text-[11px] tracking-[0.08em]"
-							style={{ color: "var(--text-muted)" }}
+							style={{ color: "var(--ink-muted)" }}
 						>
 							DESCRIPTION
 						</th>
 						<th
 							scope="col"
 							className="mono px-4 py-2 text-right text-[11px] tracking-[0.08em]"
-							style={{ color: "var(--text-muted)" }}
+							style={{ color: "var(--ink-muted)" }}
 						>
 							CONVERT
 						</th>
@@ -71,7 +71,7 @@ export function ToolTable({
 						<tr key={row.id} className="relative">
 							<td
 								className="px-4 py-3 text-[14px]"
-								style={{ color: "var(--text-primary)" }}
+								style={{ color: "var(--ink)" }}
 							>
 								<Link href={row.href} className="absolute inset-0">
 									<span className="sr-only">
@@ -83,13 +83,13 @@ export function ToolTable({
 							</td>
 							<td
 								className="px-4 py-3 text-[13px]"
-								style={{ color: "var(--text-muted)" }}
+								style={{ color: "var(--ink-muted)" }}
 							>
 								{row.description}
 							</td>
 							<td
 								className="mono px-4 py-3 text-right text-[13px]"
-								style={{ color: "var(--text-primary)" }}
+								style={{ color: "var(--ink)" }}
 							>
 								{row.fromExt.toUpperCase()} {"→"} {row.toExt.toUpperCase()}
 							</td>

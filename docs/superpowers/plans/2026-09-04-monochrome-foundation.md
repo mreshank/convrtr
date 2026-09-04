@@ -413,7 +413,9 @@ added later fails the suite rather than shipping."
 
 **Files:**
 - Create: `src/design/__tests__/design-system.test.ts`
-- Modify: `src/styles/__tests__/tokens.test.ts` — remove the two radius assertions that DESIGN.md now contradicts
+- Modify: `src/styles/__tests__/tokens.test.ts` — remove the radius assertions that DESIGN.md now contradicts
+- Modify: `src/app/tools/ToolTable.tsx` — 2px hover border → 1px
+- Modify: `src/components/instrument/ErrorPanel.tsx` — `border-l-2` → `border-l`
 
 **Interfaces:**
 - Consumes: nothing.
@@ -499,16 +501,59 @@ describe("radius system", () => {
 });
 
 describe("border weight", () => {
-	it("never declares a border wider than 1px", () => {
-		// DESIGN.md: "DO NOT: Use borders heavier than 1px." Elevation is a
-		// hairline, never a shadow — so the hairline itself has to stay a
-		// hairline.
+	// DESIGN.md: "DO NOT: Use borders heavier than 1px." Elevation is a
+	// hairline, never a shadow — so the hairline itself has to stay a
+	// hairline.
+	//
+	// Two syntaxes, because this codebase writes borders both ways and a
+	// sweep that understands only one exempts the other silently. The
+	// CSS-property form catches `border-left: 2px` in a style block or
+	// style object; the utility form catches Tailwind's `border-2`,
+	// `border-l-2` and their arbitrary-value variants in a className. A
+	// bare `border` or `border-l` utility is already 1px and legal, so only
+	// the numbered forms are examined.
+	it("declares no CSS border wider than 1px", () => {
 		const offenders: string[] = [];
 		for (const { path, content } of sourceFileContents) {
-			for (const match of content.matchAll(
-				/border(?:-[a-z]+)?(?:Width)?:\s*["']?(\d+(?:\.\d+)?)px/gi,
-			)) {
+			for (const match of content.matchAll(CSS_BORDER_WIDTH)) {
 				if (Number(match[1]) > 1) offenders.push(`${path}: ${match[0].trim()}`);
+			}
+		}
+		expect(offenders).toEqual([]);
+	});
+
+> **Correction, recorded during execution.** This plan originally specified a
+> single pattern here, `/border(?:-[a-z]+)?(?:Width)?:\s*["']?(\d+(?:\.\d+)?)px/gi`,
+> and it was wrong in a way that would have defeated this task's own purpose:
+> its optional `(?:-[a-z]+)?` group swallows `radius` exactly as it swallows
+> `left`, so `border-radius: 40px` and `border-radius: 100px` were reported as
+> over-weight borders. Those are DESIGN.md's card radii — the values this task
+> exists to *admit* — and the guard would have blocked them the first time one
+> was written in an embedded `<style>` block, which this codebase already does.
+> It also missed `border-top-width` and `borderLeftWidth` entirely.
+>
+> What shipped is two precise patterns, kebab-case and camelCase, each
+> restricting what may follow `border` to a closed set of side words plus an
+> optional `width` — plus a table-driven test pinning both the must-flag and
+> must-NOT-flag cases. **The authoritative version is the code**, in
+> `src/design/__tests__/design-system.test.ts`; it is deliberately not
+> duplicated here, so there is one source of truth rather than two that can
+> drift.
+
+	it("uses no Tailwind border utility wider than 1px", () => {
+		const offenders: string[] = [];
+		for (const { path, content } of sourceFileContents) {
+			// `border-2`, `border-l-2`, `border-x-4`
+			for (const match of content.matchAll(
+				/\bborder(?:-[trblxy])?-(\d+)\b/g,
+			)) {
+				if (Number(match[1]) > 1) offenders.push(`${path}: ${match[0]}`);
+			}
+			// `border-[3px]`, `border-l-[2px]`
+			for (const match of content.matchAll(
+				/\bborder(?:-[trblxy])?-\[(\d+(?:\.\d+)?)px\]/g,
+			)) {
+				if (Number(match[1]) > 1) offenders.push(`${path}: ${match[0]}`);
 			}
 		}
 		expect(offenders).toEqual([]);
@@ -532,11 +577,14 @@ describe("forbidden visual devices", () => {
 - [ ] **Step 2: Run the test to verify it fails**
 
 Run: `pnpm exec vitest run src/design/__tests__/design-system.test.ts`
-Expected: FAIL — `border weight > never declares a border wider than 1px` fails on `src/app/tools/ToolTable.tsx`, whose hover rule uses `border-left: 2px solid var(--signal)`.
+Expected: FAIL on both border assertions. The tree holds exactly one violation of each kind, verified against the real code before this plan was written:
 
-That failure is real and is fixed in Task 6, not here. To keep this task green, the ToolTable fix moves forward into this task — see Step 3.
+- `src/app/tools/ToolTable.tsx:36` — `border-left: 2px solid transparent`, in the component's inline `<style>` block.
+- `src/components/instrument/ErrorPanel.tsx:103` — `border-l-2`, in a Tailwind className.
 
-- [ ] **Step 3: Fix the one real violation the sweep found**
+Both failures are real. The second is the whole reason the utility sweep exists: the CSS-property pattern alone reports clean while a 2px border sits in a className three files away.
+
+- [ ] **Step 3: Fix the two real violations the sweep found**
 
 In `src/app/tools/ToolTable.tsx`, the hover affordance is a 2px coloured left border. Under a 1px monochrome system it becomes a 1px ink border, and the affordance is carried by the ink/transparent contrast rather than by weight:
 
@@ -556,6 +604,14 @@ Every token name in that snippet is the **legacy** one — `--hairline-width`, `
 
 The only substantive changes are `2px` → `1px` and `var(--signal)` → `var(--text-primary)`. Leave `borderRadius: "var(--radius)"` untouched — 4px is in the allowed set.
 
+Then fix the Tailwind violation in `src/components/instrument/ErrorPanel.tsx`. Its root element carries `className="flex flex-col gap-3 border-l-2 p-4"`; drop the `-2` so the accent border is a hairline like every other border in the system:
+
+```tsx
+			className="flex flex-col gap-3 border-l p-4"
+```
+
+Leave that component's `style` object alone — Task 4 rewrites it into the inverted block. This task changes the border *weight* only.
+
 - [ ] **Step 4: Remove the superseded radius assertions**
 
 In `src/styles/__tests__/tokens.test.ts`, delete these three `it(...)` blocks in their entirety — they assert a 4px ceiling DESIGN.md replaces, and the new file covers what remains:
@@ -574,7 +630,7 @@ Expected: PASS — the new sweep is green, the old file retains only its dark-pa
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/design/__tests__/design-system.test.ts src/styles/__tests__/tokens.test.ts src/app/tools/ToolTable.tsx
+git add src/design/__tests__/design-system.test.ts src/styles/__tests__/tokens.test.ts src/app/tools/ToolTable.tsx src/components/instrument/ErrorPanel.tsx
 git commit -m "test(design): replace the 4px radius ceiling with DESIGN.md's radius set
 
 The old sweep asserted no radius exceeds 4px, which DESIGN.md's 40px and
@@ -582,8 +638,12 @@ The old sweep asserted no radius exceeds 4px, which DESIGN.md's 40px and
 be written. Replacing it with a closed set rather than deleting it keeps
 the property that mattered: an off-system 12px still fails.
 
-Adds a border-weight sweep, which immediately caught ToolTable's 2px hover
-border. That is now 1px ink; the affordance was never the weight."
+Adds a border-weight sweep in two syntaxes, because this codebase writes
+borders both as CSS properties and as Tailwind utilities, and a sweep that
+understood only the first reported clean while a 2px border sat in a
+className three files away. It caught one of each: ToolTable's hover
+border, now 1px since the affordance was never the weight, and
+ErrorPanel's border-l-2, now a hairline."
 ```
 
 ---
@@ -648,19 +708,23 @@ describe("monochrome state encoding", () => {
 		}
 	});
 
-	it("sweeps a longer arc for a higher score", () => {
-		const arcLength = (score: number): number => {
+	it("sets the large-arc flag only once the sweep passes halfway", () => {
+		// happy-dom implements no SVG geometry, so the sweep cannot be
+		// measured — but it can be read off the arc command itself. In
+		// `A rx ry rot large-arc sweep x y`, the fourth parameter is 1 only
+		// when the arc exceeds 180 degrees. That single bit is the whole
+		// difference between a ring drawn the short way round and the long
+		// way round, and getting it backwards is the classic arc bug.
+		const largeArcFlag = (score: number): string | undefined => {
 			const { container } = render(
 				<FidelityScore score={score} label={`Q${score}`} />,
 			);
-			const path = ringPath(container);
-			// happy-dom does not implement getTotalLength(), so the sweep is
-			// read from the arc command's large-arc-flag and end point rather
-			// than measured.
-			return path?.getAttribute("d")?.length ?? 0;
+			const d = ringPath(container)?.getAttribute("d") ?? "";
+			return d.match(/A [\d.]+ [\d.]+ 0 (\d)/)?.[1];
 		};
-		expect(arcLength(100)).toBeGreaterThan(0);
-		expect(arcLength(50)).toBeGreaterThan(0);
+		expect(largeArcFlag(80)).toBe("1"); // 288 degrees — the long way
+		expect(largeArcFlag(40)).toBe("0"); // 144 degrees — the short way
+		expect(largeArcFlag(50)).toBe("0"); // exactly 180 — not yet "large"
 	});
 
 	it("draws a full ring at 100 and no ring at 0", () => {
@@ -862,12 +926,16 @@ Append to `src/components/instrument/__tests__/ErrorPanel.test.tsx`:
 ```tsx
 describe("monochrome state encoding", () => {
 	it("renders as an inverted block rather than a coloured one", () => {
-		const { container } = render(
+		render(
 			<ErrorPanel code="ENGINE_FAILURE" onRetry={() => {}} onDismiss={() => {}} />,
 		);
-		const panel = container.firstElementChild as HTMLElement | null;
-		expect(panel?.style.background).toBe("var(--text-primary)");
-		expect(panel?.style.color).toBe("var(--surface-base)");
+		// Selected by testid, not by DOM position: the root carries
+		// `data-testid="error"` deliberately — its own comment explains the
+		// cancel e2e depends on nothing rendering for USER_CANCELLED — and a
+		// positional selector breaks the moment anything wraps the panel.
+		const panel = screen.getByTestId("error");
+		expect(panel.style.background).toBe("var(--text-primary)");
+		expect(panel.style.color).toBe("var(--surface-base)");
 	});
 
 	it("references no semantic colour token", () => {
@@ -877,7 +945,7 @@ describe("monochrome state encoding", () => {
 });
 ```
 
-Add `import { readFileSync } from "node:fs";` at the top of the file if it is not already there.
+Add `import { readFileSync } from "node:fs";` and ensure `screen` is included in the `@testing-library/react` import, if they are not already there.
 
 - [ ] **Step 3: Run the test to verify it fails**
 
@@ -1492,7 +1560,7 @@ describe("motion and focus base rules", () => {
 });
 ```
 
-Add `readFileSync` to the file's `node:fs` import if it is not already there.
+`readFileSync` is already imported in that file — Task 2 created it with that import. Do not add a second one; a duplicate import fails lint.
 
 - [ ] **Step 2: Run the test to verify it fails**
 

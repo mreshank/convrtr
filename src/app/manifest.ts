@@ -9,10 +9,16 @@ import type { MetadataRoute } from "next";
 // reference it.
 export const dynamic = "force-static";
 
-// Colours are the dark surface/signal tokens from src/styles/tokens.css
-// (--surface-base / --signal, dark variant) — the same pairing icon.svg
-// draws the app mark in, so the install/splash experience matches the mark
-// rather than the light theme the OS might currently be in.
+// #0A0A0A is fixed, not theme-live. A web app manifest is JSON read by the
+// operating system, so it cannot reference a custom property and cannot
+// follow a theme change: whatever is written here is what the install and
+// splash experience gets in both themes. The value corresponds to --terminal
+// in the light theme and --terminal-ink in the dark one (tokens.css swaps the
+// pair), and it is the ground icon.svg draws the app mark on — so the install
+// experience matches the mark rather than whichever theme the OS is in.
+//
+// This is the one file src/design/__tests__/tokens.test.ts allows a literal
+// hex in, for exactly that reason.
 export default function manifest(): MetadataRoute.Manifest {
 	return {
 		name: "convrtr",
@@ -20,8 +26,8 @@ export default function manifest(): MetadataRoute.Manifest {
 		description: "Convert anything in your browser. Nothing is uploaded.",
 		start_url: "/",
 		display: "standalone",
-		background_color: "#0b0b0c",
-		theme_color: "#0b0b0c",
+		background_color: "#0A0A0A",
+		theme_color: "#0A0A0A",
 		icons: [
 			{
 				src: "/icons/icon-192.png",

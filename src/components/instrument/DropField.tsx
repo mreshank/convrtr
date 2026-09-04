@@ -47,14 +47,13 @@ export function DropField({ accept, formats, onFiles }: Props) {
 			}}
 			className="mono flex flex-col items-center gap-3 border p-8 text-center"
 			style={{
-				borderColor: active ? "var(--signal)" : "var(--hairline)",
-				background: active ? "var(--surface-raised)" : "transparent",
+				borderColor: active ? "var(--ink)" : "var(--rule)",
 				borderRadius: "var(--radius)",
 				cursor: "pointer",
 			}}
 		>
 			<span className="text-[13px]">DROP FILES HERE</span>
-			<span className="text-[12px]" style={{ color: "var(--text-muted)" }}>
+			<span className="text-[12px]" style={{ color: "var(--ink-muted)" }}>
 				or click to browse
 			</span>
 			<div className="flex flex-wrap justify-center gap-2">
@@ -63,9 +62,9 @@ export function DropField({ accept, formats, onFiles }: Props) {
 						key={format}
 						className="border px-2 py-1 text-[11px] tracking-[0.08em]"
 						style={{
-							borderColor: "var(--hairline)",
+							borderColor: "var(--rule)",
 							borderRadius: "var(--radius)",
-							color: "var(--text-muted)",
+							color: "var(--ink-muted)",
 						}}
 					>
 						{format}

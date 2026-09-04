@@ -11,12 +11,19 @@ export function Callout({ kind, children }: CalloutProps) {
 			role="note"
 			className="flex flex-col gap-1 rounded-[var(--radius)] border p-4 text-[14px]"
 			style={{
-				borderColor: kind === "warning" ? "var(--lossy)" : "var(--hairline)",
+				// A note is a neutral aside and sits on the system's 10%
+				// hairline, like every other rule on the site. Full-strength
+				// --ink here made it the heaviest border on the page —
+				// outweighing ToolCTA, the actual call to action, in adjacent
+				// MDX. Keeping --ink for warning alone means the two kinds now
+				// differ by weight *and* by dash rather than by dash alone.
+				borderColor: kind === "warning" ? "var(--ink)" : "var(--rule)",
+				borderStyle: kind === "warning" ? "dashed" : "solid",
 			}}
 		>
 			<p
 				className="text-[12px] uppercase tracking-[0.08em]"
-				style={{ color: "var(--text-muted)" }}
+				style={{ color: "var(--ink-muted)" }}
 			>
 				{KIND_LABEL[kind]}
 			</p>

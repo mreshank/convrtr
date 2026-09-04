@@ -5,7 +5,7 @@ export default function Home() {
 	return (
 		<main className="mx-auto flex w-full max-w-4xl flex-col gap-4 p-8">
 			<h1 className="text-[32px] tracking-[-0.02em]">convrtr</h1>
-			<p className="text-[14px]" style={{ color: "var(--text-muted)" }}>
+			<p className="text-[14px]" style={{ color: "var(--ink-muted)" }}>
 				Convert anything. Nothing leaves your device.
 			</p>
 			{/*
@@ -20,8 +20,8 @@ export default function Home() {
 						href={`/${tool.id}`}
 						className="mono border px-4 py-2 text-[12px]"
 						style={{
-							color: "var(--text-primary)",
-							borderColor: "var(--hairline)",
+							color: "var(--ink)",
+							borderColor: "var(--rule)",
 							borderRadius: "var(--radius)",
 						}}
 					>
@@ -30,7 +30,7 @@ export default function Home() {
 					</Link>
 				))}
 			</div>
-			<span className="mono text-[11px]" style={{ color: "var(--text-muted)" }}>
+			<span className="mono text-[11px]" style={{ color: "var(--ink-muted)" }}>
 				LOCAL ONLY · 0 BYTES UPLOADED · WORKS OFFLINE
 			</span>
 		</main>

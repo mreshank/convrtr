@@ -16,8 +16,8 @@
 // every build. The output is committed as an ordinary static asset.
 //
 // Source geometry (src/app/icon.svg, 32x32 viewBox):
-//   <rect width="32" height="32" fill="#0b0b0c" />
-//   <path d="M11 7 L23 16 L11 25" stroke="#ccff00" stroke-width="4"
+//   <rect width="32" height="32" fill="#0A0A0A" />
+//   <path d="M11 7 L23 16 L11 25" stroke="#FFFFFF" stroke-width="4"
 //         stroke-linecap="square" stroke-linejoin="miter" />
 
 import { mkdir, writeFile } from "node:fs/promises";
@@ -28,8 +28,8 @@ import { deflateSync } from "node:zlib";
 const here = fileURLToPath(new URL(".", import.meta.url));
 const outDir = join(here, "..", "public", "icons");
 
-const SURFACE_BASE_DARK = hexToRgb("#0b0b0c");
-const SIGNAL_DARK = hexToRgb("#ccff00");
+const MARK_GROUND = hexToRgb("#0A0A0A");
+const MARK_INK = hexToRgb("#FFFFFF");
 
 // The chevron's stroked outline, as a filled hexagon in the icon's 32x32
 // viewBox coordinate space. Derived by hand from the path above:
@@ -148,9 +148,9 @@ function rasterize(size, polygon) {
 			}
 			const coverage = hits / (SUPERSAMPLE * SUPERSAMPLE);
 			const idx = (py * size + px) * 4;
-			buffer[idx] = lerp(SURFACE_BASE_DARK[0], SIGNAL_DARK[0], coverage);
-			buffer[idx + 1] = lerp(SURFACE_BASE_DARK[1], SIGNAL_DARK[1], coverage);
-			buffer[idx + 2] = lerp(SURFACE_BASE_DARK[2], SIGNAL_DARK[2], coverage);
+			buffer[idx] = lerp(MARK_GROUND[0], MARK_INK[0], coverage);
+			buffer[idx + 1] = lerp(MARK_GROUND[1], MARK_INK[1], coverage);
+			buffer[idx + 2] = lerp(MARK_GROUND[2], MARK_INK[2], coverage);
 			buffer[idx + 3] = 255;
 		}
 	}

@@ -3,7 +3,11 @@ import { describe, expect, it, vi } from "vitest";
 import { formatBytes, formatDelta } from "@/lib/format";
 import { type BatchRowState, BatchTable } from "../BatchTable";
 
-const fidelity = { score: 82, label: "LOSSY · Q82" };
+const fidelity = {
+	score: 82,
+	label: "LOSSY · Q82",
+	state: "lossy" as const,
+};
 
 const mixedRows: BatchRowState[] = [
 	{ id: "a", name: "photo-1.png", inputSize: 200_000, status: "queued" },
@@ -192,5 +196,34 @@ describe("BatchTable", () => {
 		render(<BatchTable rows={[]} fidelity={fidelity} onSaveRow={vi.fn()} />);
 		expect(screen.getByRole("table")).toBeDefined();
 		expect(screen.queryAllByTestId("batch-row")).toHaveLength(0);
+	});
+});
+
+/**
+ * A failed row has to be findable by eye in a dense table with no colour in
+ * it. The broken left edge is the whole of that signal — the STATUS cell
+ * reads "ERROR" in the same ink as "DONE" — so it is asserted rather than
+ * left to inspection.
+ */
+describe("monochrome state encoding", () => {
+	function firstCell(status: string): HTMLTableCellElement {
+		const row = screen
+			.getAllByTestId("batch-row")
+			.find((el) => el.getAttribute("data-status") === status);
+		if (!row) throw new Error(`no batch row with status ${status}`);
+		const cell = row.querySelector("td");
+		if (!cell) throw new Error(`row ${status} has no cells`);
+		return cell as HTMLTableCellElement;
+	}
+
+	it("breaks the leading edge of an errored row and leaves every other row whole", () => {
+		render(
+			<BatchTable rows={mixedRows} fidelity={fidelity} onSaveRow={vi.fn()} />,
+		);
+		expect(firstCell("error").style.borderLeftStyle).toBe("dashed");
+		expect(firstCell("error").style.borderLeftColor).toBe("var(--ink)");
+		for (const status of ["queued", "converting", "done", "cancelled"]) {
+			expect(firstCell(status).style.borderLeftStyle).toBe("");
+		}
 	});
 });

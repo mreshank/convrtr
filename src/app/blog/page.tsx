@@ -25,7 +25,7 @@ export default function BlogIndexPage() {
 		<main className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-8">
 			<div className="flex flex-col gap-2">
 				<h1 className="text-[28px] tracking-[-0.02em]">Blog</h1>
-				<p className="text-[14px]" style={{ color: "var(--text-muted)" }}>
+				<p className="text-[14px]" style={{ color: "var(--ink-muted)" }}>
 					Deep dives on the file formats and special converters convrtr
 					supports.
 				</p>
@@ -36,7 +36,7 @@ export default function BlogIndexPage() {
 						<Link href={`/blog/${post.slug}`} className="text-[18px] underline">
 							{post.title}
 						</Link>
-						<p className="text-[14px]" style={{ color: "var(--text-muted)" }}>
+						<p className="text-[14px]" style={{ color: "var(--ink-muted)" }}>
 							{post.description}
 						</p>
 					</li>

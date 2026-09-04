@@ -1,0 +1,133 @@
+/*
+ * The design system's values, per DESIGN.md.
+ *
+ * Strictly monochrome: the only colour anywhere on the site comes from
+ * sample photography, never from a token. `src/design/__tests__/tokens.test.ts`
+ * enforces that mechanically, so a hue added here fails the suite rather
+ * than shipping.
+ *
+ * Dark mode is not an invention. DESIGN.md specifies #0A0A0A ground with
+ * #FFFFFF text for the footer; dark mode is that same pairing applied past
+ * the footer, and the terminal band inverts so it still reads as a distinct
+ * closing strip rather than dissolving into the page ground.
+ */
+
+:root {
+	color-scheme: light;
+
+	--ground: #ffffff;
+	--ink: #000000;
+	--ink-muted: #525252;
+	--ink-faint: #737373;
+	--rule: rgb(0 0 0 / 0.1);
+	--rule-width: 1px;
+
+	--terminal: #0a0a0a;
+	--terminal-ink: #ffffff;
+	--terminal-rule: rgb(255 255 255 / 0.1);
+
+	/*
+	 * Controls keep the 4px the product already uses — DESIGN.md specifies
+	 * card radii and "slight rounding" for grid images, and says nothing
+	 * about form controls. The two card radii are DESIGN.md's asymmetric
+	 * system, applied in rotation across marquee and grid items.
+	 */
+	--radius: 4px;
+	--radius-card: 40px;
+	--radius-card-lg: 100px;
+
+	/*
+	 * One easing, for everything. DESIGN.md forbids system easing outright:
+	 * "DO NOT: Use standard system easing; stick to
+	 * cubic-bezier(0.16, 1, 0.3, 1) for a premium feel."
+	 */
+	--ease: cubic-bezier(0.16, 1, 0.3, 1);
+	--dur-reveal: 1s;
+	--dur-hover: 700ms;
+	--dur-marquee: 30s;
+	--dur-min: 500ms;
+
+	--display-size: 12vw;
+	--tracking-display: -0.05em;
+	--leading-display: 0.9;
+	--tracking-body: -0.02em;
+	--leading-body: 1.5;
+	--mono-size: 14px;
+	--mono-tracking: 0.1em;
+}
+
+:root[data-theme="dark"] {
+	color-scheme: dark;
+
+	--ground: #0a0a0a;
+	--ink: #ffffff;
+	--ink-muted: #a3a3a3;
+	--ink-faint: #8a8a92;
+	--rule: rgb(255 255 255 / 0.1);
+
+	--terminal: #ffffff;
+	--terminal-ink: #0a0a0a;
+	--terminal-rule: rgb(0 0 0 / 0.1);
+}
+
+/*
+ * No-JS / pre-hydration fallback.
+ *
+ * ThemeScript sets [data-theme] on the client before paint, but a visitor
+ * with JavaScript disabled never gets that attribute, so without this block
+ * they would always see light mode regardless of "system" being the stated
+ * default. This mirrors the dark values above exactly, and the parity test
+ * fails if the two ever drift.
+ *
+ * The explicit [data-theme] attribute still wins in both directions:
+ * - [data-theme="dark"] has the same specificity and agrees with this block
+ *   whenever both match, so there is never a conflict.
+ * - [data-theme="light"] is excluded by :not(...), so an explicit light
+ *   choice overrides a dark system preference even with JS disabled.
+ */
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme="light"]) {
+		color-scheme: dark;
+
+		--ground: #0a0a0a;
+		--ink: #ffffff;
+		--ink-muted: #a3a3a3;
+		--ink-faint: #8a8a92;
+		--rule: rgb(255 255 255 / 0.1);
+
+		--terminal: #ffffff;
+		--terminal-ink: #0a0a0a;
+		--terminal-rule: rgb(0 0 0 / 0.1);
+	}
+}
+
+body {
+	background: var(--ground);
+	color: var(--ink);
+	letter-spacing: var(--tracking-body);
+	line-height: var(--leading-body);
+}
+
+/*
+ * Two classes, deliberately.
+ *
+ * `.mono` is data rendered in monospace — a filename, a byte count, a
+ * timestamp. It must NOT uppercase: FileReadout renders the user's actual
+ * filename with this class, and uppercasing it would misreport the file
+ * they dropped.
+ *
+ * `.meta` is DESIGN.md's metadata voice — the labels, categories and years
+ * that carry its uppercase, 0.1em-tracked treatment.
+ */
+.mono {
+	font-family: var(--font-mono);
+	font-variant-numeric: tabular-nums;
+}
+
+.meta {
+	font-family: var(--font-mono);
+	font-variant-numeric: tabular-nums;
+	font-size: var(--mono-size);
+	text-transform: uppercase;
+	letter-spacing: var(--mono-tracking);
+}

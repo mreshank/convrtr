@@ -57,9 +57,9 @@ function AdvancedControl({
 					className="mono"
 					style={{
 						background: "transparent",
-						borderColor: "var(--hairline)",
+						borderColor: "var(--rule)",
 						borderRadius: "var(--radius)",
-						color: "var(--text-primary)",
+						color: "var(--ink)",
 					}}
 				>
 					{param.options.map((option) => (
@@ -100,7 +100,7 @@ function AdvancedControl({
 				/>
 				<span
 					className="mono text-[11px]"
-					style={{ color: "var(--text-muted)" }}
+					style={{ color: "var(--ink-muted)" }}
 				>
 					{Number(value)}
 				</span>
@@ -122,7 +122,7 @@ export function OptionsPanel({ tool, state, onChange, duration }: Props) {
 		<div className="flex flex-col gap-4">
 			<span
 				className="mono text-[11px] tracking-[0.08em]"
-				style={{ color: "var(--text-muted)" }}
+				style={{ color: "var(--ink-muted)" }}
 			>
 				QUALITY
 			</span>
@@ -145,8 +145,8 @@ export function OptionsPanel({ tool, state, onChange, duration }: Props) {
 							onClick={() => onChange(applyPreset(tool, preset.id))}
 							className="mono border px-4 py-2 text-[12px]"
 							style={{
-								color: selected ? "var(--signal)" : "var(--text-primary)",
-								borderColor: selected ? "var(--signal)" : "var(--hairline)",
+								color: selected ? "var(--ink)" : "var(--ink-muted)",
+								borderColor: selected ? "var(--ink)" : "var(--rule)",
 								borderRadius: "var(--radius)",
 								background: "transparent",
 							}}
@@ -158,7 +158,7 @@ export function OptionsPanel({ tool, state, onChange, duration }: Props) {
 			</div>
 
 			{active && (
-				<span className="text-[13px]" style={{ color: "var(--text-muted)" }}>
+				<span className="text-[13px]" style={{ color: "var(--ink-muted)" }}>
 					{active.explanation}
 				</span>
 			)}
@@ -168,7 +168,7 @@ export function OptionsPanel({ tool, state, onChange, duration }: Props) {
 				onClick={() => setOpen((value) => !value)}
 				aria-expanded={open}
 				className="mono self-start text-[11px] tracking-[0.08em]"
-				style={{ color: "var(--text-muted)", background: "transparent" }}
+				style={{ color: "var(--ink-muted)", background: "transparent" }}
 			>
 				ADVANCED {open ? "−" : "+"}
 			</button>
@@ -176,13 +176,13 @@ export function OptionsPanel({ tool, state, onChange, duration }: Props) {
 			{open && (
 				<div
 					className="flex flex-col gap-6 border-t pt-4"
-					style={{ borderColor: "var(--hairline)" }}
+					style={{ borderColor: "var(--rule)" }}
 				>
 					{groups.map((group) => (
 						<div key={group} className="flex flex-col gap-3">
 							<span
 								className="mono text-[11px] tracking-[0.08em]"
-								style={{ color: "var(--text-muted)" }}
+								style={{ color: "var(--ink-muted)" }}
 							>
 								{group.toUpperCase()}
 							</span>

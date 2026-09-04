@@ -11,7 +11,7 @@ export function FileReadout({
 			<span
 				data-testid="facts"
 				className="mono text-[12px]"
-				style={{ color: "var(--text-muted)" }}
+				style={{ color: "var(--ink-muted)" }}
 			>
 				{facts.join(" · ")}
 			</span>

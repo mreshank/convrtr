@@ -33,7 +33,7 @@ export function TimeRange({ label, duration, start, end, onChange }: Props) {
 				<span
 					data-testid="timerange-readout"
 					className="mono text-[11px]"
-					style={{ color: "var(--text-muted)" }}
+					style={{ color: "var(--ink-muted)" }}
 				>
 					{formatTimecode(start)} — {formatTimecode(end)} (
 					{formatTimecode(end - start)})
@@ -44,7 +44,7 @@ export function TimeRange({ label, duration, start, end, onChange }: Props) {
 				{/* The unselected timeline. */}
 				<div
 					className="absolute top-[14px] h-[2px] w-full"
-					style={{ background: "var(--hairline)" }}
+					style={{ background: "var(--rule)" }}
 				/>
 				{/* The selected span, so the choice is legible without reading
 				    the numbers. */}
@@ -53,7 +53,7 @@ export function TimeRange({ label, duration, start, end, onChange }: Props) {
 					style={{
 						left: `${leftPercent}%`,
 						width: `${widthPercent}%`,
-						background: "var(--signal)",
+						background: "var(--ink)",
 					}}
 				/>
 				<input

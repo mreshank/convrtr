@@ -1,4 +1,4 @@
-@import "../styles/tokens.css";
+@import "../design/tokens.css";
 @import "tailwindcss";
 
 /*
@@ -12,4 +12,63 @@
 
 html {
 	font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/*
+ * Keyboard focus.
+ *
+ * DESIGN.md's difference cursor signals interactivity by scaling on hover —
+ * which never happens for a keyboard user, because the cursor never moves.
+ * Without an explicit indicator they would have no way to tell what is
+ * focused. 1px is within DESIGN.md's border-weight cap.
+ */
+:focus-visible {
+	outline: 1px solid var(--ink);
+	outline-offset: 2px;
+}
+
+/*
+ * Reduced motion.
+ *
+ * The system's motion is long by design — 700ms hovers, 1s reveals, a 30s
+ * marquee — which is exactly the kind of movement that causes trouble for
+ * people who ask for less of it.
+ *
+ * Collapsing the duration is not the same thing as stopping an animation.
+ * `animation-duration: 0.01ms` with `iteration-count: 1` runs the animation
+ * to completion almost instantly and leaves it at its END position. That is
+ * what spec §4.6 wants for a reveal — "reveals resolve instantly to their
+ * final state rather than being skipped", so no content is lost — and it is
+ * the opposite of what §4.6 wants for the marquee, which must pause. This
+ * comment used to claim the universal rule below did both; it cannot.
+ *
+ * So the marquee gets its own rule. `animation-play-state: paused` does not
+ * advance the animation at all, holding it at its starting frame — a marquee
+ * that never moves, which is what pausing means when the reduce preference
+ * was set before the page ever loaded. It is deliberately NOT applied to
+ * `*`: pausing every animation would freeze reveals at their *initial*
+ * state, hiding the very content the duration collapse exists to reveal.
+ *
+ * `[data-marquee]` is the hook; the marquee component that spec §4.6
+ * describes does not exist yet, so this rule matches nothing today and
+ * becomes true the moment it does.
+ *
+ * `0.01ms` rather than `0` so animation end events still fire — a reveal
+ * that waits on `animationend` to remove a clip would otherwise hang
+ * forever, showing nothing at all. A paused animation fires no such event,
+ * which is a further reason the pause stays off the universal selector.
+ */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+
+	[data-marquee] {
+		animation-play-state: paused !important;
+	}
 }
