@@ -1,6 +1,8 @@
 import type { ParamValue } from "@/core/quality";
 import type { Engine } from "../types";
+import { stripFlacMetadata } from "./flac";
 import { stripJpegMetadata } from "./jpeg";
+import { stripMp3Metadata } from "./mp3";
 import { stripPngMetadata } from "./png";
 
 type Stripper = (input: ArrayBuffer) => ArrayBuffer;
@@ -39,6 +41,13 @@ function createStripEngine(format: string, strip: Stripper): Engine {
 export const METADATA_ENGINES: Engine[] = [
 	createStripEngine("jpeg", stripJpegMetadata),
 	createStripEngine("png", stripPngMetadata),
+	createStripEngine("mp3", stripMp3Metadata),
+	createStripEngine("flac", stripFlacMetadata),
 ];
 
-export { stripJpegMetadata, stripPngMetadata };
+export {
+	stripFlacMetadata,
+	stripJpegMetadata,
+	stripMp3Metadata,
+	stripPngMetadata,
+};

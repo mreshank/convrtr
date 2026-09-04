@@ -43,7 +43,7 @@ function isRecognisedEngineId(engineId: string | undefined): boolean {
 	if (!engineId) return false;
 	return (
 		parseEngineId(engineId) !== undefined ||
-		/^metadata:strip-[a-z]+$/.test(engineId) ||
+		/^metadata:strip-[a-z0-9]+$/.test(engineId) ||
 		// One-to-many pack engines emit a ZIP and have no single
 		// decoder/encoder pair, so MIME parity does not apply to them either.
 		/^image:[a-z-]+-pack$/.test(engineId) ||

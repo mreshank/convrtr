@@ -1,5 +1,7 @@
 import { flacToWav } from "./tools/audio/flac-to-wav";
 import { mp4ToM4a } from "./tools/audio/mp4-to-m4a";
+import { removeTagsFlac } from "./tools/audio/remove-tags-flac";
+import { removeTagsMp3 } from "./tools/audio/remove-tags-mp3";
 import { trimFlac } from "./tools/audio/trim-flac";
 import { trimWav } from "./tools/audio/trim-wav";
 import { wavToFlac } from "./tools/audio/wav-to-flac";
@@ -95,6 +97,8 @@ export const TOOLS: Tool[] = [
 	wavToOpus,
 	trimWav,
 	trimFlac,
+	removeTagsMp3,
+	removeTagsFlac,
 ];
 
 export function getTool(id: string): Tool | undefined {
