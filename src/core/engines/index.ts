@@ -1,4 +1,5 @@
 import { createAudioExtractionEngine } from "./audio/extract";
+import { createFlacDecodeEngine, createFlacEncodeEngine } from "./audio/flac";
 import { createImagePipelineEngine } from "./image";
 import { faviconPackEngine } from "./image/packs/favicon";
 import { gifFramesEngine } from "./image/packs/gif-frames";
@@ -88,6 +89,13 @@ function buildImageEngines(): Map<string, Engine> {
 		["mp4", "webm"],
 	] as const) {
 		const engine = createVideoConversionEngine(to, from);
+		engines.set(engine.id, engine);
+	}
+
+	// FLAC. The audio pack's lossless pair: WAV in, roughly half the bytes out,
+	// and the identical samples back again — proven by round-trip rather than
+	// asserted.
+	for (const engine of [createFlacEncodeEngine(), createFlacDecodeEngine()]) {
 		engines.set(engine.id, engine);
 	}
 

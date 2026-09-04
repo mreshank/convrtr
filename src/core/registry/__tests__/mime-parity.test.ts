@@ -73,7 +73,10 @@ function isRecognisedEngineId(engineId: string | undefined): boolean {
 		/^gif:[a-z0-9]+$/.test(engineId) ||
 		// The ffmpeg.wasm tier converts whole containers, so it has no image
 		// decoder/encoder pair either.
-		/^ffmpeg:[a-z0-9]+->[a-z0-9]+$/.test(engineId)
+		/^ffmpeg:[a-z0-9]+->[a-z0-9]+$/.test(engineId) ||
+		// FLAC encode/decode work on PCM samples, not an image decoder/encoder
+		// pair, so MIME parity does not apply to them either.
+		/^flac:(encode|decode)$/.test(engineId)
 	);
 }
 
