@@ -896,7 +896,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 				<div
 					className="flex flex-col gap-6 border p-6"
 					style={{
-						borderColor: "var(--hairline)",
+						borderColor: "var(--rule)",
 						borderRadius: "var(--radius)",
 					}}
 				>
@@ -915,8 +915,8 @@ export function ToolClient({ toolId }: { toolId: string }) {
 							onClick={replace}
 							className="mono border px-4 py-2 text-[12px]"
 							style={{
-								color: "var(--text-muted)",
-								borderColor: "var(--hairline)",
+								color: "var(--ink-muted)",
+								borderColor: "var(--rule)",
 							}}
 						>
 							REPLACE
@@ -928,7 +928,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 					<ol
 						data-testid="combine-order"
 						className="flex flex-col gap-1"
-						style={{ color: "var(--text-muted)" }}
+						style={{ color: "var(--ink-muted)" }}
 					>
 						{items.map((item, index) => (
 							<li key={item.id} className="mono text-[12px]">
@@ -950,7 +950,11 @@ export function ToolClient({ toolId }: { toolId: string }) {
 								type="button"
 								onClick={cancel}
 								className="mono self-end border px-4 py-2 text-[12px]"
-								style={{ color: "var(--error)", borderColor: "var(--error)" }}
+								style={{
+									color: "var(--ink)",
+									borderColor: "var(--ink)",
+									borderStyle: "dashed",
+								}}
 							>
 								CANCEL
 							</button>
@@ -972,9 +976,10 @@ export function ToolClient({ toolId }: { toolId: string }) {
 							data-testid="notices"
 							className="flex flex-col gap-2 border p-4 text-[13px]"
 							style={{
-								borderColor: "var(--lossy)",
+								borderColor: "var(--ink)",
+								borderStyle: "dashed",
 								borderRadius: "var(--radius)",
-								color: "var(--text-primary)",
+								color: "var(--ink)",
 							}}
 						>
 							{notices.map((notice) => (
@@ -992,7 +997,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 								type="button"
 								onClick={saveCombined}
 								className="mono border px-4 py-2 text-[12px]"
-								style={{ color: "var(--signal)", borderColor: "var(--signal)" }}
+								style={{ color: "var(--ink)", borderColor: "var(--ink)" }}
 							>
 								SAVE
 							</button>
@@ -1004,7 +1009,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 							type="button"
 							onClick={convertMany}
 							className="mono self-end border px-4 py-2 text-[12px]"
-							style={{ color: "var(--signal)", borderColor: "var(--signal)" }}
+							style={{ color: "var(--ink)", borderColor: "var(--ink)" }}
 						>
 							CONVERT
 						</button>
