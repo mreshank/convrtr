@@ -78,7 +78,10 @@ function isRecognisedEngineId(engineId: string | undefined): boolean {
 		// pair, so MIME parity does not apply to them either.
 		/^flac:(encode|decode)$/.test(engineId) ||
 		// MP3 encoding takes PCM samples, not an image decoder/encoder pair.
-		/^mp3:encode$/.test(engineId)
+		/^mp3:encode$/.test(engineId) ||
+		// Opus encoding takes PCM samples through WebCodecs, not an image
+		// decoder/encoder pair.
+		/^opus:encode$/.test(engineId)
 	);
 }
 

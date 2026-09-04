@@ -1,6 +1,7 @@
 import { createAudioExtractionEngine } from "./audio/extract";
 import { createFlacDecodeEngine, createFlacEncodeEngine } from "./audio/flac";
 import { createMp3EncodeEngine } from "./audio/mp3";
+import { createOpusEncodeEngine } from "./audio/opus";
 import { createImagePipelineEngine } from "./image";
 import { faviconPackEngine } from "./image/packs/favicon";
 import { gifFramesEngine } from "./image/packs/gif-frames";
@@ -90,6 +91,13 @@ function buildImageEngines(): Map<string, Engine> {
 		["mp4", "webm"],
 	] as const) {
 		const engine = createVideoConversionEngine(to, from);
+		engines.set(engine.id, engine);
+	}
+
+	// Opus. Lossy like MP3 but roughly half the bitrate for the same quality,
+	// and encoded by the browser itself — no codec library ships for it.
+	{
+		const engine = createOpusEncodeEngine();
 		engines.set(engine.id, engine);
 	}
 
