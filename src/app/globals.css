@@ -13,3 +13,40 @@
 html {
 	font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
 }
+
+/*
+ * Keyboard focus.
+ *
+ * DESIGN.md's difference cursor signals interactivity by scaling on hover —
+ * which never happens for a keyboard user, because the cursor never moves.
+ * Without an explicit indicator they would have no way to tell what is
+ * focused. 1px is within DESIGN.md's border-weight cap.
+ */
+:focus-visible {
+	outline: 1px solid var(--ink);
+	outline-offset: 2px;
+}
+
+/*
+ * Reduced motion.
+ *
+ * The system's motion is long by design — 700ms hovers, 1s reveals, a 30s
+ * marquee — which is exactly the kind of movement that causes trouble for
+ * people who ask for less of it. Reveals resolve to their final state
+ * rather than being skipped, so no content is lost; the marquee stops where
+ * it stands.
+ *
+ * `0.01ms` rather than `0` so animation end events still fire — a reveal
+ * that waits on `animationend` to remove a clip would otherwise hang
+ * forever, showing nothing at all.
+ */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.01ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.01ms !important;
+		scroll-behavior: auto !important;
+	}
+}

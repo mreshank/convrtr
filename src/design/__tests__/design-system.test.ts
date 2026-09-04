@@ -206,3 +206,31 @@ describe("forbidden visual devices", () => {
 		expect(designFiles.length).toBeGreaterThan(0);
 	});
 });
+
+describe("motion and focus base rules", () => {
+	const globals = readFileSync("src/app/globals.css", "utf8");
+
+	it("honours prefers-reduced-motion", () => {
+		expect(globals).toMatch(/@media \(prefers-reduced-motion: reduce\)/);
+	});
+
+	it("collapses animation and transition duration under reduced motion", () => {
+		const block = globals.match(
+			/@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?)\n\}/,
+		)?.[1];
+		expect(block).toBeDefined();
+		expect(block).toMatch(/animation-duration:\s*0\.01ms/);
+		expect(block).toMatch(/transition-duration:\s*0\.01ms/);
+	});
+
+	it("gives keyboard focus a visible outline", () => {
+		// The difference cursor is mouse-only, so without this a keyboard user
+		// has no indication of what is focused at all.
+		expect(globals).toMatch(/:focus-visible/);
+		expect(globals).toMatch(/outline:\s*1px solid var\(--ink\)/);
+	});
+
+	it("does not hide the cursor — that ships with its replacement", () => {
+		expect(globals).not.toMatch(/cursor:\s*none/);
+	});
+});
