@@ -2,6 +2,7 @@ import { createAudioExtractionEngine } from "./audio/extract";
 import { createFlacDecodeEngine, createFlacEncodeEngine } from "./audio/flac";
 import { createMp3EncodeEngine } from "./audio/mp3";
 import { createOpusEncodeEngine } from "./audio/opus";
+import { createFlacTrimEngine, createWavTrimEngine } from "./audio/trim";
 import { createImagePipelineEngine } from "./image";
 import { faviconPackEngine } from "./image/packs/favicon";
 import { gifFramesEngine } from "./image/packs/gif-frames";
@@ -91,6 +92,13 @@ function buildImageEngines(): Map<string, Engine> {
 		["mp4", "webm"],
 	] as const) {
 		const engine = createVideoConversionEngine(to, from);
+		engines.set(engine.id, engine);
+	}
+
+	// Audio trimming. Unlike the video trim this is sample-exact: audio samples
+	// do not depend on the ones before them, so the cut lands precisely where it
+	// was asked for.
+	for (const engine of [createWavTrimEngine(), createFlacTrimEngine()]) {
 		engines.set(engine.id, engine);
 	}
 

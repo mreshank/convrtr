@@ -1,6 +1,6 @@
 import type { ParamValue } from "@/core/quality";
 import type { Engine } from "../types";
-import { parseWav, writeWav } from "./wav";
+import { parseWav, type WavAudio, writeWav } from "./wav";
 
 /**
  * FLAC encode and decode — the audio pack's lossless claim.
@@ -52,6 +52,183 @@ function clampCompression(value: ParamValue | undefined): number {
 	return Math.min(8, Math.max(0, Math.round(value)));
 }
 
+/**
+ * Encodes samples to FLAC.
+ *
+ * Separated from the engine so the trim tool can cut a FLAC and write it back
+ * without going through a WAV in between — which would work, but would mean
+ * two extra format conversions for an operation that never leaves the
+ * lossless domain.
+ */
+export async function encodeFlac(
+	audio: WavAudio,
+	options: { compression?: number; verify?: boolean } = {},
+): Promise<Uint8Array> {
+	const frames = audio.samples[0]?.length ?? 0;
+	if (frames === 0) throw new Error("There is no audio to encode.");
+
+	const Flac = await loadFlac();
+	const encoder = Flac.create_libflac_encoder(
+		audio.sampleRate,
+		audio.channels,
+		audio.bitsPerSample,
+		clampCompression(options.compression),
+		frames,
+		options.verify !== false,
+	);
+	if (encoder === 0) {
+		throw new Error(
+			"The FLAC encoder could not be created for this audio format.",
+		);
+	}
+
+	const chunks: Uint8Array[] = [];
+	try {
+		// The buffer handed to the write callback is reused between calls, so it
+		// must be copied. Keeping the view would leave every chunk pointing at
+		// whatever was written last.
+		const status = Flac.init_encoder_stream(encoder, (data) => {
+			chunks.push(new Uint8Array(data));
+		});
+		if (status !== 0) {
+			throw new Error(`The FLAC encoder refused to start (status ${status}).`);
+		}
+
+		// The C API takes interleaved samples; the WAV reader produces one array
+		// per channel, so they are woven together here.
+		const interleaved = new Int32Array(frames * audio.channels);
+		for (let frame = 0; frame < frames; frame++) {
+			for (let channel = 0; channel < audio.channels; channel++) {
+				interleaved[frame * audio.channels + channel] =
+					audio.samples[channel]?.[frame] ?? 0;
+			}
+		}
+
+		const ok = Flac.FLAC__stream_encoder_process_interleaved(
+			encoder,
+			interleaved,
+			frames,
+		);
+		if (!ok) throw new Error("The FLAC encoder rejected this audio.");
+		Flac.FLAC__stream_encoder_finish(encoder);
+	} finally {
+		// Always released: the encoder holds memory inside the WASM heap that
+		// nothing else will reclaim.
+		Flac.FLAC__stream_encoder_delete(encoder);
+	}
+
+	const total = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
+	if (total === 0) {
+		throw new Error(
+			"The FLAC encoder produced no output, so the conversion cannot be trusted.",
+		);
+	}
+	const output = new Uint8Array(total);
+	let offset = 0;
+	for (const chunk of chunks) {
+		output.set(chunk, offset);
+		offset += chunk.length;
+	}
+	return output;
+}
+
+/** Decodes FLAC into samples. */
+export async function decodeFlac(input: ArrayBuffer): Promise<WavAudio> {
+	const Flac = await loadFlac();
+	const bytes = new Uint8Array(input);
+
+	const decoder = Flac.create_libflac_decoder(true);
+	if (decoder === 0) throw new Error("The FLAC decoder could not be created.");
+
+	let sampleRate = 0;
+	let channels = 0;
+	let bitsPerSample = 0;
+	const perChannel: Uint8Array[][] = [];
+	let readOffset = 0;
+	let failure: string | null = null;
+
+	try {
+		const status = Flac.init_decoder_stream(
+			decoder,
+			// Pull model: the decoder asks for up to `size` bytes at a time.
+			(size) => {
+				const remaining = bytes.length - readOffset;
+				if (remaining <= 0) {
+					return { buffer: undefined, readDataLength: 0, error: false };
+				}
+				const length = Math.min(size, remaining);
+				const slice = bytes.subarray(readOffset, readOffset + length);
+				readOffset += length;
+				return { buffer: slice, readDataLength: length, error: false };
+			},
+			(channelBuffers) => {
+				// Copied for the same reason as the encoder's chunks: these views
+				// are reused between frames.
+				perChannel.push(channelBuffers.map((b) => new Uint8Array(b)));
+			},
+			(code, description) => {
+				failure = `${description} (code ${code})`;
+			},
+			(metadata) => {
+				sampleRate = metadata.sampleRate;
+				channels = metadata.channels;
+				bitsPerSample = metadata.bitsPerSample;
+			},
+		);
+		if (status !== 0) {
+			throw new Error(`The FLAC decoder refused to start (status ${status}).`);
+		}
+
+		Flac.FLAC__stream_decoder_process_until_end_of_stream(decoder);
+		Flac.FLAC__stream_decoder_finish(decoder);
+	} finally {
+		Flac.FLAC__stream_decoder_delete(decoder);
+	}
+
+	if (failure) {
+		throw new Error(`This FLAC file could not be decoded: ${failure}`);
+	}
+	if (!channels || !sampleRate || !bitsPerSample) {
+		throw new Error(
+			"This does not look like a FLAC file — no stream information was found in it.",
+		);
+	}
+
+	// Frames arrive in blocks; each block carries one buffer per channel, holding
+	// raw little-endian samples at the stream's own bit depth.
+	const bytesPerSample = bitsPerSample / 8;
+	const totals = new Array<number>(channels).fill(0);
+	for (const block of perChannel) {
+		for (let channel = 0; channel < channels; channel++) {
+			totals[channel] =
+				(totals[channel] ?? 0) +
+				Math.floor((block[channel]?.length ?? 0) / bytesPerSample);
+		}
+	}
+
+	const samples = totals.map((count) => new Int32Array(count));
+	const cursors = new Array<number>(channels).fill(0);
+	for (const block of perChannel) {
+		for (let channel = 0; channel < channels; channel++) {
+			const source = block[channel];
+			const target = samples[channel];
+			if (!source || !target) continue;
+			const count = Math.floor(source.length / bytesPerSample);
+			let cursor = cursors[channel] ?? 0;
+			for (let i = 0; i < count; i++) {
+				target[cursor++] = readLittleEndian(
+					source,
+					i * bytesPerSample,
+					bitsPerSample,
+				);
+			}
+			cursors[channel] = cursor;
+		}
+	}
+
+	return { sampleRate, channels, bitsPerSample, samples };
+}
+
 /** WAV in, FLAC out: same samples, roughly half the bytes. */
 export function createFlacEncodeEngine(): Engine {
 	return {
@@ -74,75 +251,14 @@ export function createFlacEncodeEngine(): Engine {
 			if (frames === 0) throw new Error("This WAV file contains no audio.");
 
 			onProgress(0.15, "ENCODE");
-			const Flac = await loadFlac();
-
-			const encoder = Flac.create_libflac_encoder(
-				audio.sampleRate,
-				audio.channels,
-				audio.bitsPerSample,
-				clampCompression(params.compression),
-				frames,
-				// FLAC's own decode-and-compare pass. It roughly doubles the work
-				// and is on by default because the entire proposition is that the
-				// samples come back identical — having the encoder check that
-				// itself is the cheapest possible guarantee.
-				params.verify !== false,
-			);
-			if (encoder === 0) {
-				throw new Error(
-					"The FLAC encoder could not be created for this audio format.",
-				);
-			}
-
-			const chunks: Uint8Array[] = [];
-			try {
-				// The buffer handed to the write callback is reused between calls,
-				// so it must be copied. Keeping the view would leave every chunk
-				// pointing at whatever was written last.
-				const status = Flac.init_encoder_stream(encoder, (data) => {
-					chunks.push(new Uint8Array(data));
-				});
-				if (status !== 0) {
-					throw new Error(
-						`The FLAC encoder refused to start (status ${status}).`,
-					);
-				}
-
-				// The C API takes interleaved samples; the WAV reader produces one
-				// array per channel, so they are woven together here.
-				const interleaved = new Int32Array(frames * audio.channels);
-				for (let frame = 0; frame < frames; frame++) {
-					for (let channel = 0; channel < audio.channels; channel++) {
-						interleaved[frame * audio.channels + channel] =
-							audio.samples[channel]?.[frame] ?? 0;
-					}
-				}
-
-				const ok = Flac.FLAC__stream_encoder_process_interleaved(
-					encoder,
-					interleaved,
-					frames,
-				);
-				if (!ok) throw new Error("The FLAC encoder rejected this audio.");
-				Flac.FLAC__stream_encoder_finish(encoder);
-			} finally {
-				// Always released: the encoder holds memory inside the WASM heap
-				// that nothing else will reclaim.
-				Flac.FLAC__stream_encoder_delete(encoder);
-			}
-
-			const total = chunks.reduce((sum, chunk) => sum + chunk.length, 0);
-			if (total === 0) {
-				throw new Error(
-					"The FLAC encoder produced no output, so the conversion cannot be trusted.",
-				);
-			}
-			const output = new Uint8Array(total);
-			let offset = 0;
-			for (const chunk of chunks) {
-				output.set(chunk, offset);
-				offset += chunk.length;
-			}
+			const output = await encodeFlac(audio, {
+				compression:
+					typeof params.compression === "number"
+						? params.compression
+						: undefined,
+				verify: params.verify !== false,
+			});
+			const total = output.length;
 
 			onNotice?.(
 				`Compressed to ${((total / input.byteLength) * 100).toFixed(0)}% of the original size with no loss — decoding this FLAC returns exactly the samples that were in the WAV.`,
@@ -168,105 +284,10 @@ export function createFlacDecodeEngine(): Engine {
 			onProgress: (ratio: number, phase: string) => void,
 		) {
 			onProgress(0.1, "DECODE");
-			const Flac = await loadFlac();
-			const bytes = new Uint8Array(input);
-
-			const decoder = Flac.create_libflac_decoder(true);
-			if (decoder === 0) {
-				throw new Error("The FLAC decoder could not be created.");
-			}
-
-			let sampleRate = 0;
-			let channels = 0;
-			let bitsPerSample = 0;
-			const perChannel: Uint8Array[][] = [];
-			let readOffset = 0;
-			let failure: string | null = null;
-
-			try {
-				const status = Flac.init_decoder_stream(
-					decoder,
-					// Pull model: the decoder asks for up to `size` bytes at a time.
-					(size) => {
-						const remaining = bytes.length - readOffset;
-						if (remaining <= 0) {
-							return { buffer: undefined, readDataLength: 0, error: false };
-						}
-						const length = Math.min(size, remaining);
-						const slice = bytes.subarray(readOffset, readOffset + length);
-						readOffset += length;
-						return { buffer: slice, readDataLength: length, error: false };
-					},
-					(channelBuffers) => {
-						// Copied for the same reason as the encoder's chunks: these
-						// views are reused between frames.
-						perChannel.push(channelBuffers.map((b) => new Uint8Array(b)));
-					},
-					(code, description) => {
-						failure = `${description} (code ${code})`;
-					},
-					(metadata) => {
-						sampleRate = metadata.sampleRate;
-						channels = metadata.channels;
-						bitsPerSample = metadata.bitsPerSample;
-					},
-				);
-				if (status !== 0) {
-					throw new Error(
-						`The FLAC decoder refused to start (status ${status}).`,
-					);
-				}
-
-				Flac.FLAC__stream_decoder_process_until_end_of_stream(decoder);
-				Flac.FLAC__stream_decoder_finish(decoder);
-			} finally {
-				Flac.FLAC__stream_decoder_delete(decoder);
-			}
-
-			if (failure) {
-				throw new Error(`This FLAC file could not be decoded: ${failure}`);
-			}
-			if (!channels || !sampleRate || !bitsPerSample) {
-				throw new Error(
-					"This does not look like a FLAC file — no stream information was found in it.",
-				);
-			}
-
+			const audio = await decodeFlac(input);
 			onProgress(0.7, "WRITE");
 
-			// Frames arrive in blocks; each block carries one buffer per channel,
-			// holding raw little-endian samples at the stream's own bit depth.
-			const bytesPerSample = bitsPerSample / 8;
-			const totals = new Array<number>(channels).fill(0);
-			for (const block of perChannel) {
-				for (let channel = 0; channel < channels; channel++) {
-					totals[channel] =
-						(totals[channel] ?? 0) +
-						Math.floor((block[channel]?.length ?? 0) / bytesPerSample);
-				}
-			}
-
-			const samples = totals.map((count) => new Int32Array(count));
-			const cursors = new Array<number>(channels).fill(0);
-			for (const block of perChannel) {
-				for (let channel = 0; channel < channels; channel++) {
-					const source = block[channel];
-					const target = samples[channel];
-					if (!source || !target) continue;
-					const count = Math.floor(source.length / bytesPerSample);
-					let cursor = cursors[channel] ?? 0;
-					for (let i = 0; i < count; i++) {
-						target[cursor++] = readLittleEndian(
-							source,
-							i * bytesPerSample,
-							bitsPerSample,
-						);
-					}
-					cursors[channel] = cursor;
-				}
-			}
-
-			const wav = writeWav({ sampleRate, channels, bitsPerSample, samples });
+			const wav = writeWav(audio);
 			onProgress(1, "WRITE");
 			return wav;
 		},

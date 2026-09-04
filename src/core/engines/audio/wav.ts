@@ -104,10 +104,15 @@ export function parseWav(input: ArrayBuffer): WavAudio {
 	);
 
 	const bytes = new Uint8Array(input, dataOffset, dataLength);
-	for (let frame = 0; frame < frameCount; frame++) {
-		for (let channel = 0; channel < channels; channel++) {
+	// Channel outer, frame inner: this hoists the per-channel array lookup out
+	// of the hot loop and removes the non-null assertion that `samples[channel]`
+	// otherwise needs on every single sample.
+	for (let channel = 0; channel < channels; channel++) {
+		const target = samples[channel];
+		if (!target) continue;
+		for (let frame = 0; frame < frameCount; frame++) {
 			const at = (frame * channels + channel) * bytesPerSample;
-			samples[channel]![frame] = readSample(bytes, at, bitsPerSample);
+			target[frame] = readSample(bytes, at, bitsPerSample);
 		}
 	}
 
