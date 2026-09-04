@@ -118,6 +118,16 @@
  * DESIGN.md scales the cursor 2.5x over anything interactive. The selector
  * lives here rather than in the component because it depends on what the
  * pointer is over, which the component never knows.
+ *
+ * The transition that eases this change lives on the element itself, in
+ * DifferenceCursor.tsx, not here. `scale` and `transform` are distinct
+ * properties on that same element, and `transform` there is driven
+ * imperatively frame by frame — a CSS transition on `transform` would
+ * double-ease every already-eased frame, so the component keeps its
+ * `transition` shorthand scoped to `scale` alone. That transition is also
+ * dropped entirely under reduced motion, so this value change snaps
+ * instead of easing; the rule below still applies unconditionally, since a
+ * hover state change is not itself a form of motion once it's instant.
  */
 body.has-custom-cursor:has(a:hover, button:hover) [data-cursor] {
 	transform-origin: center;

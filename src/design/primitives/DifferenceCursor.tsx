@@ -24,14 +24,30 @@ const SIZE = 32;
  * Reduced motion drops the interpolation. The lag IS the motion here, so
  * under `prefers-reduced-motion` the circle tracks the pointer exactly
  * rather than easing toward it.
+ *
+ * `transform` never carries a CSS transition, in either motion mode. Its
+ * value is always set imperatively — the rAF lerp below when motion is
+ * fine, a direct snap to the pointer when it is not — so a CSS transition
+ * on top of that would double-ease every already-eased frame in the normal
+ * case, and would silently reintroduce the exact delay reduced motion
+ * exists to remove in the other. Only `scale` gets a transition, because
+ * DESIGN.md's 2.5x hover scale (declared in primitives.css, since it
+ * depends on `:hover`/`:has()` this component never sees) is a genuine
+ * hover state and spec §4.6 requires a minimum 500ms ease on those — and
+ * that transition is itself dropped under reduced motion, so the hover
+ * scale snaps instead of easing.
  */
 export function DifferenceCursor() {
 	const [enabled, setEnabled] = useState(false);
+	const [reducedMotion, setReducedMotion] = useState(false);
 	const dotRef = useRef<HTMLDivElement | null>(null);
 
 	useEffect(() => {
 		if (!window.matchMedia("(pointer: fine)").matches) return;
 		setEnabled(true);
+		setReducedMotion(
+			window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+		);
 		document.body.classList.add("has-custom-cursor");
 		return () => {
 			document.body.classList.remove("has-custom-cursor");
@@ -40,10 +56,6 @@ export function DifferenceCursor() {
 
 	useEffect(() => {
 		if (!enabled) return;
-
-		const reduced = window.matchMedia(
-			"(prefers-reduced-motion: reduce)",
-		).matches;
 
 		// Target is where the pointer is; current is where the circle is.
 		// Interpolating between them each frame is what produces the lag.
@@ -56,7 +68,7 @@ export function DifferenceCursor() {
 		const onMove = (event: PointerEvent) => {
 			targetX = event.clientX;
 			targetY = event.clientY;
-			if (reduced) {
+			if (reducedMotion) {
 				currentX = targetX;
 				currentY = targetY;
 				paint();
@@ -81,13 +93,13 @@ export function DifferenceCursor() {
 		};
 
 		window.addEventListener("pointermove", onMove, { passive: true });
-		if (!reduced) frame = requestAnimationFrame(tick);
+		if (!reducedMotion) frame = requestAnimationFrame(tick);
 
 		return () => {
 			window.removeEventListener("pointermove", onMove);
 			if (frame) cancelAnimationFrame(frame);
 		};
-	}, [enabled]);
+	}, [enabled, reducedMotion]);
 
 	if (!enabled) return null;
 
@@ -107,7 +119,12 @@ export function DifferenceCursor() {
 				mixBlendMode: "difference",
 				pointerEvents: "none",
 				zIndex: 9999,
-				transition: "transform var(--dur-min) var(--ease)",
+				// transform is deliberately absent from this list — see the
+				// doc comment above. Only scale transitions, and only when
+				// motion is not reduced.
+				transition: reducedMotion
+					? undefined
+					: "scale var(--dur-min) var(--ease)",
 			}}
 		/>
 	);
