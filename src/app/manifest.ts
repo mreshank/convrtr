@@ -9,10 +9,10 @@ import type { MetadataRoute } from "next";
 // reference it.
 export const dynamic = "force-static";
 
-// Colours are the dark ground/ink tokens from src/design/tokens.css
-// (--ground / --ink, dark variant) — the same pairing icon.svg
-// draws the app mark in, so the install/splash experience matches the mark
-// rather than the light theme the OS might currently be in.
+// Colours are the terminal pair from src/design/tokens.css (--terminal /
+// --terminal-ink) — the same pairing icon.svg draws the app mark in, so the
+// install and splash experience matches the mark rather than whichever theme
+// the OS happens to be in.
 export default function manifest(): MetadataRoute.Manifest {
 	return {
 		name: "convrtr",
@@ -20,8 +20,8 @@ export default function manifest(): MetadataRoute.Manifest {
 		description: "Convert anything in your browser. Nothing is uploaded.",
 		start_url: "/",
 		display: "standalone",
-		background_color: "#0b0b0c",
-		theme_color: "#0b0b0c",
+		background_color: "#0A0A0A",
+		theme_color: "#0A0A0A",
 		icons: [
 			{
 				src: "/icons/icon-192.png",
