@@ -207,10 +207,24 @@ describe("legacy token vocabulary", () => {
  *    a `(`, `[` or `:` immediately before `--name`, with `--name` not
  *    itself immediately followed by a colon (which would make it a
  *    declaration's left-hand side, not a reference).
+ *
+ * Two lookaheads guard the capture, and they do different jobs. `[\w-]+`
+ * is greedy: on Tailwind's `[--name:value]` declaration idiom (e.g.
+ * `[--gutter:1rem]`), a naive "reject if followed by a colon" lookahead
+ * lets the regex engine backtrack to a *shorter* match whose next
+ * character isn't a colon — `[--foo:1px]` degrades to a captured `--fo`
+ * instead of being rejected outright. `(?![\w-])` closes that hole by
+ * forcing the capture to be the complete name (fails cleanly on `--foo`
+ * because the next character is `o`, so no shorter match survives it
+ * either); only once the name is known-complete does `(?!\s*:)` reject it
+ * for being a declaration. Order and presence of both matter — see the
+ * "custom-property reference pattern" table test below, which pins this
+ * exact object against the failure this comment describes.
  */
+const REFERENCE = /[([:](--[\w-]+)(?![\w-])(?!\s*:)/g;
+
 describe("no dangling custom property references", () => {
 	const ALLOWLISTED = new Set(["--font-sans", "--font-mono"]);
-	const REFERENCE = /[([:](--[\w-]+)(?!\s*:)/g;
 
 	function declaredNames(source: string): Set<string> {
 		const names = new Set<string>();
@@ -244,5 +258,59 @@ describe("no dangling custom property references", () => {
 			offenders,
 			`Referenced but not declared in src/design/tokens.css:\n${offenders.join("\n")}`,
 		).toEqual([]);
+	});
+});
+
+/**
+ * Pins REFERENCE's behaviour against fixture strings directly, rather than
+ * relying on whatever `src` happens to contain today — the exact way
+ * `design-system.test.ts`'s border-weight regex table works, and for the
+ * same reason. A regex whose corpus doesn't currently exercise a given
+ * shape can look correct while it is wrong underneath, which is exactly
+ * how this pattern shipped once already: an earlier version of REFERENCE
+ * matched `[--foo:1px]` — a Tailwind custom-property *declaration*, not a
+ * reference — by backtracking from a full-name match rejected for ending
+ * in a colon down to a shorter one that didn't, capturing the garbage
+ * `--fo` instead of failing cleanly. It only stayed hidden because no file
+ * in `src` used that declaration idiom yet.
+ *
+ * Captures are asserted exactly, not just "matched" or "didn't match": the
+ * bug above produced a match with a *wrong* capture, so a test that only
+ * checked truthiness would have passed against the broken pattern.
+ */
+describe("custom-property reference pattern", () => {
+	function captures(input: string): string[] {
+		return Array.from(input.matchAll(REFERENCE), (match) => match[1] ?? "");
+	}
+
+	const mustMatch: Array<[string, string[]]> = [
+		["var(--ink)", ["--ink"]],
+		["var(--ink-muted)", ["--ink-muted"]],
+		["font-[family-name:--font-mono]", ["--font-mono"]],
+		["text-[color:--ink-muted]", ["--ink-muted"]],
+		// The subtle case: `--tw-gradient-from` here is a declaration (it is
+		// immediately followed by `:`) and must not appear as a capture, not
+		// even truncated. `--ground` on the right-hand side is a genuine
+		// reference and must appear whole. A regex that backtracks on the
+		// declaration would produce `--tw-gradient-fro` here instead of
+		// nothing — asserting the full capture array is what catches that.
+		["[--tw-gradient-from:--ground]", ["--ground"]],
+	];
+
+	it.each(mustMatch)("captures exactly %j from %j", (input, expected) => {
+		expect(captures(input)).toEqual(expected);
+	});
+
+	const mustNotMatch = [
+		"--ink: #000;",
+		"--rule-width: 1px;",
+		// Tailwind's declaration idiom (`[--gutter:1rem]`): sets a custom
+		// property rather than referencing one. The regression this table
+		// exists to pin produced a truncated `--fo` capture here.
+		"[--foo:1px]",
+	];
+
+	it.each(mustNotMatch)("captures nothing from %j", (input) => {
+		expect(captures(input)).toEqual([]);
 	});
 });
