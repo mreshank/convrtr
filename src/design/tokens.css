@@ -38,8 +38,8 @@
 
 	/*
 	 * One easing, for everything. DESIGN.md forbids system easing outright:
-	 * "DO NOT: Use standard system easing; stick to the premium custom easing
-	 * for a premium feel."
+	 * "DO NOT: Use standard system easing; stick to
+	 * cubic-bezier(0.16, 1, 0.3, 1) for a premium feel."
 	 */
 	--ease: cubic-bezier(0.16, 1, 0.3, 1);
 	--dur-reveal: 1s;

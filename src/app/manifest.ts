@@ -9,10 +9,16 @@ import type { MetadataRoute } from "next";
 // reference it.
 export const dynamic = "force-static";
 
-// Colours are the terminal pair from src/design/tokens.css (--terminal /
-// --terminal-ink) — the same pairing icon.svg draws the app mark in, so the
-// install and splash experience matches the mark rather than whichever theme
-// the OS happens to be in.
+// #0A0A0A is fixed, not theme-live. A web app manifest is JSON read by the
+// operating system, so it cannot reference a custom property and cannot
+// follow a theme change: whatever is written here is what the install and
+// splash experience gets in both themes. The value corresponds to --terminal
+// in the light theme and --terminal-ink in the dark one (tokens.css swaps the
+// pair), and it is the ground icon.svg draws the app mark on — so the install
+// experience matches the mark rather than whichever theme the OS is in.
+//
+// This is the one file src/design/__tests__/tokens.test.ts allows a literal
+// hex in, for exactly that reason.
 export default function manifest(): MetadataRoute.Manifest {
 	return {
 		name: "convrtr",
