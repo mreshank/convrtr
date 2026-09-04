@@ -40,6 +40,25 @@ describe("SiteFooter", () => {
 		}
 	});
 
+	it("leaves keyboard focus visible by letting no descendant redeclare the ground, ink or rule tokens", () => {
+		// Mirrors ErrorPanel.test.tsx's "leaves keyboard focus visible by not
+		// restoring the page's ink underneath". A descendant re-declaring one
+		// of the tokens this footer redefines on its root changes nothing
+		// about that element's own rendered colour — `color` is inherited
+		// from the root as an already-resolved value, not re-evaluated at
+		// the leaf, so the "overrides no descendant colour" test above stays
+		// green even when this one doesn't. But it silently redirects
+		// `:focus-visible { outline: 1px solid var(--ink) }` for that
+		// subtree, reintroducing the invisible-focus defect this whole
+		// pattern exists to prevent.
+		const { container } = render(<SiteFooter {...PROPS} />);
+		for (const el of container.querySelectorAll<HTMLElement>("footer *")) {
+			expect(el.style.getPropertyValue("--ground")).toBe("");
+			expect(el.style.getPropertyValue("--ink")).toBe("");
+			expect(el.style.getPropertyValue("--rule")).toBe("");
+		}
+	});
+
 	it("renders the brand, bio, socials and contact", () => {
 		render(<SiteFooter {...PROPS} />);
 		expect(screen.getByText(PROPS.bio)).toBeDefined();
