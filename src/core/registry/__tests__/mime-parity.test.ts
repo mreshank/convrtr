@@ -84,7 +84,10 @@ function isRecognisedEngineId(engineId: string | undefined): boolean {
 		/^opus:encode$/.test(engineId) ||
 		// Loudness normalisation works on PCM samples, not an image
 		// decoder/encoder pair.
-		/^normalise:[a-z0-9]+$/.test(engineId)
+		/^normalise:[a-z0-9]+$/.test(engineId) ||
+		// Waveform drawings read audio and write an image, so they have no image
+		// decoder to check parity against.
+		/^waveform:[a-z0-9]+$/.test(engineId)
 	);
 }
 

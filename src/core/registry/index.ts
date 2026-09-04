@@ -1,5 +1,6 @@
 import { coverArtFLAC } from "./tools/audio/flac-cover-art";
 import { flacToWav } from "./tools/audio/flac-to-wav";
+import { waveformFLAC } from "./tools/audio/flac-waveform";
 import { coverArtMP3 } from "./tools/audio/mp3-cover-art";
 import { mp4ToM4a } from "./tools/audio/mp4-to-m4a";
 import { normaliseFLAC } from "./tools/audio/normalise-flac";
@@ -11,6 +12,7 @@ import { trimWav } from "./tools/audio/trim-wav";
 import { wavToFlac } from "./tools/audio/wav-to-flac";
 import { wavToMp3 } from "./tools/audio/wav-to-mp3";
 import { wavToOpus } from "./tools/audio/wav-to-opus";
+import { waveformWAV } from "./tools/audio/wav-waveform";
 import { avifToJpg } from "./tools/avif-to-jpg";
 import { avifToPng } from "./tools/avif-to-png";
 import { compressJpg } from "./tools/compress-jpg";
@@ -107,6 +109,8 @@ export const TOOLS: Tool[] = [
 	coverArtFLAC,
 	normaliseWAV,
 	normaliseFLAC,
+	waveformWAV,
+	waveformFLAC,
 ];
 
 export function getTool(id: string): Tool | undefined {

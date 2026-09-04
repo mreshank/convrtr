@@ -181,7 +181,19 @@ mid-range laptop without exhausting memory.
 
 ---
 
-## Phase 3 — Audio
+## Phase 3 — Audio — **shipped**
+
+Delivered: WAV<->FLAC (sample-for-sample lossless, verified by round trip),
+WAV->MP3 and WAV->Opus (both lossy, both saying so), sample-exact trim for WAV
+and FLAC, tag removal that leaves audio byte-identical, cover-art extraction
+without re-encoding, EBU R128 loudness normalisation that refuses to clip, and
+waveform drawings. Loudness agrees with ffmpeg's `ebur128` to 0.007 LU.
+
+Not built, and deliberately: arbitrary tag *editing*, which needs a text
+control the registry does not have; and MP3/AAC trimming, which is
+frame-bounded rather than sample-exact and so belongs with the video pack's
+keyframe-snapping honesty rather than beside the sample-exact audio trims.
+
 Engines: WebCodecs audio, libmp3lame, libflac, libopus, Web Audio, music-metadata.
 Convert matrix; **WAV↔FLAC↔ALAC lossless round-trip**; bitrate change; trim/split/merge;
 LUFS normalise; sample-rate/bit-depth/channel conversion; speed & pitch; silence trim;

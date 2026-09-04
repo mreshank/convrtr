@@ -8,6 +8,7 @@ import {
 } from "./audio/normalise";
 import { createOpusEncodeEngine } from "./audio/opus";
 import { createFlacTrimEngine, createWavTrimEngine } from "./audio/trim";
+import { createWaveformEngine } from "./audio/waveform";
 import { createImagePipelineEngine } from "./image";
 import { faviconPackEngine } from "./image/packs/favicon";
 import { gifFramesEngine } from "./image/packs/gif-frames";
@@ -97,6 +98,13 @@ function buildImageEngines(): Map<string, Engine> {
 		["mp4", "webm"],
 	] as const) {
 		const engine = createVideoConversionEngine(to, from);
+		engines.set(engine.id, engine);
+	}
+
+	// Waveform drawings. The only audio tool with no fidelity claim to make —
+	// it produces a picture of audio, not audio.
+	for (const format of ["wav", "flac"] as const) {
+		const engine = createWaveformEngine(format);
 		engines.set(engine.id, engine);
 	}
 
