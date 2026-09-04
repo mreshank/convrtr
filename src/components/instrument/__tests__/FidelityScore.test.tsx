@@ -2,10 +2,9 @@ import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { FidelityScore } from "../FidelityScore";
 
-function ringStroke(container: HTMLElement): string | null {
-	const circles = container.querySelectorAll("circle");
-	// The first circle is the neutral track; the second carries the score.
-	return circles[1]?.getAttribute("stroke") ?? null;
+function ringPath(container: HTMLElement): SVGPathElement | null {
+	// The <circle> is the neutral track; the <path> carries the score.
+	return container.querySelector("path");
 }
 
 describe("FidelityScore", () => {
@@ -30,43 +29,72 @@ describe("FidelityScore", () => {
 		expect(el.getAttribute("aria-label")).toContain("92");
 		expect(el.getAttribute("aria-label")).toContain("VISUALLY LOSSLESS");
 	});
+});
 
-	it("produces a distinct stroke colour at 100, 92, 55, and 10", () => {
-		const { container: c100 } = render(
-			<FidelityScore score={100} label="LOSSLESS" />,
-		);
-		const { container: c92 } = render(
-			<FidelityScore score={92} label="VISUALLY LOSSLESS" />,
-		);
-		const { container: c55 } = render(
-			<FidelityScore score={55} label="LOSSY · Q55" />,
-		);
-		const { container: c10 } = render(
-			<FidelityScore score={10} label="LOSSY · Q10" />,
-		);
-
-		const colors = [c100, c92, c55, c10].map((c) => ringStroke(c));
-		expect(colors).toEqual([
-			"color-mix(in oklab, var(--signal) 100%, var(--lossy))",
-			"color-mix(in oklab, var(--signal) 68%, var(--lossy))",
-			"color-mix(in oklab, var(--lossy) 73.33%, var(--error))",
-			"color-mix(in oklab, var(--lossy) 13.33%, var(--error))",
+describe("monochrome state encoding", () => {
+	it("draws every score in the same ink, so colour encodes nothing", () => {
+		const strokes = [100, 92, 55, 10].map((score) => {
+			const { container } = render(
+				<FidelityScore score={score} label={`Q${score}`} />,
+			);
+			return ringPath(container)?.getAttribute("stroke");
+		});
+		expect(strokes).toEqual([
+			"var(--text-primary)",
+			"var(--text-primary)",
+			"var(--text-primary)",
+			"var(--text-primary)",
 		]);
-
-		// Every one of the four must be unique — no two scores collapse to
-		// the same colour.
-		expect(new Set(colors).size).toBe(4);
 	});
 
-	it("resolves to pure --lossy at the boundary score of 75", () => {
-		// 75 falls on the >=75 branch, so it is expressed as 0% signal mixed
-		// into --lossy — visually identical to, but not the same expression
-		// as, 100% --lossy mixed into --error from the other branch.
-		const { container } = render(
-			<FidelityScore score={75} label="LOSSY · Q75" />,
+	it("draws a solid ring at and above the lossy threshold", () => {
+		for (const score of [75, 92, 100]) {
+			const { container } = render(
+				<FidelityScore score={score} label={`Q${score}`} />,
+			);
+			expect(ringPath(container)?.getAttribute("stroke-dasharray")).toBeNull();
+		}
+	});
+
+	it("breaks the ring into dashes below the lossy threshold", () => {
+		for (const score of [74, 55, 10]) {
+			const { container } = render(
+				<FidelityScore score={score} label={`Q${score}`} />,
+			);
+			expect(
+				ringPath(container)?.getAttribute("stroke-dasharray"),
+			).not.toBeNull();
+		}
+	});
+
+	it("sets the large-arc flag only once the sweep passes halfway", () => {
+		// happy-dom implements no SVG geometry, so the sweep cannot be
+		// measured — but it can be read off the arc command itself. In
+		// `A rx ry rot large-arc sweep x y`, the fourth parameter is 1 only
+		// when the arc exceeds 180 degrees. That single bit is the whole
+		// difference between a ring drawn the short way round and the long
+		// way round, and getting it backwards is the classic arc bug.
+		const largeArcFlag = (score: number): string | undefined => {
+			const { container } = render(
+				<FidelityScore score={score} label={`Q${score}`} />,
+			);
+			const d = ringPath(container)?.getAttribute("d") ?? "";
+			return d.match(/A [\d.]+ [\d.]+ 0 (\d)/)?.[1];
+		};
+		expect(largeArcFlag(80)).toBe("1"); // 288 degrees — the long way
+		expect(largeArcFlag(40)).toBe("0"); // 144 degrees — the short way
+		expect(largeArcFlag(50)).toBe("0"); // exactly 180 — not yet "large"
+	});
+
+	it("draws a full ring at 100 and no ring at 0", () => {
+		const { container: full } = render(
+			<FidelityScore score={100} label="LOSSLESS" />,
 		);
-		expect(ringStroke(container)).toBe(
-			"color-mix(in oklab, var(--signal) 0%, var(--lossy))",
+		expect(full.querySelector("path")?.getAttribute("d")).toContain("A");
+
+		const { container: empty } = render(
+			<FidelityScore score={0} label="LOSSY · Q0" />,
 		);
+		expect(empty.querySelector("path")).toBeNull();
 	});
 });
