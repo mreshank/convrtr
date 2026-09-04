@@ -515,14 +515,30 @@ describe("border weight", () => {
 	it("declares no CSS border wider than 1px", () => {
 		const offenders: string[] = [];
 		for (const { path, content } of sourceFileContents) {
-			for (const match of content.matchAll(
-				/border(?:-[a-z]+)?(?:Width)?:\s*["']?(\d+(?:\.\d+)?)px/gi,
-			)) {
+			for (const match of content.matchAll(CSS_BORDER_WIDTH)) {
 				if (Number(match[1]) > 1) offenders.push(`${path}: ${match[0].trim()}`);
 			}
 		}
 		expect(offenders).toEqual([]);
 	});
+
+> **Correction, recorded during execution.** This plan originally specified a
+> single pattern here, `/border(?:-[a-z]+)?(?:Width)?:\s*["']?(\d+(?:\.\d+)?)px/gi`,
+> and it was wrong in a way that would have defeated this task's own purpose:
+> its optional `(?:-[a-z]+)?` group swallows `radius` exactly as it swallows
+> `left`, so `border-radius: 40px` and `border-radius: 100px` were reported as
+> over-weight borders. Those are DESIGN.md's card radii — the values this task
+> exists to *admit* — and the guard would have blocked them the first time one
+> was written in an embedded `<style>` block, which this codebase already does.
+> It also missed `border-top-width` and `borderLeftWidth` entirely.
+>
+> What shipped is two precise patterns, kebab-case and camelCase, each
+> restricting what may follow `border` to a closed set of side words plus an
+> optional `width` — plus a table-driven test pinning both the must-flag and
+> must-NOT-flag cases. **The authoritative version is the code**, in
+> `src/design/__tests__/design-system.test.ts`; it is deliberately not
+> duplicated here, so there is one source of truth rather than two that can
+> drift.
 
 	it("uses no Tailwind border utility wider than 1px", () => {
 		const offenders: string[] = [];
