@@ -141,10 +141,34 @@ async function collectPrecacheUrls() {
 		if (EXCLUDED_PREFIXES.some((prefix) => relativePath.startsWith(prefix))) {
 			continue;
 		}
-		urls.push(`/${relativePath}`);
+		urls.push(`/${encodeForRuntime(relativePath)}`);
 	}
 	urls.sort();
 	return urls;
+}
+
+/**
+ * Writes a path the way the browser will ask for it.
+ *
+ * App Router chunks live in directories named after the dynamic segments they
+ * serve — `app/[category]/[slug]/page-<hash>.js` — and Next builds their URLs
+ * by percent-encoding each segment, so the runtime requests
+ * `app/%5Bcategory%5D/%5Bslug%5D/page-<hash>.js`. Cache Storage matches by URL
+ * string, so a key holding literal brackets is never found by that request.
+ *
+ * The effect was that every tool page — all of which are served by
+ * `[category]/[slug]` — loaded its HTML offline and then failed to fetch its
+ * own JavaScript, so React never hydrated and nothing on the page worked. The
+ * shell appeared, which is exactly what made it look like offline support was
+ * working.
+ *
+ * Only brackets are encoded, not the whole segment: `encodeURIComponent` would
+ * also rewrite the `$` in the RSC payload filenames Next emits
+ * (`__next.$d$category.__PAGE__.txt`), which the runtime asks for verbatim —
+ * fixing one mismatch by creating another.
+ */
+function encodeForRuntime(path) {
+	return path.replace(/\[/g, "%5B").replace(/\]/g, "%5D");
 }
 
 function extname(path) {

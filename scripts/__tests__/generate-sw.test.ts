@@ -23,6 +23,40 @@ describe.skipIf(!built)("generated service worker", () => {
 	const sw = built ? readFileSync(SW, "utf8") : "";
 	const buildId = built ? readFileSync(BUILD_ID_FILE, "utf8").trim() : "";
 
+	/**
+	 * Guards the second bug of exactly the same shape: something cached under a
+	 * key nothing ever asks for, invisible because the failure looks like
+	 * success.
+	 *
+	 * App Router chunks live in directories named for their dynamic segments
+	 * (`app/[category]/[slug]/`), and Next requests them with those segments
+	 * percent-encoded. Cache Storage matches by URL string, so precaching the
+	 * literal-bracket path meant every tool page loaded its HTML offline and
+	 * then failed to fetch its own JavaScript — the shell rendered, React never
+	 * hydrated, and nothing on the page worked. "Offline support" appeared to
+	 * function precisely because the visible part did.
+	 */
+	it("precaches dynamic-route chunks under the URL the browser requests", () => {
+		const urls: string[] = JSON.parse(
+			sw.slice(sw.indexOf("const PRECACHE_URLS = ") + 22, sw.indexOf("];") + 1),
+		);
+
+		const literal = urls.filter(
+			(url) => url.includes("[") || url.includes("]"),
+		);
+		expect(
+			literal,
+			"a precache key with literal brackets is never matched by Next's percent-encoded request",
+		).toEqual([]);
+
+		// And the encoded form is actually present — otherwise this passes
+		// trivially on a build that emitted no dynamic routes at all.
+		expect(
+			urls.some((url) => url.includes("%5B") && url.endsWith(".js")),
+			"expected at least one percent-encoded dynamic-route chunk",
+		).toBe(true);
+	});
+
 	it("names every cache after the real build id", () => {
 		const names = [...sw.matchAll(/"(convrtr-[a-z-]+-([A-Za-z0-9_-]+))"/g)].map(
 			(m) => ({ full: m[1], suffix: m[2] }),
