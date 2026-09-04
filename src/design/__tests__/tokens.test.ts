@@ -191,14 +191,26 @@ describe("legacy token vocabulary", () => {
  * automated check (typecheck, lint, build) staying green regardless.
  *
  * This guard makes that failure mode mechanical instead of visual: it reads
- * every `var(--name)` reference under `src` and asserts the name is
+ * every custom-property *reference* under `src` and asserts the name is
  * declared somewhere in this token file. `--font-sans` and `--font-mono`
  * are supplied by `next/font` in `layout.tsx`, not by this file, so they
  * are legitimately referenced without being declared here and are
  * allowlisted below.
+ *
+ * Two reference shapes are matched, both anchored so they can never be
+ * confused with a *declaration* (`--ink: #000` — the name immediately
+ * followed by a colon):
+ *  - `var(--name)`, standard CSS.
+ *  - Tailwind's bracketed arbitrary-value syntax, e.g.
+ *    `font-[family-name:--font-mono]` in `mdx-components.tsx` — a real
+ *    token reference with no `var(` anywhere. Both forms share one pattern:
+ *    a `(`, `[` or `:` immediately before `--name`, with `--name` not
+ *    itself immediately followed by a colon (which would make it a
+ *    declaration's left-hand side, not a reference).
  */
 describe("no dangling custom property references", () => {
 	const ALLOWLISTED = new Set(["--font-sans", "--font-mono"]);
+	const REFERENCE = /[([:](--[\w-]+)(?!\s*:)/g;
 
 	function declaredNames(source: string): Set<string> {
 		const names = new Set<string>();
@@ -211,17 +223,20 @@ describe("no dangling custom property references", () => {
 
 	const declared = declaredNames(css);
 
-	it("references every var(--name) it uses against a name declared in tokens.css", () => {
+	it("references every custom property it uses against a name declared in tokens.css", () => {
 		const offenders: string[] = [];
-		for (const path of collectSourceFiles("src", [".tsx", ".css"])) {
+		// .ts is included alongside .tsx and .css so a future module that
+		// assembles a style string in plain TypeScript (no JSX) is covered
+		// too — the two sweeps beside this one already scan .ts.
+		for (const path of collectSourceFiles("src", [".tsx", ".ts", ".css"])) {
 			if (path.includes("__tests__")) continue;
 			const source = readFileSync(path, "utf8");
-			for (const match of source.matchAll(/var\((--[\w-]+)/g)) {
+			for (const match of source.matchAll(REFERENCE)) {
 				const name = match[1];
 				if (!name) continue;
 				if (ALLOWLISTED.has(name)) continue;
 				if (!declared.has(name)) {
-					offenders.push(`${path}: var(${name})`);
+					offenders.push(`${path}: ${name}`);
 				}
 			}
 		}
