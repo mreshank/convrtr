@@ -131,6 +131,14 @@ export const ToolSchema = z.object({
 	 * default for a few hundred kilobytes of codec.
 	 */
 	heavyDownloadMb: z.number().positive().optional(),
+	/**
+	 * Whether this tool takes several files and produces one.
+	 *
+	 * Without it, dropping several files runs the batch path — each converted
+	 * separately — which is right for every other tool and exactly wrong for
+	 * merging. Order follows the order the files were dropped.
+	 */
+	combinesInputs: z.boolean().optional(),
 	quality: z.object({
 		losslessAvailable: z.boolean(),
 		defaultPreset: z.enum(QUALITY_PRESETS),

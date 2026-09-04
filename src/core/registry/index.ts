@@ -26,6 +26,7 @@ import { jpgToJxl } from "./tools/jpg-to-jxl";
 import { jpgToPdf } from "./tools/jpg-to-pdf";
 import { jpgToPng } from "./tools/jpg-to-png";
 import { jpgToWebp } from "./tools/jpg-to-webp";
+import { mergePdf } from "./tools/merge-pdf";
 import { optimiseSvg } from "./tools/optimise-svg";
 import { pngToAvif } from "./tools/png-to-avif";
 import { pngToJpg } from "./tools/png-to-jpg";
@@ -113,6 +114,7 @@ export const TOOLS: Tool[] = [
 	waveformWAV,
 	waveformFLAC,
 	splitPdf,
+	mergePdf,
 ];
 
 export function getTool(id: string): Tool | undefined {

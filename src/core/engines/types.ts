@@ -57,6 +57,25 @@ export interface Engine {
 	): Promise<ArrayBuffer>;
 
 	/**
+	 * Combines several files into one.
+	 *
+	 * Every other engine here is one-in, one-out, and the batch runner turns
+	 * that into many-in-many-out by calling it repeatedly. Merging is neither:
+	 * the whole point is that the inputs meet, so it needs them together.
+	 *
+	 * Optional because almost nothing needs it. Order is the order given, which
+	 * for merging is the order the files were dropped — the caller owns that
+	 * decision and the tool says so rather than sorting by name behind the
+	 * user's back.
+	 */
+	runMany?(
+		inputs: ArrayBuffer[],
+		params: Record<string, ParamValue>,
+		onProgress: (ratio: number, phase: string) => void,
+		onNotice?: (message: string) => void,
+	): Promise<ArrayBuffer>;
+
+	/**
 	 * Converts without ever holding the whole file in memory.
 	 *
 	 * `run` takes an `ArrayBuffer` and returns one, which means peak memory is
@@ -82,6 +101,14 @@ export interface Engine {
 		sink: OutputSink,
 		onNotice?: (message: string) => void,
 	): Promise<void>;
+}
+
+/** An engine that combines several inputs into one output. */
+export type CombiningEngine = Engine & Required<Pick<Engine, "runMany">>;
+
+/** Narrows to an engine that can combine inputs. */
+export function supportsCombining(engine: Engine): engine is CombiningEngine {
+	return typeof engine.runMany === "function";
 }
 
 /** An engine that can convert without holding the whole file. */

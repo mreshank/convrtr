@@ -1,5 +1,5 @@
 import { selectEngine } from "@/core/engines";
-import { supportsStreaming } from "@/core/engines/types";
+import { supportsCombining, supportsStreaming } from "@/core/engines/types";
 import { createFileSink } from "@/core/io/sink";
 import type { AnyJobRequest, JobEvent } from "./protocol";
 import { runStreamingConversion } from "./stream-runner";
@@ -50,6 +50,29 @@ self.onmessage = async (event: MessageEvent<AnyJobRequest>) => {
 		const onNotice = (message: string) => post({ type: "notice", id, message });
 		const onOutputType = (type: { ext: string; mime: string }) =>
 			post({ type: "outputType", id, ext: type.ext, mime: type.mime });
+
+		if (request.mode === "many") {
+			// Refuse rather than quietly processing the first file: someone who
+			// asked to merge four documents and received one back would have no
+			// reason to suspect the other three were dropped.
+			if (!supportsCombining(engine)) {
+				post({
+					type: "error",
+					id,
+					code: "CAPABILITY_MISSING",
+					message: `${engine.id} cannot combine several files into one`,
+				});
+				return;
+			}
+			const combined = await engine.runMany(
+				request.inputs,
+				params,
+				onProgress,
+				onNotice,
+			);
+			post({ type: "done", id, output: combined });
+			return;
+		}
 
 		if (request.mode === "stream") {
 			// Refuse rather than silently falling back to the buffered path. The

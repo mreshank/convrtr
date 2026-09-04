@@ -16,6 +16,7 @@ import { IMAGE_DECODERS, IMAGE_ENCODERS } from "./image/registry";
 import { METADATA_ENGINES } from "./metadata";
 import { mlwToMp4Engine } from "./mlw";
 import { imageToPdfEngine } from "./pdf/image-to-pdf";
+import { createPdfMergeEngine } from "./pdf/merge";
 import { createPdfSplitEngine } from "./pdf/split";
 import { svgOptimiseEngine } from "./svg/optimise";
 import type { Engine } from "./types";
@@ -77,6 +78,13 @@ function buildImageEngines(): Map<string, Engine> {
 	// Uses the platform GIF decoder, so it is unavailable in Firefox — probe()
 	// feature-detects and the engine simply is not selected there.
 	engines.set(gifFramesEngine.id, gifFramesEngine);
+
+	// Merges PDFs by copying pages, and names what a merge cannot carry —
+	// bookmarks and form fields live outside the pages themselves.
+	{
+		const engine = createPdfMergeEngine();
+		engines.set(engine.id, engine);
+	}
 
 	// Splits a PDF by copying pages, so text stays text and embedded images keep
 	// their bytes — unlike splitters that re-render each page to an image.

@@ -39,7 +39,21 @@ export type StreamJobRequest = {
 	mode: "stream";
 };
 
-export type AnyJobRequest = JobRequest | StreamJobRequest;
+/**
+ * Several files in, one out.
+ *
+ * Separate from `JobRequest` rather than making `input` an array, so a
+ * one-file engine cannot silently receive a list and process only the first.
+ */
+export type ManyJobRequest = {
+	id: string;
+	engines: string[];
+	inputs: ArrayBuffer[];
+	params: Record<string, ParamValue>;
+	mode: "many";
+};
+
+export type AnyJobRequest = JobRequest | StreamJobRequest | ManyJobRequest;
 
 export type JobEvent =
 	| { type: "progress"; id: string; ratio: number; phase: string }

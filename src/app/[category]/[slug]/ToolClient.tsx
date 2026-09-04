@@ -23,7 +23,12 @@ import { pickSaveFile, SAVE_CANCELLED } from "@/core/io/sink";
 import { type ZipEntry, zipOutputs } from "@/core/io/zip";
 import type { BatchItem } from "@/core/pipeline/batch";
 import { runBatch } from "@/core/pipeline/batch";
-import { JobError, runJob, runStreamJob } from "@/core/pipeline/client";
+import {
+	JobError,
+	runJob,
+	runManyJob,
+	runStreamJob,
+} from "@/core/pipeline/client";
 import { type ErrorCode, makeJobId } from "@/core/pipeline/protocol";
 import {
 	describeFidelity,
@@ -82,6 +87,14 @@ export function ToolClient({ toolId }: { toolId: string }) {
 	// `data-testid`s the existing Playwright suite drives.
 	const [items, setItems] = useState<BatchItem[]>([]);
 	const file = items.length === 1 ? (items[0]?.file ?? null) : null;
+
+	/**
+	 * Several files that will become one, rather than several conversions.
+	 *
+	 * Without this, dropping four PDFs on the merge tool would run the batch
+	 * path and hand back four PDFs — each "merged" with nothing.
+	 */
+	const combining = tool.combinesInputs === true && items.length > 1;
 
 	const [quality, setQuality] = useState<QualityState>(() =>
 		initialQuality(tool),
@@ -410,6 +423,75 @@ export function ToolClient({ toolId }: { toolId: string }) {
 			controllerRef.current = null;
 			setConverting(false);
 		}
+	};
+
+	const convertMany = async () => {
+		if (!combining || converting) return;
+
+		const controller = new AbortController();
+		controllerRef.current = controller;
+
+		setError(null);
+		setResult(null);
+		setStreamed(null);
+		setNotices([]);
+		setOutputType(null);
+		setRatio(0);
+		setPhase("");
+		setElapsed(0);
+		startedAtRef.current = Date.now();
+		setConverting(true);
+
+		try {
+			// Read in the order dropped: that order is the page order, and the
+			// tool's copy says so.
+			const inputs = await Promise.all(
+				items.map((item) => readFile(item.file)),
+			);
+			const output = await runManyJob(
+				{
+					id: makeJobId(),
+					engines: tool.engines,
+					inputs,
+					params: quality.params,
+					mode: "many",
+				},
+				(event) => {
+					if (event.type === "progress") {
+						setRatio(event.ratio);
+						setPhase(event.phase);
+					}
+					if (event.type === "notice") {
+						setNotices((current) => [...current, event.message]);
+					}
+				},
+				controller.signal,
+			);
+			setResult({ bytes: output, size: output.byteLength });
+		} catch (caught) {
+			const cancelled =
+				caught instanceof DOMException && caught.name === "AbortError";
+			if (!cancelled) {
+				setError({
+					code: caught instanceof JobError ? caught.code : "ENGINE_FAILURE",
+					detail: caught instanceof Error ? caught.message : undefined,
+				});
+			}
+		} finally {
+			controllerRef.current = null;
+			setConverting(false);
+		}
+	};
+
+	const saveCombined = async () => {
+		if (!result) return;
+		// Named after the tool rather than any one input: none of the inputs is
+		// "the" source, and picking the first would be arbitrary.
+		await saveOutput(
+			result.bytes,
+			`${tool.slug}.${tool.output.ext}`,
+			tool.output.mime,
+		);
 	};
 
 	const cancel = () => {
@@ -796,7 +878,127 @@ export function ToolClient({ toolId }: { toolId: string }) {
 				</div>
 			)}
 
-			{items.length > 1 && (
+			{combining && (
+				<div
+					className="flex flex-col gap-6 border p-6"
+					style={{
+						borderColor: "var(--hairline)",
+						borderRadius: "var(--radius)",
+					}}
+				>
+					<div className="flex items-start justify-between gap-4">
+						<FileReadout
+							name={`${items.length} FILES`}
+							facts={[
+								(tool.accept.ext[0] ?? "").toUpperCase(),
+								formatBytes(
+									items.reduce((sum, item) => sum + item.file.size, 0),
+								),
+							]}
+						/>
+						<button
+							type="button"
+							onClick={replace}
+							className="mono border px-4 py-2 text-[12px]"
+							style={{
+								color: "var(--text-muted)",
+								borderColor: "var(--hairline)",
+							}}
+						>
+							REPLACE
+						</button>
+					</div>
+
+					{/* Numbered, because this order is the page order and the user
+					    needs to be able to check it before converting. */}
+					<ol
+						data-testid="combine-order"
+						className="flex flex-col gap-1"
+						style={{ color: "var(--text-muted)" }}
+					>
+						{items.map((item, index) => (
+							<li key={item.id} className="mono text-[12px]">
+								{index + 1}. {item.file.name}
+							</li>
+						))}
+					</ol>
+
+					<OptionsPanel tool={tool} state={quality} onChange={setQuality} />
+
+					{converting && (
+						<div className="flex flex-col gap-3">
+							<ProgressBar
+								ratio={ratio}
+								phase={phase || "QUEUED"}
+								elapsedSeconds={elapsed}
+							/>
+							<button
+								type="button"
+								onClick={cancel}
+								className="mono self-end border px-4 py-2 text-[12px]"
+								style={{ color: "var(--error)", borderColor: "var(--error)" }}
+							>
+								CANCEL
+							</button>
+						</div>
+					)}
+
+					{!converting && error && (
+						<ErrorPanel
+							code={error.code}
+							detail={error.detail}
+							inputFormat={tool.accept.ext[0]?.toUpperCase()}
+							onRetry={convertMany}
+							onDismiss={() => setError(null)}
+						/>
+					)}
+
+					{!converting && notices.length > 0 && (
+						<ul
+							data-testid="notices"
+							className="flex flex-col gap-2 border p-4 text-[13px]"
+							style={{
+								borderColor: "var(--lossy)",
+								borderRadius: "var(--radius)",
+								color: "var(--text-primary)",
+							}}
+						>
+							{notices.map((notice) => (
+								<li key={notice}>{notice}</li>
+							))}
+						</ul>
+					)}
+
+					{!converting && result && (
+						<div className="flex items-center justify-between">
+							<span data-testid="result" className="mono text-[12px]">
+								{items.length} {"→"} 1 {"·"} {formatBytes(result.size)}
+							</span>
+							<button
+								type="button"
+								onClick={saveCombined}
+								className="mono border px-4 py-2 text-[12px]"
+								style={{ color: "var(--signal)", borderColor: "var(--signal)" }}
+							>
+								SAVE
+							</button>
+						</div>
+					)}
+
+					{!converting && (
+						<button
+							type="button"
+							onClick={convertMany}
+							className="mono self-end border px-4 py-2 text-[12px]"
+							style={{ color: "var(--signal)", borderColor: "var(--signal)" }}
+						>
+							CONVERT
+						</button>
+					)}
+				</div>
+			)}
+
+			{items.length > 1 && !combining && (
 				<div
 					className="flex flex-col gap-6 border p-6"
 					style={{

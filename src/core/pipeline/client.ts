@@ -3,6 +3,7 @@ import {
 	isJobEvent,
 	type JobEvent,
 	type JobRequest,
+	type ManyJobRequest,
 	type StreamJobRequest,
 } from "./protocol";
 
@@ -143,5 +144,64 @@ export function runStreamJob(
 		// the Blob's bytes stay where they are rather than being copied, since a
 		// clone shares the underlying data.
 		worker.postMessage(request);
+	});
+}
+
+/**
+ * Runs a conversion that combines several files into one.
+ *
+ * The inputs are transferred, which empties the caller's buffers — the same
+ * contract `runJob` has for its single input, and worth stating because
+ * transferring a list is easy to misread as transferring a copy of it.
+ */
+export function runManyJob(
+	request: ManyJobRequest,
+	onEvent: (event: JobEvent) => void,
+	signal: AbortSignal,
+): Promise<ArrayBuffer> {
+	return new Promise((resolve, reject) => {
+		if (signal.aborted) {
+			reject(new DOMException("Cancelled", "AbortError"));
+			return;
+		}
+
+		const worker = new Worker(new URL("./worker.ts", import.meta.url), {
+			type: "module",
+		});
+
+		const cleanup = () => {
+			worker.terminate();
+			signal.removeEventListener("abort", onAbort);
+		};
+
+		const onAbort = () => {
+			cleanup();
+			reject(new DOMException("Cancelled", "AbortError"));
+		};
+		signal.addEventListener("abort", onAbort);
+
+		worker.onmessage = (event: MessageEvent<unknown>) => {
+			if (!isJobEvent(event.data)) return;
+			const message = event.data;
+			onEvent(message);
+
+			if (message.type === "done") {
+				cleanup();
+				resolve(message.output);
+				return;
+			}
+
+			if (message.type === "error") {
+				cleanup();
+				reject(new JobError(message.code, message.message));
+			}
+		};
+
+		worker.onerror = (event: ErrorEvent) => {
+			cleanup();
+			reject(new JobError("ENGINE_FAILURE", event.message || "Worker failed"));
+		};
+
+		worker.postMessage(request, request.inputs);
 	});
 }
