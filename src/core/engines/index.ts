@@ -1,3 +1,4 @@
+import { createCoverExtractEngine } from "./audio/cover";
 import { createAudioExtractionEngine } from "./audio/extract";
 import { createFlacDecodeEngine, createFlacEncodeEngine } from "./audio/flac";
 import { createMp3EncodeEngine } from "./audio/mp3";
@@ -114,6 +115,14 @@ function buildImageEngines(): Map<string, Engine> {
 	// "smaller" rather than "smaller and lossy".
 	{
 		const engine = createMp3EncodeEngine();
+		engines.set(engine.id, engine);
+	}
+
+	// Embedded artwork, copied out exactly as it was stored rather than
+	// re-encoded. The engine reports whether it found a JPEG or a PNG, since
+	// the tool cannot know in advance.
+	for (const format of ["mp3", "flac"] as const) {
+		const engine = createCoverExtractEngine(format);
 		engines.set(engine.id, engine);
 	}
 

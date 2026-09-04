@@ -33,6 +33,18 @@ export type OutputSink = WritableStream<WriteChunk>;
  * conversion ends. Nobody reads a warning that is only visible while they are
  * waiting. Notices persist next to the result instead.
  */
+/**
+ * What an engine actually produced, when the tool cannot know in advance.
+ *
+ * Almost every tool has a fixed output — a PNG encoder writes PNG. A few do
+ * not: extracted cover art is whatever the file happened to embed, JPEG or
+ * PNG, and naming a PNG `.jpg` because the registry guessed would hand the
+ * user a file their tools mis-read.
+ *
+ * Reported rather than declared, and only by the engines that need it.
+ */
+export type OutputType = { ext: string; mime: string };
+
 export interface Engine {
 	id: string;
 	probe(): Promise<boolean>;
@@ -41,6 +53,7 @@ export interface Engine {
 		params: Record<string, ParamValue>,
 		onProgress: (ratio: number, phase: string) => void,
 		onNotice?: (message: string) => void,
+		onOutputType?: (type: OutputType) => void,
 	): Promise<ArrayBuffer>;
 
 	/**

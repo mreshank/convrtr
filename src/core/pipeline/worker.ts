@@ -48,6 +48,8 @@ self.onmessage = async (event: MessageEvent<AnyJobRequest>) => {
 		const onProgress = (ratio: number, phase: string) =>
 			post({ type: "progress", id, ratio, phase });
 		const onNotice = (message: string) => post({ type: "notice", id, message });
+		const onOutputType = (type: { ext: string; mime: string }) =>
+			post({ type: "outputType", id, ext: type.ext, mime: type.mime });
 
 		if (request.mode === "stream") {
 			// Refuse rather than silently falling back to the buffered path. The
@@ -83,6 +85,7 @@ self.onmessage = async (event: MessageEvent<AnyJobRequest>) => {
 			params,
 			onProgress,
 			onNotice,
+			onOutputType,
 		);
 		post({ type: "done", id, output });
 	} catch (error) {

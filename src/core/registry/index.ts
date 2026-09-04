@@ -1,4 +1,6 @@
+import { coverArtFLAC } from "./tools/audio/flac-cover-art";
 import { flacToWav } from "./tools/audio/flac-to-wav";
+import { coverArtMP3 } from "./tools/audio/mp3-cover-art";
 import { mp4ToM4a } from "./tools/audio/mp4-to-m4a";
 import { removeTagsFlac } from "./tools/audio/remove-tags-flac";
 import { removeTagsMp3 } from "./tools/audio/remove-tags-mp3";
@@ -99,6 +101,8 @@ export const TOOLS: Tool[] = [
 	trimFlac,
 	removeTagsMp3,
 	removeTagsFlac,
+	coverArtMP3,
+	coverArtFLAC,
 ];
 
 export function getTool(id: string): Tool | undefined {

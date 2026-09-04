@@ -115,6 +115,17 @@ export function ToolClient({ toolId }: { toolId: string }) {
 	 * the moment the conversion finishes.
 	 */
 	const [notices, setNotices] = useState<string[]>([]);
+
+	/**
+	 * What the engine actually produced, for the few tools whose output type
+	 * depends on the file rather than the tool — extracted cover art is JPEG or
+	 * PNG depending on what was embedded. Falls back to the tool's declaration,
+	 * which is right for everything else.
+	 */
+	const [outputType, setOutputType] = useState<{
+		ext: string;
+		mime: string;
+	} | null>(null);
 	/**
 	 * Length of the loaded file, for tools whose controls are bounded by it.
 	 * Undefined until the probe resolves, and for every tool that never asks.
@@ -277,6 +288,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 		setResult(null);
 		setStreamed(null);
 		setNotices([]);
+		setOutputType(null);
 		setRatio(0);
 		setPhase("");
 		setElapsed(0);
@@ -369,6 +381,9 @@ export function ToolClient({ toolId }: { toolId: string }) {
 					if (event.type === "notice") {
 						setNotices((current) => [...current, event.message]);
 					}
+					if (event.type === "outputType") {
+						setOutputType({ ext: event.ext, mime: event.mime });
+					}
 				},
 				controller.signal,
 			);
@@ -412,6 +427,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 		setStreamed(null);
 		setStrategy("memory");
 		setNotices([]);
+		setOutputType(null);
 		setDuration(undefined);
 		setError(null);
 		setRatio(0);
@@ -423,8 +439,8 @@ export function ToolClient({ toolId }: { toolId: string }) {
 		if (!file || !result) return;
 		await saveOutput(
 			result.bytes,
-			outputFilename(file.name, tool.output.ext),
-			tool.output.mime,
+			outputFilename(file.name, outputType?.ext ?? tool.output.ext),
+			outputType?.mime ?? tool.output.mime,
 		);
 	};
 
