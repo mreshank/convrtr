@@ -17,6 +17,7 @@ import { METADATA_ENGINES } from "./metadata";
 import { mlwToMp4Engine } from "./mlw";
 import { imageToPdfEngine } from "./pdf/image-to-pdf";
 import { createPdfMergeEngine } from "./pdf/merge";
+import { createPdfRotateEngine } from "./pdf/rotate";
 import { createPdfSplitEngine } from "./pdf/split";
 import { svgOptimiseEngine } from "./svg/optimise";
 import type { Engine } from "./types";
@@ -78,6 +79,13 @@ function buildImageEngines(): Map<string, Engine> {
 	// Uses the platform GIF decoder, so it is unavailable in Firefox — probe()
 	// feature-detects and the engine simply is not selected there.
 	engines.set(gifFramesEngine.id, gifFramesEngine);
+
+	// Rotation is one number per page, so it changes nothing else — unlike
+	// tools that rasterise a page in order to turn it.
+	{
+		const engine = createPdfRotateEngine();
+		engines.set(engine.id, engine);
+	}
 
 	// Merges PDFs by copying pages, and names what a merge cannot carry —
 	// bookmarks and form fields live outside the pages themselves.
