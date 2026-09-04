@@ -17,7 +17,10 @@ function collectSourceFiles(root: string, extensions: string[]): string[] {
 		const full = join(root, entry);
 		const stat = statSync(full);
 		if (stat.isDirectory()) {
-			out.push(...collectSourceFiles(full, extensions));
+			// Exclude the new design system folder; it has its own test suite.
+			if (full !== "src/design") {
+				out.push(...collectSourceFiles(full, extensions));
+			}
 			continue;
 		}
 		if (extensions.some((ext) => entry.endsWith(ext))) out.push(full);
