@@ -14,6 +14,10 @@ const CONVERTED = [
 	"src/components/instrument/ProgressBar.tsx",
 	"src/components/instrument/TimeRange.tsx",
 	"src/components/instrument/DropField.tsx",
+	"src/components/instrument/OptionsPanel.tsx",
+	"src/components/instrument/HeavyDownloadGate.tsx",
+	"src/components/instrument/BatchTable.tsx",
+	"src/components/instrument/ThemeToggle.tsx",
 ];
 
 describe("semantic colour migration", () => {

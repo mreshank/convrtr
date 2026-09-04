@@ -145,8 +145,10 @@ export function OptionsPanel({ tool, state, onChange, duration }: Props) {
 							onClick={() => onChange(applyPreset(tool, preset.id))}
 							className="mono border px-4 py-2 text-[12px]"
 							style={{
-								color: selected ? "var(--signal)" : "var(--text-primary)",
-								borderColor: selected ? "var(--signal)" : "var(--hairline)",
+								color: selected ? "var(--text-primary)" : "var(--text-muted)",
+								borderColor: selected
+									? "var(--text-primary)"
+									: "var(--hairline)",
 								borderRadius: "var(--radius)",
 								background: "transparent",
 							}}

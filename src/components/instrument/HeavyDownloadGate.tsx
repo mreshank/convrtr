@@ -21,7 +21,8 @@ export function HeavyDownloadGate({ megabytes, formatLabel, onAccept }: Props) {
 			data-testid="download-gate"
 			className="flex flex-col gap-4 border p-6"
 			style={{
-				borderColor: "var(--lossy)",
+				borderColor: "var(--text-primary)",
+				borderStyle: "dashed",
 				borderRadius: "var(--radius)",
 			}}
 		>
@@ -45,7 +46,10 @@ export function HeavyDownloadGate({ megabytes, formatLabel, onAccept }: Props) {
 				type="button"
 				onClick={onAccept}
 				className="mono self-start border px-4 py-2 text-[12px]"
-				style={{ color: "var(--signal)", borderColor: "var(--signal)" }}
+				style={{
+					color: "var(--text-primary)",
+					borderColor: "var(--text-primary)",
+				}}
 			>
 				DOWNLOAD AND CONVERT
 			</button>

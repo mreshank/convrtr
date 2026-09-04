@@ -92,9 +92,9 @@ function statusLabel(row: BatchRowState): string {
 function statusColor(row: BatchRowState): string {
 	switch (row.status) {
 		case "done":
-			return "var(--signal)";
+			return "var(--text-primary)";
 		case "error":
-			return "var(--error)";
+			return "var(--text-primary)";
 		case "converting":
 			return "var(--text-primary)";
 		default:
@@ -178,7 +178,20 @@ export function BatchTable({ rows, fidelity, onSaveRow, inputFormat }: Props) {
 				{rows.map((row) => (
 					<Fragment key={row.id}>
 						<tr data-testid="batch-row" data-status={row.status}>
-							<td className="border-b px-2 py-2 text-left" style={cellStyle}>
+							<td
+								className={`border-b px-2 py-2 text-left${
+									row.status === "error" ? " border-l" : ""
+								}`}
+								style={
+									row.status === "error"
+										? {
+												...cellStyle,
+												borderLeftColor: "var(--text-primary)",
+												borderLeftStyle: "dashed",
+											}
+										: cellStyle
+								}
+							>
 								{row.name}
 							</td>
 							<td
@@ -224,8 +237,8 @@ export function BatchTable({ rows, fidelity, onSaveRow, inputFormat }: Props) {
 										aria-label={`Save ${row.name}`}
 										className="mono border px-2 py-1 text-[11px]"
 										style={{
-											color: "var(--signal)",
-											borderColor: "var(--signal)",
+											color: "var(--text-primary)",
+											borderColor: "var(--text-primary)",
 											borderRadius: "var(--radius)",
 											background: "transparent",
 										}}
