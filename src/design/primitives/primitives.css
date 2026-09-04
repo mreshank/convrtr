@@ -6,3 +6,33 @@
  * object at all. Everything that *can* be inline stays inline, so the
  * component remains the single place to read a primitive's appearance.
  */
+
+/*
+ * The reveal. Each fragment is clipped by its parent's overflow and slides
+ * up into view, delayed by its own index so the line assembles left to
+ * right.
+ *
+ * `--reveal-i` is set per fragment by the Reveal component; the 40ms step
+ * lives here so the whole timing story stays in one file.
+ */
+[data-reveal] {
+	display: inline-block;
+	overflow: hidden;
+	vertical-align: bottom;
+}
+
+[data-reveal-part] {
+	display: inline-block;
+	white-space: pre;
+	animation: reveal-rise var(--dur-reveal) var(--ease) both;
+	animation-delay: calc(var(--reveal-i, 0) * 40ms);
+}
+
+@keyframes reveal-rise {
+	from {
+		transform: translateY(100%);
+	}
+	to {
+		transform: translateY(0);
+	}
+}
