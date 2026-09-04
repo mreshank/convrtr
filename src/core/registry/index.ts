@@ -37,6 +37,7 @@ import { removeMetadataPng } from "./tools/remove-metadata-png";
 import { resizeJpg } from "./tools/resize-jpg";
 import { resizePng } from "./tools/resize-png";
 import { resizeWebp } from "./tools/resize-webp";
+import { splitPdf } from "./tools/split-pdf";
 import { aviToMp4 } from "./tools/video/avi-to-mp4";
 import { frameMp4 } from "./tools/video/frame-mp4";
 import { mkvToMp4 } from "./tools/video/mkv-to-mp4";
@@ -111,6 +112,7 @@ export const TOOLS: Tool[] = [
 	normaliseFLAC,
 	waveformWAV,
 	waveformFLAC,
+	splitPdf,
 ];
 
 export function getTool(id: string): Tool | undefined {
