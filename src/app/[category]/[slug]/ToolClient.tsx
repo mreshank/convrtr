@@ -694,7 +694,11 @@ export function ToolClient({ toolId }: { toolId: string }) {
 								type="button"
 								onClick={cancel}
 								className="mono self-end border px-4 py-2 text-[12px]"
-								style={{ color: "var(--error)", borderColor: "var(--error)" }}
+								style={{
+									color: "var(--text-primary)",
+									borderColor: "var(--text-primary)",
+									borderStyle: "dashed",
+								}}
 							>
 								CANCEL
 							</button>
@@ -722,7 +726,10 @@ export function ToolClient({ toolId }: { toolId: string }) {
 								type="button"
 								onClick={save}
 								className="mono border px-4 py-2 text-[12px]"
-								style={{ color: "var(--signal)", borderColor: "var(--signal)" }}
+								style={{
+									color: "var(--text-primary)",
+									borderColor: "var(--text-primary)",
+								}}
 							>
 								SAVE
 							</button>
@@ -745,7 +752,8 @@ export function ToolClient({ toolId }: { toolId: string }) {
 							data-testid="notices"
 							className="flex flex-col gap-2 border p-4 text-[13px]"
 							style={{
-								borderColor: "var(--lossy)",
+								borderColor: "var(--text-primary)",
+								borderStyle: "dashed",
 								borderRadius: "var(--radius)",
 								color: "var(--text-primary)",
 							}}
@@ -772,7 +780,10 @@ export function ToolClient({ toolId }: { toolId: string }) {
 							type="button"
 							onClick={convert}
 							className="mono self-end border px-4 py-2 text-[12px]"
-							style={{ color: "var(--signal)", borderColor: "var(--signal)" }}
+							style={{
+								color: "var(--text-primary)",
+								borderColor: "var(--text-primary)",
+							}}
 						>
 							CONVERT
 						</button>
@@ -834,7 +845,11 @@ export function ToolClient({ toolId }: { toolId: string }) {
 								type="button"
 								onClick={batchCancel}
 								className="mono self-end border px-4 py-2 text-[12px]"
-								style={{ color: "var(--error)", borderColor: "var(--error)" }}
+								style={{
+									color: "var(--text-primary)",
+									borderColor: "var(--text-primary)",
+									borderStyle: "dashed",
+								}}
 							>
 								CANCEL
 							</button>
@@ -849,8 +864,8 @@ export function ToolClient({ toolId }: { toolId: string }) {
 									onClick={saveAllZip}
 									className="mono border px-4 py-2 text-[12px]"
 									style={{
-										color: "var(--signal)",
-										borderColor: "var(--signal)",
+										color: "var(--text-primary)",
+										borderColor: "var(--text-primary)",
 									}}
 								>
 									SAVE ALL (ZIP)
@@ -860,7 +875,10 @@ export function ToolClient({ toolId }: { toolId: string }) {
 								type="button"
 								onClick={batchConvert}
 								className="mono border px-4 py-2 text-[12px]"
-								style={{ color: "var(--signal)", borderColor: "var(--signal)" }}
+								style={{
+									color: "var(--text-primary)",
+									borderColor: "var(--text-primary)",
+								}}
 							>
 								CONVERT
 							</button>

@@ -18,6 +18,9 @@ const CONVERTED = [
 	"src/components/instrument/HeavyDownloadGate.tsx",
 	"src/components/instrument/BatchTable.tsx",
 	"src/components/instrument/ThemeToggle.tsx",
+	"src/app/tools/ToolTable.tsx",
+	"src/app/[category]/[slug]/ToolClient.tsx",
+	"src/components/content/Callout.tsx",
 ];
 
 describe("semantic colour migration", () => {

@@ -11,7 +11,8 @@ export function Callout({ kind, children }: CalloutProps) {
 			role="note"
 			className="flex flex-col gap-1 rounded-[var(--radius)] border p-4 text-[14px]"
 			style={{
-				borderColor: kind === "warning" ? "var(--lossy)" : "var(--hairline)",
+				borderColor: "var(--text-primary)",
+				borderStyle: kind === "warning" ? "dashed" : "solid",
 			}}
 		>
 			<p

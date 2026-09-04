@@ -30,7 +30,7 @@ const components: MDXComponents = {
 	code: (props) => (
 		<code
 			className="rounded-[var(--radius)] px-1 py-0.5 font-[family-name:--font-mono] text-[13px]"
-			style={{ background: "var(--surface-raised)" }}
+			style={{ border: "1px solid var(--hairline)" }}
 			{...props}
 		/>
 	),
