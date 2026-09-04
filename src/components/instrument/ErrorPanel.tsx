@@ -104,6 +104,7 @@ export function ErrorPanel({
 			style={{
 				background: "var(--text-primary)",
 				color: "var(--surface-base)",
+				borderLeftColor: "var(--surface-base)",
 				borderRadius: "var(--radius)",
 			}}
 		>
