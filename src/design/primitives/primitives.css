@@ -1,0 +1,8 @@
+/*
+ * Keyframes and hover rules shared by the primitives in this directory.
+ *
+ * These live in a stylesheet rather than inline styles because keyframes
+ * and `:hover` descendant rules cannot be expressed in a React `style`
+ * object at all. Everything that *can* be inline stays inline, so the
+ * component remains the single place to read a primitive's appearance.
+ */
