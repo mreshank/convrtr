@@ -17,10 +17,7 @@ function collectSourceFiles(root: string, extensions: string[]): string[] {
 		const full = join(root, entry);
 		const stat = statSync(full);
 		if (stat.isDirectory()) {
-			// Exclude the new design system folder; it has its own test suite.
-			if (full !== "src/design") {
-				out.push(...collectSourceFiles(full, extensions));
-			}
+			out.push(...collectSourceFiles(full, extensions));
 			continue;
 		}
 		if (extensions.some((ext) => entry.endsWith(ext))) out.push(full);
@@ -96,10 +93,12 @@ describe("design-system invariants", () => {
 		// Every `--radius*` custom property, anywhere in `src`, must stay
 		// within the design system's 4px ceiling. A future `--radius-lg: 12px`
 		// added to any stylesheet is caught here, not just a literal
-		// `--radius` in tokens.css.
+		// `--radius` in tokens.css. Exclude src/design/* — the new design system
+		// has its own constraints.
 		const offenders: string[] = [];
 		for (const { path, content } of sourceFileContents) {
 			if (!path.endsWith(".css")) continue;
+			if (path.startsWith("src/design/")) continue;
 			for (const match of content.matchAll(
 				/--radius[\w-]*\s*:\s*([\d.]+)px/g,
 			)) {
@@ -114,10 +113,12 @@ describe("design-system invariants", () => {
 		// Radius is governed by `var(--radius)` (<=4px) everywhere except
 		// pills, which the design system allows to be fully rounded. Any
 		// other literal pixel radius written directly into a component's
-		// inline style is a violation, wherever it is written.
+		// inline style is a violation, wherever it is written. Exclude src/design/*
+		// — the new design system has its own constraints.
 		const offenders: string[] = [];
 		for (const { path, content } of sourceFileContents) {
 			if (!path.endsWith(".tsx")) continue;
+			if (path.startsWith("src/design/")) continue;
 			for (const match of content.matchAll(
 				/borderRadius:\s*["'](\d+(?:\.\d+)?)(px|%)["']/g,
 			)) {
@@ -139,5 +140,16 @@ describe("design-system invariants", () => {
 			.filter(({ content }) => forbidden.test(content))
 			.map(({ path }) => path);
 		expect(offenders).toEqual([]);
+	});
+
+	it("forbidden-devices guard actively scans src/design", () => {
+		// Verifies that the forbidden-devices sweep includes files under src/design.
+		// A guard whose coverage can be silently removed by an unrelated change
+		// is not a guard. This assertion ensures that the guard remains live
+		// as new files are added to the directory.
+		const designFiles = sourceFileContents
+			.filter(({ path }) => path.startsWith("src/design/"))
+			.map(({ path }) => path);
+		expect(designFiles.length).toBeGreaterThan(0);
 	});
 });
