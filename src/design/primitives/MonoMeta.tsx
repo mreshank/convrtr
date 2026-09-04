@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 type Props = {
 	children: ReactNode;
-	/** Element to render. Defaults to `span`; use `div` for a block row. */
+	/** Element to render. Defaults to `span`; use `div` for a block row, or `p` for a paragraph. */
 	as?: "span" | "div" | "p";
 };
 
