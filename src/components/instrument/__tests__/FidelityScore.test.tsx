@@ -7,6 +7,19 @@ function ringPath(container: HTMLElement): SVGPathElement | null {
 	return container.querySelector("path");
 }
 
+/**
+ * Counts elliptical-arc ("A") commands in a path's `d` attribute.
+ *
+ * A single arc spanning 360 degrees has identical start and end points,
+ * which real SVG renderers treat as a no-op and draw nothing — but the
+ * string still contains the letter "A", so a presence check (`toContain`)
+ * cannot tell a correct two-half-arc full sweep from a broken single-arc
+ * one. Counting is the only way to see the difference.
+ */
+function arcCommandCount(d: string): number {
+	return d.match(/A /g)?.length ?? 0;
+}
+
 describe("FidelityScore", () => {
 	it("renders the rounded score as text", () => {
 		render(<FidelityScore score={92.4} label="VISUALLY LOSSLESS" />);
@@ -90,11 +103,67 @@ describe("monochrome state encoding", () => {
 		const { container: full } = render(
 			<FidelityScore score={100} label="LOSSLESS" />,
 		);
-		expect(full.querySelector("path")?.getAttribute("d")).toContain("A");
+		const fullD = full.querySelector("path")?.getAttribute("d") ?? "";
+		// Not `.toContain("A")`: a single 360-degree arc also contains the
+		// letter "A" and would pass that check while rendering an empty ring
+		// in a real browser (identical start/end points are a no-op there).
+		// A full sweep is only correct if it is drawn as two half-arcs.
+		expect(arcCommandCount(fullD)).toBe(2);
 
 		const { container: empty } = render(
 			<FidelityScore score={0} label="LOSSY · Q0" />,
 		);
 		expect(empty.querySelector("path")).toBeNull();
+	});
+
+	it("sweeps clockwise from twelve o'clock, pinned by hand at a quarter turn", () => {
+		// Values below are derived from the component's own documented
+		// contract (default size 36, strokeWidth = size*0.1, radius =
+		// size/2 - strokeWidth/2 - 1), not copied from whatever the
+		// component currently prints — a copied value would pin a sign or
+		// sweep-flag bug in place instead of catching it.
+		//
+		// size 36 -> strokeWidth 3.6 -> radius 18 - 1.8 - 1 = 15.2, center 18.
+		// A quarter sweep (score 25) runs clockwise from twelve o'clock,
+		// (18, 18-15.2) = (18, 2.8), to three o'clock, (18+15.2, 18) =
+		// (33.2, 18). Nothing before this test inspected the sweep flag or
+		// either endpoint, so flipping the sign of the sine term or the
+		// sweep flag from 1 to 0 — which reverses the ring — passed every
+		// existing assertion.
+		const center = 18;
+		const radius = 15.2;
+		const expectedStartX = center;
+		const expectedStartY = center - radius; // 2.8, modulo float noise
+		const expectedEndX = center + radius; // 33.2
+		const expectedEndY = center; // 18
+
+		const { container } = render(<FidelityScore score={25} label="Q25" />);
+		const d = ringPath(container)?.getAttribute("d") ?? "";
+
+		expect(arcCommandCount(d)).toBe(1);
+
+		const match = d.match(
+			/^M ([\d.]+) ([\d.]+) A ([\d.]+) ([\d.]+) 0 (\d) (\d) ([\d.]+) ([\d.]+)$/,
+		);
+		if (match === null) {
+			throw new Error(`path "d" did not match the expected arc shape: ${d}`);
+		}
+		const [, startX, startY, rx, ry, largeArc, sweep, endX, endY] = match;
+
+		expect(Number(startX)).toBe(expectedStartX);
+		// The unrounded start point can carry IEEE-754 subtraction noise
+		// (e.g. 2.8000000000000007), which is a separate, already-recorded
+		// concern — toBeCloseTo tolerates that noise without hiding a real
+		// sign or magnitude error.
+		expect(Number(startY)).toBeCloseTo(expectedStartY, 9);
+		expect(Number(rx)).toBe(radius);
+		expect(Number(ry)).toBe(radius);
+		expect(largeArc).toBe("0");
+		// The bit that a presence-only check on "A" could never catch: drawn
+		// backwards, this same quarter sweep would still produce one arc
+		// command and a plausible-looking endpoint, just on the wrong side.
+		expect(sweep).toBe("1");
+		expect(Number(endX)).toBe(expectedEndX);
+		expect(Number(endY)).toBe(expectedEndY);
 	});
 });
