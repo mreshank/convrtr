@@ -40,7 +40,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 					<Link
 						href="/blog"
 						className="text-[13px] hover:underline"
-						style={{ color: "var(--text-muted)" }}
+						style={{ color: "var(--ink-muted)" }}
 					>
 						Blog
 					</Link>

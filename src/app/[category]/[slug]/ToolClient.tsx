@@ -648,7 +648,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 				<div
 					className="flex flex-col gap-6 border p-6"
 					style={{
-						borderColor: "var(--hairline)",
+						borderColor: "var(--rule)",
 						borderRadius: "var(--radius)",
 					}}
 				>
@@ -666,8 +666,8 @@ export function ToolClient({ toolId }: { toolId: string }) {
 							disabled={converting}
 							className="mono border px-3 py-1 text-[11px]"
 							style={{
-								color: "var(--text-muted)",
-								borderColor: "var(--hairline)",
+								color: "var(--ink-muted)",
+								borderColor: "var(--rule)",
 								borderRadius: "var(--radius)",
 								background: "transparent",
 							}}
@@ -695,8 +695,8 @@ export function ToolClient({ toolId }: { toolId: string }) {
 								onClick={cancel}
 								className="mono self-end border px-4 py-2 text-[12px]"
 								style={{
-									color: "var(--text-primary)",
-									borderColor: "var(--text-primary)",
+									color: "var(--ink)",
+									borderColor: "var(--ink)",
 									borderStyle: "dashed",
 								}}
 							>
@@ -727,8 +727,8 @@ export function ToolClient({ toolId }: { toolId: string }) {
 								onClick={save}
 								className="mono border px-4 py-2 text-[12px]"
 								style={{
-									color: "var(--text-primary)",
-									borderColor: "var(--text-primary)",
+									color: "var(--ink)",
+									borderColor: "var(--ink)",
 								}}
 							>
 								SAVE
@@ -752,10 +752,10 @@ export function ToolClient({ toolId }: { toolId: string }) {
 							data-testid="notices"
 							className="flex flex-col gap-2 border p-4 text-[13px]"
 							style={{
-								borderColor: "var(--text-primary)",
+								borderColor: "var(--ink)",
 								borderStyle: "dashed",
 								borderRadius: "var(--radius)",
-								color: "var(--text-primary)",
+								color: "var(--ink)",
 							}}
 						>
 							{notices.map((notice) => (
@@ -781,8 +781,8 @@ export function ToolClient({ toolId }: { toolId: string }) {
 							onClick={convert}
 							className="mono self-end border px-4 py-2 text-[12px]"
 							style={{
-								color: "var(--text-primary)",
-								borderColor: "var(--text-primary)",
+								color: "var(--ink)",
+								borderColor: "var(--ink)",
 							}}
 						>
 							CONVERT
@@ -795,7 +795,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 				<div
 					className="flex flex-col gap-6 border p-6"
 					style={{
-						borderColor: "var(--hairline)",
+						borderColor: "var(--rule)",
 						borderRadius: "var(--radius)",
 					}}
 				>
@@ -815,8 +815,8 @@ export function ToolClient({ toolId }: { toolId: string }) {
 							disabled={batchConverting}
 							className="mono border px-3 py-1 text-[11px]"
 							style={{
-								color: "var(--text-muted)",
-								borderColor: "var(--hairline)",
+								color: "var(--ink-muted)",
+								borderColor: "var(--rule)",
 								borderRadius: "var(--radius)",
 								background: "transparent",
 							}}
@@ -846,8 +846,8 @@ export function ToolClient({ toolId }: { toolId: string }) {
 								onClick={batchCancel}
 								className="mono self-end border px-4 py-2 text-[12px]"
 								style={{
-									color: "var(--text-primary)",
-									borderColor: "var(--text-primary)",
+									color: "var(--ink)",
+									borderColor: "var(--ink)",
 									borderStyle: "dashed",
 								}}
 							>
@@ -864,8 +864,8 @@ export function ToolClient({ toolId }: { toolId: string }) {
 									onClick={saveAllZip}
 									className="mono border px-4 py-2 text-[12px]"
 									style={{
-										color: "var(--text-primary)",
-										borderColor: "var(--text-primary)",
+										color: "var(--ink)",
+										borderColor: "var(--ink)",
 									}}
 								>
 									SAVE ALL (ZIP)
@@ -876,8 +876,8 @@ export function ToolClient({ toolId }: { toolId: string }) {
 								onClick={batchConvert}
 								className="mono border px-4 py-2 text-[12px]"
 								style={{
-									color: "var(--text-primary)",
-									borderColor: "var(--text-primary)",
+									color: "var(--ink)",
+									borderColor: "var(--ink)",
 								}}
 							>
 								CONVERT
@@ -887,7 +887,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 				</div>
 			)}
 
-			<span className="mono text-[11px]" style={{ color: "var(--text-muted)" }}>
+			<span className="mono text-[11px]" style={{ color: "var(--ink-muted)" }}>
 				LOCAL ONLY {"·"} 0 BYTES UPLOADED {"·"} WORKS OFFLINE
 			</span>
 		</main>

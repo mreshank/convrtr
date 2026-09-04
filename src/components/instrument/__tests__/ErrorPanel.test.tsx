@@ -151,32 +151,32 @@ describe("monochrome state encoding", () => {
 		// cancel e2e depends on nothing rendering for USER_CANCELLED — and a
 		// positional selector breaks the moment anything wraps the panel.
 		const panel = screen.getByTestId("error");
-		expect(panel.style.background).toBe("var(--text-primary)");
-		expect(panel.style.color).toBe("var(--surface-base)");
+		expect(panel.style.background).toBe("var(--ink)");
+		expect(panel.style.color).toBe("var(--ground)");
 		// The `border-l` utility sets no colour of its own; a browser would
 		// resolve it via Tailwind's compiled preflight (`border-color:
 		// currentcolor`), but this suite runs happy-dom with no stylesheet
 		// loaded — that resolution never happens here. Setting it explicitly
 		// is what makes the left edge assertable at all, rather than resting
 		// on a framework default this project's unit tests cannot see.
-		expect(panel.style.borderLeftColor).toBe("var(--surface-base)");
+		expect(panel.style.borderLeftColor).toBe("var(--ground)");
 	});
 
 	it("keeps the muted tier off the page-ground token", () => {
 		// happy-dom stores whatever string an inline style sets; it has no
 		// layout or paint engine, so it cannot compute actual rendered colour
 		// or contrast. These assertions can only prove which *token* a node
-		// requests — that a future edit reintroducing `--text-muted` (tuned
+		// requests — that a future edit reintroducing `--ink-muted` (tuned
 		// for the page ground, unreadable on this inverted one) would turn a
 		// `toBe` here red. They do not, and cannot, prove legibility; that
 		// case was made by hand in the task report against the resolved hex
-		// values in src/styles/tokens.css.
+		// values in src/design/tokens.css.
 		render(<ErrorPanel code="ENGINE_FAILURE" onDismiss={() => {}} />);
 		const dismiss = screen.getByRole("button", { name: /dismiss/i });
-		expect(dismiss.style.color).toBe("var(--surface-base)");
+		expect(dismiss.style.color).toBe("var(--ground)");
 
 		const action = screen.getByText(/quality setting/i);
-		expect(action.style.color).toBe("var(--surface-base)");
+		expect(action.style.color).toBe("var(--ground)");
 	});
 
 	it("references no semantic colour token", () => {

@@ -21,24 +21,24 @@ export function HeavyDownloadGate({ megabytes, formatLabel, onAccept }: Props) {
 			data-testid="download-gate"
 			className="flex flex-col gap-4 border p-6"
 			style={{
-				borderColor: "var(--text-primary)",
+				borderColor: "var(--ink)",
 				borderStyle: "dashed",
 				borderRadius: "var(--radius)",
 			}}
 		>
 			<span
 				className="mono text-[11px] tracking-[0.08em]"
-				style={{ color: "var(--text-muted)" }}
+				style={{ color: "var(--ink-muted)" }}
 			>
 				ONE-TIME DOWNLOAD
 			</span>
-			<p className="text-[13px]" style={{ color: "var(--text-primary)" }}>
+			<p className="text-[13px]" style={{ color: "var(--ink)" }}>
 				{formatLabel} is an older format that no browser can read on its own, so
 				converting it needs a full copy of ffmpeg — about {megabytes}MB. It
 				downloads once and your browser keeps it; every conversion after this
 				one starts immediately.
 			</p>
-			<p className="text-[13px]" style={{ color: "var(--text-muted)" }}>
+			<p className="text-[13px]" style={{ color: "var(--ink-muted)" }}>
 				Your file is still never uploaded. The download is the converter coming
 				to your device, not your video leaving it.
 			</p>
@@ -47,8 +47,8 @@ export function HeavyDownloadGate({ megabytes, formatLabel, onAccept }: Props) {
 				onClick={onAccept}
 				className="mono self-start border px-4 py-2 text-[12px]"
 				style={{
-					color: "var(--text-primary)",
-					borderColor: "var(--text-primary)",
+					color: "var(--ink)",
+					borderColor: "var(--ink)",
 				}}
 			>
 				DOWNLOAD AND CONVERT

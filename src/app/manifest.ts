@@ -9,8 +9,8 @@ import type { MetadataRoute } from "next";
 // reference it.
 export const dynamic = "force-static";
 
-// Colours are the dark surface/signal tokens from src/styles/tokens.css
-// (--surface-base / --signal, dark variant) — the same pairing icon.svg
+// Colours are the dark ground/ink tokens from src/design/tokens.css
+// (--ground / --ink, dark variant) — the same pairing icon.svg
 // draws the app mark in, so the install/splash experience matches the mark
 // rather than the light theme the OS might currently be in.
 export default function manifest(): MetadataRoute.Manifest {

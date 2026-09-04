@@ -102,26 +102,26 @@ export function ErrorPanel({
 			role="alert"
 			className="flex flex-col gap-3 border-l p-4"
 			style={{
-				background: "var(--text-primary)",
-				color: "var(--surface-base)",
-				borderLeftColor: "var(--surface-base)",
+				background: "var(--ink)",
+				color: "var(--ground)",
+				borderLeftColor: "var(--ground)",
 				borderRadius: "var(--radius)",
 			}}
 		>
 			<span
 				className="mono text-[11px] tracking-[0.08em]"
-				style={{ color: "var(--surface-base)" }}
+				style={{ color: "var(--ground)" }}
 			>
 				{copy.title}
 			</span>
 
-			<span className="text-[13px]" style={{ color: "var(--surface-base)" }}>
+			<span className="text-[13px]" style={{ color: "var(--ground)" }}>
 				{copy.explain(inputFormat)}
 			</span>
 
 			<span
 				className="text-[13px]"
-				style={{ color: "var(--surface-base)", opacity: 0.7 }}
+				style={{ color: "var(--ground)", opacity: 0.7 }}
 			>
 				{copy.action}
 			</span>
@@ -132,7 +132,7 @@ export function ErrorPanel({
 						type="button"
 						onClick={onRetry}
 						className="mono text-[11px] tracking-[0.08em]"
-						style={{ color: "var(--surface-base)", background: "transparent" }}
+						style={{ color: "var(--ground)", background: "transparent" }}
 					>
 						RETRY
 					</button>
@@ -143,7 +143,7 @@ export function ErrorPanel({
 						onClick={onDismiss}
 						className="mono text-[11px] tracking-[0.08em]"
 						style={{
-							color: "var(--surface-base)",
+							color: "var(--ground)",
 							opacity: 0.7,
 							background: "transparent",
 						}}
@@ -156,7 +156,7 @@ export function ErrorPanel({
 			{detail && (
 				<div
 					className="flex flex-col gap-2 border-t pt-3"
-					style={{ borderColor: "var(--surface-base)" }}
+					style={{ borderColor: "var(--ground)" }}
 				>
 					<button
 						type="button"
@@ -164,7 +164,7 @@ export function ErrorPanel({
 						aria-expanded={detailOpen}
 						className="mono self-start text-[11px] tracking-[0.08em]"
 						style={{
-							color: "var(--surface-base)",
+							color: "var(--ground)",
 							opacity: 0.7,
 							background: "transparent",
 						}}
@@ -174,7 +174,7 @@ export function ErrorPanel({
 					{detailOpen && (
 						<span
 							className="mono text-[12px]"
-							style={{ color: "var(--surface-base)", opacity: 0.7 }}
+							style={{ color: "var(--ground)", opacity: 0.7 }}
 						>
 							{detail}
 						</span>

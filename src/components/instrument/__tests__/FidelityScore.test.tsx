@@ -53,10 +53,10 @@ describe("monochrome state encoding", () => {
 			return ringPath(container)?.getAttribute("stroke");
 		});
 		expect(strokes).toEqual([
-			"var(--text-primary)",
-			"var(--text-primary)",
-			"var(--text-primary)",
-			"var(--text-primary)",
+			"var(--ink)",
+			"var(--ink)",
+			"var(--ink)",
+			"var(--ink)",
 		]);
 	});
 

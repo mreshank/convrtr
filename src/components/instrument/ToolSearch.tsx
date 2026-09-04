@@ -60,7 +60,7 @@ export function ToolSearch({ rows }: { rows: ToolRow[] }) {
 				<label
 					htmlFor={inputId}
 					className="mono text-[11px] tracking-[0.08em]"
-					style={{ color: "var(--text-muted)" }}
+					style={{ color: "var(--ink-muted)" }}
 				>
 					SEARCH TOOLS
 				</label>
@@ -73,14 +73,14 @@ export function ToolSearch({ rows }: { rows: ToolRow[] }) {
 					className="mono border px-3 py-2 text-[13px]"
 					style={{
 						background: "transparent",
-						color: "var(--text-primary)",
-						borderColor: "var(--hairline)",
+						color: "var(--ink)",
+						borderColor: "var(--rule)",
 						borderRadius: "var(--radius)",
 					}}
 				/>
 			</div>
 
-			<span className="mono text-[11px]" style={{ color: "var(--text-muted)" }}>
+			<span className="mono text-[11px]" style={{ color: "var(--ink-muted)" }}>
 				{filtered.length} {filtered.length === 1 ? "TOOL" : "TOOLS"}
 			</span>
 
@@ -89,7 +89,7 @@ export function ToolSearch({ rows }: { rows: ToolRow[] }) {
 			)}
 
 			{filtered.length === 0 && trimmedQuery && (
-				<p className="text-[13px]" style={{ color: "var(--text-muted)" }}>
+				<p className="text-[13px]" style={{ color: "var(--ink-muted)" }}>
 					No tools matched {'"'}
 					{trimmedQuery}
 					{'"'}.
@@ -97,7 +97,7 @@ export function ToolSearch({ rows }: { rows: ToolRow[] }) {
 			)}
 
 			{filtered.length === 0 && !trimmedQuery && (
-				<p className="text-[13px]" style={{ color: "var(--text-muted)" }}>
+				<p className="text-[13px]" style={{ color: "var(--ink-muted)" }}>
 					No tools available yet.
 				</p>
 			)}

@@ -61,7 +61,7 @@ export default async function BlogPostPage({
 			<main className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-8">
 				<div className="flex flex-col gap-2">
 					<h1 className="text-[28px] tracking-[-0.02em]">{post.title}</h1>
-					<p className="text-[13px]" style={{ color: "var(--text-muted)" }}>
+					<p className="text-[13px]" style={{ color: "var(--ink-muted)" }}>
 						{post.publishedAt}
 					</p>
 				</div>

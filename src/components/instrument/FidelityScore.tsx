@@ -93,14 +93,14 @@ export function FidelityScore({ score, label, size = 36 }: Props) {
 					cy={center}
 					r={radius}
 					fill="none"
-					stroke="var(--hairline)"
+					stroke="var(--rule)"
 					strokeWidth={strokeWidth}
 				/>
 				{d && (
 					<path
 						d={d}
 						fill="none"
-						stroke="var(--text-primary)"
+						stroke="var(--ink)"
 						strokeWidth={strokeWidth}
 						strokeLinecap={clamped < LOSSY_THRESHOLD ? "butt" : "round"}
 						{...(clamped < LOSSY_THRESHOLD
@@ -112,7 +112,7 @@ export function FidelityScore({ score, label, size = 36 }: Props) {
 			<span
 				aria-hidden="true"
 				className="mono relative"
-				style={{ fontSize, color: "var(--text-primary)" }}
+				style={{ fontSize, color: "var(--ink)" }}
 			>
 				{rounded}
 			</span>

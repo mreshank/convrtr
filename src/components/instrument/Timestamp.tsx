@@ -25,7 +25,7 @@ export function Timestamp({ label, duration, value, onChange }: Props) {
 				<span
 					data-testid="timestamp-readout"
 					className="mono text-[11px]"
-					style={{ color: "var(--text-muted)" }}
+					style={{ color: "var(--ink-muted)" }}
 				>
 					{formatTimecode(value)} / {formatTimecode(duration)}
 				</span>

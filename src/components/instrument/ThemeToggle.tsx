@@ -69,8 +69,8 @@ export function ThemeToggle() {
 						onClick={() => choose(option.id)}
 						className="mono border px-2 py-1 text-[11px] tracking-[0.08em]"
 						style={{
-							color: selected ? "var(--text-primary)" : "var(--text-muted)",
-							borderColor: selected ? "var(--text-primary)" : "var(--hairline)",
+							color: selected ? "var(--ink)" : "var(--ink-muted)",
+							borderColor: selected ? "var(--ink)" : "var(--rule)",
 							borderRadius: "var(--radius)",
 							background: "transparent",
 						}}

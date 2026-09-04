@@ -11,13 +11,13 @@ export function ProgressBar({ ratio, phase, elapsedSeconds }: Props) {
 				aria-valuemin={0}
 				aria-valuemax={100}
 				className="h-[2px] w-full"
-				style={{ background: "var(--hairline)" }}
+				style={{ background: "var(--rule)" }}
 			>
 				<div
 					className="h-full"
 					style={{
 						width: `${ratio * 100}%`,
-						background: "var(--text-primary)",
+						background: "var(--ink)",
 					}}
 				/>
 			</div>

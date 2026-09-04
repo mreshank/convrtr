@@ -16,13 +16,13 @@ export function ComparisonTable({
 				<tr>
 					<th
 						className="border-b p-2 text-left"
-						style={{ borderColor: "var(--hairline)" }}
+						style={{ borderColor: "var(--rule)" }}
 					/>
 					{columns.map((column) => (
 						<th
 							key={column}
 							className="border-b p-2 text-left"
-							style={{ borderColor: "var(--hairline)" }}
+							style={{ borderColor: "var(--rule)" }}
 						>
 							{column}
 						</th>
@@ -34,7 +34,7 @@ export function ComparisonTable({
 					<tr key={row.label}>
 						<th
 							className="border-b p-2 text-left font-normal"
-							style={{ borderColor: "var(--hairline)" }}
+							style={{ borderColor: "var(--rule)" }}
 						>
 							{row.label}
 						</th>
@@ -43,7 +43,7 @@ export function ComparisonTable({
 								// biome-ignore lint/suspicious/noArrayIndexKey: values are positionally paired with columns, not independently identifiable
 								key={`${row.label}-${i}`}
 								className="border-b p-2"
-								style={{ borderColor: "var(--hairline)" }}
+								style={{ borderColor: "var(--rule)" }}
 							>
 								{value}
 							</td>

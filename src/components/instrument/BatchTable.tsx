@@ -92,18 +92,18 @@ function statusLabel(row: BatchRowState): string {
 function statusColor(row: BatchRowState): string {
 	switch (row.status) {
 		case "done":
-			return "var(--text-primary)";
+			return "var(--ink)";
 		case "error":
-			return "var(--text-primary)";
+			return "var(--ink)";
 		case "converting":
-			return "var(--text-primary)";
+			return "var(--ink)";
 		default:
-			return "var(--text-muted)";
+			return "var(--ink-muted)";
 	}
 }
 
 const cellStyle = {
-	borderColor: "var(--hairline)",
+	borderColor: "var(--rule)",
 } as const;
 
 /**
@@ -118,7 +118,7 @@ export function BatchTable({ rows, fidelity, onSaveRow, inputFormat }: Props) {
 		<table
 			data-testid="batch-table"
 			className="mono w-full border-collapse text-[12px]"
-			style={{ borderColor: "var(--hairline)" }}
+			style={{ borderColor: "var(--rule)" }}
 		>
 			<caption className="sr-only">Batch conversion results</caption>
 			<thead>
@@ -126,49 +126,49 @@ export function BatchTable({ rows, fidelity, onSaveRow, inputFormat }: Props) {
 					<th
 						scope="col"
 						className="border-b px-2 py-2 text-left font-normal"
-						style={{ ...cellStyle, color: "var(--text-muted)" }}
+						style={{ ...cellStyle, color: "var(--ink-muted)" }}
 					>
 						FILE
 					</th>
 					<th
 						scope="col"
 						className="border-b px-2 py-2 text-right font-normal"
-						style={{ ...cellStyle, color: "var(--text-muted)" }}
+						style={{ ...cellStyle, color: "var(--ink-muted)" }}
 					>
 						IN
 					</th>
 					<th
 						scope="col"
 						className="border-b px-2 py-2 text-right font-normal"
-						style={{ ...cellStyle, color: "var(--text-muted)" }}
+						style={{ ...cellStyle, color: "var(--ink-muted)" }}
 					>
 						OUT
 					</th>
 					<th
 						scope="col"
 						className="border-b px-2 py-2 text-right font-normal"
-						style={{ ...cellStyle, color: "var(--text-muted)" }}
+						style={{ ...cellStyle, color: "var(--ink-muted)" }}
 					>
 						DELTA
 					</th>
 					<th
 						scope="col"
 						className="border-b px-2 py-2 text-center font-normal"
-						style={{ ...cellStyle, color: "var(--text-muted)" }}
+						style={{ ...cellStyle, color: "var(--ink-muted)" }}
 					>
 						FIDELITY
 					</th>
 					<th
 						scope="col"
 						className="border-b px-2 py-2 text-left font-normal"
-						style={{ ...cellStyle, color: "var(--text-muted)" }}
+						style={{ ...cellStyle, color: "var(--ink-muted)" }}
 					>
 						STATUS
 					</th>
 					<th
 						scope="col"
 						className="border-b px-2 py-2 text-right font-normal"
-						style={{ ...cellStyle, color: "var(--text-muted)" }}
+						style={{ ...cellStyle, color: "var(--ink-muted)" }}
 					>
 						<span className="sr-only">Actions</span>
 					</th>
@@ -186,7 +186,7 @@ export function BatchTable({ rows, fidelity, onSaveRow, inputFormat }: Props) {
 									row.status === "error"
 										? {
 												...cellStyle,
-												borderLeftColor: "var(--text-primary)",
+												borderLeftColor: "var(--ink)",
 												borderLeftStyle: "dashed",
 											}
 										: cellStyle
@@ -237,8 +237,8 @@ export function BatchTable({ rows, fidelity, onSaveRow, inputFormat }: Props) {
 										aria-label={`Save ${row.name}`}
 										className="mono border px-2 py-1 text-[11px]"
 										style={{
-											color: "var(--text-primary)",
-											borderColor: "var(--text-primary)",
+											color: "var(--ink)",
+											borderColor: "var(--ink)",
 											borderRadius: "var(--radius)",
 											background: "transparent",
 										}}

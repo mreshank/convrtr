@@ -1,7 +1,30 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const css = readFileSync("src/design/tokens.css", "utf8");
+
+/**
+ * Design-system guards have to look at every file that could carry a
+ * violation, not just the token file — components in this codebase style
+ * themselves with inline `style={{ ... }}` in `.tsx`, which is exactly where
+ * a stray gradient or an off-system radius gets written and where a
+ * token-file-only check would never see it. Copied verbatim from
+ * `design-system.test.ts` rather than shared, so each guard file stays
+ * independently readable.
+ */
+function collectSourceFiles(root: string, extensions: string[]): string[] {
+	const out: string[] = [];
+	for (const entry of readdirSync(root)) {
+		const full = join(root, entry);
+		if (statSync(full).isDirectory()) {
+			out.push(...collectSourceFiles(full, extensions));
+			continue;
+		}
+		if (extensions.some((ext) => entry.endsWith(ext))) out.push(full);
+	}
+	return out;
+}
 
 /**
  * The dark palette is declared twice — once under `:root[data-theme="dark"]`
@@ -132,5 +155,79 @@ describe("required tokens", () => {
 
 	it("caps the rule at 1px", () => {
 		expect(css).toMatch(/--rule-width:\s*1px/);
+	});
+});
+
+describe("legacy token vocabulary", () => {
+	const LEGACY = [
+		"--surface-base",
+		"--surface-raised",
+		"--surface-overlay",
+		"--text-primary",
+		"--text-muted",
+		"--hairline",
+		"--hairline-width",
+		"--signal",
+		"--lossy",
+		"--error",
+	];
+
+	// The Instrument-era names describe surfaces and text; DESIGN.md's system
+	// is ground and ink. Carrying both vocabularies would leave every file
+	// written from here on guessing which one applies.
+	it.each(LEGACY)("no file in src still references %s", (token) => {
+		const offenders = collectSourceFiles("src", [".tsx", ".ts", ".css"])
+			.filter((path) => !path.includes("__tests__"))
+			.filter((path) => readFileSync(path, "utf8").includes(`${token}`));
+		expect(offenders).toEqual([]);
+	});
+});
+
+/**
+ * An undefined CSS custom property does not warn, does not throw, and does
+ * not fail a build — the declaration simply vanishes. A missed rename during
+ * the switchover from `src/styles/tokens.css` to this file would produce
+ * exactly that: text with no colour, a background with none, and every
+ * automated check (typecheck, lint, build) staying green regardless.
+ *
+ * This guard makes that failure mode mechanical instead of visual: it reads
+ * every `var(--name)` reference under `src` and asserts the name is
+ * declared somewhere in this token file. `--font-sans` and `--font-mono`
+ * are supplied by `next/font` in `layout.tsx`, not by this file, so they
+ * are legitimately referenced without being declared here and are
+ * allowlisted below.
+ */
+describe("no dangling custom property references", () => {
+	const ALLOWLISTED = new Set(["--font-sans", "--font-mono"]);
+
+	function declaredNames(source: string): Set<string> {
+		const names = new Set<string>();
+		for (const match of source.matchAll(/--([\w-]+)\s*:/g)) {
+			const name = match[1];
+			if (name) names.add(`--${name}`);
+		}
+		return names;
+	}
+
+	const declared = declaredNames(css);
+
+	it("references every var(--name) it uses against a name declared in tokens.css", () => {
+		const offenders: string[] = [];
+		for (const path of collectSourceFiles("src", [".tsx", ".css"])) {
+			if (path.includes("__tests__")) continue;
+			const source = readFileSync(path, "utf8");
+			for (const match of source.matchAll(/var\((--[\w-]+)/g)) {
+				const name = match[1];
+				if (!name) continue;
+				if (ALLOWLISTED.has(name)) continue;
+				if (!declared.has(name)) {
+					offenders.push(`${path}: var(${name})`);
+				}
+			}
+		}
+		expect(
+			offenders,
+			`Referenced but not declared in src/design/tokens.css:\n${offenders.join("\n")}`,
+		).toEqual([]);
 	});
 });

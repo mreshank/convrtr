@@ -11,13 +11,13 @@ export function Callout({ kind, children }: CalloutProps) {
 			role="note"
 			className="flex flex-col gap-1 rounded-[var(--radius)] border p-4 text-[14px]"
 			style={{
-				borderColor: "var(--text-primary)",
+				borderColor: "var(--ink)",
 				borderStyle: kind === "warning" ? "dashed" : "solid",
 			}}
 		>
 			<p
 				className="text-[12px] uppercase tracking-[0.08em]"
-				style={{ color: "var(--text-muted)" }}
+				style={{ color: "var(--ink-muted)" }}
 			>
 				{KIND_LABEL[kind]}
 			</p>
