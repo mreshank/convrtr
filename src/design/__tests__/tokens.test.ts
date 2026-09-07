@@ -245,6 +245,17 @@ describe("required tokens", () => {
 		"--max-width",
 		"--grid-gap",
 		"--navbar-height",
+		"--display-size",
+		"--display-tracking",
+		"--display-leading",
+		"--headline-size",
+		"--headline-tracking",
+		"--body-size",
+		"--body-leading",
+		"--label-size",
+		"--label-tracking",
+		"--label-weight",
+		"--mono-size",
 	];
 
 	it.each(required)("declares %s", (token) => {
@@ -258,6 +269,39 @@ describe("required tokens", () => {
 
 	it("caps the rule at 1px", () => {
 		expect(css).toMatch(/--rule-width:\s*1px/);
+	});
+});
+
+/**
+ * `.mono` renders real data — FileReadout's filename readout, byte counts,
+ * timestamps — never a label. Uppercasing it (or otherwise re-tracking it)
+ * would display something other than the user's actual filename, which
+ * makes `text-transform` and `letter-spacing` on this rule a correctness
+ * property, not a style choice.
+ *
+ * Nothing else catches a regression here. `MonoMeta.test.tsx` regexes the
+ * React `className` string, which only sees a hand-rolled utility class,
+ * not a change to the `.mono` rule itself; `readouts.test.tsx` asserts
+ * `textContent`, and `text-transform` is a rendering transform that never
+ * touches the DOM's text. `.meta`, `.mono`'s sibling, legitimately carries
+ * neither property either (v2's `label-mono` has no uppercase or tracking),
+ * so a plain substring search of the file could not tell the two classes
+ * apart — this isolates `.mono`'s own rule body specifically.
+ */
+describe(".mono has no uppercase or tracking", () => {
+	const monoRule = css.match(/\.mono\s*\{([^}]*)\}/);
+	const monoBody = monoRule?.[1] ?? "";
+
+	it("finds the .mono rule to test against", () => {
+		expect(monoRule).not.toBeNull();
+	});
+
+	it("declares no text-transform", () => {
+		expect(monoBody).not.toMatch(/text-transform/);
+	});
+
+	it("declares no letter-spacing", () => {
+		expect(monoBody).not.toMatch(/letter-spacing/);
 	});
 });
 

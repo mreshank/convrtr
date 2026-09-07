@@ -76,13 +76,29 @@
 	--dur-state: 300ms;
 	--dur-marquee: 30s;
 
-	--display-size: 12vw;
-	--tracking-display: -0.05em;
-	--leading-display: 0.9;
-	--tracking-body: -0.02em;
-	--leading-body: 1.5;
-	--mono-size: 14px;
-	--mono-tracking: 0.1em;
+	/*
+	 * v2's type. Display and headline are weight 400 — the previous system
+	 * used 700, and this is the most visible typographic difference.
+	 *
+	 * Both --display-size and --headline-size are clamps rather than v2's
+	 * bare 68px (`DESIGN.v2.md:16-21`) and 48px (`DESIGN.v2.md:22-27`): v2
+	 * states only a desktop value for each and is silent on smaller
+	 * viewports, and a fixed px size at either scale overflows a 375px
+	 * screen. --display-size reaches 68px at roughly 850px; --headline-size
+	 * reaches 48px at roughly 800px; both degrade below their threshold.
+	 * Recorded as extensions, not restatements.
+	 */
+	--display-size: clamp(40px, 8vw, 68px);
+	--display-tracking: -2.7px;
+	--display-leading: 1.13;
+	--headline-size: clamp(32px, 6vw, 48px);
+	--headline-tracking: -1.9px;
+	--body-size: 16px;
+	--body-leading: 1.5;
+	--label-size: 16px;
+	--label-tracking: -0.4px;
+	--label-weight: 500;
+	--mono-size: 13px;
 }
 
 /*
@@ -94,8 +110,13 @@
 body {
 	background: var(--ground);
 	color: var(--ink);
-	letter-spacing: var(--tracking-body);
-	line-height: var(--leading-body);
+	/*
+	 * No letter-spacing here: v2's body-md specifies fontSize, fontWeight
+	 * and lineHeight only (`DESIGN.v2.md:28-32`), with no letterSpacing.
+	 * The removed body-tracking token had no v2-equivalent to repoint to,
+	 * so it is dropped rather than carried forward under a new name.
+	 */
+	line-height: var(--body-leading);
 }
 
 /*
@@ -106,8 +127,14 @@ body {
  * filename with this class, and uppercasing it would misreport the file
  * they dropped.
  *
- * `.meta` is DESIGN.md's metadata voice — the labels, categories and years
- * that carry its uppercase, 0.1em-tracked treatment.
+ * `.meta` is v2's `label-mono` (`DESIGN.v2.md:39-43`): GeistMono, 13px,
+ * weight 400, line-height 1.5 — no uppercase, no letter-spacing. DESIGN.md's
+ * uppercase-plus-tracking metadata voice does not survive into v2; v2 puts
+ * eyebrow labels in Inter `label-md` instead and reserves mono for code
+ * panels, terminal timestamps and the CTA reading a shell command. `.meta`
+ * still exists separately from `.mono` only so a labeled value can carry the
+ * label-mono size without risking the uppercasing `.mono` must never apply
+ * to real data.
  */
 .mono {
 	font-family: var(--font-mono);
@@ -118,6 +145,4 @@ body {
 	font-family: var(--font-mono);
 	font-variant-numeric: tabular-nums;
 	font-size: var(--mono-size);
-	text-transform: uppercase;
-	letter-spacing: var(--mono-tracking);
 }

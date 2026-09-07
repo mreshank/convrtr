@@ -6,8 +6,8 @@ type Props = {
 };
 
 /**
- * DESIGN.md's display type: 12vw, weight 700, -0.05em tracking, 0.9 line
- * height, assembled by a staggered per-character reveal.
+ * v2's display type: clamp(40px, 8vw, 68px), weight 400, -2.7px tracking,
+ * 1.13 line height, assembled by a staggered per-character reveal.
  *
  * The heading element is real and carries the text as its accessible name
  * via Reveal, so the character split never reaches assistive technology.
@@ -19,9 +19,9 @@ export function DisplayHeadline({ text, as: Tag = "h1" }: Props) {
 		<Tag
 			style={{
 				fontSize: "var(--display-size)",
-				fontWeight: 700,
-				letterSpacing: "var(--tracking-display)",
-				lineHeight: "var(--leading-display)",
+				fontWeight: 400,
+				letterSpacing: "var(--display-tracking)",
+				lineHeight: "var(--display-leading)",
 			}}
 		>
 			<Reveal text={text} by="char" />
