@@ -26,13 +26,30 @@ const sourceFileContents = collectSourceFiles("src", [".tsx", ".css"]).map(
 	(path) => ({ path, content: readFileSync(path, "utf8") }),
 );
 
+const tokens = readFileSync("src/design/tokens.css", "utf8");
+
 /**
- * DESIGN.md's radius system is a closed set: 4px for controls, 40px and
- * 100px for cards, and full rounding for pills. A literal 12px written into
- * a component is off-system — the kind of drift that turns a coherent design
- * into an approximate one, one reasonable-looking commit at a time.
+ * v2's radius set, and what each value is permitted for.
+ *
+ *   0    everything structural — cards, panels, grids, media. v2's
+ *        guardrail (DESIGN.v2.md:173) calls 0px structural, its prose
+ *        (:122) specifies "sharp, zero-radius utility components", and
+ *        five card/button components declare 0px: button-mint-fill,
+ *        button-outline-square, card-panel-media-right,
+ *        card-media-top-bleed, card-feature-grid (lines 81, 88, 106,
+ *        110, 114). Frontmatter's `card: "4px"` (:56-57) loses to prose,
+ *        guardrail, and component evidence.
+ *   4    nav-utility controls only. Frontmatter's `control: "4px"` (:56-57)
+ *        is honoured — DESIGN.v2.md:137 corroborates ("nav-utility buttons
+ *        ... 4px radius, 23px tall"). Not panel/feature-grid cards.
+ *   40   marquee cards only, from v2's own Special Components.
+ *   100  marquee cards only, likewise.
+ *   9999 pills and status dots, expressed as --radius-pill or inline as %.
+ *
+ * The pill (9999px) is expressed as a `%` or as `--radius-pill` and is
+ * exempted by the `%` branch below.
  */
-const ALLOWED_RADII = new Set([0, 4, 40, 100]);
+const ALLOWED_RADII = new Set([0, 4, 40, 100, 9999]);
 
 describe("radius system", () => {
 	it("declares no custom radius property outside the system", () => {
@@ -67,6 +84,15 @@ describe("radius system", () => {
 			}
 		}
 		expect(offenders).toEqual([]);
+	});
+
+	it("makes structural radius zero, not four", () => {
+		// v2's frontmatter `card: "4px"` and its prose disagree; the spec
+		// ruled for the prose, the guardrail, and five card/button components.
+		// See the comment above ALLOWED_RADII for the evidence.
+		expect(tokens).toMatch(/--radius:\s*0\s*;/);
+		expect(tokens).toMatch(/--radius-control:\s*4px/);
+		expect(tokens).toMatch(/--radius-pill:\s*9999px/);
 	});
 });
 

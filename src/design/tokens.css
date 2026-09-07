@@ -51,12 +51,16 @@
 	--navbar-height: 64px;
 
 	/*
-	 * Controls keep the 4px the product already uses — DESIGN.md specifies
-	 * card radii and "slight rounding" for grid images, and says nothing
-	 * about form controls. The two card radii are DESIGN.md's asymmetric
-	 * system, applied in rotation across marquee and grid items.
+	 * v2's radius set: 0px for all structural elements (cards, panels, grids,
+	 * media). The guardrail forbids rounded cards, and v2's prose and five
+	 * card/button components specify 0px (see design-system.test.ts above
+	 * ALLOWED_RADII for the list and line numbers). Frontmatter's `control:
+	 * "4px"` is honoured for nav-utility controls. --radius-card and
+	 * --radius-card-lg are for marquee cards only, per v2's Special Components.
 	 */
-	--radius: 4px;
+	--radius: 0;
+	--radius-control: 4px;
+	--radius-pill: 9999px;
 	--radius-card: 40px;
 	--radius-card-lg: 100px;
 
