@@ -313,7 +313,7 @@ one to copy."
 **Interfaces:**
 - Produces: `--radius: 0`, `--radius-control: 4px`, `--radius-pill: 9999px`; `--radius-card`/`--radius-card-lg` unchanged but scoped to the marquee.
 
-v2 is emphatic and its own frontmatter disagrees with it. Prose: *"All corners in this system are 0px except pills and the tiny status dots."* Guardrail: *"Never round the feature-grid or panel cards — 0px radius is structural."* All six of its card and button components: `radius: 0px`. One frontmatter key says `card: 4px`. **The spec ruled 0px on weight of evidence.**
+v2 is emphatic and its own frontmatter disagrees with it. Prose: *"All corners in this system are 0px except pills and the tiny status dots."* Guardrail: *"Never round the feature-grid or panel cards — 0px radius is structural."* All five of its card and button components declare `radius: 0px` (button-mint-fill, button-outline-square, card-panel-media-right, card-media-top-bleed, card-feature-grid). Its radii map holds two keys: `control: "4px"` is honoured as `--radius-control`, `card: "4px"` is overruled. **The spec ruled 0px on weight of evidence.**
 
 Every current `--radius` consumer becomes square, which is correct: they are panels, tables and drop fields, all structural.
 
@@ -330,7 +330,7 @@ Every current `--radius` consumer becomes square, which is correct: they are pan
  *        are 0px except pills and status dots.
  *   4    nav-utility controls only (v2 gives them 23px height, 0/14px
  *        padding). Not cards — v2's frontmatter says `card: 4px`, but its
- *        prose, its guardrail and all six of its card components say 0px.
+ *        prose, its guardrail and all five of its card components say 0px.
  *   40   marquee cards only, from v2's own Special Components.
  *   100  marquee cards only, likewise.
  *
@@ -346,7 +346,7 @@ Append to the `radius system` describe:
 ```ts
 	it("makes structural radius zero, not four", () => {
 		// v2's frontmatter and its prose disagree; the spec ruled for the
-		// prose, the guardrail, and all six of its card components. This
+		// prose, the guardrail, and all five of its card components. This
 		// pins that ruling so a future reader following the frontmatter
 		// fails rather than quietly re-rounding every panel.
 		expect(tokens).toMatch(/--radius:\s*0\s*;/);
@@ -389,8 +389,8 @@ git commit -m "feat(design): make structural radius zero
 
 v2's frontmatter says cards are 4px. Its prose says all corners are 0px
 except pills and status dots, its guardrail calls 0px structural, and
-all six of its card and button components specify 0px. One key against
-prose, a guardrail and six components — the spec ruled for the majority
+all five of its card and button components specify 0px. One key against
+prose, a guardrail and five components — the spec ruled for the majority
 and this pins that ruling, so a future reader following the frontmatter
 fails rather than quietly re-rounding every panel.
 

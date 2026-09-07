@@ -108,10 +108,10 @@ locally with a comment, or does without.
 
 v2's frontmatter says `card: "4px"`. Its Layout section says *"All corners in this system are
 0px except pills and the tiny status dots."* Its Guardrails say *"Never round the
-feature-grid or panel cards — 0px radius is structural."* And all six of its card and button
+feature-grid or panel cards — 0px radius is structural."* And all five of its card and button
 component entries specify `radius: 0px`.
 
-One frontmatter key against prose, a guardrail, and six components. **Cards are 0px.**
+One frontmatter key against prose, a guardrail, and five components — while its sibling key `control: "4px"` is honoured. **Cards are 0px.**
 
 | Token | Value | Applies to |
 |---|---|---|
