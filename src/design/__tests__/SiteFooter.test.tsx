@@ -18,11 +18,11 @@ describe("SiteFooter", () => {
 		// every descendant at once.
 		const { container } = render(<SiteFooter {...PROPS} />);
 		const footer = container.querySelector("footer") as HTMLElement;
-		expect(footer.style.getPropertyValue("--ground")).toBe("var(--terminal)");
-		expect(footer.style.getPropertyValue("--ink")).toBe("var(--terminal-ink)");
-		expect(footer.style.getPropertyValue("--rule")).toBe(
-			"var(--terminal-rule)",
+		expect(footer.style.getPropertyValue("--ground")).toBe(
+			"var(--surface-alt)",
 		);
+		expect(footer.style.getPropertyValue("--ink")).toBe("var(--ink-inverse)");
+		expect(footer.style.getPropertyValue("--rule")).toBe("var(--rule-subtle)");
 	});
 
 	it("paints itself from the redefined tokens", () => {

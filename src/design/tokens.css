@@ -1,15 +1,16 @@
 /*
- * The design system's values, per DESIGN.md.
+ * The design system's values, per DESIGN.v2.md.
  *
  * Strictly monochrome: the only colour anywhere on the site comes from
  * sample photography, never from a token. `src/design/__tests__/tokens.test.ts`
  * enforces that mechanically, so a hue added here fails the suite rather
  * than shipping.
  *
- * Dark mode is not an invention. DESIGN.md specifies #0A0A0A ground with
- * #FFFFFF text for the footer; dark mode is that same pairing applied past
- * the footer, and the terminal band inverts so it still reads as a distinct
- * closing strip rather than dissolving into the page ground.
+ * There is one canvas: black, ink on it, for almost the whole site. The
+ * pale band is a rare, deliberate inversion of that pairing — used only
+ * where a block needs to read as a distinct closing strip rather than
+ * dissolving into the page ground — not a second theme to keep in step
+ * with the first.
  */
 
 :root {
@@ -21,16 +22,11 @@
 	--rule: #303236;
 	--rule-width: 1px;
 
-	--terminal: #0a0a0a;
-	--terminal-ink: #ffffff;
-	--terminal-rule: rgb(255 255 255 / 0.1);
-
 	/*
-	 * DESIGN.v2.md's palette, added alongside the outgoing monochrome set.
-	 * Nothing consumes these yet — the canvas flips in a later task, once
-	 * the whole layer is present and testable. This is the same shape the
-	 * monochrome token layer was built in: author it complete, wire it up
-	 * once.
+	 * DESIGN.v2.md's palette. The canvas has flipped to `--ground`/`--ink`
+	 * above, and `--surface-alt`/`--ink-inverse`/`--rule-subtle` are now
+	 * consumed too, by the pale band the two inverted blocks redefine
+	 * their local tokens onto (`SiteFooter`, `ErrorPanel`).
 	 */
 	--surface: #111315;
 	--surface-alt: #e4f1eb;

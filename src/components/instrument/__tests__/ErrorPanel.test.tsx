@@ -164,14 +164,14 @@ describe("monochrome state encoding", () => {
 	it("inverts by redefining the system's tokens on the root, not per child", () => {
 		// The whole point of doing it this way: every descendant, and every
 		// rule in globals.css that names a token, resolves against the
-		// terminal pair without the panel having to restate it. A
+		// pale pair without the panel having to restate it. A
 		// child-by-child override could never reach `:focus-visible`.
 		const root = panel();
-		expect(root.style.getPropertyValue("--ground")).toBe("var(--terminal)");
-		expect(root.style.getPropertyValue("--ink")).toBe("var(--terminal-ink)");
-		expect(root.style.getPropertyValue("--rule")).toBe("var(--terminal-rule)");
+		expect(root.style.getPropertyValue("--ground")).toBe("var(--surface-alt)");
+		expect(root.style.getPropertyValue("--ink")).toBe("var(--ink-inverse)");
+		expect(root.style.getPropertyValue("--rule")).toBe("var(--rule-subtle)");
 		expect(root.style.getPropertyValue("--ink-muted")).toBe(
-			"var(--terminal-ink)",
+			"var(--ink-inverse)",
 		);
 	});
 
@@ -226,12 +226,12 @@ describe("monochrome state encoding", () => {
 		expect(disclosure.parentElement?.style.opacity).toBe("");
 	});
 
-	it("spends the terminal tokens the spec assigns to exactly this panel", () => {
+	it("spends the pale-band tokens the spec assigns to exactly this panel", () => {
 		const source = readFileSync(
 			"src/components/instrument/ErrorPanel.tsx",
 			"utf8",
 		);
-		for (const token of ["--terminal", "--terminal-ink", "--terminal-rule"]) {
+		for (const token of ["--surface-alt", "--ink-inverse", "--rule-subtle"]) {
 			expect(source).toContain(`var(${token})`);
 		}
 	});

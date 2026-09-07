@@ -118,20 +118,29 @@ export function ErrorPanel({
 				//
 				// Neither could be fixed child by child: the focus rule is
 				// not this component's to restate. Redefining the tokens here
-				// fixes both at once, and gives `--terminal*` the consumer
-				// the spec assigns them.
-				["--ground" as string]: "var(--terminal)",
-				["--ink" as string]: "var(--terminal-ink)",
-				["--rule" as string]: "var(--terminal-rule)",
+				// fixes both at once, and gives `--surface-alt` /
+				// `--ink-inverse` / `--rule-subtle` the consumer the spec
+				// assigns them.
+				["--ground" as string]: "var(--surface-alt)",
+				["--ink" as string]: "var(--ink-inverse)",
+				// `--rule-subtle` is named for its role on the black canvas,
+				// where near-black-on-black genuinely is subtle. Here, inside
+				// the pale band, the same near-black value sits on
+				// `--surface-alt` and reads as a crisp, strong hairline
+				// instead — the opposite of "subtle". That inversion of
+				// meaning is intended: v2's palette is closed and holds no
+				// mid-tone to reach for instead, so a hard rule in this rare
+				// pale inversion is the right failure direction.
+				["--rule" as string]: "var(--rule-subtle)",
 				// The muted tier has no inverted counterpart in tokens.css:
 				// `--ink-muted` is tuned against the page ground and is
-				// illegible here. Pointing it at the full-strength terminal
+				// illegible here. Pointing it at the full-strength inverse
 				// ink keeps any descendant that reaches for it readable; the
 				// recession itself is `opacity: 0.7` on the individual leaf,
 				// which is where it has to be — opacity composites a whole
 				// subtree and cannot be overridden by a child, so putting it
 				// on a container would dim that container's siblings too.
-				["--ink-muted" as string]: "var(--terminal-ink)",
+				["--ink-muted" as string]: "var(--ink-inverse)",
 				background: "var(--ground)",
 				color: "var(--ink)",
 				borderRadius: "var(--radius)",
@@ -147,18 +156,21 @@ export function ErrorPanel({
 
 			<div className="flex items-center gap-4">
 				{/*
-				 * `color` is restated on each button and nowhere else: a
-				 * <button> does not inherit colour from its parent, so it
-				 * would fall back to the UA's `buttontext` and paint page-ink
-				 * text on the inverted ground. Every non-button node below
-				 * simply inherits from the root.
+				 * No `color` restated here, on either button: Tailwind's
+				 * preflight sets `color: inherit` on `button` (see
+				 * `node_modules/tailwindcss/preflight.css`), so each one
+				 * already inherits the root's redefined `--ink` the same way
+				 * every non-button node does. An earlier version of this
+				 * file restated it anyway, on the false premise that a
+				 * `<button>` falls back to the UA's `buttontext` — it never
+				 * did, so the restatement was always redundant.
 				 */}
 				{onRetry && (
 					<button
 						type="button"
 						onClick={onRetry}
 						className="mono text-[11px] tracking-[0.08em]"
-						style={{ color: "var(--ink)", background: "transparent" }}
+						style={{ background: "transparent" }}
 					>
 						RETRY
 					</button>
@@ -169,7 +181,6 @@ export function ErrorPanel({
 						onClick={onDismiss}
 						className="mono text-[11px] tracking-[0.08em]"
 						style={{
-							color: "var(--ink)",
 							opacity: 0.7,
 							background: "transparent",
 						}}
@@ -190,7 +201,6 @@ export function ErrorPanel({
 						aria-expanded={detailOpen}
 						className="mono self-start text-[11px] tracking-[0.08em]"
 						style={{
-							color: "var(--ink)",
 							opacity: 0.7,
 							background: "transparent",
 						}}

@@ -12,7 +12,9 @@ type Props = {
 };
 
 /**
- * DESIGN.md's terminal band: four columns, a thin top rule, 14px credits.
+ * v2's pale band: four columns, a thin top rule, 14px credits. The site's
+ * canvas is black; this footer is the rare inversion, so it alone sits as
+ * a pale ground carrying dark ink rather than the reverse.
  *
  * Inverted by redefining the system's own tokens on this root, exactly as
  * ErrorPanel does — and for the reasons ErrorPanel learned the hard way.
@@ -28,10 +30,18 @@ export function SiteFooter({ bio, socials, contact, credit }: Props) {
 	return (
 		<footer
 			style={{
-				["--ground" as string]: "var(--terminal)",
-				["--ink" as string]: "var(--terminal-ink)",
-				["--rule" as string]: "var(--terminal-rule)",
-				["--ink-muted" as string]: "var(--terminal-ink)",
+				["--ground" as string]: "var(--surface-alt)",
+				["--ink" as string]: "var(--ink-inverse)",
+				// `--rule-subtle` is named for its role on the black canvas,
+				// where near-black-on-black genuinely is subtle. Here, inside
+				// the pale band, the same near-black value sits on
+				// `--surface-alt` and reads as a crisp, strong hairline
+				// instead — the opposite of "subtle". That inversion of
+				// meaning is intended: v2's palette is closed and holds no
+				// mid-tone to reach for instead, so a hard rule in this rare
+				// pale inversion is the right failure direction.
+				["--rule" as string]: "var(--rule-subtle)",
+				["--ink-muted" as string]: "var(--ink-inverse)",
 				background: "var(--ground)",
 				color: "var(--ink)",
 				padding: "24px",

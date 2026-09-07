@@ -43,11 +43,6 @@ const ALLOWED_COLOURS = new Set([
 	"#18191b", // rule-subtle
 	"#34d59a", // accent, rationed
 	"#47d18c", // accent-hover
-
-	// Transitional — the outgoing monochrome values. This block exists only
-	// while the old tokens are still in the file, and it shrinks as they
-	// leave. `--terminal` is the last of them, retired in Task 3.
-	"#0a0a0a", // --terminal
 ]);
 
 /**
@@ -228,9 +223,6 @@ describe("required tokens", () => {
 		"--ink-muted",
 		"--rule",
 		"--rule-width",
-		"--terminal",
-		"--terminal-ink",
-		"--terminal-rule",
 		"--radius",
 		"--radius-card",
 		"--radius-card-lg",
