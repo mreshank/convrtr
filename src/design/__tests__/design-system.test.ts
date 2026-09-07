@@ -431,8 +431,16 @@ describe("typeface", () => {
 	it("keeps a self-hosted mono with tabular figures", () => {
 		// The converter counts bytes and seconds upward live; a proportional
 		// fallback makes the digits jitter while it runs.
-		expect(layout).toMatch(/IBM_Plex_Mono/);
+		expect(layout).toMatch(/Geist_Mono/);
 		expect(layout).toMatch(/variable: "--font-mono"/);
+	});
+
+	it("uses Geist Mono for the mono face", () => {
+		// v2 names GeistMono as the system's accent face — the one that
+		// signals "developer tool" in code panels, terminal timestamps and
+		// shell-command CTAs.
+		expect(layout).toMatch(/Geist_Mono/);
+		expect(layout).not.toMatch(/IBM_Plex_Mono/);
 	});
 
 	it("self-hosts rather than linking a font CDN", () => {

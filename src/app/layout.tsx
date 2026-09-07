@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono, Inter } from "next/font/google";
+import { Geist_Mono, Inter } from "next/font/google";
 import Link from "next/link";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import { DifferenceCursor } from "@/design/primitives/DifferenceCursor";
@@ -11,10 +11,9 @@ const inter = Inter({
 	display: "swap",
 });
 
-const ibmPlexMono = IBM_Plex_Mono({
+const geistMono = Geist_Mono({
 	variable: "--font-mono",
 	subsets: ["latin"],
-	weight: ["400", "500"],
 	display: "swap",
 });
 
@@ -27,7 +26,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 	return (
 		<html
 			lang="en"
-			className={`${inter.variable} ${ibmPlexMono.variable} h-full antialiased`}
+			className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
 		>
 			<body className="min-h-full flex flex-col">
 				<ServiceWorkerRegistration />
