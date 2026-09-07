@@ -32,9 +32,11 @@ const SIZE = 32;
  * parked in `transform` is MULTIPLIED by the 2.5x hover scale that
  * primitives.css sets on this same element, and the circle flies off
  * screen in proportion to its distance from the top-left corner. Measured
- * in headless Chromium: a 32px div at (800, 600) scaled 2.5x lands at
- * (1976, 1476) when positioned via `transform`, and stays at (800, 600)
- * when positioned via `translate`. Since `body.has-custom-cursor * {
+ * in headless Chromium: a 32px div whose top-left is offset to (800, 600)
+ * and is then given `scale: 2.5` reports a top-left of (1976, 1476) when
+ * the offset lives in `transform`, and (776, 576) — the same centre, a
+ * bigger box — when it lives in `translate`. Since `body.has-custom-cursor
+ * * {
  * cursor: none }` is in force whenever this component is mounted, that
  * failure leaves the user with no pointer at all. `translate` and `scale`
  * are separate properties that compose additively rather than multiplying,

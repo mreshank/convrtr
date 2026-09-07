@@ -119,14 +119,18 @@ describe("DifferenceCursor", () => {
  * and `transform`'s own matrix is applied FIRST. So a translation written
  * into `transform` is *multiplied* by any `scale` set elsewhere on the same
  * element. Measured in headless Chromium with two identical 32px fixed divs
- * positioned to (800, 600) and then given `scale: 2.5`:
+ * offset to a top-left of (800, 600) — one through `transform`, one through
+ * `translate` — and then given `scale: 2.5`. Top-left of each, per
+ * getBoundingClientRect:
  *
- *   rest    transform-positioned (800, 600)   translate-positioned (800, 600)
- *   scaled  transform-positioned (1976, 1476) translate-positioned (800, 600)
+ *   rest    via transform (800, 600) 32px    via translate (800, 600) 32px
+ *   scaled  via transform (1976, 1476) 80px  via translate (776, 576) 80px
  *
- * The transform-positioned one leaves the viewport, easing over 500ms as it
- * goes — while `body.has-custom-cursor * { cursor: none }` is in force, so
- * the user is left with no pointer at all over the links they are aiming at.
+ * The translate-positioned one keeps its centre exactly where it was and
+ * simply grows: 776 + 40 is the 816 it started at. The transform-positioned
+ * one leaves the viewport, easing over 500ms as it goes — while
+ * `body.has-custom-cursor * { cursor: none }` is in force, so the user is
+ * left with no pointer at all over the links they are aiming at.
  *
  * happy-dom composites nothing, so no rendering test can catch this. What a
  * unit test CAN assert is the structural fact underneath it: the property the
@@ -148,11 +152,20 @@ function withoutComments(source: string): string {
 	return source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
 }
 
-/** Every CSS property the component assigns to the circle imperatively. */
+/**
+ * Every CSS property the component assigns to the circle imperatively.
+ *
+ * Both spellings are read — `dot.style.translate = …` and
+ * `dot.style.setProperty("translate", …)` — because they are the same act,
+ * and a guard that knew only one could be sidestepped by reaching for the
+ * other without anyone meaning to.
+ */
 function positionProperties(source: string): string[] {
 	return [
-		...withoutComments(source).matchAll(/dot\.style\.([A-Za-z]+)\s*=/g),
-	].map((match) => match[1] as string);
+		...withoutComments(source).matchAll(
+			/dot\.style\.(?:setProperty\(\s*["']([a-zA-Z-]+)["']|([A-Za-z-]+)\s*=)/g,
+		),
+	].map((match) => (match[1] ?? match[2]) as string);
 }
 
 /** Every property declared by the hover rule that scales the cursor. */
@@ -175,6 +188,19 @@ describe("cursor position and hover scale", () => {
 		// below passes over an empty list and proves nothing.
 		expect(position.length).toBeGreaterThan(0);
 		expect(hover).toContain("scale");
+	});
+
+	it("reads both spellings of an imperative style write", () => {
+		// Pins the sweep against fixtures, so it cannot be sidestepped by
+		// writing the position through setProperty instead of the named
+		// property.
+		expect(positionProperties("dot.style.transform = `x`;")).toEqual([
+			"transform",
+		]);
+		expect(
+			positionProperties('dot.style.setProperty("transform", x);'),
+		).toEqual(["transform"]);
+		expect(positionProperties("/* dot.style.transform = x */")).toEqual([]);
 	});
 
 	it("never writes the position into transform", () => {
