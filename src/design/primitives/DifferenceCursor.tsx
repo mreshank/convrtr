@@ -25,14 +25,29 @@ const SIZE = 32;
  * under `prefers-reduced-motion` the circle tracks the pointer exactly
  * rather than easing toward it.
  *
- * `transform` never carries a CSS transition, in either motion mode. Its
- * value is always set imperatively — the rAF lerp below when motion is
- * fine, a direct snap to the pointer when it is not — so a CSS transition
- * on top of that would double-ease every already-eased frame in the normal
- * case, and would silently reintroduce the exact delay reduced motion
- * exists to remove in the other. Only `scale` gets a transition, because
- * DESIGN.md's 2.5x hover scale (declared in primitives.css, since it
- * depends on `:hover`/`:has()` this component never sees) is a genuine
+ * The position is written into the individual `translate` property, never
+ * into `transform`, and that choice is load-bearing. CSS composes
+ * `translate`, `rotate` and `scale` on top of whatever `transform`
+ * declares, applying `transform`'s own matrix FIRST — so a translation
+ * parked in `transform` is MULTIPLIED by the 2.5x hover scale that
+ * primitives.css sets on this same element, and the circle flies off
+ * screen in proportion to its distance from the top-left corner. Measured
+ * in headless Chromium: a 32px div at (800, 600) scaled 2.5x lands at
+ * (1976, 1476) when positioned via `transform`, and stays at (800, 600)
+ * when positioned via `translate`. Since `body.has-custom-cursor * {
+ * cursor: none }` is in force whenever this component is mounted, that
+ * failure leaves the user with no pointer at all. `translate` and `scale`
+ * are separate properties that compose additively rather than multiplying,
+ * so the hover scale grows the circle in place.
+ *
+ * The position property never carries a CSS transition, in either motion
+ * mode. Its value is always set imperatively — the rAF lerp below when
+ * motion is fine, a direct snap to the pointer when it is not — so a CSS
+ * transition on top of that would double-ease every already-eased frame in
+ * the normal case, and would silently reintroduce the exact delay reduced
+ * motion exists to remove in the other. Only `scale` gets a transition,
+ * because DESIGN.md's 2.5x hover scale (declared in primitives.css, since
+ * it depends on `:hover`/`:has()` this component never sees) is a genuine
  * hover state and spec §4.6 requires a minimum 500ms ease on those — and
  * that transition is itself dropped under reduced motion, so the hover
  * scale snaps instead of easing.
@@ -78,9 +93,7 @@ export function DifferenceCursor() {
 		const paint = () => {
 			const dot = dotRef.current;
 			if (!dot) return;
-			dot.style.transform = `translate3d(${currentX - SIZE / 2}px, ${
-				currentY - SIZE / 2
-			}px, 0)`;
+			dot.style.translate = `${currentX - SIZE / 2}px ${currentY - SIZE / 2}px`;
 		};
 
 		const tick = () => {
@@ -119,9 +132,9 @@ export function DifferenceCursor() {
 				mixBlendMode: "difference",
 				pointerEvents: "none",
 				zIndex: 9999,
-				// transform is deliberately absent from this list — see the
-				// doc comment above. Only scale transitions, and only when
-				// motion is not reduced.
+				// The position property is deliberately absent from this
+				// list — see the doc comment above. Only scale transitions,
+				// and only when motion is not reduced.
 				transition: reducedMotion
 					? undefined
 					: "scale var(--dur-min) var(--ease)",

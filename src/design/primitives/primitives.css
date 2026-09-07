@@ -119,10 +119,20 @@
  * lives here rather than in the component because it depends on what the
  * pointer is over, which the component never knows.
  *
+ * `scale` here and `translate` in DifferenceCursor.tsx are two INDIVIDUAL
+ * transform properties, and that pairing is deliberate. CSS composes
+ * translate, then rotate, then scale, on top of whatever `transform`
+ * declares — with `transform`'s own matrix applied first. So `scale: 2.5`
+ * multiplies any translation living in `transform`, and a cursor
+ * positioned that way is thrown off screen the moment it hovers a link,
+ * while `cursor: none` is still hiding the system pointer. Positioned on
+ * `translate` instead, the two properties compose without multiplying and
+ * the circle grows where it stands. Never move the cursor's position onto
+ * `transform`; `DifferenceCursor.test.tsx` fails if anyone does.
+ *
  * The transition that eases this change lives on the element itself, in
- * DifferenceCursor.tsx, not here. `scale` and `transform` are distinct
- * properties on that same element, and `transform` there is driven
- * imperatively frame by frame — a CSS transition on `transform` would
+ * DifferenceCursor.tsx, not here, because the position there is driven
+ * imperatively frame by frame — a CSS transition on the position would
  * double-ease every already-eased frame, so the component keeps its
  * `transition` shorthand scoped to `scale` alone. That transition is also
  * dropped entirely under reduced motion, so this value change snaps
