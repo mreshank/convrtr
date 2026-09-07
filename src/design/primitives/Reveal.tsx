@@ -23,9 +23,15 @@ type Props = {
  * the container carries the whole string as its accessible name and every
  * fragment is removed from the accessibility tree.
  *
- * Reduced motion needs nothing here: `globals.css` collapses
- * `animation-duration` to 0.01ms, which resolves each fragment to its
- * final position rather than skipping it, so no content is lost.
+ * Reduced motion is handled entirely in `globals.css`, and it takes two
+ * rules rather than one. Collapsing `animation-duration` to 0.01ms resolves
+ * each fragment to its final position rather than skipping it, so no content
+ * is lost — but on its own that is not enough for a STAGGERED reveal, and
+ * the comment here used to claim it was. The per-fragment
+ * `animation-delay` in primitives.css still ran in full, and `both` fill
+ * held every fragment at translateY(100%) — clipped out of sight by the
+ * parent's overflow — until its turn came. So `globals.css` collapses the
+ * delay too, and the whole line resolves at once.
  */
 export function Reveal({ text, by = "word", className }: Props) {
 	const parts = by === "char" ? [...text] : text.split(" ");

@@ -223,6 +223,30 @@ describe("motion and focus base rules", () => {
 		expect(block).toMatch(/transition-duration:\s*0\.01ms/);
 	});
 
+	it("collapses animation delay under reduced motion too", () => {
+		// A collapsed duration alone does not stop a staggered animation: the
+		// delay still runs in full, and `animation-fill-mode: both` holds each
+		// fragment at its BACKWARDS fill — translateY(100%), clipped away by
+		// the parent's overflow — for the whole of it. Measured in Chromium
+		// with reducedMotion "reduce", the last fragment of a headline was
+		// still displaced 115px at t=550ms and only resolved near t=950ms, so
+		// a 30-character DisplayHeadline assembled character by character over
+		// 1.2s for someone who asked for less movement. Spec §4.6: "reveals
+		// resolve instantly to their final state."
+		//
+		// The rule is universal rather than scoped to [data-reveal-part]
+		// because the stagger idiom is not specific to the reveal — the next
+		// primitive that delays an animation would reintroduce the same bug
+		// silently — and because collapsing the timing of every animation is
+		// already this block's job. Zeroing a delay only ever changes when an
+		// animation starts, never how it ends.
+		const block = globals.match(
+			/@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?)\n\}/,
+		)?.[1];
+		expect(block).toBeDefined();
+		expect(block).toMatch(/animation-delay:\s*0s\s*!important/);
+	});
+
 	it("gives keyboard focus a visible outline", () => {
 		// The difference cursor is mouse-only, so without this a keyboard user
 		// has no indication of what is focused at all.
