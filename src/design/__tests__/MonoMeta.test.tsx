@@ -9,11 +9,11 @@ describe("MonoMeta", () => {
 	});
 
 	it("carries the .meta class, not an ad-hoc treatment", () => {
-		// `.meta` is DESIGN.md's metadata voice — 14px, uppercase, 0.1em
-		// tracking — declared in tokens.css. Hand-rolling those values in a
-		// className is the drift this primitive exists to stop, and it is
-		// why `.mono` deliberately does NOT uppercase: it renders filenames,
-		// and uppercasing one would misreport the user's file.
+		// `.meta` is v2's `label-mono` — 13px, weight 400, no uppercase, no
+		// letter-spacing — declared in tokens.css. Hand-rolling those values
+		// in a className is the drift this primitive exists to stop, and it
+		// is why `.mono` deliberately does NOT uppercase: it renders
+		// filenames, and uppercasing one would misreport the user's file.
 		const { container } = render(<MonoMeta>lossless</MonoMeta>);
 		const el = container.firstElementChild;
 		expect(el?.className).toContain("meta");

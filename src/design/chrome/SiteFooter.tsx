@@ -59,7 +59,7 @@ export function SiteFooter({ bio, socials, contact, credit }: Props) {
 						style={{
 							fontSize: "32px",
 							fontWeight: 700,
-							letterSpacing: "var(--tracking-display)",
+							letterSpacing: "var(--display-tracking)",
 						}}
 					>
 						convrtr

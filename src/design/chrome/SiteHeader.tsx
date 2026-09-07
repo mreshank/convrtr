@@ -139,7 +139,7 @@ export function SiteHeader({ links }: Props) {
 					style={{
 						fontSize: "24px",
 						fontWeight: 700,
-						letterSpacing: "var(--tracking-display)",
+						letterSpacing: "var(--display-tracking)",
 					}}
 				>
 					convrtr
@@ -188,8 +188,8 @@ export function SiteHeader({ links }: Props) {
 								color: "var(--ink)",
 								fontSize: "clamp(32px, 8vw, 96px)",
 								fontWeight: 700,
-								letterSpacing: "var(--tracking-display)",
-								lineHeight: "var(--leading-display)",
+								letterSpacing: "var(--display-tracking)",
+								lineHeight: "var(--display-leading)",
 							}}
 						>
 							{link.label}

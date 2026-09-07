@@ -245,6 +245,17 @@ describe("required tokens", () => {
 		"--max-width",
 		"--grid-gap",
 		"--navbar-height",
+		"--display-size",
+		"--display-tracking",
+		"--display-leading",
+		"--headline-size",
+		"--headline-tracking",
+		"--body-size",
+		"--body-leading",
+		"--label-size",
+		"--label-tracking",
+		"--label-weight",
+		"--mono-size",
 	];
 
 	it.each(required)("declares %s", (token) => {
