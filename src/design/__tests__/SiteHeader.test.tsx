@@ -65,33 +65,89 @@ describe("SiteHeader", () => {
 		expect(container.querySelector("header")?.contains(nav)).toBe(false);
 	});
 
-	it("wraps Tab forward from the last link back to the toggle", () => {
+	// The tab loop is [wordmark, toggle, ...nav links], in that order,
+	// because that is the order the document already puts them in: the
+	// wordmark and the toggle both live in the header, which is rendered
+	// before the nav. Everything the header draws above the opaque overlay
+	// is visible and mouse-clickable while the menu is open, so all of it
+	// has to be keyboard-reachable too — and nothing outside the loop may
+	// be reachable at all, since the user cannot see it.
+	//
+	// The trap therefore wraps FIRST to LAST, not toggle to last link. An
+	// earlier version hardcoded the toggle as the first element, which left
+	// the wordmark visible and clickable but keyboard-unreachable, and let
+	// Shift+Tab out of it escape into the content behind the overlay.
+	it("wraps Tab forward from the last link back to the wordmark", () => {
 		// The overlay is opaque and covers the viewport, so anything Tab
 		// would reach outside this loop — page content behind it — is
 		// content the user cannot see while the menu is open.
 		render(<SiteHeader links={LINKS} />);
 		const toggle = screen.getByRole("button", { name: /menu/i });
 		fireEvent.click(toggle);
+		const wordmark = screen.getByRole("link", { name: "convrtr" });
 		const nav = screen.getByRole("navigation", { name: "Main" });
 		const navLinks = within(nav).getAllByRole("link");
 		const lastLink = navLinks[navLinks.length - 1] as HTMLElement;
 		lastLink.focus();
 		fireEvent.keyDown(lastLink, { key: "Tab" });
-		expect(document.activeElement).toBe(toggle);
+		expect(document.activeElement).toBe(wordmark);
 	});
 
-	it("wraps Shift+Tab from the toggle back to the last link", () => {
-		// The toggle is the close affordance and stays visible above the
-		// overlay, so it belongs inside the loop rather than outside it.
+	it("wraps Shift+Tab from the wordmark back to the last link", () => {
+		// The wordmark is drawn above the overlay and is the first thing in
+		// the loop, so Shift+Tab out of it must come back round rather than
+		// escaping into the page behind.
 		render(<SiteHeader links={LINKS} />);
 		const toggle = screen.getByRole("button", { name: /menu/i });
 		fireEvent.click(toggle);
+		const wordmark = screen.getByRole("link", { name: "convrtr" });
 		const nav = screen.getByRole("navigation", { name: "Main" });
 		const navLinks = within(nav).getAllByRole("link");
 		const lastLink = navLinks[navLinks.length - 1] as HTMLElement;
-		toggle.focus();
-		fireEvent.keyDown(toggle, { key: "Tab", shiftKey: true });
+		wordmark.focus();
+		fireEvent.keyDown(wordmark, { key: "Tab", shiftKey: true });
 		expect(document.activeElement).toBe(lastLink);
+	});
+
+	it("leaves Shift+Tab from the toggle to native order, which reaches the wordmark", () => {
+		// The toggle is no longer the first element in the loop, so backward
+		// movement out of it is an ordinary step to the wordmark that
+		// precedes it in the document. Intercepting it is what made the
+		// wordmark unreachable in the first place. happy-dom does not move
+		// focus for a synthetic Tab, so what is asserted is that the handler
+		// does not cancel the event.
+		render(<SiteHeader links={LINKS} />);
+		const toggle = screen.getByRole("button", { name: /menu/i });
+		fireEvent.click(toggle);
+		toggle.focus();
+		const event = new KeyboardEvent("keydown", {
+			key: "Tab",
+			shiftKey: true,
+			bubbles: true,
+			cancelable: true,
+		});
+		toggle.dispatchEvent(event);
+		expect(event.defaultPrevented).toBe(false);
+		expect(document.activeElement).toBe(toggle);
+	});
+
+	it("keeps the loop closed when there are no links at all", () => {
+		// With an empty array the loop is just [wordmark, toggle]. The
+		// earlier version bailed out when it found no links, which silently
+		// turned the trap off and made the opaque overlay escapable — a bug
+		// waiting for the first caller to pass a filtered-empty list.
+		render(<SiteHeader links={[]} />);
+		const toggle = screen.getByRole("button", { name: /menu/i });
+		fireEvent.click(toggle);
+		const wordmark = screen.getByRole("link", { name: "convrtr" });
+
+		toggle.focus();
+		fireEvent.keyDown(toggle, { key: "Tab" });
+		expect(document.activeElement).toBe(wordmark);
+
+		wordmark.focus();
+		fireEvent.keyDown(wordmark, { key: "Tab", shiftKey: true });
+		expect(document.activeElement).toBe(toggle);
 	});
 
 	it("locks body scroll while open and restores the prior value on close", () => {

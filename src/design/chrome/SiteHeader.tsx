@@ -21,6 +21,7 @@ type Props = {
  */
 export function SiteHeader({ links }: Props) {
 	const [open, setOpen] = useState(false);
+	const wordmarkRef = useRef<HTMLAnchorElement | null>(null);
 	const toggleRef = useRef<HTMLButtonElement | null>(null);
 	const navRef = useRef<HTMLElement | null>(null);
 
@@ -40,13 +41,29 @@ export function SiteHeader({ links }: Props) {
 	// The overlay is opaque and covers the whole viewport, so anything Tab
 	// reaches outside this loop — page content behind it, or the browser
 	// chrome beyond the last link — is content the user cannot see while
-	// the menu is open. The toggle is the close affordance and is drawn
-	// above the overlay, so it stays visible throughout and belongs inside
-	// the loop rather than outside it: Tab from the last link wraps to the
-	// toggle, Shift+Tab from the toggle wraps to the last link. Every other
-	// Tab press (toggle forward, any link backward or forward) already
-	// lands correctly via native DOM order, since the toggle precedes the
-	// links in the document.
+	// the menu is open.
+	//
+	// The loop is [wordmark, toggle, ...nav links], which is exactly the
+	// order the document already puts them in: both the wordmark and the
+	// toggle live in the header, and the header is rendered before the nav.
+	// Everything the header draws is above the overlay (z-index 100 against
+	// its 99), so all of it stays visible and clickable while the menu is
+	// open and all of it has to be reachable by keyboard too. So the trap
+	// wraps FIRST to LAST — Tab from the last link goes to the wordmark,
+	// Shift+Tab from the wordmark goes to the last link — and every step in
+	// between is left to native DOM order, which already agrees.
+	//
+	// This used to hardcode the toggle as the first element and wrap it to
+	// the last link, forgetting the wordmark the same component renders
+	// below. The wordmark was then visible and mouse-clickable but
+	// keyboard-unreachable, and Shift+Tab out of it was not intercepted at
+	// all, so it escaped into the content behind the overlay — the exact
+	// leak the trap exists to prevent.
+	//
+	// The loop always holds the wordmark and the toggle, so `links={[]}`
+	// keeps a closed two-element cycle rather than turning the trap off.
+	// The previous `if (!lastLink) return` made an empty array silently
+	// escapable.
 	useEffect(() => {
 		if (!open) return;
 		const onKey = (event: KeyboardEvent) => {
@@ -54,15 +71,21 @@ export function SiteHeader({ links }: Props) {
 			const toggle = toggleRef.current;
 			const nav = navRef.current;
 			if (!toggle || !nav) return;
-			const links = nav.querySelectorAll<HTMLAnchorElement>("a");
-			const lastLink = links[links.length - 1];
-			if (!lastLink) return;
-			if (event.shiftKey && document.activeElement === toggle) {
+			// `anchors`, not `links`: the prop of that name is an array of
+			// { href, label }, and this is the rendered DOM.
+			const anchors = nav.querySelectorAll<HTMLAnchorElement>("a");
+			const loop = [wordmarkRef.current, toggle, ...anchors].filter(
+				(element) => element !== null,
+			);
+			const first = loop[0];
+			const last = loop[loop.length - 1];
+			if (!first || !last) return;
+			if (event.shiftKey && document.activeElement === first) {
 				event.preventDefault();
-				lastLink.focus();
-			} else if (!event.shiftKey && document.activeElement === lastLink) {
+				last.focus();
+			} else if (!event.shiftKey && document.activeElement === last) {
 				event.preventDefault();
-				toggle.focus();
+				first.focus();
 			}
 		};
 		document.addEventListener("keydown", onKey);
@@ -108,6 +131,7 @@ export function SiteHeader({ links }: Props) {
 				}}
 			>
 				<Link
+					ref={wordmarkRef}
 					href="/"
 					style={{
 						fontSize: "24px",
