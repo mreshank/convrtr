@@ -227,12 +227,13 @@ describe("motion and focus base rules", () => {
 		// A collapsed duration alone does not stop a staggered animation: the
 		// delay still runs in full, and `animation-fill-mode: both` holds each
 		// fragment at its BACKWARDS fill — translateY(100%), clipped away by
-		// the parent's overflow — for the whole of it. Measured in Chromium
-		// with reducedMotion "reduce", the last fragment of a headline was
-		// still displaced 115px at t=550ms and only resolved near t=950ms, so
-		// a 30-character DisplayHeadline assembled character by character over
-		// 1.2s for someone who asked for less movement. Spec §4.6: "reveals
-		// resolve instantly to their final state."
+		// the parent's overflow — for the whole of it. Reproduced in Chromium
+		// with reducedMotion "reduce": without the delay collapse, the last
+		// fragment of a 31-character char-split headline was still fully
+		// displaced at t=550ms and at t=950ms, resolving only past t=1.2s. So
+		// a DisplayHeadline assembled itself character by character for well
+		// over a second for someone who asked for less movement. Spec §4.6:
+		// "reveals resolve instantly to their final state."
 		//
 		// The rule is universal rather than scoped to [data-reveal-part]
 		// because the stagger idiom is not specific to the reveal — the next

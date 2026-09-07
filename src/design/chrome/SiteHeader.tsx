@@ -79,6 +79,9 @@ export function SiteHeader({ links }: Props) {
 			);
 			const first = loop[0];
 			const last = loop[loop.length - 1];
+			// Unreachable: the toggle is always in the loop, so it is never
+			// empty. This is here for the indexed-access types, and is not
+			// the escape hatch the old `if (!lastLink) return` was.
 			if (!first || !last) return;
 			if (event.shiftKey && document.activeElement === first) {
 				event.preventDefault();
