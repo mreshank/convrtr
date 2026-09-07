@@ -27,6 +27,35 @@
 	--terminal-rule: rgb(255 255 255 / 0.1);
 
 	/*
+	 * DESIGN.v2.md's palette, added alongside the outgoing monochrome set.
+	 * Nothing consumes these yet — the canvas flips in a later task, once
+	 * the whole layer is present and testable. This is the same shape the
+	 * monochrome token layer was built in: author it complete, wire it up
+	 * once.
+	 */
+	--surface: #111315;
+	--surface-alt: #e4f1eb;
+	--ink-inverse: #131415;
+	--rule-subtle: #18191b;
+	--accent: #34d59a;
+	--accent-hover: #47d18c;
+
+	/*
+	 * The spacing and layout scale the monochrome system never had — its
+	 * absence was the top item in that plan's follow-ups, on the grounds
+	 * that six templates written against literals would not be
+	 * recoverable. v2 supplies it outright.
+	 */
+	--space-base: 8px;
+	--gap-sm: 12px;
+	--gap-md: 24px;
+	--gap-lg: 80px;
+	--section-pad: 240px;
+	--max-width: 1600px;
+	--grid-gap: 128px;
+	--navbar-height: 64px;
+
+	/*
 	 * Controls keep the 4px the product already uses — DESIGN.md specifies
 	 * card radii and "slight rounding" for grid images, and says nothing
 	 * about form controls. The two card radii are DESIGN.md's asymmetric

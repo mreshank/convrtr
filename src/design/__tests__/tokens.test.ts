@@ -84,13 +84,28 @@ describe("dark-theme parity", () => {
  * shipping.
  */
 const ALLOWED_COLOURS = new Set([
-	"#ffffff",
-	"#000000",
-	"#0a0a0a",
-	"#525252",
-	"#737373",
-	"#a3a3a3",
-	"#8a8a92",
+	"#000000", // ground — v2 puts it at ~63% of the page
+	"#111315", // surface, raised panels
+	"#e4f1eb", // surface-alt, the one pale band
+	"#ffffff", // ink
+	"#94979e", // ink-muted, the gray continuation clause
+	"#131415", // ink-inverse, text on the pale band
+	"#303236", // rule
+	"#18191b", // rule-subtle
+	"#34d59a", // accent, rationed
+	"#47d18c", // accent-hover
+
+	// Transitional — the outgoing monochrome values. These are still live
+	// in this file while the canvas is mid-migration, so the guard has to
+	// admit them or Task 1 could not be additive. Each leaves with the
+	// token that holds it: --ink-muted and --ink-faint in Task 2, the
+	// --terminal* trio in Task 3, after which this block is deleted and
+	// the set narrows to v2's ten.
+	"#525252", // --ink-muted, light
+	"#737373", // --ink-faint, light
+	"#0a0a0a", // --terminal light; --ground and --terminal-ink dark
+	"#a3a3a3", // --ink-muted, dark
+	"#8a8a92", // --ink-faint, dark
 ]);
 
 /**
@@ -283,6 +298,20 @@ describe("required tokens", () => {
 		"--dur-hover",
 		"--dur-marquee",
 		"--dur-min",
+		"--surface",
+		"--surface-alt",
+		"--ink-inverse",
+		"--rule-subtle",
+		"--accent",
+		"--accent-hover",
+		"--space-base",
+		"--gap-sm",
+		"--gap-md",
+		"--gap-lg",
+		"--section-pad",
+		"--max-width",
+		"--grid-gap",
+		"--navbar-height",
 	];
 
 	it.each(required)("declares %s", (token) => {
