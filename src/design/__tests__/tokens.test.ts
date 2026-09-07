@@ -27,57 +27,6 @@ function collectSourceFiles(root: string, extensions: string[]): string[] {
 }
 
 /**
- * The dark palette is declared twice — once under `:root[data-theme="dark"]`
- * for the JS path, once inside the `prefers-color-scheme` fallback for
- * visitors without JS. Nothing in CSS keeps the two copies in step, and if
- * they drift, dark mode differs between the JS and no-JS paths: a bug that
- * is invisible when clicking around in a normal browser. These tests turn
- * that silent drift into a red test. Carried over from the file this one
- * replaces, because the hazard is unchanged.
- */
-function declarations(blockSource: string): Record<string, string> {
-	const out: Record<string, string> = {};
-	for (const match of blockSource.matchAll(/--([\w-]+):\s*([^;]+);/g)) {
-		const name = match[1];
-		const value = match[2];
-		if (name && value) out[name] = value.trim();
-	}
-	return out;
-}
-
-function block(pattern: RegExp): string {
-	const body = css.match(pattern)?.[1];
-	if (!body) throw new Error(`tokens.css: no block matched ${pattern}`);
-	return body;
-}
-
-const attributeDark = declarations(
-	block(/:root\[data-theme="dark"\]\s*\{([^}]*)\}/),
-);
-const mediaDark = declarations(
-	block(
-		/@media \(prefers-color-scheme: dark\)\s*\{\s*:root:not\(\[data-theme="light"\]\)\s*\{([^}]*)\}/,
-	),
-);
-
-describe("dark-theme parity", () => {
-	it("locates declarations in both dark blocks", () => {
-		expect(Object.keys(attributeDark).length).toBeGreaterThan(0);
-		expect(Object.keys(mediaDark).length).toBeGreaterThan(0);
-	});
-
-	it("declares the same token names in both dark blocks", () => {
-		expect(Object.keys(mediaDark).sort()).toEqual(
-			Object.keys(attributeDark).sort(),
-		);
-	});
-
-	it("declares identical values in both dark blocks", () => {
-		expect(mediaDark).toEqual(attributeDark);
-	});
-});
-
-/**
  * DESIGN.md's Special Notes: "Maintain a strict black-and-white palette; any
  * colour should only come from project photography." That is enforceable, so
  * it is enforced — a future `--accent: #3B82F6` fails here rather than
@@ -95,17 +44,10 @@ const ALLOWED_COLOURS = new Set([
 	"#34d59a", // accent, rationed
 	"#47d18c", // accent-hover
 
-	// Transitional — the outgoing monochrome values. These are still live
-	// in this file while the canvas is mid-migration, so the guard has to
-	// admit them or Task 1 could not be additive. Each leaves with the
-	// token that holds it: --ink-muted and --ink-faint in Task 2, the
-	// --terminal* trio in Task 3, after which this block is deleted and
-	// the set narrows to v2's ten.
-	"#525252", // --ink-muted, light
-	"#737373", // --ink-faint, light
-	"#0a0a0a", // --terminal light; --ground and --terminal-ink dark
-	"#a3a3a3", // --ink-muted, dark
-	"#8a8a92", // --ink-faint, dark
+	// Transitional — the outgoing monochrome values. This block exists only
+	// while the old tokens are still in the file, and it shrinks as they
+	// leave. `--terminal` is the last of them, retired in Task 3.
+	"#0a0a0a", // --terminal
 ]);
 
 /**
@@ -284,7 +226,6 @@ describe("required tokens", () => {
 		"--ground",
 		"--ink",
 		"--ink-muted",
-		"--ink-faint",
 		"--rule",
 		"--rule-width",
 		"--terminal",

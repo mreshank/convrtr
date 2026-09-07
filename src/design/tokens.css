@@ -13,13 +13,12 @@
  */
 
 :root {
-	color-scheme: light;
+	color-scheme: dark;
 
-	--ground: #ffffff;
-	--ink: #000000;
-	--ink-muted: #525252;
-	--ink-faint: #737373;
-	--rule: rgb(0 0 0 / 0.1);
+	--ground: #000000;
+	--ink: #ffffff;
+	--ink-muted: #94979e;
+	--rule: #303236;
 	--rule-width: 1px;
 
 	--terminal: #0a0a0a;
@@ -85,50 +84,11 @@
 	--mono-tracking: 0.1em;
 }
 
-:root[data-theme="dark"] {
-	color-scheme: dark;
-
-	--ground: #0a0a0a;
-	--ink: #ffffff;
-	--ink-muted: #a3a3a3;
-	--ink-faint: #8a8a92;
-	--rule: rgb(255 255 255 / 0.1);
-
-	--terminal: #ffffff;
-	--terminal-ink: #0a0a0a;
-	--terminal-rule: rgb(0 0 0 / 0.1);
-}
-
 /*
- * No-JS / pre-hydration fallback.
- *
- * ThemeScript sets [data-theme] on the client before paint, but a visitor
- * with JavaScript disabled never gets that attribute, so without this block
- * they would always see light mode regardless of "system" being the stated
- * default. This mirrors the dark values above exactly, and the parity test
- * fails if the two ever drift.
- *
- * The explicit [data-theme] attribute still wins in both directions:
- * - [data-theme="dark"] has the same specificity and agrees with this block
- *   whenever both match, so there is never a conflict.
- * - [data-theme="light"] is excluded by :not(...), so an explicit light
- *   choice overrides a dark system preference even with JS disabled.
+ * There is one canvas now. v2 describes a single black ground with no
+ * dark-mode counterpart, so there are no theme blocks here to keep in
+ * step with each other.
  */
-@media (prefers-color-scheme: dark) {
-	:root:not([data-theme="light"]) {
-		color-scheme: dark;
-
-		--ground: #0a0a0a;
-		--ink: #ffffff;
-		--ink-muted: #a3a3a3;
-		--ink-faint: #8a8a92;
-		--rule: rgb(255 255 255 / 0.1);
-
-		--terminal: #ffffff;
-		--terminal-ink: #0a0a0a;
-		--terminal-rule: rgb(0 0 0 / 0.1);
-	}
-}
 
 body {
 	background: var(--ground);
