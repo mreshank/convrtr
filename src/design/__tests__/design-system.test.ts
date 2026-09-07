@@ -253,9 +253,139 @@ describe("motion and focus base rules", () => {
 		expect(globals).toMatch(/:focus-visible/);
 		expect(globals).toMatch(/outline:\s*1px solid var\(--ink\)/);
 	});
+});
 
-	it("does not hide the cursor — that ships with its replacement", () => {
-		expect(globals).not.toMatch(/cursor:\s*none/);
+/**
+ * Returns the enclosing selector of every `cursor: none` declaration in a
+ * stylesheet, normalised to one line.
+ *
+ * Comments are stripped first: `cursor: none` written in prose is not a
+ * declaration, and the braces around a comment are not its rule. Stripping
+ * also stops the backwards scan for the selector from landing inside one.
+ *
+ * The scan walks back from the declaration to the nearest `{` — its own
+ * rule's — and then to whatever ended the statement or block before it, so
+ * a rule nested in an `@media` yields the inner selector list and not the
+ * media prelude.
+ */
+function findCursorNoneRules(content: string): string[] {
+	const rules: string[] = [];
+	const css = content.replace(/\/\*[\s\S]*?\*\//g, "");
+	for (const match of css.matchAll(/cursor:\s*none/g)) {
+		const before = css.slice(0, match.index);
+		const open = before.lastIndexOf("{");
+		if (open === -1) {
+			rules.push("<no enclosing rule>");
+			continue;
+		}
+		const start = Math.max(
+			before.lastIndexOf("{", open - 1),
+			before.lastIndexOf("}", open),
+			before.lastIndexOf(";", open),
+		);
+		rules.push(
+			before
+				.slice(start + 1, open)
+				.replace(/\s+/g, " ")
+				.trim(),
+		);
+	}
+	return rules;
+}
+
+/**
+ * A `cursor: none` rule is safe only if EVERY selector in its list is
+ * scoped to the class DifferenceCursor adds to <body> on mount. Each
+ * comma-separated part is checked separately, because
+ * `body.has-custom-cursor, body *` would otherwise pass on the strength of
+ * its first half while its second half hid the pointer unconditionally.
+ *
+ * A `:has(a, b)` selector would be split at the comma inside the
+ * parentheses and flagged. That is a false positive, and the safe
+ * direction: it fails loudly and forces whoever writes it to look.
+ */
+function findUnguardedCursorNone(content: string): string[] {
+	return findCursorNoneRules(content).filter((selector) =>
+		selector.split(",").some((part) => !part.includes("has-custom-cursor")),
+	);
+}
+
+describe("hiding the system cursor", () => {
+	// The failure mode here is the worst in the design system: a visitor
+	// whose JavaScript failed, was blocked, or has not hydrated yet is left
+	// with no pointer at all and no way to get one back. `cursor: none` is
+	// therefore legal ONLY under the class DifferenceCursor adds to <body>
+	// itself, which cannot be set unless a replacement circle is genuinely
+	// on screen.
+	//
+	// This used to be asserted as `expect(globals).not.toMatch(/cursor:
+	// none/)` — against globals.css alone, while the rule lived in
+	// primitives.css. It passed while proving nothing: a bare
+	// `body { cursor: none }` added to primitives.css shipped green. So the
+	// sweep now covers every stylesheet under src and checks the selector
+	// each occurrence is scoped to, rather than checking one file for the
+	// absence of a string.
+	const stylesheets = sourceFileContents.filter(({ path }) =>
+		path.endsWith(".css"),
+	);
+
+	it("scopes every cursor: none in src to the custom-cursor class", () => {
+		const offenders: string[] = [];
+		for (const { path, content } of stylesheets) {
+			for (const selector of findUnguardedCursorNone(content)) {
+				offenders.push(`${path}: ${selector}`);
+			}
+		}
+		expect(offenders).toEqual([]);
+	});
+
+	it("still sees the rule it exists to police", () => {
+		// Non-vacuity, concretely: the sweep must be finding the real
+		// declaration in the real stylesheet. Without this the suite would
+		// go quiet again the moment the rule moved to a file the corpus
+		// missed — which is exactly how the previous version of this guard
+		// stopped working.
+		const found = stylesheets.flatMap(({ path, content }) =>
+			findCursorNoneRules(content).map((selector) => ({ path, selector })),
+		);
+		expect(found.length).toBeGreaterThan(0);
+		expect(found.map(({ path }) => path)).toContain(
+			join("src", "design", "primitives", "primitives.css"),
+		);
+	});
+});
+
+describe("cursor: none guard regex", () => {
+	// Pins the helper against fixtures directly, the same way the
+	// border-weight sweep is pinned. A corpus that happens to be clean today
+	// cannot tell you whether the regex underneath it would catch tomorrow's
+	// violation — and this particular guard has already been wrong once.
+	const mustFlag = [
+		"body { cursor: none; }",
+		"* { cursor: none }",
+		"@media (pointer: fine) {\n\tbody {\n\t\tcursor: none;\n\t}\n}",
+		// Half-guarded is not guarded: the second selector still hides the
+		// pointer for everyone.
+		"body.has-custom-cursor, body * { cursor: none; }",
+		// A declaration that follows another in the same rule.
+		"body { color: red; cursor: none; }",
+	];
+
+	const mustNotFlag = [
+		"body.has-custom-cursor { cursor: none; }",
+		"@media (pointer: fine) {\n\tbody.has-custom-cursor,\n\tbody.has-custom-cursor * {\n\t\tcursor: none;\n\t}\n}",
+		"body { cursor: pointer; }",
+		"body { cursor: default; }",
+		// Prose about the rule is not the rule.
+		"/* never write cursor: none here */\nbody { cursor: pointer; }",
+	];
+
+	it.each(mustFlag)("flags %j as an unguarded cursor: none", (input) => {
+		expect(findUnguardedCursorNone(input).length).toBeGreaterThan(0);
+	});
+
+	it.each(mustNotFlag)("does not flag %j", (input) => {
+		expect(findUnguardedCursorNone(input)).toEqual([]);
 	});
 });
 
