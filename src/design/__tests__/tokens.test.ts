@@ -167,8 +167,8 @@ describe("palette closure", () => {
 		expect(offenders).toEqual([]);
 	});
 
-	it("declares exactly one easing, and it is DESIGN.md's", () => {
-		expect(css).toMatch(/--ease:\s*cubic-bezier\(0\.16, 1, 0\.3, 1\)/);
+	it("declares exactly one easing, and it is v2's", () => {
+		expect(css).toMatch(/--ease:\s*cubic-bezier\(0\.4, 0, 0\.2, 1\)/);
 		const easings = [...css.matchAll(/cubic-bezier\([^)]*\)/g)].map(
 			(m) => m[0],
 		);
@@ -227,10 +227,10 @@ describe("required tokens", () => {
 		"--radius-card",
 		"--radius-card-lg",
 		"--ease",
-		"--dur-reveal",
+		"--dur-fade",
 		"--dur-hover",
+		"--dur-state",
 		"--dur-marquee",
-		"--dur-min",
 		"--surface",
 		"--surface-alt",
 		"--ink-inverse",

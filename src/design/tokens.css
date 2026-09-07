@@ -65,15 +65,16 @@
 	--radius-card-lg: 100px;
 
 	/*
-	 * One easing, for everything. DESIGN.md forbids system easing outright:
-	 * "DO NOT: Use standard system easing; stick to
-	 * cubic-bezier(0.16, 1, 0.3, 1) for a premium feel."
+	 * One easing, for everything. v2's motion is functional and
+	 * diagrammatic, reinforcing the terminal character rather than
+	 * decorating it — the opposite of the previous system's premium-feel
+	 * easing.
 	 */
-	--ease: cubic-bezier(0.16, 1, 0.3, 1);
-	--dur-reveal: 1s;
-	--dur-hover: 700ms;
+	--ease: cubic-bezier(0.4, 0, 0.2, 1);
+	--dur-fade: 150ms;
+	--dur-hover: 200ms;
+	--dur-state: 300ms;
 	--dur-marquee: 30s;
-	--dur-min: 500ms;
 
 	--display-size: 12vw;
 	--tracking-display: -0.05em;

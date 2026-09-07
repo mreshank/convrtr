@@ -24,7 +24,7 @@
 [data-reveal-part] {
 	display: inline-block;
 	white-space: pre;
-	animation: reveal-rise var(--dur-reveal) var(--ease) both;
+	animation: reveal-rise var(--dur-state) var(--ease) both;
 	animation-delay: calc(var(--reveal-i, 0) * 40ms);
 }
 
@@ -86,11 +86,11 @@
 /*
  * The arrow fades in when its item is hovered or holds focus. Opacity
  * rather than display, so the layout never shifts as it appears — and
- * `--dur-min` is DESIGN.md's 500ms floor for hover states.
+ * `--dur-fade` is v2's 150ms duration for opacity fades.
  */
 [data-arrow] {
 	opacity: 0;
-	transition: opacity var(--dur-min) var(--ease);
+	transition: opacity var(--dur-fade) var(--ease);
 }
 
 [data-arrow-host]:hover [data-arrow],

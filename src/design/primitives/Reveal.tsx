@@ -10,7 +10,7 @@ type Props = {
 
 /**
  * DESIGN.md's signature reveal: each fragment slides up from
- * translateY(100%) with `--ease` over `--dur-reveal`, staggered.
+ * translateY(100%) with `--ease` over `--dur-state`, staggered.
  *
  * Server-rendered markup driven by pure CSS, with no effect and no
  * measurement. On a static export a JS-driven reveal flashes unstyled

@@ -95,16 +95,16 @@ describe("DifferenceCursor", () => {
 		expect(el.style.transition).toBe("");
 	});
 
-	it("eases the hover scale over --dur-min when motion is not reduced, and never eases the position", () => {
-		// This is the other half of the bug this task fixes: `scale` is
-		// DESIGN.md's hover state and spec 4.6 requires it to ease over a
-		// minimum of 500ms, but the position is driven imperatively by the
-		// rAF lerp and must never also carry a CSS transition — that would
-		// double-ease every already-eased frame.
+	it("eases the hover scale over --dur-state when motion is not reduced, and never eases the position", () => {
+		// This is the other half of the bug this task fixes: `scale` is a
+		// genuine hover state and eases over v2's compound-state duration,
+		// but the position is driven imperatively by the rAF lerp and must
+		// never also carry a CSS transition — that would double-ease every
+		// already-eased frame.
 		mockPointer(true, false);
 		const { container } = render(<DifferenceCursor />);
 		const el = container.firstElementChild as HTMLElement;
-		expect(el.style.transition).toBe("scale var(--dur-min) var(--ease)");
+		expect(el.style.transition).toBe("scale var(--dur-state) var(--ease)");
 		expect(el.style.transition).not.toContain("translate");
 		expect(el.style.transition).not.toContain("transform");
 	});

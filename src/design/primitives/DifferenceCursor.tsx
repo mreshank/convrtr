@@ -48,9 +48,10 @@ const SIZE = 32;
  * transition on top of that would double-ease every already-eased frame in
  * the normal case, and would silently reintroduce the exact delay reduced
  * motion exists to remove in the other. Only `scale` gets a transition,
- * because DESIGN.md's 2.5x hover scale (declared in primitives.css, since
- * it depends on `:hover`/`:has()` this component never sees) is a genuine
- * hover state and spec §4.6 requires a minimum 500ms ease on those — and
+ * because the 2.5x hover scale (declared in primitives.css, since it
+ * depends on `:hover`/`:has()` this component never sees) is a genuine
+ * hover state, so it eases over `--dur-state` — v2's compound-state
+ * duration, replacing the old system's 500ms hover floor outright — and
  * that transition is itself dropped under reduced motion, so the hover
  * scale snaps instead of easing.
  */
@@ -139,7 +140,7 @@ export function DifferenceCursor() {
 				// and only when motion is not reduced.
 				transition: reducedMotion
 					? undefined
-					: "scale var(--dur-min) var(--ease)",
+					: "scale var(--dur-state) var(--ease)",
 			}}
 		/>
 	);
