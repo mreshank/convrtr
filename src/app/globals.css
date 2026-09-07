@@ -1,4 +1,5 @@
 @import "../design/tokens.css";
+@import "../design/primitives/primitives.css";
 @import "tailwindcss";
 
 /*
@@ -49,20 +50,44 @@ html {
  * `*`: pausing every animation would freeze reveals at their *initial*
  * state, hiding the very content the duration collapse exists to reveal.
  *
- * `[data-marquee]` is the hook; the marquee component that spec §4.6
- * describes does not exist yet, so this rule matches nothing today and
- * becomes true the moment it does.
+ * `[data-marquee]` is the hook the `Marquee` primitive sets on its two
+ * scrolling tracks (never on the viewport that contains them, which has no
+ * animation of its own to pause) — see `src/design/primitives/Marquee.tsx`.
  *
  * `0.01ms` rather than `0` so animation end events still fire — a reveal
  * that waits on `animationend` to remove a clip would otherwise hang
  * forever, showing nothing at all. A paused animation fires no such event,
  * which is a further reason the pause stays off the universal selector.
+ *
+ * `animation-delay` is collapsed alongside the duration, and it has to be.
+ * Collapsing the duration alone does not resolve a STAGGERED animation: each
+ * fragment still waits out its own delay first, and `animation-fill-mode:
+ * both` holds it at the animation's backwards fill — for the reveal, that is
+ * translateY(100%), clipped away entirely by the parent's overflow — for the
+ * whole of that wait. The displacement is a full line height and lasts until
+ * the fragment's own 40ms-per-index delay elapses, which is over a second
+ * for a 30-character line. Reproduced in Chromium under
+ * `prefers-reduced-motion: reduce`: with this line removed, the last
+ * fragment of a 31-character char-split headline was still fully displaced
+ * at t=550ms and at t=950ms, resolving only past t=1.2s; with it in place
+ * every fragment is at rest in the first sampled frame. Spec §4.6 says
+ * reveals "resolve instantly to their final state", and without this line
+ * they do not.
+ *
+ * It sits on the universal selector rather than on `[data-reveal-part]`
+ * because the stagger is an idiom, not one primitive's private detail — the
+ * next thing that delays an animation would reintroduce this silently — and
+ * because collapsing the timing of every animation is already what this
+ * block is for. Unlike the pause, zeroing a delay only changes when an
+ * animation starts, never where it ends, so it cannot strand anything at its
+ * initial state. `0s`, not `0.01ms`: there is no end event to protect here.
  */
 @media (prefers-reduced-motion: reduce) {
 	*,
 	*::before,
 	*::after {
 		animation-duration: 0.01ms !important;
+		animation-delay: 0s !important;
 		animation-iteration-count: 1 !important;
 		transition-duration: 0.01ms !important;
 		scroll-behavior: auto !important;

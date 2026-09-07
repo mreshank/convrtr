@@ -1,0 +1,145 @@
+/*
+ * Keyframes and hover rules shared by the primitives in this directory.
+ *
+ * These live in a stylesheet rather than inline styles because keyframes
+ * and `:hover` descendant rules cannot be expressed in a React `style`
+ * object at all. Everything that *can* be inline stays inline, so the
+ * component remains the single place to read a primitive's appearance.
+ */
+
+/*
+ * The reveal. Each fragment is clipped by its parent's overflow and slides
+ * up into view, delayed by its own index so the line assembles left to
+ * right.
+ *
+ * `--reveal-i` is set per fragment by the Reveal component; the 40ms step
+ * lives here so the whole timing story stays in one file.
+ */
+[data-reveal] {
+	display: inline-block;
+	overflow: hidden;
+	vertical-align: bottom;
+}
+
+[data-reveal-part] {
+	display: inline-block;
+	white-space: pre;
+	animation: reveal-rise var(--dur-reveal) var(--ease) both;
+	animation-delay: calc(var(--reveal-i, 0) * 40ms);
+}
+
+@keyframes reveal-rise {
+	from {
+		transform: translateY(100%);
+	}
+	to {
+		transform: translateY(0);
+	}
+}
+
+/*
+ * The marquee. Each track translates by exactly its own width, at which
+ * point its duplicate occupies the position it started from — so the reset
+ * to 0% is invisible.
+ *
+ * Hover pauses from the viewport, because the pointer is over the
+ * container rather than over whichever track happens to be under it.
+ */
+@keyframes marquee-scroll {
+	from {
+		transform: translateX(0);
+	}
+	to {
+		transform: translateX(-100%);
+	}
+}
+
+[data-marquee-viewport]:hover [data-marquee] {
+	animation-play-state: paused;
+}
+
+/*
+ * The image reveal: grayscale to full colour with a 1.05x scale, over
+ * --dur-hover. `:focus-within` is included so the reveal is reachable by
+ * keyboard, since a card's link can be focused without any pointer.
+ */
+[data-media]:hover,
+[data-media]:focus-within {
+	filter: grayscale(0%);
+	transform: scale(1.05);
+}
+
+/*
+ * Spec §4.6 asks image hovers to reduce to opacity alone under reduced
+ * motion. The global rule in globals.css collapses transition-duration,
+ * which makes the colour change instant — but an instant 1.05x scale is
+ * still a jump in size, which is movement. Suppressing the transform is
+ * the part the global collapse cannot express.
+ */
+@media (prefers-reduced-motion: reduce) {
+	[data-media]:hover,
+	[data-media]:focus-within {
+		transform: none;
+	}
+}
+
+/*
+ * The arrow fades in when its item is hovered or holds focus. Opacity
+ * rather than display, so the layout never shifts as it appears — and
+ * `--dur-min` is DESIGN.md's 500ms floor for hover states.
+ */
+[data-arrow] {
+	opacity: 0;
+	transition: opacity var(--dur-min) var(--ease);
+}
+
+[data-arrow-host]:hover [data-arrow],
+[data-arrow-host]:focus-within [data-arrow] {
+	opacity: 1;
+}
+
+/*
+ * The system cursor is hidden only while DifferenceCursor is mounted — it
+ * adds this class itself. Writing `cursor: none` straight into the
+ * stylesheet would hide the pointer for anyone whose JavaScript never ran,
+ * leaving them nothing to point with.
+ *
+ * `(pointer: fine)` is belt and braces: the component already refuses to
+ * mount on a coarse pointer.
+ */
+@media (pointer: fine) {
+	body.has-custom-cursor,
+	body.has-custom-cursor * {
+		cursor: none;
+	}
+}
+
+/*
+ * DESIGN.md scales the cursor 2.5x over anything interactive. The selector
+ * lives here rather than in the component because it depends on what the
+ * pointer is over, which the component never knows.
+ *
+ * `scale` here and `translate` in DifferenceCursor.tsx are two INDIVIDUAL
+ * transform properties, and that pairing is deliberate. CSS composes
+ * translate, then rotate, then scale, on top of whatever `transform`
+ * declares — with `transform`'s own matrix applied first. So `scale: 2.5`
+ * multiplies any translation living in `transform`, and a cursor
+ * positioned that way is thrown off screen the moment it hovers a link,
+ * while `cursor: none` is still hiding the system pointer. Positioned on
+ * `translate` instead, the two properties compose without multiplying and
+ * the circle grows where it stands. Never move the cursor's position onto
+ * `transform`; `DifferenceCursor.test.tsx` fails if anyone does.
+ *
+ * The transition that eases this change lives on the element itself, in
+ * DifferenceCursor.tsx, not here, because the position there is driven
+ * imperatively frame by frame — a CSS transition on the position would
+ * double-ease every already-eased frame, so the component keeps its
+ * `transition` shorthand scoped to `scale` alone. That transition is also
+ * dropped entirely under reduced motion, so this value change snaps
+ * instead of easing; the rule below still applies unconditionally, since a
+ * hover state change is not itself a form of motion once it's instant.
+ */
+body.has-custom-cursor:has(a:hover, button:hover) [data-cursor] {
+	transform-origin: center;
+	scale: 2.5;
+}

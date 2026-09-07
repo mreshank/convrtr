@@ -115,7 +115,14 @@ const TOKENS_FILE = join("src", "design", "tokens.css");
  * cannot reference a custom property, so `#0A0A0A` there is the only way to
  * state the value at all. Everything else in `src` goes through a token.
  */
-const LITERAL_HEX_ALLOWED = new Set([join("src", "app", "manifest.ts")]);
+const LITERAL_HEX_ALLOWED = new Set([
+	join("src", "app", "manifest.ts"),
+	// `mix-blend-mode: difference` inverts against white specifically —
+	// this is the blend operand, not a palette choice, and a token would
+	// change with the theme and break the inversion.
+	join("src", "design", "primitives", "DifferenceCursor.tsx"),
+	join("src", "design", "chrome", "SiteHeader.tsx"),
+]);
 
 /**
  * Values for a colour property that are keywords rather than colours.
@@ -358,7 +365,12 @@ describe("legacy token vocabulary", () => {
 const REFERENCE = /[([:](--[\w-]+)(?![\w-])(?!\s*:)/g;
 
 describe("no dangling custom property references", () => {
-	const ALLOWLISTED = new Set(["--font-sans", "--font-mono"]);
+	// `--font-sans` and `--font-mono` are supplied by `next/font` in
+	// `layout.tsx`, not by this file. `--reveal-i` is supplied per fragment
+	// by the Reveal component's inline `style`, not by this file either: it
+	// is a stagger index for one rendered instance, not a design token, so
+	// it has no home in tokens.css to be declared in.
+	const ALLOWLISTED = new Set(["--font-sans", "--font-mono", "--reveal-i"]);
 
 	function declaredNames(source: string): Set<string> {
 		const names = new Set<string>();
