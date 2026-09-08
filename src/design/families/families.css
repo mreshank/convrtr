@@ -81,33 +81,6 @@
 }
 
 /*
- * The home page's inter-band rhythm, tapered for narrow viewports.
- *
- * v2 states "generous 240px section padding creating long black voids
- * between bands" (`DESIGN.v2.md:133`) for its desktop composition and says
- * nothing about smaller ones -- the same silence `--display-size` and
- * `--headline-size` already fill with a clamp in `tokens.css`. 240px between
- * every band at 375px would run several times the height of the bands
- * themselves, so this is an extension, not a restatement, and it lives here
- * rather than in `page.tsx`'s style object because a media query cannot be
- * expressed there. The two breakpoints match the ones `FeatureStrip` and
- * `FeatureGrid` already collapse their columns at just above, and both
- * tapered values are whole multiples of `--space-base` (12x and 8x),
- * consistent with the scale everything else in this system is built on.
- */
-@media (max-width: 900px) {
-	[data-home-shell] {
-		--section-pad: 96px;
-	}
-}
-
-@media (max-width: 600px) {
-	[data-home-shell] {
-		--section-pad: 64px;
-	}
-}
-
-/*
  * `FeatureGrid`'s dividers, between cells and never around them.
  *
  * v2 asks for "thin border dividers between cells". A border on every cell

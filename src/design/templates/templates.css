@@ -1,0 +1,26 @@
+/*
+ * Rules the templates need that a React style object cannot express: media
+ * queries and prose measures. Anything expressible inline belongs inline,
+ * next to the template that owns it.
+ *
+ * The band rhythm scales down below the desktop tier by redefining
+ * `--section-pad` on the shell rather than overriding `gap`, so the template's
+ * own `gap: var(--section-pad)` keeps reading through the ordinary cascade.
+ * That is the same technique `FeatureStrip` and `FeatureGrid` use for their
+ * column counts, and it is why no `!important` is needed anywhere here.
+ *
+ * v2 states 240px section padding (DESIGN.v2.md:134) and is silent on narrow
+ * viewports; 240px between every band at 375px is most of a screen of nothing.
+ * Recorded as an extension, not a restatement.
+ */
+@media (max-width: 900px) {
+	[data-editorial] {
+		--section-pad: 96px;
+	}
+}
+
+@media (max-width: 600px) {
+	[data-editorial] {
+		--section-pad: 64px;
+	}
+}

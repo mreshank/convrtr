@@ -8,3 +8,4 @@ export { FormatStrip } from "./FormatStrip";
 export { FusedHeadline } from "./FusedHeadline";
 export { HeroBand } from "./HeroBand";
 export { TerminalPanel } from "./TerminalPanel";
+export { ToolGrid } from "./ToolGrid";

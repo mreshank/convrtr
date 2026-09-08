@@ -1,6 +1,7 @@
 @import "../design/tokens.css";
 @import "../design/primitives/primitives.css";
 @import "../design/families/families.css";
+@import "../design/templates/templates.css";
 @import "tailwindcss";
 
 html {
