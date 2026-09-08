@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BLOG_POSTS } from "@/content/blog/registry";
+import { HubPage } from "@/design/templates";
 
 const SITE = "https://convrtr.mreshank.com";
 
@@ -22,14 +23,14 @@ export default function BlogIndexPage() {
 	);
 
 	return (
-		<main className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-8">
-			<div className="flex flex-col gap-2">
-				<h1 className="text-[28px] tracking-[-0.02em]">Blog</h1>
-				<p className="text-[14px]" style={{ color: "var(--ink-muted)" }}>
-					Deep dives on the file formats and special converters convrtr
-					supports.
-				</p>
-			</div>
+		<HubPage
+			title="Blog"
+			lede="Deep dives on the file formats and special converters convrtr supports."
+			count={{
+				value: posts.length,
+				noun: posts.length === 1 ? "post" : "posts",
+			}}
+		>
 			<ul className="flex flex-col gap-6">
 				{posts.map((post) => (
 					<li key={post.slug} className="flex flex-col gap-1">
@@ -42,6 +43,6 @@ export default function BlogIndexPage() {
 					</li>
 				))}
 			</ul>
-		</main>
+		</HubPage>
 	);
 }

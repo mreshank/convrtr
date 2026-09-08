@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ToolTable } from "@/app/tools/ToolTable";
 import { toToolRow } from "@/app/tools/toolRow";
 import { CATEGORIES, type Category, getToolsByCategory } from "@/core/registry";
+import { HubPage } from "@/design/templates";
 
 const SITE = "https://convrtr.mreshank.com";
 
@@ -68,15 +69,15 @@ export default async function CategoryPage({
 	const rows = tools.map(toToolRow);
 
 	return (
-		<main className="mx-auto flex w-full max-w-4xl flex-col gap-6 p-8">
-			<div className="flex flex-col gap-2">
-				<h1 className="text-[28px] tracking-[-0.02em]">{label(category)}</h1>
-				<p className="text-[14px]" style={{ color: "var(--ink-muted)" }}>
-					{tools.length} {tools.length === 1 ? "tool" : "tools"} for converting{" "}
-					{category} files, all running in your browser.
-				</p>
-			</div>
+		<HubPage
+			title={label(category)}
+			lede={`For converting ${category} files, all running in your browser.`}
+			count={{
+				value: tools.length,
+				noun: tools.length === 1 ? "tool" : "tools",
+			}}
+		>
 			<ToolTable rows={rows} caption={`${label(category)} tools`} />
-		</main>
+		</HubPage>
 	);
 }

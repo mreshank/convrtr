@@ -7,3 +7,4 @@
  */
 
 export { EditorialPage } from "./EditorialPage";
+export { HubPage } from "./HubPage";
