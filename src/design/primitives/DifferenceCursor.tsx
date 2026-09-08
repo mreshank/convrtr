@@ -131,6 +131,27 @@ export function DifferenceCursor() {
 				width: SIZE,
 				height: SIZE,
 				borderRadius: "50%",
+				/*
+				 * White, differenced. Over the black canvas that inverts to
+				 * white; over `--ink` it inverts to black; and over
+				 * `--surface-alt` — the pale mint band `SiteFooter` and
+				 * `ErrorPanel` invert onto — it necessarily lands somewhere
+				 * tinted, because a difference blend subtracts per channel and
+				 * the ground it is subtracting from is not neutral. White
+				 * minus the pale band's value lands on 27, 14, 20 — R > B > G,
+				 * a faint warm cast — where the old near-black band gave a
+				 * neutral 245, 245, 245. (Channel numbers rather than CSS
+				 * syntax on purpose: the palette guard in
+				 * `tokens.test.ts` sweeps comments too.)
+				 *
+				 * That is arithmetic, not a palette leak, and it must not be
+				 * "fixed". Suppressing or neutralising the blend over one band
+				 * would break the primitive's defining behaviour — staying
+				 * visible on any ground — and at 32px the result reads as
+				 * near-black and perceptually neutral anyway. Recorded here so
+				 * the next reader who computes those channels does not go
+				 * looking for the eleventh colour in the palette guard.
+				 */
 				background: "#ffffff",
 				mixBlendMode: "difference",
 				pointerEvents: "none",

@@ -203,7 +203,9 @@ In `src/design/tokens.css`:
 	--rule: #303236;
 ```
 
-Delete `--ink-faint` — v2 has no third text tier, and it had zero consumers and an unresolved contrast ceiling (4.43:1 on white, below AA) that the previous plan never discharged. Remove it from the `required` array too.
+Delete `--ink-faint` — v2 has no third text tier, and it had zero consumers and an unresolved contrast ceiling that the previous plan never discharged. Remove it from the `required` array too.
+
+On the contrast figure: `#737373` is **4.43:1 on black**, which is what makes it fail AA on v2's canvas. It is 4.74:1 on white, where it passes. Earlier plans, and the commit message below, cite 4.43:1 "on white" — the number is right and the ground it was attributed to is not. The decision to delete stands on its own grounds regardless (no third tier in v2, zero consumers).
 
 Then delete both dark blocks entirely: the `:root[data-theme="dark"]` rule and the `@media (prefers-color-scheme: dark)` fallback. Replace the comment above them with one explaining there is one canvas now.
 
@@ -235,6 +237,12 @@ rather than a default alternate background.
 it had zero consumers, and its 4.43:1 on white was below AA with the
 contrast ceiling never discharged."
 ```
+
+> **Correction (post-review).** The message above shipped as `20540cb` and
+> stands as history, but its contrast figure names the wrong ground:
+> `#737373` is 4.74:1 on `#ffffff` and **passes** AA there. 4.43:1 is its
+> ratio on `#000000` — this branch's canvas — where it fails. The deletion
+> remains correct on its other grounds.
 
 ---
 

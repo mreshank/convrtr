@@ -166,9 +166,26 @@ body {
  *
  * `.meta` is v2's `label-mono` (`DESIGN.v2.md:39-43`): GeistMono, 13px,
  * weight 400, line-height 1.5 — no uppercase, no letter-spacing. DESIGN.md's
- * uppercase-plus-tracking metadata voice does not survive into v2; v2 puts
- * eyebrow labels in Inter `label-md` instead and reserves mono for code
- * panels, terminal timestamps and the CTA reading a shell command.
+ * uppercase-plus-tracking metadata voice is retired from THIS LAYER: no token
+ * and no class here carries it, v2 puts eyebrow labels in Inter `label-md`
+ * instead, and mono is reserved for code panels, terminal timestamps and the
+ * CTA reading a shell command.
+ *
+ * It has not left the site. The voice is hand-rolled — `tracking-[0.08em]`
+ * over capitals, written as literal all-caps text at 13 of them and via the
+ * `uppercase` utility at the other two — at 15 sites across 8 shipping
+ * components: `ToolTable.tsx:57,64,71`, `OptionsPanel.tsx:124,170,184`,
+ * `ErrorPanel.tsx:149,172,182,202`, `DropField.tsx:63`, `ToolSearch.tsx:62`,
+ * `HeavyDownloadGate.tsx:30`, `ToolCTA.tsx:16`, `Callout.tsx:25`. Measured
+ * in a real browser on the static export, the column headers on `/tools`
+ * compute `font-size: 11px; letter-spacing: 0.88px` in Geist Mono, all-caps
+ * — so this is what the pages actually serve, everywhere a tool page shows
+ * a label.
+ *
+ * Retiring the voice from the token layer was the token migration's job.
+ * Retrofitting those 15 call sites onto `label-md` is a component rebuild
+ * and is still pending. Until it lands, do not read the paragraph above as a
+ * description of what the pages render.
  *
  * `.meta` still exists separately from `.mono` only so a labeled value can
  * carry the label-mono size without risking the uppercasing `.mono` must
