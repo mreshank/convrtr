@@ -50,17 +50,20 @@ describe("primitives barrel", () => {
  * equally. Nothing in the existing suite would fail if someone converted it.
  *
  * The right guard is not per-component: it is a sweep of the whole
- * directory. `DifferenceCursor` (a pointer-tracking rAF loop) and
- * `SiteHeader` (overlay open/close state, focus trapping) are the only two
- * components that legitimately own client state, so they are the only two
+ * directory. `DifferenceCursor` (a pointer-tracking rAF loop) is the only
+ * component that legitimately owns client state, so it is the only one
  * allowed a `"use client"` directive. This is written as an allowlist
- * rather than a count, so adding a third client component is a deliberate
+ * rather than a count, so adding a second client component is a deliberate
  * act — editing this list — rather than something that passes by accident.
+ *
+ * `SiteHeader` was the other entry. It held overlay open/close state, a Tab
+ * trap and a scroll lock, all of which existed because its nav covered the
+ * viewport. v2's navbar holds its links inline in a 64px bar that covers
+ * nothing, so the state went and the directive with it — and the entry had
+ * to leave this list too, since the second test below requires every name
+ * here to still declare the directive.
  */
-const CLIENT_COMPONENT_ALLOWLIST = new Set([
-	"DifferenceCursor.tsx",
-	"SiteHeader.tsx",
-]);
+const CLIENT_COMPONENT_ALLOWLIST = new Set(["DifferenceCursor.tsx"]);
 
 function filesDeclaringUseClient(dir: string): string[] {
 	return readdirSync(dir)
@@ -85,7 +88,7 @@ describe("server-component guard", () => {
 		expect(offenders).toEqual([]);
 	});
 
-	it('still requires "use client" on both allowlisted components', () => {
+	it('still requires "use client" on every allowlisted component', () => {
 		// Guards the allowlist itself against going stale in the other
 		// direction — an entry that no longer needs the directive should be
 		// removed from the list, not left as dead cover for nothing.

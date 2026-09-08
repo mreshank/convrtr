@@ -1,173 +1,136 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
-import { afterEach, describe, expect, it } from "vitest";
+import { render, screen, within } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
 import { SiteHeader } from "@/design/chrome/SiteHeader";
 
 const LINKS = [
 	{ href: "/tools", label: "Tools" },
 	{ href: "/blog", label: "Blog" },
 ];
-
-afterEach(() => {
-	document.body.style.overflow = "";
-});
+const CTA = { href: "/tools", label: "Start converting" };
 
 describe("SiteHeader", () => {
+	it("is a sticky edge-to-edge bar at v2's height", () => {
+		const { container } = render(<SiteHeader links={LINKS} cta={CTA} />);
+		const header = container.querySelector("header") as HTMLElement;
+		expect(header.style.position).toBe("sticky");
+		// `position: sticky` with no inset does not stick to anything — it
+		// stays in flow and scrolls away like any other block. The offset is
+		// the whole mechanism, so it is asserted alongside the position.
+		expect(header.style.top).toBe("0px");
+		expect(header.style.height).toBe("var(--navbar-height)");
+		expect(header.style.background).toBe("var(--ground)");
+	});
+
+	it("has square corners, per v2's structural zero radius", () => {
+		const { container } = render(<SiteHeader links={LINKS} cta={CTA} />);
+		const header = container.querySelector("header") as HTMLElement;
+		expect(header.style.borderRadius).toBe("");
+	});
+
+	it("does not blend — v2's bar states its own colour", () => {
+		// The previous system used mix-blend-mode: difference so one header
+		// could sit over a white page and a dark footer. v2 has one black
+		// canvas, so the bar simply is black.
+		const { container } = render(<SiteHeader links={LINKS} cta={CTA} />);
+		expect(
+			(container.querySelector("header") as HTMLElement).style.mixBlendMode,
+		).toBe("");
+	});
+
+	it("carries a hairline rule along its bottom edge", () => {
+		// The bar and the canvas below it are the same black. Without the
+		// rule there is nothing on the page that says where the navbar ends.
+		const { container } = render(<SiteHeader links={LINKS} cta={CTA} />);
+		const header = container.querySelector("header") as HTMLElement;
+		expect(header.style.borderBottomWidth).toBe("var(--rule-width)");
+		expect(header.style.borderBottomStyle).toBe("solid");
+		expect(header.style.borderBottomColor).toBe("var(--rule)");
+		// The rule sits inside the 64px, not on top of it: `--navbar-height`
+		// is what anything offsetting itself below this bar will use, and a
+		// content-box header would occupy 65.
+		expect(header.style.boxSizing).toBe("border-box");
+	});
+
+	it("renders the CTA as a pill", () => {
+		render(<SiteHeader links={LINKS} cta={CTA} />);
+		const cta = screen.getByRole("link", { name: CTA.label });
+		expect(cta.style.borderRadius).toBe("var(--radius-pill)");
+	});
+
+	it("fills the CTA from the palette rather than a literal white", () => {
+		// v2 specifies #FFFFFF on #000000 for the navbar CTA, which is
+		// exactly `--ink` on `--ground`. Writing the literals instead would
+		// need this file exempted from the palette guard again — the
+		// exemption the difference blend used to justify.
+		render(<SiteHeader links={LINKS} cta={CTA} />);
+		const cta = screen.getByRole("link", { name: CTA.label });
+		expect(cta.style.background).toBe("var(--ink)");
+		expect(cta.style.color).toBe("var(--ground)");
+	});
+
 	it("renders the wordmark as a link home", () => {
-		render(<SiteHeader links={LINKS} />);
+		render(<SiteHeader links={LINKS} cta={CTA} />);
 		expect(
 			screen.getByRole("link", { name: "convrtr" }).getAttribute("href"),
 		).toBe("/");
 	});
 
-	it("keeps the nav closed until asked", () => {
-		render(<SiteHeader links={LINKS} />);
-		const toggle = screen.getByRole("button", { name: /menu/i });
-		expect(toggle.getAttribute("aria-expanded")).toBe("false");
-		expect(screen.queryByRole("link", { name: "Tools" })).toBeNull();
+	it("renders every nav link", () => {
+		render(<SiteHeader links={LINKS} cta={CTA} />);
+		for (const link of LINKS) {
+			expect(screen.getByRole("link", { name: link.label })).toBeDefined();
+		}
 	});
 
-	it("opens and closes the overlay", () => {
-		render(<SiteHeader links={LINKS} />);
-		const toggle = screen.getByRole("button", { name: /menu/i });
-		fireEvent.click(toggle);
-		expect(toggle.getAttribute("aria-expanded")).toBe("true");
-		expect(screen.getByRole("link", { name: "Tools" })).toBeDefined();
-		fireEvent.click(toggle);
-		expect(screen.queryByRole("link", { name: "Tools" })).toBeNull();
+	it("draws the nav links as v2's nav-utility controls", () => {
+		// DESIGN.v2.md:137 — transparent fill, white text, 4px radius, 23px
+		// tall. That is the one place `--radius-control` is spent in this
+		// system, and it is visible: the global focus ring follows the
+		// border-radius, so a keyboard user sees the 4px corner.
+		render(<SiteHeader links={LINKS} cta={CTA} />);
+		const link = screen.getByRole("link", { name: "Tools" });
+		expect(link.style.borderRadius).toBe("var(--radius-control)");
+		expect(link.style.background).toBe("transparent");
+		expect(link.style.height).toBe("23px");
 	});
 
-	it("closes on Escape and returns focus to the toggle", () => {
-		// Without this a keyboard user who opens the nav is stranded in it.
-		render(<SiteHeader links={LINKS} />);
-		const toggle = screen.getByRole("button", { name: /menu/i });
-		fireEvent.click(toggle);
-		fireEvent.keyDown(document, { key: "Escape" });
-		expect(toggle.getAttribute("aria-expanded")).toBe("false");
-		expect(document.activeElement).toBe(toggle);
-	});
-
-	it("blends with difference so it stays legible over any ground", () => {
-		const { container } = render(<SiteHeader links={LINKS} />);
-		const header = container.querySelector("header") as HTMLElement;
-		expect(header.style.mixBlendMode).toBe("difference");
-		expect(header.style.position).toBe("fixed");
-	});
-
-	it("renders the overlay outside the blended header, not inside it", () => {
-		// mix-blend-mode blends an element and its whole subtree as one group
-		// against the page backdrop, and a descendant cannot opt out. Nested
-		// inside, the overlay's var(--ground) would paint as its inverse —
-		// and no unit test would catch it, because happy-dom composites
-		// nothing. This assertion is the only thing standing in the way.
-		const { container } = render(<SiteHeader links={LINKS} />);
-		fireEvent.click(screen.getByRole("button", { name: /menu/i }));
+	it("puts the nav links in the document without a disclosure", () => {
+		// The shape decision, asserted. v2's bar holds its nav inline, so
+		// nothing here covers page content — and so this component owns no
+		// open/closed state, no focus trap and no scroll lock. If a future
+		// change adds a control that opens a panel over the page, this fails
+		// and whoever wrote it has to decide about containment deliberately
+		// rather than inherit an overlay with no trap behind it.
+		const { container } = render(<SiteHeader links={LINKS} cta={CTA} />);
+		expect(screen.queryByRole("button")).toBeNull();
 		const nav = screen.getByRole("navigation", { name: "Main" });
-		expect(container.querySelector("header")?.contains(nav)).toBe(false);
+		expect(within(nav).getAllByRole("link")).toHaveLength(LINKS.length);
+		// Inline nav is a child of the bar, unlike the old overlay, which had
+		// to be a sibling to escape the blend group.
+		expect(
+			(container.querySelector("header") as HTMLElement).contains(nav),
+		).toBe(true);
 	});
 
-	// The tab loop is [wordmark, toggle, ...nav links], in that order,
-	// because that is the order the document already puts them in: the
-	// wordmark and the toggle both live in the header, which is rendered
-	// before the nav. Everything the header draws above the opaque overlay
-	// is visible and mouse-clickable while the menu is open, so all of it
-	// has to be keyboard-reachable too — and nothing outside the loop may
-	// be reachable at all, since the user cannot see it.
-	//
-	// The trap therefore wraps FIRST to LAST, not toggle to last link. An
-	// earlier version hardcoded the toggle as the first element, which left
-	// the wordmark visible and clickable but keyboard-unreachable, and let
-	// Shift+Tab out of it escape into the content behind the overlay.
-	it("wraps Tab forward from the last link back to the wordmark", () => {
-		// The overlay is opaque and covers the viewport, so anything Tab
-		// would reach outside this loop — page content behind it — is
-		// content the user cannot see while the menu is open.
-		render(<SiteHeader links={LINKS} />);
-		const toggle = screen.getByRole("button", { name: /menu/i });
-		fireEvent.click(toggle);
-		const wordmark = screen.getByRole("link", { name: "convrtr" });
-		const nav = screen.getByRole("navigation", { name: "Main" });
-		const navLinks = within(nav).getAllByRole("link");
-		const lastLink = navLinks[navLinks.length - 1] as HTMLElement;
-		lastLink.focus();
-		fireEvent.keyDown(lastLink, { key: "Tab" });
-		expect(document.activeElement).toBe(wordmark);
-	});
-
-	it("wraps Shift+Tab from the wordmark back to the last link", () => {
-		// The wordmark is drawn above the overlay and is the first thing in
-		// the loop, so Shift+Tab out of it must come back round rather than
-		// escaping into the page behind.
-		render(<SiteHeader links={LINKS} />);
-		const toggle = screen.getByRole("button", { name: /menu/i });
-		fireEvent.click(toggle);
-		const wordmark = screen.getByRole("link", { name: "convrtr" });
-		const nav = screen.getByRole("navigation", { name: "Main" });
-		const navLinks = within(nav).getAllByRole("link");
-		const lastLink = navLinks[navLinks.length - 1] as HTMLElement;
-		wordmark.focus();
-		fireEvent.keyDown(wordmark, { key: "Tab", shiftKey: true });
-		expect(document.activeElement).toBe(lastLink);
-	});
-
-	it("leaves Shift+Tab from the toggle to native order, which reaches the wordmark", () => {
-		// The toggle is no longer the first element in the loop, so backward
-		// movement out of it is an ordinary step to the wordmark that
-		// precedes it in the document. Intercepting it is what made the
-		// wordmark unreachable in the first place. happy-dom does not move
-		// focus for a synthetic Tab, so what is asserted is that the handler
-		// does not cancel the event.
-		render(<SiteHeader links={LINKS} />);
-		const toggle = screen.getByRole("button", { name: /menu/i });
-		fireEvent.click(toggle);
-		toggle.focus();
-		const event = new KeyboardEvent("keydown", {
-			key: "Tab",
-			shiftKey: true,
-			bubbles: true,
-			cancelable: true,
-		});
-		toggle.dispatchEvent(event);
-		expect(event.defaultPrevented).toBe(false);
-		expect(document.activeElement).toBe(toggle);
-	});
-
-	it("keeps the loop closed when there are no links at all", () => {
-		// With an empty array the loop is just [wordmark, toggle]. The
-		// earlier version bailed out when it found no links, which silently
-		// turned the trap off and made the opaque overlay escapable — a bug
-		// waiting for the first caller to pass a filtered-empty list.
-		render(<SiteHeader links={[]} />);
-		const toggle = screen.getByRole("button", { name: /menu/i });
-		fireEvent.click(toggle);
-		const wordmark = screen.getByRole("link", { name: "convrtr" });
-
-		toggle.focus();
-		fireEvent.keyDown(toggle, { key: "Tab" });
-		expect(document.activeElement).toBe(wordmark);
-
-		wordmark.focus();
-		fireEvent.keyDown(wordmark, { key: "Tab", shiftKey: true });
-		expect(document.activeElement).toBe(toggle);
-	});
-
-	it("locks body scroll while open and restores the prior value on close", () => {
-		// Restoring to whatever was there before — not assuming blank —
-		// matters because something else may set this value later.
+	it("leaves body scroll alone", () => {
+		// The overlay locked it, because the page behind an opaque
+		// full-viewport panel must not scroll. A 64px bar covers nothing, so
+		// locking would be a bug rather than a courtesy.
 		document.body.style.overflow = "scroll";
-		render(<SiteHeader links={LINKS} />);
-		const toggle = screen.getByRole("button", { name: /menu/i });
-		fireEvent.click(toggle);
-		expect(document.body.style.overflow).toBe("hidden");
-		fireEvent.click(toggle);
+		render(<SiteHeader links={LINKS} cta={CTA} />);
 		expect(document.body.style.overflow).toBe("scroll");
+		document.body.style.overflow = "";
 	});
 
-	it("restores body scroll on unmount while still open", () => {
-		document.body.style.overflow = "scroll";
-		const { unmount } = render(<SiteHeader links={LINKS} />);
-		fireEvent.click(screen.getByRole("button", { name: /menu/i }));
-		expect(document.body.style.overflow).toBe("hidden");
-		unmount();
-		expect(document.body.style.overflow).toBe("scroll");
+	it("renders with no links at all", () => {
+		// The old trap had a guard that silently stopped intercepting on an
+		// empty array. There is no trap now, but an empty list still has to
+		// render the bar rather than throw — a caller filtering a list down
+		// to nothing is ordinary.
+		render(<SiteHeader links={[]} cta={CTA} />);
+		expect(screen.getByRole("link", { name: "convrtr" })).toBeDefined();
+		expect(screen.getByRole("link", { name: CTA.label })).toBeDefined();
+		const nav = screen.getByRole("navigation", { name: "Main" });
+		expect(within(nav).queryAllByRole("link")).toHaveLength(0);
 	});
 });

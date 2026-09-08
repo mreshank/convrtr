@@ -72,8 +72,12 @@ const LITERAL_HEX_ALLOWED = new Set([
 	// `mix-blend-mode: difference` inverts against white specifically —
 	// this is the blend operand, not a palette choice, and a token would
 	// change with the theme and break the inversion.
+	//
+	// `SiteHeader.tsx` was exempted here for the same reason and no longer
+	// is: v2's navbar states its own colour rather than blending, so its
+	// white is `--ink` — an ordinary palette value with no reason to be
+	// written as a literal.
 	join("src", "design", "primitives", "DifferenceCursor.tsx"),
-	join("src", "design", "chrome", "SiteHeader.tsx"),
 	// A mask gradient's colour is an alpha channel, not a paint — black means
 	// opaque, transparent means cut away. It is not a palette value and must
 	// not become a token, because a token would change with the design and
