@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { TOOLS } from "@/core/registry";
+import { DotMatrix } from "@/design/families/DotMatrix";
 import { HeroBand } from "@/design/families/HeroBand";
+import { TerminalPanel } from "@/design/families/TerminalPanel";
 
 export default function Home() {
 	return (
@@ -31,6 +33,34 @@ export default function Home() {
 				cta={{ href: "/tools", label: "Start converting" }}
 				secondary={{ href: "/blog", label: "Read the blog" }}
 			/>
+			{/*
+			 * v2's mono family names code panels as one of its homes, and this
+			 * is that panel -- the terminal/code panel on the raised surface,
+			 * `--surface`'s first consumer. Wrapped in its own `DotMatrix`
+			 * rather than sharing the hero's: v2 confines the grain to the
+			 * topmost strip and code-panel graphics specifically, not
+			 * everything between them, and Task 3 already established that a
+			 * shared wrapper over-applies it.
+			 *
+			 * There is no command line here -- this product converts files in
+			 * a browser tab, nothing more -- so the lines describe what the
+			 * browser actually does for `heic-to-jpg`: `heic.ts` decodes HEIC
+			 * via `libheif-js/wasm-bundle`, wholly client-side, and
+			 * `quality-profiles.ts`'s "balanced" default for the mozjpeg
+			 * encoder is quality 78. Both are real code paths in this
+			 * repository, not invented numbers.
+			 */}
+			<DotMatrix>
+				<TerminalPanel
+					label="What happens when you convert a file"
+					lines={[
+						{ text: "photo.heic selected — 4.2 MB" },
+						{ text: "decoding locally, no upload", tone: "muted" },
+						{ text: "libheif → jpeg, quality 78", tone: "muted" },
+						{ text: "photo.jpg ready — 1.1 MB", tone: "accent" },
+					]}
+				/>
+			</DotMatrix>
 			{/*
 			 * Derived from the registry rather than hand-listed, so adding a tool
 			 * adds its link here for free. Hard-coding one would quietly falsify
