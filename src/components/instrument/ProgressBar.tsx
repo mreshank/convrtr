@@ -10,7 +10,11 @@ export function ProgressBar({ ratio, phase, elapsedSeconds }: Props) {
 				aria-valuenow={Math.round(ratio * 100)}
 				aria-valuemin={0}
 				aria-valuemax={100}
-				className="h-[2px] w-full"
+				// h-px: a hairline track, same thickness as --rule-width. Was
+				// `h-[2px]` -- an ad-hoc value the F3 Tailwind-arbitrary-value
+				// sweep (`design-system.test.ts`) now catches; this track is
+				// painted with `--rule`, the hairline colour, so it reads as one.
+				className="h-px w-full"
 				style={{ background: "var(--rule)" }}
 			>
 				<div

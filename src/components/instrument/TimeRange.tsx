@@ -43,13 +43,20 @@ export function TimeRange({ label, duration, start, end, onChange }: Props) {
 			<div className="relative h-8">
 				{/* The unselected timeline. */}
 				<div
-					className="absolute top-[14px] h-[2px] w-full"
+					// h-px: a hairline rail, same thickness as --rule-width and
+					// the same "1" the spacing scale allows for exactly this reason
+					// (`design-system.test.ts`'s ALLOWED_LITERAL_PX: "hairlines,
+					// which are a border weight rather than a gap"). Was
+					// `h-[2px]` -- an ad-hoc value the F3 Tailwind-arbitrary-value
+					// sweep in that file now catches; this track is painted with
+					// `--rule`, the hairline colour, so it reads as one.
+					className="absolute top-[14px] h-px w-full"
 					style={{ background: "var(--rule)" }}
 				/>
 				{/* The selected span, so the choice is legible without reading
 				    the numbers. */}
 				<div
-					className="absolute top-[14px] h-[2px]"
+					className="absolute top-[14px] h-px"
 					style={{
 						left: `${leftPercent}%`,
 						width: `${widthPercent}%`,
