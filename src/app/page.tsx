@@ -18,12 +18,25 @@ import { TerminalPanel } from "@/design/families/TerminalPanel";
 // every conversion in `src/core` runs client-side, decoding and encoding in
 // the browser tab with nothing sent anywhere, and there is no account system
 // or analytics call anywhere in this codebase.
+//
+// "Honest" reads "drawn", not "stated", and the word was changed on evidence.
+// `FidelityScore` renders a ring and a number; the only place the word
+// "lossless" appears is its `aria-label`
+// (`FidelityScore.tsx:97`: `Fidelity ${rounded} of 100 -- ${label}`), and the
+// `label` prop is documented there as "Accessible name only ... never
+// rendered inside the ring". So a claim that fidelity is *stated* was true
+// for a screen-reader user and false for a sighted one -- not acceptable on
+// a page whose whole argument is that its claims are checkable. What a
+// sighted user genuinely gets is a drawing: `isSolid()` picks
+// `strokeLinecap: "round"` with no dash for `lossless`/`visually-lossless`
+// and `strokeDasharray` for the two lossy states, and the stroke is
+// `var(--accent)` for `lossless` alone.
 const FEATURES = [
 	{ label: "Local", body: "Files never leave the device." },
 	{ label: "Fast", body: "No round trip to a server." },
 	{ label: "Private", body: "No account, no telemetry." },
 	{ label: "Offline", body: "Works with the network off." },
-	{ label: "Honest", body: "Fidelity is stated, not implied." },
+	{ label: "Honest", body: "Fidelity is drawn, not implied." },
 ];
 
 // v2 puts a certification badge row and an "all systems operational" mint
@@ -45,11 +58,24 @@ const COMPLIANCE_CLAIMS = [
 // the strip's five. "Open formats" reads `supportedFormats().length` rather
 // than a hand-typed count, so the claim cannot go stale as tools are added
 // to or removed from the registry.
+//
+// "Stated fidelity" used to claim "Lossless is labelled lossless", which was
+// false for anyone looking at the page: the word appears only in
+// `FidelityScore`'s `aria-label` (see the FEATURES comment above). The body
+// now describes the encoding that is actually painted, and describes it in
+// the direction that is unconditionally true -- `FidelityScore.tsx:139` sets
+// `strokeDasharray` if and only if `isSolid()` is false, i.e. exactly for
+// `lossy` and `inherently-lossy`. The converse would not be safe to claim:
+// `visually-lossless` also draws a solid ring, and something was given up
+// there.
 const GRID_FEATURES = [
 	{ label: "No upload", body: "Conversion runs in the page." },
 	{ label: "No account", body: "Nothing to sign up for." },
 	{ label: "No telemetry", body: "No analytics beacon." },
-	{ label: "Stated fidelity", body: "Lossless is labelled lossless." },
+	{
+		label: "Stated fidelity",
+		body: "A broken ring means something was given up.",
+	},
 	{
 		label: "Open formats",
 		body: `${supportedFormats().length} extensions in and out.`,
