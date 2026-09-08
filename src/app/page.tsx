@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { TOOLS } from "@/core/registry";
 import { supportedFormats } from "@/core/registry/stats";
+import { ComplianceRow } from "@/design/families/ComplianceRow";
 import { DotMatrix } from "@/design/families/DotMatrix";
 import { FeatureGrid } from "@/design/families/FeatureGrid";
 import { FeatureStrip } from "@/design/families/FeatureStrip";
@@ -22,6 +23,21 @@ const FEATURES = [
 	{ label: "Private", body: "No account, no telemetry." },
 	{ label: "Offline", body: "Works with the network off." },
 	{ label: "Honest", body: "Fidelity is stated, not implied." },
+];
+
+// v2 puts a certification badge row and an "all systems operational" mint
+// status dot in the footer band. This product holds no certifications, and
+// printing a SOC 2 or ISO seal it does not have would be a fabricated
+// credential -- the one thing a page whose argument is verifiability must
+// never carry. These three claims are the checkable equivalent: every one
+// of them is what `e2e/network-guard.ts` asserts in `pnpm run ci`, which
+// watches every request the page makes and fails if a single byte leaves
+// the device, then self-tests by injecting a cross-origin beacon to prove
+// the guard actually fires rather than passing by omission.
+const COMPLIANCE_CLAIMS = [
+	"No file leaves the device",
+	"No account required",
+	"No analytics beacon",
 ];
 
 // v2's second, denser feature grid -- six informational claims rather than
@@ -146,6 +162,20 @@ export default function Home() {
 			<span className="mono text-[11px]" style={{ color: "var(--ink-muted)" }}>
 				LOCAL ONLY · 0 BYTES UPLOADED · WORKS OFFLINE
 			</span>
+			{/*
+			 * v2's compliance badge row and mint status dot, adapted for a
+			 * product with no certifications to badge -- see the
+			 * COMPLIANCE_CLAIMS comment above for why these three claims and
+			 * not a seal. "Verified in CI" is true today because
+			 * `e2e/network-guard.ts` runs as part of `pnpm run ci`
+			 * (`pnpm playwright test`, the suite's last step) and its
+			 * beacon-injection self-test proves the guard would catch a leak
+			 * rather than silently passing one.
+			 */}
+			<ComplianceRow
+				claims={COMPLIANCE_CLAIMS}
+				status={{ label: "Verified in CI", ok: true }}
+			/>
 		</main>
 	);
 }
