@@ -13,6 +13,23 @@ const BARREL = "src/design/primitives/index.ts";
 const FAMILIES_BARREL = "src/design/families/index.ts";
 
 /**
+ * `src/design/templates/` is the fourth composition layer, and the same
+ * argument that gave `families/` its own barrel check applies to it
+ * unchanged: `route-purity.test.ts` requires every route to import from
+ * this barrel specifically, so a template that exists but is not exported
+ * here is invisible to every route in the app.
+ *
+ * It also exists to close a gap this suite shipped with. Every sweep below
+ * named `primitives/`, `chrome/` and `families/` explicitly, and
+ * `templates/` is a whole directory that came later and sat outside all of
+ * them — proved by mutation: a throwaway `templates/Unexported.tsx` that
+ * the barrel did not export passed this entire file green before this
+ * constant and the checks below existed, for exactly the reason
+ * `families/Unexported.tsx` once did.
+ */
+const TEMPLATES_BARREL = "src/design/templates/index.ts";
+
+/**
  * A primitive that exists but is not exported is invisible to the templates
  * that need it, and nothing else in the suite would notice. This walks the
  * directory rather than checking a hand-written list, so adding a file is
@@ -27,6 +44,7 @@ function componentFiles(dir: string): string[] {
 describe("primitives barrel", () => {
 	const barrel = readFileSync(BARREL, "utf8");
 	const familiesBarrel = readFileSync(FAMILIES_BARREL, "utf8");
+	const templatesBarrel = readFileSync(TEMPLATES_BARREL, "utf8");
 
 	it.each(componentFiles("src/design/primitives"))(
 		"exports %s",
@@ -60,6 +78,15 @@ describe("primitives barrel", () => {
 		},
 	);
 
+	it.each(componentFiles("src/design/templates"))(
+		"exports %s from templates",
+		(component) => {
+			// Same reasoning as the families check above, for the layer
+			// `route-purity.test.ts` actually requires routes to import from.
+			expect(templatesBarrel).toContain(`from "./${component}"`);
+		},
+	);
+
 	it("exports at least the nine primitives the spec names", () => {
 		// A guard against the barrel being emptied or the directory being
 		// moved without this test noticing it now covers nothing.
@@ -76,6 +103,14 @@ describe("primitives barrel", () => {
 		expect(componentFiles("src/design/families").length).toBeGreaterThanOrEqual(
 			10,
 		);
+	});
+
+	it("exports at least the four templates this plan names", () => {
+		// Same non-vacuity guard, for the same reason, for the fourth layer:
+		// `EditorialPage`, `HubPage`, `ArticlePage`, `ConverterPage`.
+		expect(
+			componentFiles("src/design/templates").length,
+		).toBeGreaterThanOrEqual(4);
 	});
 });
 
@@ -101,10 +136,17 @@ describe("primitives barrel", () => {
  * to leave this list too, since the second test below requires every name
  * here to still declare the directive.
  *
- * The sweep runs over `primitives/`, `chrome/` AND `families/`. The third
- * directory had to be named explicitly: these helpers take a directory
- * argument, so a directory nobody passes is a directory nobody checks, and
- * `families/` sat outside all of it for ten components.
+ * The sweep runs over `primitives/`, `chrome/`, `families/` AND
+ * `templates/`. Each directory had to be named explicitly: these helpers
+ * take a directory argument, so a directory nobody passes is a directory
+ * nobody checks. `families/` sat outside all of it for ten components, and
+ * `templates/` sat outside all of it for four more, for the same reason.
+ *
+ * Every template in this plan is a server component: `EditorialPage`
+ * imposes a flex shell, `HubPage` frames a listing, `ArticlePage` sets a
+ * prose measure, `ConverterPage` frames the instrument — none holds state.
+ * So the allowlist gains no entries for `templates/` either, and a template
+ * that acquires the directive without being added to it fails.
  */
 const CLIENT_COMPONENT_ALLOWLIST = new Set(["DifferenceCursor.tsx"]);
 
@@ -145,6 +187,17 @@ describe("server-component guard", () => {
 		expect(offenders).toEqual([]);
 	});
 
+	it('allows "use client" only on the allowlisted templates', () => {
+		// All four templates are server components -- see the comment above
+		// CLIENT_COMPONENT_ALLOWLIST for why each one specifically holds no
+		// state. Verified by mutation: a `"use client"` prepended to
+		// `HubPage.tsx` passed this file green before this test existed.
+		const offenders = filesDeclaringUseClient("src/design/templates").filter(
+			(name) => !CLIENT_COMPONENT_ALLOWLIST.has(name),
+		);
+		expect(offenders).toEqual([]);
+	});
+
 	it('still requires "use client" on every allowlisted component', () => {
 		// Guards the allowlist itself against going stale in the other
 		// direction — an entry that no longer needs the directive should be
@@ -153,6 +206,7 @@ describe("server-component guard", () => {
 			...filesDeclaringUseClient("src/design/primitives"),
 			...filesDeclaringUseClient("src/design/chrome"),
 			...filesDeclaringUseClient("src/design/families"),
+			...filesDeclaringUseClient("src/design/templates"),
 		]);
 		for (const name of CLIENT_COMPONENT_ALLOWLIST) {
 			expect(declaring.has(name)).toBe(true);
