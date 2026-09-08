@@ -60,19 +60,62 @@ describe("FidelityScore", () => {
 });
 
 describe("monochrome state encoding", () => {
-	it("draws every score in the same ink, so colour encodes nothing", () => {
-		const strokes = [100, 92, 55, 10].map((score) => {
-			const { container } = render(
-				<FidelityScore score={score} label={`Q${score}`} fidelity="lossless" />,
-			);
-			return ringPath(container)?.getAttribute("stroke");
-		});
-		expect(strokes).toEqual([
+	it("varies the ring colour by state only, never by score", () => {
+		// This used to assert `var(--ink)` for all four scores of a single
+		// `lossless` ring. The mint tint keys off the state, so the invariant
+		// the test exists to protect is restated rather than dropped: the
+		// number on the dial must never move the colour. Checked on both
+		// sides of the tint, so neither a score-derived hue nor a numeric
+		// threshold can slip back in behind it.
+		const strokes = (fidelity: FidelityState) =>
+			[100, 92, 55, 10].map((score) => {
+				const { container } = render(
+					<FidelityScore
+						score={score}
+						label={`Q${score}`}
+						fidelity={fidelity}
+					/>,
+				);
+				return ringPath(container)?.getAttribute("stroke");
+			});
+		expect(strokes("lossless")).toEqual([
+			"var(--accent)",
+			"var(--accent)",
+			"var(--accent)",
+			"var(--accent)",
+		]);
+		expect(strokes("lossy")).toEqual([
 			"var(--ink)",
 			"var(--ink)",
 			"var(--ink)",
 			"var(--ink)",
 		]);
+	});
+
+	it("tints only the lossless ring with mint", () => {
+		// Stroke stays the primary encoding — mint reinforces, never
+		// carries. Every other state stays ink, so fidelity survives
+		// greyscale and colour-blindness.
+		const stroke = (fidelity: string) => {
+			const { container } = render(
+				<FidelityScore score={100} label="x" fidelity={fidelity as never} />,
+			);
+			return container.querySelector("path")?.getAttribute("stroke");
+		};
+		expect(stroke("lossless")).toBe("var(--accent)");
+		expect(stroke("visually-lossless")).toBe("var(--ink)");
+		expect(stroke("lossy")).toBe("var(--ink)");
+		expect(stroke("inherently-lossy")).toBe("var(--ink)");
+	});
+
+	it("tints the stroke and never fills the ring", () => {
+		// A CTA is a mint pill fill; this is a mint stroke tint. Filling the
+		// ring would make one hue mean both "this is the action" and "this
+		// is intact" — the collision the spec names as a defect.
+		const { container } = render(
+			<FidelityScore score={100} label="x" fidelity="lossless" />,
+		);
+		expect(container.querySelector("path")?.getAttribute("fill")).toBe("none");
 	});
 
 	function dashArray(

@@ -205,6 +205,146 @@ describe("CSS border-weight regex", () => {
 });
 
 /**
+ * v2's spacing scale, and the per-component literals it does not cover.
+ *
+ * Colour, radius, easing and duration are closed sets with sweeps behind
+ * them. Spacing was not, and two chrome components had already produced
+ * three ad-hoc scales — 14px was a token and a literal in the same file.
+ * v2 supplies the scale, so it gets a guard.
+ *
+ *   0   no space at all, and the `0` of a shorthand pair.
+ *   1   hairlines, which are a border weight rather than a gap.
+ *   14  v2's nav-utility horizontal padding (`DESIGN.v2.md:137`:
+ *       "transparent-fill, white text, 4px radius, 23px tall, 0px/14px
+ *       padding"), a per-component value exactly like the heights below.
+ *   23  nav-utility control height, same line of v2.
+ *   36  navbar-cta height.
+ *   44  the minimum touch target.
+ *
+ * Everything else is a gap, a pad or a measure, and belongs to --gap-sm,
+ * --gap-md, --gap-lg, --section-pad, --max-width or a multiple of
+ * --space-base.
+ */
+const ALLOWED_LITERAL_PX = new Set([0, 1, 14, 23, 36, 44]);
+
+/**
+ * Every spacing property whose quoted value carries a px length the scale
+ * does not admit.
+ *
+ * Two deliberate details, both of which a narrower pattern got wrong:
+ *
+ * The alternation names `maxWidth`/`minWidth`/`maxHeight`/`minHeight`
+ * explicitly rather than relying on the `[A-Za-z]*` suffix, which only
+ * reaches *trailing* words (`marginTop`) and lets a hard-coded
+ * `maxWidth: "1600px"` past entirely — and `--max-width` is a token this
+ * system supplies, so that literal is precisely what this sweep is for.
+ * Explicit alternatives rather than an `i` flag: `/i` would also match
+ * `strokeWidth`, which FidelityScore sets on the ring and which is a line
+ * weight, not spacing.
+ *
+ * The leading `\b` closes the substring hole the flag would otherwise
+ * leave open from the other end. Without it `stopColor: "12px"` matches on
+ * the `top` inside `stop`, and `copyright: "20px"` on the `right` inside
+ * `copyright` — verified, both flagged. See the fixture table below.
+ *
+ * The whole quoted value is captured and then scanned for px lengths,
+ * rather than the value being required to *be* a single length. A
+ * shorthand is the obvious way to write an ad-hoc spacing pair, so
+ * `padding: "13px 27px"` has to be legible to the sweep; matching only a
+ * lone length would wave it straight through.
+ */
+const SPACING_PROPERTY =
+	/\b(?:padding|margin|gap|width|height|top|left|right|bottom|maxWidth|minWidth|maxHeight|minHeight)[A-Za-z]*:\s*["']([^"']*)["']/g;
+
+function findAdHocSpacing(content: string): string[] {
+	const offenders: string[] = [];
+	for (const match of content.matchAll(SPACING_PROPERTY)) {
+		for (const length of (match[1] ?? "").matchAll(/(\d+(?:\.\d+)?)px/g)) {
+			if (!ALLOWED_LITERAL_PX.has(Number(length[1]))) {
+				offenders.push(match[0].trim());
+			}
+		}
+	}
+	return offenders;
+}
+
+describe("spacing scale", () => {
+	it("writes no ad-hoc spacing literal", () => {
+		const offenders: string[] = [];
+		for (const { path, content } of sourceFileContents) {
+			if (!path.endsWith(".tsx")) continue;
+			for (const hit of findAdHocSpacing(content)) {
+				offenders.push(`${path}: ${hit}`);
+			}
+		}
+		expect(offenders).toEqual([]);
+	});
+});
+
+describe("spacing sweep regex", () => {
+	// Pinned against fixtures directly, like the border-weight and
+	// cursor-none guards above, and for the same reason: a corpus that is
+	// clean today says nothing about whether the regex under it would catch
+	// tomorrow's violation. This project has already shipped a guard whose
+	// optional group swallowed part of a neighbouring property name, and a
+	// sweep that over-matches gets deleted by the next person who trips on
+	// it.
+	const mustFlag = [
+		'padding: "13px"',
+		'gap: "18px"',
+		'marginTop: "40px"',
+		// The widened alternation. `--max-width` exists; this literal is the
+		// case the lowercase-only pattern let through.
+		'maxWidth: "1600px"',
+		'minHeight: "50px"',
+		// Shorthand, both halves ad-hoc.
+		'padding: "13px 27px"',
+		// Shorthand, one half ad-hoc: still a violation.
+		'margin: "0 13px"',
+		'padding: "0 14px 13px"',
+		// A length buried in a calc() is still a length.
+		'height: "calc(100% - 24px)"',
+	];
+
+	const mustNotFlag = [
+		'padding: "var(--gap-md)"',
+		'gap: "var(--gap-sm)"',
+		'padding: "0 var(--gap-md)"',
+		// v2's own per-component values.
+		'padding: "0 14px"',
+		'height: "23px"',
+		'height: "36px"',
+		'minHeight: "44px"',
+		'width: "1px"',
+		'padding: "0"',
+		'padding: "0px"',
+		// Not a length at all.
+		'maxWidth: "32ch"',
+		// A stroke is a line weight, not spacing — the reason there is no
+		// `i` flag.
+		'strokeWidth: "3.6px"',
+		// The two substring traps the leading \b closes: `top` inside
+		// `stop`, `right` inside `copyright`.
+		'stopColor: "12px"',
+		'copyright: "20px"',
+		// Type, not space.
+		'fontSize: "14px"',
+		'lineHeight: "20px"',
+		// A track template is neither a gap nor a pad, and no token in the
+		// scale describes one.
+		'gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))"',
+	];
+
+	it.each(mustFlag)("flags %j as an ad-hoc spacing literal", (input) => {
+		expect(findAdHocSpacing(input).length).toBeGreaterThan(0);
+	});
+
+	it.each(mustNotFlag)("does not flag %j", (input) => {
+		expect(findAdHocSpacing(input)).toEqual([]);
+	});
+});
+
+/**
  * `linear-gradient` in these two files is not a decorative fill — it is the
  * alpha channel of MediaFrame's `mask-image` (task 9's fade-to-canvas
  * mechanism) and the test that asserts on that same string literal. A mask's

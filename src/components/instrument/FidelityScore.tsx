@@ -114,10 +114,26 @@ export function FidelityScore({ score, label, fidelity, size = 36 }: Props) {
 					strokeWidth={strokeWidth}
 				/>
 				{d && (
+					// `fill="none"` is load-bearing, not a default worth
+					// tidying: mint has two jobs in this system and only
+					// shape keeps them apart. A call to action is a mint
+					// pill *fill*; this is a mint stroke *tint* on an
+					// otherwise ink ring. Filling the ring would make one
+					// hue mean both "this is the action" and "this is
+					// intact" — the collision DESIGN.v2.md names as a
+					// defect — and it would also swamp the dash pattern
+					// that does the actual work below.
+					//
+					// The tint reinforces `lossless` and nothing else.
+					// Stroke stays the primary encoding, so fidelity is
+					// still fully readable in greyscale, under
+					// colour-blindness, and on a printed page; the mint is
+					// a second, redundant channel on the one state that
+					// gave nothing up.
 					<path
 						d={d}
 						fill="none"
-						stroke="var(--ink)"
+						stroke={fidelity === "lossless" ? "var(--accent)" : "var(--ink)"}
 						strokeWidth={strokeWidth}
 						strokeLinecap={solid ? "round" : "butt"}
 						{...(solid ? {} : { strokeDasharray: `${dash} ${dash}` })}

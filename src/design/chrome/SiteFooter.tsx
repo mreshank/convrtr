@@ -44,13 +44,13 @@ export function SiteFooter({ bio, socials, contact, credit }: Props) {
 				["--ink-muted" as string]: "var(--ink-inverse)",
 				background: "var(--ground)",
 				color: "var(--ink)",
-				padding: "24px",
+				padding: "var(--gap-md)",
 			}}
 		>
 			<div
 				style={{
 					display: "grid",
-					gap: "24px",
+					gap: "var(--gap-md)",
 					gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
 				}}
 			>
