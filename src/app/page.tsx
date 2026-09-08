@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { TOOLS } from "@/core/registry";
+import { toolsByCategory } from "@/core/registry/stats";
+import { BarChart } from "@/design/families/BarChart";
 import { DotMatrix } from "@/design/families/DotMatrix";
 import { FusedHeadline } from "@/design/families/FusedHeadline";
 
@@ -12,6 +14,7 @@ export default function Home() {
 					lead="Convert anything."
 					cont="Nothing uploads."
 				/>
+				<BarChart data={toolsByCategory()} />
 				{/*
 				 * Derived from the registry rather than hand-listed, so adding a tool
 				 * adds its link here for free. Hard-coding one would quietly falsify

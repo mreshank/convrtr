@@ -360,12 +360,20 @@ describe("spacing sweep regex", () => {
  * way to express a repeating dot lattice, and its colour comes from `--rule`,
  * so it carries the same accountability the palette guard gives every other
  * colour in the system.
+ *
+ * `gradient` in BarChart.tsx (task 4) is not CSS at all — the word appears
+ * only in a doc comment quoting v2's own guardrail prose ("forbids a
+ * full-frame saturated gradient behind the hero") to explain why the chart is
+ * drawn as thin bars instead. This sweep scans raw file text rather than
+ * parsed styles, so it cannot tell a mention from a use; the file's rendered
+ * output declares no gradient, box-shadow, or backdrop-filter anywhere.
  */
 const GRADIENT_ALLOWED = new Set([
 	join("src", "design", "primitives", "MediaFrame.tsx"),
 	join("src", "design", "__tests__", "MediaFrame.test.tsx"),
 	join("src", "design", "families", "DotMatrix.tsx"),
 	join("src", "design", "__tests__", "DotMatrix.test.tsx"),
+	join("src", "design", "families", "BarChart.tsx"),
 ]);
 
 describe("forbidden visual devices", () => {
