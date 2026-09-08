@@ -26,7 +26,13 @@ const PILL = {
 	fontWeight: 500,
 	letterSpacing: "var(--label-tracking)",
 	textDecoration: "none",
-	transition: "background var(--dur-hover) var(--ease)",
+	// No `transition` here. One was declared -- `background var(--dur-hover)
+	// var(--ease)` -- with no `:hover` rule for either pill anywhere in
+	// `families.css`, `HeroBand.tsx` or `globals.css`, so it animated a
+	// property nothing ever changed. v2 specifies a hover-lighten only for
+	// its mint shell-command CTA, which this system does not build yet, so a
+	// white pill with no hover is spec-correct and the declaration was simply
+	// inert. Deleted rather than given an invented hover to justify it.
 } as const;
 
 /**

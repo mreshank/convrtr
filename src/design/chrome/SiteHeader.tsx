@@ -191,6 +191,26 @@ export function SiteHeader({ links, cta }: Props) {
 			{/* v2's `navbar-cta`: white fill, black text, pill corners, 36px. */}
 			<Link
 				href={cta.href}
+				// The same hook `HeroBand`'s primary pill carries, for the same
+				// reason: this is the identical shape -- a white-filled pill on
+				// the black canvas -- and the global focus ring is `1px solid
+				// var(--ink)`, i.e. the pill's own fill colour. One rule in
+				// `families.css` covers both rather than each growing its own,
+				// and this instance matters more than the hero's because
+				// `layout.tsx` mounts this bar on every route.
+				//
+				// Measured on the real export before this attribute: the ring
+				// was drawn OUTSIDE the pill (`outline-offset: 2px`), so its
+				// true neighbours were the black page on both sides at 18.93:1
+				// and 17.74:1 -- visible, but as a 1px white hairline hemmed
+				// against a large white pill by 2px of gap, reading as part of
+				// the pill's own silhouette rather than as an indicator. The
+				// ring-versus-fill figure of 1:1 that Task 5 recorded is a real
+				// number about a pair that never touch. With the attribute the
+				// ring is `--ground` at `outline-offset: -3px`, stamped inside
+				// the fill, where its neighbours on both sides are the white
+				// pill itself -- an unambiguous dark ring on a light field.
+				data-cta-fill
 				style={{
 					display: "inline-flex",
 					alignItems: "center",

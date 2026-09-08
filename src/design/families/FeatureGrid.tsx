@@ -74,7 +74,23 @@ export function FeatureGrid({ items }: Props) {
 						data-glyph
 						aria-hidden="true"
 						className="mono"
-						style={{ color: "var(--accent)", fontSize: "var(--mono-size)" }}
+						style={{
+							color: "var(--accent)",
+							fontSize: "var(--mono-size)",
+							// The cell is a flex column, whose default
+							// `align-items: stretch` blockifies this span and
+							// stretches its box across the whole cell.
+							// Measured at 1400px: the box was 229.3x19.5px
+							// while the glyph's ink is 23.4x17px. Invisible
+							// today because the background is transparent, and
+							// a trap tomorrow -- any background, border or
+							// hover added to the glyph would paint across the
+							// full cell width, ten times the mark itself. This
+							// is the minimal constraint: it takes the box back
+							// to the ink's own width without touching the
+							// column's layout.
+							alignSelf: "flex-start",
+						}}
 					>
 						{"///"}
 					</span>
