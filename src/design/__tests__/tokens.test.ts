@@ -74,6 +74,11 @@ const LITERAL_HEX_ALLOWED = new Set([
 	// change with the theme and break the inversion.
 	join("src", "design", "primitives", "DifferenceCursor.tsx"),
 	join("src", "design", "chrome", "SiteHeader.tsx"),
+	// A mask gradient's colour is an alpha channel, not a paint — black means
+	// opaque, transparent means cut away. It is not a palette value and must
+	// not become a token, because a token would change with the design and
+	// silently alter the mask's opacity.
+	join("src", "design", "primitives", "MediaFrame.tsx"),
 ]);
 
 /**

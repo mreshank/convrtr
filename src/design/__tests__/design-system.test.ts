@@ -204,15 +204,37 @@ describe("CSS border-weight regex", () => {
 	});
 });
 
+/**
+ * `linear-gradient` in these two files is not a decorative fill — it is the
+ * alpha channel of MediaFrame's `mask-image` (task 9's fade-to-canvas
+ * mechanism) and the test that asserts on that same string literal. A mask's
+ * gradient controls opacity, not paint, so it carries none of the visual
+ * weight `box-shadow` or `backdrop-filter` would — the same distinction
+ * `LITERAL_HEX_ALLOWED` already draws for this file's `#000`. Scoped to the
+ * "gradient" keyword only: a `box-shadow` or `backdrop-filter` written into
+ * either file would still fail this guard.
+ */
+const GRADIENT_ALLOWED = new Set([
+	join("src", "design", "primitives", "MediaFrame.tsx"),
+	join("src", "design", "__tests__", "MediaFrame.test.tsx"),
+]);
+
 describe("forbidden visual devices", () => {
 	it("uses none anywhere in src", () => {
 		// Carried over unchanged from the v1 design system. DESIGN.md does not
 		// contradict any of these, so §14 of the spec keeps them in force.
-		const forbidden =
-			/gradient|box-shadow|boxShadow|backdrop-filter|backdropFilter/i;
-		const offenders = sourceFileContents
-			.filter(({ content }) => forbidden.test(content))
-			.map(({ path }) => path);
+		const shadowOrBlur = /box-shadow|boxShadow|backdrop-filter|backdropFilter/i;
+		const gradient = /gradient/i;
+		const offenders: string[] = [];
+		for (const { path, content } of sourceFileContents) {
+			if (shadowOrBlur.test(content)) {
+				offenders.push(path);
+				continue;
+			}
+			if (gradient.test(content) && !GRADIENT_ALLOWED.has(path)) {
+				offenders.push(path);
+			}
+		}
 		expect(offenders).toEqual([]);
 	});
 

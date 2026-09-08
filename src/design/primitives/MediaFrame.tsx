@@ -5,27 +5,29 @@ type Props = {
 };
 
 /**
- * The only element in the system permitted to show colour.
+ * v2's media treatment: the image fades into the canvas on an angle, as a
+ * resting state rather than a hover reveal.
  *
- * DESIGN.md's Special Notes are absolute: "any colour should only come from
- * project photography." This frame holds that line by desaturating its
- * contents completely at rest and restoring them on hover — so colour is
- * never a design decision, only an image being seen properly.
+ * This replaces the previous system's grayscale-until-hover entirely. That
+ * mechanism existed because DESIGN.md rationed colour to a single
+ * interaction — v2 does not ration it that way, so the image is simply
+ * present, dissolving into the ground at its trailing edge instead of
+ * ending on a hard rectangle.
  *
- * The hover rule and the reduced-motion exception both live in
- * `primitives.css`, because neither a descendant `:hover` nor a media query
- * can be expressed in a React style object.
+ * The mask is declared here rather than in the stylesheet because the angle
+ * is the component's defining property and belongs where a reader looks
+ * first. `-webkit-mask-image` rides alongside for Safari, which still
+ * requires the prefix for mask shorthand.
  */
 export function MediaFrame({ children }: Props) {
+	const mask = "linear-gradient(160deg, #000 55%, transparent 100%)";
+
 	return (
 		<div
 			data-media
 			style={{
-				filter: "grayscale(100%)",
-				transitionProperty: "filter, transform",
-				transitionDuration: "var(--dur-hover)",
-				transitionTimingFunction: "var(--ease)",
-				willChange: "filter, transform",
+				maskImage: mask,
+				WebkitMaskImage: mask,
 			}}
 		>
 			{children}

@@ -59,31 +59,6 @@
 }
 
 /*
- * The image reveal: grayscale to full colour with a 1.05x scale, over
- * --dur-hover. `:focus-within` is included so the reveal is reachable by
- * keyboard, since a card's link can be focused without any pointer.
- */
-[data-media]:hover,
-[data-media]:focus-within {
-	filter: grayscale(0%);
-	transform: scale(1.05);
-}
-
-/*
- * Spec §4.6 asks image hovers to reduce to opacity alone under reduced
- * motion. The global rule in globals.css collapses transition-duration,
- * which makes the colour change instant — but an instant 1.05x scale is
- * still a jump in size, which is movement. Suppressing the transform is
- * the part the global collapse cannot express.
- */
-@media (prefers-reduced-motion: reduce) {
-	[data-media]:hover,
-	[data-media]:focus-within {
-		transform: none;
-	}
-}
-
-/*
  * The arrow fades in when its item is hovered or holds focus. Opacity
  * rather than display, so the layout never shifts as it appears — and
  * `--dur-fade` is v2's 150ms duration for opacity fades.
