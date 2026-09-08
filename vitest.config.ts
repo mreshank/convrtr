@@ -18,6 +18,17 @@ export default defineConfig({
 		exclude: [...configDefaults.exclude, "e2e/**", ".worktrees/**"],
 	},
 	resolve: {
-		alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
+		alias: {
+			"@": fileURLToPath(new URL("./src", import.meta.url)),
+			// `next/font/google`'s real package entry is an empty file, meant
+			// to be swapped for a compiled loader by Next's own build
+			// pipeline. Vite never does that swap, so any test importing a
+			// module that imports `next/font/google` (`layout.tsx`) would
+			// otherwise crash on `Inter is not a function` before running.
+			// See test/mocks/next-font-google.ts for the shape this replaces.
+			"next/font/google": fileURLToPath(
+				new URL("./test/mocks/next-font-google.ts", import.meta.url),
+			),
+		},
 	},
 });
