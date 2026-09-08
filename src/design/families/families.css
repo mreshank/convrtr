@@ -5,3 +5,33 @@
  * Anything expressible inline belongs inline, next to the component that
  * owns it.
  */
+
+/*
+ * `HeroBand`'s primary pill is filled `--ink` (white) -- the same colour
+ * the global `:focus-visible { outline: 1px solid var(--ink) }` ring in
+ * globals.css draws. Tab to it on the real black-page export and the ring
+ * cannot be told apart from the pill's own edge: measured contrast 1:1,
+ * the two are literally the same paint. `SiteFooter.tsx` already names this
+ * class of bug from the opposite direction -- inverting the canvas leaves
+ * the *page's* `--ink` ring drawing "black on black over every link" in the
+ * pale band -- this is its mirror: a light control on the dark canvas the
+ * ring is tuned for.
+ *
+ * Positive `outline-offset` (globals.css's default, +2px) draws the ring
+ * OUTSIDE the box, over whatever sits behind the pill -- the black page --
+ * so recolouring it to `--ground` to fix the contrast against the pill
+ * would only trade one invisible ring for another: black on the black page
+ * it is actually painted over. Pulling it inside instead, with a negative
+ * offset, keeps the ring's whole 1px stroke on top of the pill's own white
+ * fill, where a `--ground` ring reads as a crisp dark ring stamped into it
+ * -- 21:1 against the fill it is actually adjacent to.
+ *
+ * Scoped to `[data-cta-fill]` rather than added to the base
+ * `:focus-visible` rule: the paired secondary pill is transparent, so the
+ * global ring already sits on the black page with full contrast there and
+ * must not be touched.
+ */
+[data-cta-fill]:focus-visible {
+	outline-color: var(--ground);
+	outline-offset: -3px;
+}
