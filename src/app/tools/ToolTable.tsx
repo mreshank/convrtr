@@ -41,25 +41,34 @@ export function ToolTable({
 			`}</style>
 			<table>
 				<caption className="sr-only">{caption}</caption>
+				{/*
+				 * `font-normal` on every `<th>`, matching `BatchTable` and
+				 * `ComparisonTable`. The UA default for a header cell is bold,
+				 * and these are 11px mono labels in `--ink-muted` — the
+				 * quietest text on the page — so inheriting weight 700 made
+				 * them the one bold thing in a system whose display and
+				 * headline faces are both weight 400. The other two tables
+				 * already opted out; this one had simply missed it.
+				 */}
 				<thead>
 					<tr>
 						<th
 							scope="col"
-							className="mono px-4 py-2 text-left text-[11px] tracking-[0.08em]"
+							className="mono px-4 py-2 text-left font-normal text-[11px] tracking-[0.08em]"
 							style={{ color: "var(--ink-muted)" }}
 						>
 							TOOL
 						</th>
 						<th
 							scope="col"
-							className="mono px-4 py-2 text-left text-[11px] tracking-[0.08em]"
+							className="mono px-4 py-2 text-left font-normal text-[11px] tracking-[0.08em]"
 							style={{ color: "var(--ink-muted)" }}
 						>
 							DESCRIPTION
 						</th>
 						<th
 							scope="col"
-							className="mono px-4 py-2 text-right text-[11px] tracking-[0.08em]"
+							className="mono px-4 py-2 text-right font-normal text-[11px] tracking-[0.08em]"
 							style={{ color: "var(--ink-muted)" }}
 						>
 							CONVERT
