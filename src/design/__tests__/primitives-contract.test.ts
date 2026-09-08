@@ -4,6 +4,15 @@ import { describe, expect, it } from "vitest";
 const BARREL = "src/design/primitives/index.ts";
 
 /**
+ * `src/design/families/` has its own barrel rather than re-exporting through
+ * the primitives one: the families are compositions, the primitives are the
+ * parts, and templates import from whichever layer they mean. So it needs its
+ * own check — the primitives barrel could not export a family even if someone
+ * wanted it to.
+ */
+const FAMILIES_BARREL = "src/design/families/index.ts";
+
+/**
  * A primitive that exists but is not exported is invisible to the templates
  * that need it, and nothing else in the suite would notice. This walks the
  * directory rather than checking a hand-written list, so adding a file is
@@ -17,6 +26,7 @@ function componentFiles(dir: string): string[] {
 
 describe("primitives barrel", () => {
 	const barrel = readFileSync(BARREL, "utf8");
+	const familiesBarrel = readFileSync(FAMILIES_BARREL, "utf8");
 
 	it.each(componentFiles("src/design/primitives"))(
 		"exports %s",
@@ -32,12 +42,40 @@ describe("primitives barrel", () => {
 		},
 	);
 
+	it.each(componentFiles("src/design/families"))(
+		"exports %s from families",
+		(component) => {
+			// The families barrel is the only import path templates use. A
+			// family that exists but is not exported is invisible to them, and
+			// nothing else in the suite would notice.
+			//
+			// This check did not exist until the families directory had ten
+			// components in it, and its absence was not theoretical: a
+			// throwaway `families/Unexported.tsx` that the barrel did not
+			// export passed this whole file green, because every sweep here
+			// named `primitives/` and `chrome/` explicitly and a new directory
+			// simply fell outside them. Proved by mutation before the check
+			// was written, and proved to fail after.
+			expect(familiesBarrel).toContain(`from "./${component}"`);
+		},
+	);
+
 	it("exports at least the nine primitives the spec names", () => {
 		// A guard against the barrel being emptied or the directory being
 		// moved without this test noticing it now covers nothing.
 		expect(
 			componentFiles("src/design/primitives").length,
 		).toBeGreaterThanOrEqual(9);
+	});
+
+	it("exports at least the ten families the plan names", () => {
+		// Same non-vacuity guard, for the same reason: `it.each` over an
+		// empty directory registers no cases and reports green. If the
+		// families move or the directory is renamed, this fails instead of
+		// the coverage disappearing silently.
+		expect(componentFiles("src/design/families").length).toBeGreaterThanOrEqual(
+			10,
+		);
 	});
 });
 
@@ -62,6 +100,11 @@ describe("primitives barrel", () => {
  * nothing, so the state went and the directive with it — and the entry had
  * to leave this list too, since the second test below requires every name
  * here to still declare the directive.
+ *
+ * The sweep runs over `primitives/`, `chrome/` AND `families/`. The third
+ * directory had to be named explicitly: these helpers take a directory
+ * argument, so a directory nobody passes is a directory nobody checks, and
+ * `families/` sat outside all of it for ten components.
  */
 const CLIENT_COMPONENT_ALLOWLIST = new Set(["DifferenceCursor.tsx"]);
 
@@ -88,6 +131,20 @@ describe("server-component guard", () => {
 		expect(offenders).toEqual([]);
 	});
 
+	it('allows "use client" only on the allowlisted families', () => {
+		// Every family in this plan is a server component -- none holds
+		// state, and the two that could have wanted it (`FormatStrip`'s
+		// marquee, `BranchDiagram`'s geometry) are pure CSS and pure
+		// arithmetic respectively. So the allowlist gains no entries here,
+		// and a family that acquires the directive without being added to it
+		// fails. Verified by mutation: a `"use client"` prepended to
+		// `FeatureGrid.tsx` passed this file green before this test existed.
+		const offenders = filesDeclaringUseClient("src/design/families").filter(
+			(name) => !CLIENT_COMPONENT_ALLOWLIST.has(name),
+		);
+		expect(offenders).toEqual([]);
+	});
+
 	it('still requires "use client" on every allowlisted component', () => {
 		// Guards the allowlist itself against going stale in the other
 		// direction — an entry that no longer needs the directive should be
@@ -95,6 +152,7 @@ describe("server-component guard", () => {
 		const declaring = new Set([
 			...filesDeclaringUseClient("src/design/primitives"),
 			...filesDeclaringUseClient("src/design/chrome"),
+			...filesDeclaringUseClient("src/design/families"),
 		]);
 		for (const name of CLIENT_COMPONENT_ALLOWLIST) {
 			expect(declaring.has(name)).toBe(true);

@@ -252,17 +252,124 @@ const ALLOWED_LITERAL_PX = new Set([0, 1, 14, 23, 36, 44]);
  * shorthand is the obvious way to write an ad-hoc spacing pair, so
  * `padding: "13px 27px"` has to be legible to the sweep; matching only a
  * lone length would wave it straight through.
+ *
+ * A third delimiter, and the same argument one step further: the value may be
+ * a template literal as well as a quoted string. `` height: `${HEIGHT}px` ``
+ * is the natural way to write a dimension a component also needs as a number,
+ * and while the pattern accepted only `"` and `'` a template literal was
+ * invisible to it — not exempted, simply unseen, which is worse because
+ * nothing recorded the gap. Found in `BranchDiagram.tsx:87`, where the value
+ * happened to be on the scale. The three delimiters are written as an
+ * alternation rather than a character class so an opening `"` cannot be
+ * closed by a backtick.
  */
 const SPACING_PROPERTY =
-	/\b(?:padding|margin|gap|width|height|top|left|right|bottom|maxWidth|minWidth|maxHeight|minHeight)[A-Za-z]*:\s*["']([^"']*)["']/g;
+	/\b(?:padding|margin|gap|width|height|top|left|right|bottom|maxWidth|minWidth|maxHeight|minHeight)[A-Za-z]*:\s*(?:"([^"]*)"|'([^']*)'|`([^`]*)`)/g;
+
+/**
+ * The unit the scale is built on, read from the token rather than typed here
+ * so the two cannot drift.
+ */
+const SPACE_BASE = Number(
+	tokens.match(/--space-base:\s*(\d+(?:\.\d+)?)px/)?.[1],
+);
+
+/**
+ * Module-local numeric constants, so a template literal that interpolates one
+ * is legible to the sweep instead of opaque to it.
+ *
+ * `const HEIGHT = 120` then `` height: `${HEIGHT}px` `` is the natural way to
+ * write a dimension a component also needs as a number, and until this the
+ * sweep read the value as the literal text `${HEIGHT}px` — no digits before
+ * the `px`, so no length, so no check. The hole was found in
+ * `BranchDiagram.tsx`, whose value happened to be fine.
+ */
+function numericConstants(content: string): Map<string, string> {
+	const out = new Map<string, string>();
+	for (const match of content.matchAll(
+		/\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*(?::\s*number\s*)?=\s*(-?\d+(?:\.\d+)?)\s*(?=[;,\n)])/g,
+	)) {
+		if (match[1] && match[2]) out.set(match[1], match[2]);
+	}
+	return out;
+}
+
+/**
+ * A resolved template-literal value, plus the names it resolved through.
+ *
+ * The names matter to the caller: a length that arrived via a named module
+ * constant is judged by a different rule than one written out on the spot
+ * (see `isAdmissibleGeometryConstant`).
+ *
+ * An interpolation this sweep cannot evaluate — `${ratio * 100}`,
+ * `${leftPercent}` — collapses to a space, which can never form part of a px
+ * length, so it is skipped rather than guessed at. That is a deliberate false negative:
+ * a runtime-computed dimension is not a hard-coded one, and flagging every
+ * `width: ${pct}%` would get this sweep deleted by the next person who trips
+ * on it.
+ */
+function resolveTemplate(
+	value: string,
+	constants: Map<string, string>,
+): { resolved: string; viaConstant: boolean } {
+	let viaConstant = false;
+	const resolved = value.replace(/\$\{([^}]*)\}/g, (_, expr: string) => {
+		const trimmed = expr.trim();
+		if (/^-?\d+(?:\.\d+)?$/.test(trimmed)) return trimmed;
+		const known = constants.get(trimmed);
+		if (known !== undefined) {
+			viaConstant = true;
+			return known;
+		}
+		return " ";
+	});
+	return { resolved, viaConstant };
+}
+
+/**
+ * Whether a length that reached the sweep through a named module constant is
+ * on the scale after all.
+ *
+ * `BranchDiagram`'s `HEIGHT` is the case this exists for, and it is the one
+ * shape a token genuinely cannot express. The same number is the `<svg>`
+ * `height` attribute, the `viewBox` height, an operand of `branchPath`'s
+ * arithmetic, AND the label column's CSS height — the labels line up with the
+ * branch endpoints only while the last of those equals the first. So it has
+ * to be a JavaScript number, which rules out `calc(15 * var(--space-base))`:
+ * a CSS expression cannot be fed to `branchPath`, and writing the value twice
+ * (once as a token expression, once as a number) is the drift this whole
+ * sweep exists to prevent.
+ *
+ * The rule is therefore not "constants are exempt" — that would be a loophole
+ * wide enough to hide any literal in — but "a named geometry constant that is
+ * an exact multiple of the scale's own unit is on the scale". `HEIGHT` is 120,
+ * which is 15 × `--space-base`; `WIDTH` is 240, which is `--section-pad`'s
+ * value exactly. A `const BOX = 17` interpolated the same way still fails,
+ * because 17 is not on the scale by any reading.
+ *
+ * A length written out at the call site — `` height: `${17}px` `` — gets none
+ * of this. It is judged as a literal, exactly like `height: "17px"`, because
+ * that is what it is.
+ */
+function isAdmissibleGeometryConstant(value: number): boolean {
+	return value > 0 && Number.isFinite(SPACE_BASE) && value % SPACE_BASE === 0;
+}
 
 function findAdHocSpacing(content: string): string[] {
 	const offenders: string[] = [];
+	const constants = numericConstants(content);
 	for (const match of content.matchAll(SPACING_PROPERTY)) {
-		for (const length of (match[1] ?? "").matchAll(/(\d+(?:\.\d+)?)px/g)) {
-			if (!ALLOWED_LITERAL_PX.has(Number(length[1]))) {
-				offenders.push(match[0].trim());
-			}
+		const template = match[3];
+		const raw = match[1] ?? match[2] ?? template ?? "";
+		const { resolved, viaConstant } =
+			template === undefined
+				? { resolved: raw, viaConstant: false }
+				: resolveTemplate(raw, constants);
+		for (const length of resolved.matchAll(/(\d+(?:\.\d+)?)px/g)) {
+			const value = Number(length[1]);
+			if (ALLOWED_LITERAL_PX.has(value)) continue;
+			if (viaConstant && isAdmissibleGeometryConstant(value)) continue;
+			offenders.push(match[0].trim());
 		}
 	}
 	return offenders;
@@ -304,6 +411,20 @@ describe("spacing sweep regex", () => {
 		'padding: "0 14px 13px"',
 		// A length buried in a calc() is still a length.
 		'height: "calc(100% - 24px)"',
+		// Template literals. A length written out at the call site is a
+		// literal whichever delimiter carries it.
+		//
+		// biome-ignore-start lint/suspicious/noTemplateCurlyInString: the
+		// `${...}` in the fixtures below is the SUBJECT of the fixture -- the
+		// literal source text a component would contain -- not an
+		// interpolation this file means to perform. The rule is right about
+		// every other case, which is why it is suppressed by range here
+		// rather than switched off in biome.json.
+		"height: `${17}px`",
+		"padding: `${13}px ${27}px`",
+		// A named constant does not launder an off-scale value: 17 is not a
+		// multiple of --space-base by any reading.
+		"const BOX = 17;\nheight: `${BOX}px`",
 	];
 
 	const mustNotFlag = [
@@ -333,6 +454,18 @@ describe("spacing sweep regex", () => {
 		// A track template is neither a gap nor a pad, and no token in the
 		// scale describes one.
 		'gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))"',
+		// A template literal carrying a token is a token.
+		"height: `var(--gap-md)`",
+		// A runtime-computed dimension is not a hard-coded one. These are
+		// TimeRange's and ProgressBar's, and they are percentages besides.
+		"width: `${ratio * 100}%`",
+		"left: `${leftPercent}%`",
+		// BranchDiagram's geometry constant: 120 is 15 x --space-base, and
+		// the same number is the SVG's own height, so it cannot be a token
+		// expression. See isAdmissibleGeometryConstant.
+		"const HEIGHT = 120;\nheight: `${HEIGHT}px`",
+		// biome-ignore-end lint/suspicious/noTemplateCurlyInString: end of
+		// the fixture range opened in mustFlag above.
 	];
 
 	it.each(mustFlag)("flags %j as an ad-hoc spacing literal", (input) => {
@@ -345,54 +478,129 @@ describe("spacing sweep regex", () => {
 });
 
 /**
- * `linear-gradient` in these two files is not a decorative fill — it is the
- * alpha channel of MediaFrame's `mask-image` (task 9's fade-to-canvas
- * mechanism) and the test that asserts on that same string literal. A mask's
- * gradient controls opacity, not paint, so it carries none of the visual
- * weight `box-shadow` or `backdrop-filter` would — the same distinction
- * `LITERAL_HEX_ALLOWED` already draws for this file's `#000`. Scoped to the
- * "gradient" keyword only: a `box-shadow` or `backdrop-filter` written into
- * either file would still fail this guard.
+ * Block comments removed before the gradient scan.
  *
- * `radial-gradient` in these two files is DotMatrix's dot-matrix lattice
- * (task 3) and the test that asserts on that same string literal. It is not
- * an image asset and not a decorative wash — it is the exact, zero-request
- * way to express a repeating dot lattice, and its colour comes from `--rule`,
- * so it carries the same accountability the palette guard gives every other
- * colour in the system.
+ * Precedent and reason are both `findCursorNoneRules`'s, further down this
+ * file: `cursor: none` written in prose is not a declaration, and neither is
+ * the word `gradient`. That distinction matters more here than anywhere else
+ * in the suite, because this design system's comments quote v2's guardrails
+ * verbatim — "forbids a full-frame saturated gradient behind the hero" — so
+ * prose is where the word appears most often. A raw-text scan cannot tell a
+ * mention from a use, and it did not: `BarChart.tsx` contains no gradient at
+ * all and was exempted anyway, purely so a comment could quote the brief.
  *
- * `gradient` in BarChart.tsx (task 4) is not CSS at all — the word appears
- * only in a doc comment quoting v2's own guardrail prose ("forbids a
- * full-frame saturated gradient behind the hero") to explain why the chart is
- * drawn as thin bars instead. This sweep scans raw file text rather than
- * parsed styles, so it cannot tell a mention from a use; the file's rendered
- * output declares no gradient, box-shadow, or backdrop-filter anywhere.
+ * Only block comments are stripped, exactly as the cursor guard strips them.
+ * `//` is not a comment in CSS and is a substring of every URL, so cutting to
+ * end-of-line on it risks deleting a real declaration that follows one on the
+ * same line — a false negative, which is the dangerous direction for a guard.
+ * A `//` comment that spells out a literal `linear-gradient(` therefore still
+ * flags: that fails loudly, and loudly is safe.
  */
-const GRADIENT_ALLOWED = new Set([
-	join("src", "design", "primitives", "MediaFrame.tsx"),
-	join("src", "design", "__tests__", "MediaFrame.test.tsx"),
-	join("src", "design", "families", "DotMatrix.tsx"),
-	join("src", "design", "__tests__", "DotMatrix.test.tsx"),
-	join("src", "design", "families", "BarChart.tsx"),
+function stripBlockComments(content: string): string {
+	return content.replace(/\/\*[\s\S]*?\*\//g, "");
+}
+
+/**
+ * Every way this codebase could actually paint a gradient.
+ *
+ * A gradient has to be written as a *value* to have any effect, and there are
+ * only two shapes for one here: a CSS gradient function, or one of Tailwind's
+ * gradient utilities (v3's `bg-gradient-to-r`, v4's `bg-linear-to-r`,
+ * `bg-radial`, `bg-conic`), which paint one with no function call in the
+ * source at all — the case a function-only pattern would wave straight
+ * through in a project that styles with Tailwind classes as well as inline
+ * objects.
+ *
+ * Matching the value rather than a property name is deliberate, and is why
+ * this is not the `background`/`backgroundImage`/`maskImage` alternation it
+ * looks like it should be: `MediaFrame` assigns its mask to a `const` and
+ * applies it through a variable, so a property-anchored pattern would miss
+ * it — and would miss `const g = "linear-gradient(...)"` followed by
+ * `style={{ background: g }}` too, which is the evasion rather than the edge
+ * case. A `*-gradient(` token is a CSS value function; it cannot appear in
+ * prose by accident the way the bare word can.
+ */
+const GRADIENT_VALUE =
+	/(?:repeating-)?(?:linear|radial|conic)-gradient\s*\(|\bbg-(?:gradient|linear|radial|conic)\b/gi;
+
+function findGradientValues(content: string): string[] {
+	return [...stripBlockComments(content).matchAll(GRADIENT_VALUE)].map(
+		(match) => match[0].replace(/\s+/g, "").toLowerCase(),
+	);
+}
+
+/**
+ * The gradients this system genuinely paints — per file, exactly.
+ *
+ * Not a file-scoped waiver, which is the whole point of the rewrite. Each
+ * entry lists the exact gradient values that file is permitted to contain and
+ * the check below requires an exact match, so a decorative
+ * `linear-gradient` added to `MediaFrame.tsx` fails even though
+ * `MediaFrame.tsx` appears here. The previous version was a `Set` of paths: it
+ * waived the check for the whole file, it had absorbed five entries across
+ * three plans, and one of those entries covered a file with no gradient in it.
+ * An allowlist that grows on false positives is an allowlist on its way to
+ * becoming the norm.
+ *
+ * `MediaFrame`'s `linear-gradient` is the alpha channel of a `mask-image`
+ * (task 9's fade-to-canvas): a mask's gradient controls opacity, not paint,
+ * so it carries none of the visual weight `box-shadow` or `backdrop-filter`
+ * would — the same distinction `LITERAL_HEX_ALLOWED` draws for that file's
+ * `#000`.
+ *
+ * `DotMatrix`'s `radial-gradient` is the dot-matrix lattice (task 3). Not an
+ * image asset and not a decorative wash: it is the exact, zero-request way to
+ * express a repeating dot lattice, and its colour comes from `--rule`, so it
+ * is as accountable as every other colour in the system.
+ *
+ * Three entries left when comments stopped counting. `BarChart.tsx` never had
+ * a gradient. `MediaFrame.test.tsx` and `DotMatrix.test.tsx` assert on the
+ * bare strings `"linear-gradient"` and `"radial-gradient"` with no function
+ * call after them, so they no longer match this pattern at all — verified by
+ * removing them and running, not by reading.
+ */
+const GRADIENT_ALLOWED = new Map<string, string[]>([
+	[join("src", "design", "primitives", "MediaFrame.tsx"), ["linear-gradient("]],
+	[join("src", "design", "families", "DotMatrix.tsx"), ["radial-gradient("]],
 ]);
 
 describe("forbidden visual devices", () => {
 	it("uses none anywhere in src", () => {
 		// Carried over unchanged from the v1 design system. DESIGN.md does not
 		// contradict any of these, so §14 of the spec keeps them in force.
+		//
+		// `shadowOrBlur` still reads raw content, comments included. That is
+		// not an oversight: nothing in this codebase quotes those two
+		// properties in prose, and a comment that names one is worth a look
+		// anyway.
 		const shadowOrBlur = /box-shadow|boxShadow|backdrop-filter|backdropFilter/i;
-		const gradient = /gradient/i;
 		const offenders: string[] = [];
 		for (const { path, content } of sourceFileContents) {
 			if (shadowOrBlur.test(content)) {
 				offenders.push(path);
 				continue;
 			}
-			if (gradient.test(content) && !GRADIENT_ALLOWED.has(path)) {
-				offenders.push(path);
+			const gradients = findGradientValues(content);
+			if (gradients.length === 0) continue;
+			const allowed = GRADIENT_ALLOWED.get(path);
+			if (!allowed || gradients.join("|") !== allowed.join("|")) {
+				offenders.push(`${path}: ${gradients.join(", ")}`);
 			}
 		}
 		expect(offenders).toEqual([]);
+	});
+
+	it("still sees the two gradients it exempts", () => {
+		// Non-vacuity, the same way "still sees the rule it exists to police"
+		// works for the cursor guard. If the mask or the lattice moves to
+		// another file, or is deleted, this fails rather than the exemption
+		// quietly covering nothing — which is how an allowlist entry outlives
+		// its reason.
+		for (const [path, expected] of GRADIENT_ALLOWED) {
+			const entry = sourceFileContents.find((file) => file.path === path);
+			expect(entry, path).toBeDefined();
+			expect(findGradientValues(entry?.content ?? "")).toEqual(expected);
+		}
 	});
 
 	it("actively scans src/design", () => {
@@ -409,6 +617,48 @@ describe("forbidden visual devices", () => {
 			.filter(({ path }) => path.startsWith("src/design/"))
 			.map(({ path }) => path);
 		expect(designFiles.length).toBeGreaterThan(0);
+	});
+});
+
+describe("gradient guard regex", () => {
+	// Pinned against fixtures directly, like the border-weight, spacing and
+	// cursor-none helpers above. This guard has already been wrong once in the
+	// direction that matters least visibly: it flagged documentation, an
+	// exemption was added for the documentation, and after three plans the
+	// allowlist held five files of which one had no gradient in it.
+	const mustFlag = [
+		'background: "linear-gradient(90deg, var(--ground), transparent)"',
+		'backgroundImage: "radial-gradient(var(--rule) 1px, transparent 1px)"',
+		"background-image: repeating-linear-gradient(45deg, #000, #fff)",
+		'maskImage: "conic-gradient(from 0deg, #000, transparent)"',
+		// The indirection a property-anchored pattern would miss.
+		'const wash = "linear-gradient(160deg, #000 55%, transparent 100%)";',
+		// Tailwind paints one with no function call anywhere.
+		'className="bg-gradient-to-r from-black to-white"',
+		'className="bg-linear-to-r"',
+		'className="bg-radial"',
+	];
+
+	const mustNotFlag = [
+		// The false positive this rewrite removes: v2's own guardrail prose,
+		// quoted in a doc comment to explain why the chart is drawn as bars.
+		"/**\n * v2 forbids a full-frame saturated gradient behind the hero.\n */",
+		"/* a lattice is exactly what a gradient expresses well */",
+		// A test asserting on the string is not a declaration of one.
+		'expect(el.style.maskImage).toContain("linear-gradient");',
+		'expect(grain.style.backgroundImage).toContain("radial-gradient");',
+		// Neither is a registry answer that happens to discuss photographs.
+		'a: "AVIF wins on gradient-heavy images."',
+		// Not a gradient utility.
+		'className="bg-black border-l"',
+	];
+
+	it.each(mustFlag)("flags %j as a painted gradient", (input) => {
+		expect(findGradientValues(input).length).toBeGreaterThan(0);
+	});
+
+	it.each(mustNotFlag)("does not flag %j", (input) => {
+		expect(findGradientValues(input)).toEqual([]);
 	});
 });
 
