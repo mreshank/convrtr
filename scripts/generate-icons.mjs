@@ -16,7 +16,7 @@
 // every build. The output is committed as an ordinary static asset.
 //
 // Source geometry (src/app/icon.svg, 32x32 viewBox):
-//   <rect width="32" height="32" fill="#0A0A0A" />
+//   <rect width="32" height="32" fill="#000000" />
 //   <path d="M11 7 L23 16 L11 25" stroke="#FFFFFF" stroke-width="4"
 //         stroke-linecap="square" stroke-linejoin="miter" />
 
@@ -28,7 +28,7 @@ import { deflateSync } from "node:zlib";
 const here = fileURLToPath(new URL(".", import.meta.url));
 const outDir = join(here, "..", "public", "icons");
 
-const MARK_GROUND = hexToRgb("#0A0A0A");
+const MARK_GROUND = hexToRgb("#000000");
 const MARK_INK = hexToRgb("#FFFFFF");
 
 // The chevron's stroked outline, as a filled hexagon in the icon's 32x32

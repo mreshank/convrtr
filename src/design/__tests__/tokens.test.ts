@@ -64,8 +64,9 @@ const TOKENS_FILE = join("src", "design", "tokens.css");
  * The one file allowed to write a colour as a literal.
  *
  * A PWA manifest is JSON consumed by the operating system, not CSS — it
- * cannot reference a custom property, so `#0A0A0A` there is the only way to
- * state the value at all. Everything else in `src` goes through a token.
+ * cannot reference a custom property, so the canvas black there is the only
+ * way to state the value at all. Everything else in `src` goes through a
+ * token.
  */
 const LITERAL_HEX_ALLOWED = new Set([
 	join("src", "app", "manifest.ts"),

@@ -34,24 +34,46 @@ describe("deployment configuration", () => {
 });
 
 describe("brand mark", () => {
-	it("draws the chevron in the terminal pair, not the old signal colour", () => {
+	// One canvas value, not a pair. The mark used to be drawn on the
+	// near-black that tokens.css swapped between a light and a dark theme;
+	// v2 has a single black ground and both of those tokens are gone, so the
+	// mark, the manifest and the generated PNGs all state the canvas black.
+	//
+	// The old value is pinned out by the positive assertions rather than by
+	// a `not.toMatch` naming it: the plan's exit gate requires that string to
+	// have left `src` altogether, and a guard that spells the retired hex is
+	// itself an occurrence of it. Nothing is lost — anything but #000000
+	// fails the positive match below.
+	//
+	// These stay literal rather than loosening to /#0{6}|#000/: nothing else
+	// pins the manifest colour. src/app/manifest.ts is the one file the
+	// palette guard in src/design/__tests__/tokens.test.ts exempts from the
+	// token rule, precisely because JSON read by the OS cannot resolve a
+	// custom property. If these assertions stop naming the value, no test
+	// names it at all.
+	const CANVAS = /#000000/i;
+
+	it("draws the chevron on the canvas black, not the old near-black", () => {
 		const svg = readFileSync("src/app/icon.svg", "utf8");
 		expect(svg).not.toMatch(/ccff00|0b0b0c/i);
-		expect(svg).toMatch(/fill="#0A0A0A"/i);
+		expect(svg).toMatch(/fill="#000000"/i);
 		expect(svg).toMatch(/stroke="#FFFFFF"/i);
 	});
 
 	it("declares manifest colours matching the mark's ground", () => {
 		const source = readFileSync("src/app/manifest.ts", "utf8");
-		expect(source).toMatch(/background_color:\s*"#0A0A0A"/i);
-		expect(source).toMatch(/theme_color:\s*"#0A0A0A"/i);
+		expect(source).toMatch(/background_color:\s*"#000000"/i);
+		expect(source).toMatch(/theme_color:\s*"#000000"/i);
 		expect(source).not.toMatch(/0b0b0c/i);
 	});
 
 	it("generates icons from the same two colours the mark uses", () => {
+		// The PNGs are rasterised by hand and committed, so a mark recoloured
+		// without re-running this script would ship install icons on the old
+		// ground while the splash screen used the new one.
 		const script = readFileSync("scripts/generate-icons.mjs", "utf8");
 		expect(script).not.toMatch(/ccff00|0b0b0c/i);
-		expect(script).toMatch(/#0A0A0A/i);
+		expect(script).toMatch(CANVAS);
 		expect(script).toMatch(/#FFFFFF/i);
 	});
 });

@@ -9,16 +9,16 @@ import type { MetadataRoute } from "next";
 // reference it.
 export const dynamic = "force-static";
 
-// #0A0A0A is fixed, not theme-live. A web app manifest is JSON read by the
-// operating system, so it cannot reference a custom property and cannot
-// follow a theme change: whatever is written here is what the install and
-// splash experience gets in both themes. The value corresponds to --terminal
-// in the light theme and --terminal-ink in the dark one (tokens.css swaps the
-// pair), and it is the ground icon.svg draws the app mark on — so the install
-// experience matches the mark rather than whichever theme the OS is in.
+// #000000 is written out, not referenced. A web app manifest is JSON read
+// by the operating system, so it cannot resolve a custom property: the
+// literal is the only way to state the value at all, which is why this is
+// the one file src/design/__tests__/tokens.test.ts allows a literal hex in.
 //
-// This is the one file src/design/__tests__/tokens.test.ts allows a literal
-// hex in, for exactly that reason.
+// The value is v2's canvas — the same black `--ground` paints the site and
+// icon.svg draws the app mark on — so the OS-painted install and splash
+// chrome matches the page it opens onto. There is no theme pair to track:
+// v2 has one canvas, and the light/dark near-black pair this comment used
+// to name has been removed from tokens.css entirely.
 export default function manifest(): MetadataRoute.Manifest {
 	return {
 		name: "convrtr",
@@ -26,8 +26,8 @@ export default function manifest(): MetadataRoute.Manifest {
 		description: "Convert anything in your browser. Nothing is uploaded.",
 		start_url: "/",
 		display: "standalone",
-		background_color: "#0A0A0A",
-		theme_color: "#0A0A0A",
+		background_color: "#000000",
+		theme_color: "#000000",
 		icons: [
 			{
 				src: "/icons/icon-192.png",
