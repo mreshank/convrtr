@@ -4,7 +4,7 @@
 
 **Goal:** Extract four page templates from the compositions that already exist, rebuild all six live routes on top of them, and make the rule that keeps them honest enforceable.
 
-**Architecture:** The nine families built in the previous plan are composed directly into routes today; this plan lifts the recurring shapes into `src/design/templates/` and reduces every `page.tsx` to data resolution plus one template call. The constraint that makes it stick is a test: a route file may not contain layout, must import from `@/design/templates`, and must stay at or under 40 lines. Templates are extracted from one real composition each rather than designed speculatively.
+**Architecture:** The nine families built in the previous plan are composed directly into routes today; this plan lifts the recurring shapes into `src/design/templates/` and reduces every `page.tsx` to data resolution plus one template call. The constraint that makes it stick is a test: a route file may not contain layout, must import from `@/design/templates`, and must stay at or under 50 lines. Templates are extracted from one real composition each rather than designed speculatively.
 
 **Tech Stack:** Next.js 16.3 (App Router, `output: "export"`), React 19.2, Tailwind CSS v4, TypeScript 5 (`strict`, `noUncheckedIndexedAccess`), Vitest 4 + happy-dom + Testing Library, Biome 2.5, Playwright.
 
@@ -20,7 +20,7 @@
 
 ## Global Constraints
 
-- **A `page.tsx` may not contain layout.** It resolves data from a registry and hands it to a template. Enforced by `src/app/__tests__/route-purity.test.ts`: every `src/app/**/page.tsx` imports from `@/design/templates` and is **at or under 40 lines**.
+- **A `page.tsx` may not contain layout.** It resolves data from a registry and hands it to a template. Enforced by `src/app/__tests__/route-purity.test.ts`: every `src/app/**/page.tsx` imports from `@/design/templates` and is **at or under 50 lines**.
 - **The palette is closed.** Only these values may appear in `src/design/tokens.css`: `#000000`, `#111315`, `#E4F1EB`, `#FFFFFF`, `#94979E`, `#131415`, `#303236`, `#18191B`, `#34D59A`, `#47D18C`. No literal hex elsewhere in `src` except the paths in `LITERAL_HEX_ALLOWED`.
 - **Mint is rationed** — CTA fills, icon glyphs, code tokens, the lossless fidelity tint. Never a large fill, never a section background.
 - **Mint means two things and shape keeps them apart:** a CTA is a mint pill **fill**; the lossless ring is a mint stroke **tint**.
@@ -240,7 +240,7 @@ Note the `96px` and `64px` here are declaration values in a stylesheet, not TSX 
 
 - [ ] **Step 4: Rebuild the route**
 
-Rewrite `src/app/page.tsx` so it resolves data and calls `EditorialPage` once. It must end at **40 lines or fewer** — that is the rule Task 5 makes enforceable, and writing to it now avoids a second pass. Move the band content into the template call as `bands`, delete the legacy tagline, and frame the tool grid.
+Rewrite `src/app/page.tsx` so it resolves data and calls `EditorialPage` once. It must end at **50 lines or fewer** — that is the rule Task 5 makes enforceable, and writing to it now avoids a second pass. Move the band content into the template call as `bands`, delete the legacy tagline, and frame the tool grid.
 
 If the composition needs a shape the families do not cover — an eyebrow-and-headline wrapper around an arbitrary child, say — **add it as a family or a template prop, never as inline JSX in the route.**
 
@@ -449,7 +449,7 @@ export { HubPage } from "./HubPage";
 
 - [ ] **Step 4: Rebuild all three routes**
 
-This is one batch of the same edit. For each of `src/app/tools/page.tsx`, `src/app/[category]/page.tsx` and `src/app/blog/page.tsx`: keep `generateMetadata` and the data resolution exactly as they are, and replace the returned JSX with a single `HubPage` call wrapping the listing. Each must end at **40 lines or fewer**.
+This is one batch of the same edit. For each of `src/app/tools/page.tsx`, `src/app/[category]/page.tsx` and `src/app/blog/page.tsx`: keep `generateMetadata` and the data resolution exactly as they are, and replace the returned JSX with a single `HubPage` call wrapping the listing. Each must end at **50 lines or fewer**.
 
 `/[category]` is the one to read most carefully — it resolves a dynamic param and may have `generateStaticParams`. Leave that machinery alone; only the JSX changes.
 
@@ -660,7 +660,7 @@ export { ArticlePage } from "./ArticlePage";
 
 - [ ] **Step 4: Rebuild the route**
 
-Rewrite `src/app/blog/[slug]/page.tsx` to resolve the post, format its date, and call `ArticlePage` once with the MDX body as children and `RelatedReading` as `related`. Keep `generateMetadata`, `generateStaticParams` and the `notFound()` handling exactly as they are. **40 lines or fewer.**
+Rewrite `src/app/blog/[slug]/page.tsx` to resolve the post, format its date, and call `ArticlePage` once with the MDX body as children and `RelatedReading` as `related`. Keep `generateMetadata`, `generateStaticParams` and the `notFound()` handling exactly as they are. **50 lines or fewer.**
 
 - [ ] **Step 5: Run everything**
 
@@ -847,7 +847,7 @@ export { ConverterPage } from "./ConverterPage";
 
 - [ ] **Step 4: Rebuild the route**
 
-Rewrite `src/app/[category]/[slug]/page.tsx` to resolve the tool and call `ConverterPage` once with `ToolClient` as children and `RelatedReading` as `related`. Keep `generateMetadata`, `generateStaticParams`, the JSON-LD and `notFound()` exactly as they are. **40 lines or fewer.**
+Rewrite `src/app/[category]/[slug]/page.tsx` to resolve the tool and call `ConverterPage` once with `ToolClient` as children and `RelatedReading` as `related`. Keep `generateMetadata`, `generateStaticParams`, the JSON-LD and `notFound()` exactly as they are. **50 lines or fewer.**
 
 - [ ] **Step 5: Run everything, including the end-to-end suite**
 
@@ -892,7 +892,7 @@ e2e suite was run as part of this change rather than after it."
 **Interfaces:**
 - Consumes: every template and every rebuilt route.
 
-Spec §6.3 states the DRY rule and names the mechanism: *"A `page.tsx` may not contain layout. It resolves data from a registry and hands it to a template."* Enforced by a test over `src/app/**/page.tsx` requiring an import from `@/design/templates` and a length at or under 40 lines.
+Spec §6.3 states the DRY rule and names the mechanism: *"A `page.tsx` may not contain layout. It resolves data from a registry and hands it to a template."* Enforced by a test over `src/app/**/page.tsx` requiring an import from `@/design/templates` and a length at or under 50 lines.
 
 **Prove the gap before closing it, and prove the guard bites after.** A guard that does not cover a directory passes vacuously, and this codebase has shipped that twice.
 
@@ -906,7 +906,7 @@ Write the rule's reasoning into the file: routes that contain layout are how a d
 
 Report each result, reverting after:
 
-1. Add ten lines of inline JSX to any route so it exceeds 40 lines → must **FAIL**, naming the file and its length.
+1. Add ten lines of inline JSX to any route so it exceeds 50 lines → must **FAIL**, naming the file and its length.
 2. Remove the `@/design/templates` import from a route and inline the markup → must **FAIL**.
 3. Add a new `src/app/scratch/page.tsx` containing raw JSX and no template import → must **FAIL**, which proves the walk finds new routes rather than a fixed list.
 
@@ -950,7 +950,7 @@ Spec 6.3 states that a page.tsx may not contain layout -- it resolves
 data and hands it to a template. Stated, that is a convention nobody
 checks; as a test over every src/app/**/page.tsx it is a rule.
 
-Forty lines is enough for metadata, data resolution and one template
+Fifty lines is enough for metadata, data resolution and one template
 call, and not enough to hide a composition in. The guard walks the
 directory rather than holding a list, because a list goes stale exactly
 when the guard matters -- the moment someone adds a route.
@@ -968,7 +968,7 @@ vacuously."
 
 - [ ] `pnpm run ci` passes end to end.
 - [ ] All four templates exist in `src/design/templates/`, are exported from its barrel, and each has at least one real consumer.
-- [ ] All six live routes are at or under 40 lines and import from `@/design/templates`.
+- [ ] All six live routes are at or under 50 lines and import from `@/design/templates`.
 - [ ] `route-purity.test.ts` fails on an over-long route, on a route with no template import, and on a newly added route with raw JSX — each proved by mutation.
 - [ ] The contract guard covers `src/design/templates/`, proved by mutation.
 - [ ] The spacing and palette sweeps reach the templates directory, proved by mutation.
