@@ -6,5 +6,7 @@
  * aspirational.
  */
 
+export { ArticlePage } from "./ArticlePage";
+export { ConverterPage } from "./ConverterPage";
 export { EditorialPage } from "./EditorialPage";
 export { HubPage } from "./HubPage";

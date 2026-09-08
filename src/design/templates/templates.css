@@ -24,3 +24,18 @@
 		--section-pad: 64px;
 	}
 }
+
+/*
+ * The prose measure. Body copy at the page's 1600px --max-width is
+ * unreadable; typographic convention puts a comfortable line at roughly
+ * 60–75 characters. `ch` is the honest unit for that, and it is the one
+ * width in this system that is deliberately not var(--max-width).
+ *
+ * Centred rather than left-aligned so the article sits under its own
+ * headline at every viewport.
+ */
+[data-prose] {
+	max-width: 68ch;
+	margin-inline: auto;
+	width: 100%;
+}

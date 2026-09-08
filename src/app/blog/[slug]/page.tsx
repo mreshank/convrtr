@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { RelatedReading } from "@/components/content/RelatedReading";
 import { BLOG_POSTS, getPost } from "@/content/blog/registry";
+import type { BlogPostMeta } from "@/content/blog/types";
+import { ArticlePage } from "@/design/templates";
 import { buildBlogPostingJsonLd } from "@/lib/jsonld";
 
 const SITE = "https://convrtr.mreshank.com";
@@ -10,6 +13,24 @@ export function generateStaticParams() {
 }
 
 export const dynamicParams = false;
+
+/** "27 August 2026" — the mono dateline voice, formatted here so `ArticlePage` never needs a locale. */
+function formatDateline(iso: string) {
+	return new Intl.DateTimeFormat("en-GB", {
+		day: "numeric",
+		month: "long",
+		year: "numeric",
+	}).format(new Date(iso));
+}
+
+/** Other posts that support the same tool — the same relation the tool page's own related-reading block uses. */
+function getRelatedPosts(post: BlogPostMeta) {
+	return BLOG_POSTS.filter(
+		(candidate) =>
+			candidate.slug !== post.slug &&
+			candidate.relatedTools.some((tool) => post.relatedTools.includes(tool)),
+	);
+}
 
 export async function generateMetadata({
 	params,
@@ -47,6 +68,9 @@ export default async function BlogPostPage({
 		`@/content/blog/${slug}/content.mdx`
 	);
 
+	const dateline = formatDateline(post.publishedAt);
+	const related = getRelatedPosts(post);
+
 	return (
 		<>
 			<script
@@ -58,17 +82,15 @@ export default async function BlogPostPage({
 					),
 				}}
 			/>
-			<main className="mx-auto flex w-full max-w-2xl flex-col gap-6 p-8">
-				<div className="flex flex-col gap-2">
-					<h1 className="text-[28px] tracking-[-0.02em]">{post.title}</h1>
-					<p className="text-[13px]" style={{ color: "var(--ink-muted)" }}>
-						{post.publishedAt}
-					</p>
-				</div>
-				<div className="flex flex-col gap-4">
-					<Content />
-				</div>
-			</main>
+			<ArticlePage
+				title={post.title}
+				dateline={dateline}
+				related={
+					related.length > 0 ? <RelatedReading posts={related} /> : undefined
+				}
+			>
+				<Content />
+			</ArticlePage>
 		</>
 	);
 }
