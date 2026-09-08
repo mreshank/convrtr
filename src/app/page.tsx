@@ -1,13 +1,11 @@
 import Link from "next/link";
 import { TOOLS } from "@/core/registry";
+import { FusedHeadline } from "@/design/families/FusedHeadline";
 
 export default function Home() {
 	return (
 		<main className="mx-auto flex w-full max-w-4xl flex-col gap-4 p-8">
-			<h1 className="text-[32px] tracking-[-0.02em]">convrtr</h1>
-			<p className="text-[14px]" style={{ color: "var(--ink-muted)" }}>
-				Convert anything. Nothing leaves your device.
-			</p>
+			<FusedHeadline as="h1" lead="Convert anything." cont="Nothing uploads." />
 			{/*
 			 * Derived from the registry rather than hand-listed, so adding a tool
 			 * adds its link here for free. Hard-coding one would quietly falsify
