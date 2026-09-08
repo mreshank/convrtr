@@ -7,29 +7,40 @@
  */
 
 /*
- * `HeroBand`'s primary pill is filled `--ink` (white) -- the same colour
- * the global `:focus-visible { outline: 1px solid var(--ink) }` ring in
- * globals.css draws. Tab to it on the real black-page export and the ring
- * cannot be told apart from the pill's own edge: measured contrast 1:1,
- * the two are literally the same paint. `SiteFooter.tsx` already names this
- * class of bug from the opposite direction -- inverting the canvas leaves
- * the *page's* `--ink` ring drawing "black on black over every link" in the
- * pale band -- this is its mirror: a light control on the dark canvas the
- * ring is tuned for.
+ * The white-filled pills -- `HeroBand`'s primary and `SiteHeader`'s
+ * navbar-cta -- are filled `--ink`, the same colour the global
+ * `:focus-visible { outline: 1px solid var(--ink) }` ring in globals.css
+ * draws. One rule covers both, because they are one shape.
  *
- * Positive `outline-offset` (globals.css's default, +2px) draws the ring
- * OUTSIDE the box, over whatever sits behind the pill -- the black page --
- * so recolouring it to `--ground` to fix the contrast against the pill
- * would only trade one invisible ring for another: black on the black page
- * it is actually painted over. Pulling it inside instead, with a negative
- * offset, keeps the ring's whole 1px stroke on top of the pill's own white
- * fill, where a `--ground` ring reads as a crisp dark ring stamped into it
- * -- 21:1 against the fill it is actually adjacent to.
+ * What the default ring actually did, measured on the real export by
+ * run-length-encoding a screenshot scanline through the control rather than
+ * by reading computed styles. globals.css's `outline-offset: 2px` draws the
+ * ring OUTSIDE the box, so the pixels across the left edge ran: page black,
+ * 1px white ring, 2px black gap, then the white fill. The ring's true
+ * neighbours were therefore the black page on both sides, at 18.93:1 and
+ * 17.74:1. It was visible.
+ *
+ * This rule's first version was justified by a "contrast 1:1" figure. That
+ * ratio is real -- ring and fill are both `--ink` -- but the two never
+ * touch, so it was never the WCAG-relevant pair, and the claim that the
+ * ring was invisible was wrong. Corrected here rather than quietly dropped.
+ *
+ * The rule stays, on the ground it actually rests on: a 1px white hairline
+ * separated from a large white pill by 2px of gap reads as part of the
+ * pill's own silhouette, not as a focus indicator. A negative offset puts
+ * the whole 1px stroke on top of the fill, where a `--ground` ring is
+ * unmistakable -- measured 17.76:1 and 14.36:1 against its neighbours on
+ * the header CTA, 19.56:1 and 17.63:1 on the hero pill, on `/`, `/tools`
+ * and `/blog`. Recolouring WITHOUT moving it would not have worked: a
+ * `--ground` ring left outside would be black on the black page.
  *
  * Scoped to `[data-cta-fill]` rather than added to the base
  * `:focus-visible` rule: the paired secondary pill is transparent, so the
  * global ring already sits on the black page with full contrast there and
- * must not be touched.
+ * must not be touched. `SiteFooter` needs nothing here either -- it inverts
+ * `--ink` on its own root, so the page's ring follows it into the pale band
+ * rather than drawing black on black, which is the failure that file
+ * documents from the other direction.
  */
 [data-cta-fill]:focus-visible {
 	outline-color: var(--ground);
