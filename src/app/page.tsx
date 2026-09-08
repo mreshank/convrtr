@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { TOOLS } from "@/core/registry";
-import { supportedFormats } from "@/core/registry/stats";
+import { conversionBranches, supportedFormats } from "@/core/registry/stats";
+import { BranchDiagram } from "@/design/families/BranchDiagram";
 import { ComplianceRow } from "@/design/families/ComplianceRow";
 import { DotMatrix } from "@/design/families/DotMatrix";
 import { FeatureGrid } from "@/design/families/FeatureGrid";
@@ -162,6 +163,15 @@ export default function Home() {
 			<span className="mono text-[11px]" style={{ color: "var(--ink-muted)" }}>
 				LOCAL ONLY · 0 BYTES UPLOADED · WORKS OFFLINE
 			</span>
+			{/*
+			 * v2's branching-line graphic, carrying the registry's own
+			 * conversion graph. `heic` is the input: it is the format people
+			 * most often need converted, and it genuinely branches three ways
+			 * (`conversionBranches("heic")` returns jpg, png, webp), so the
+			 * drawing is real data rather than a decorative network of
+			 * invented nodes.
+			 */}
+			<BranchDiagram from="heic" to={conversionBranches("heic")} />
 			{/*
 			 * v2's compliance badge row and mint status dot, adapted for a
 			 * product with no certifications to badge -- see the

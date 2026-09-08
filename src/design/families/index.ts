@@ -1,4 +1,5 @@
 export { BarChart } from "./BarChart";
+export { BranchDiagram, branchPath } from "./BranchDiagram";
 export { ComplianceRow } from "./ComplianceRow";
 export { DotMatrix } from "./DotMatrix";
 export { FeatureGrid } from "./FeatureGrid";

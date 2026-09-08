@@ -34,3 +34,28 @@ export function supportedFormats(): string[] {
 	}
 	return [...formats].sort();
 }
+
+/**
+ * Every output extension reachable from a given input, across the whole
+ * registry.
+ *
+ * The branching diagram's content, derived rather than drawn: `heic` really
+ * does branch to jpg, png and webp, because three tools accept it. A network
+ * graphic of invented nodes would decorate the page and say nothing.
+ *
+ * A self-edge is excluded. `png` accepting png and emitting png happens for
+ * resize and metadata tools, but drawing png -> png as a *conversion* would
+ * claim something the diagram does not mean.
+ */
+export function conversionBranches(from: string): string[] {
+	const needle = from.toLowerCase();
+	const outputs = new Set<string>();
+
+	for (const tool of TOOLS) {
+		if (!tool.accept.ext.some((ext) => ext.toLowerCase() === needle)) continue;
+		const out = tool.output.ext.toLowerCase();
+		if (out !== needle) outputs.add(out);
+	}
+
+	return [...outputs].sort();
+}

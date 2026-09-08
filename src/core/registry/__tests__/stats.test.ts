@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { CATEGORIES, TOOLS } from "@/core/registry";
-import { supportedFormats, toolsByCategory } from "@/core/registry/stats";
+import {
+	conversionBranches,
+	supportedFormats,
+	toolsByCategory,
+} from "@/core/registry/stats";
 
 describe("toolsByCategory", () => {
 	it("counts every tool exactly once", () => {
@@ -39,5 +43,30 @@ describe("supportedFormats", () => {
 
 	it("normalises case, so jpg and JPG are one format", () => {
 		expect(supportedFormats().every((f) => f === f.toLowerCase())).toBe(true);
+	});
+});
+
+describe("conversionBranches", () => {
+	it("finds every output reachable from an input extension", () => {
+		const outputs = conversionBranches("heic");
+		expect(outputs).toContain("jpg");
+		expect(outputs).toContain("png");
+		expect(outputs).toContain("webp");
+	});
+
+	it("never lists an input as its own output", () => {
+		// A self-edge is not a conversion, and drawing one would claim a
+		// tool that does not exist.
+		expect(conversionBranches("png")).not.toContain("png");
+	});
+
+	it("deduplicates and sorts, so the diagram is stable between builds", () => {
+		const outputs = conversionBranches("jpg");
+		expect(new Set(outputs).size).toBe(outputs.length);
+		expect([...outputs].sort()).toEqual(outputs);
+	});
+
+	it("returns an empty list for an extension nothing accepts", () => {
+		expect(conversionBranches("nosuchformat")).toEqual([]);
 	});
 });
