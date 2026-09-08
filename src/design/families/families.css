@@ -68,3 +68,81 @@
 		--strip-cols: 1;
 	}
 }
+
+/*
+ * `FeatureGrid`'s dividers, between cells and never around them.
+ *
+ * v2 asks for "thin border dividers between cells". A border on every cell
+ * doubles each interior line and adds an outer frame the brief does not
+ * describe, so these rules draw a left edge on every cell that is not in the
+ * first column and a top edge on every cell that is not in the first row --
+ * the union of those two rules is 0 borders on cell 1 (top-left corner), a
+ * left-only border on cells 2-3 (rest of row 1), a top-only border on cell 4
+ * (start of row 2), and both borders on cells 5-6.
+ *
+ * The `:nth-child` arithmetic assumes three columns, which is why it is
+ * restated below for each breakpoint rather than derived once: at 2 columns
+ * "first column" means odd children and "first row" means the first two
+ * children; at 1 column every cell but the first gets a top border and none
+ * ever gets a left border. Leaving the 3-column arithmetic in place while the
+ * grid collapses to 2 or 1 columns would draw dividers for the wrong column
+ * count -- lines appearing mid-cell or missing between adjacent cells -- which
+ * is the visible symptom of the mechanism failing.
+ *
+ * The three tiers below live in three mutually-exclusive `@media` ranges
+ * (901px+, 601-900px, up to 600px) rather than one unconditional "3-column"
+ * block plus two narrower overrides. The obvious-looking alternative --
+ * an unconditional `:not(:nth-child(3n + 1))` rule for the desktop case,
+ * "reset" it inside `@media (max-width: 900px)` with a plain
+ * `[data-feature-grid] > [data-cell] { border-left: 0 }`, then reapply the
+ * 2-column arithmetic -- does not work, and measuring caught it: the
+ * unconditional rule's selector carries a `:nth-child` pseudo-class, giving
+ * it higher specificity (0,0,3,0) than the plain-selector reset (0,0,2,0), so
+ * the reset loses to it regardless of source order or which one is inside a
+ * media query. Measured at 899px: `3n + 1` picks out children 1, 4, 7...,
+ * so its complement `:not(:nth-child(3n + 1))` still matches child 3 -- the
+ * unconditional desktop rule kept painting a left border on the 2-column
+ * layout's bottom-left cell even though the 2-column arithmetic never asked
+ * for one there, because the reset could not out-rank it. Scoping each tier to a
+ * `@media` range that the others cannot enter means only one tier's
+ * selectors are ever able to match a given viewport's cells, so there is
+ * nothing to out-specificity and no reset is needed.
+ *
+ * `FeatureGrid` itself never sets `--grid-cols` inline (see the long comment
+ * in `FeatureGrid.tsx`), so the `--grid-cols` writes below reach the element
+ * by ordinary cascade, beating the inherited default of 3 from `tokens.css`
+ * with no `!important` needed.
+ */
+@media (min-width: 901px) {
+	[data-feature-grid] > [data-cell]:not(:nth-child(3n + 1)) {
+		border-left: var(--rule-width) solid var(--rule);
+	}
+
+	[data-feature-grid] > [data-cell]:nth-child(n + 4) {
+		border-top: var(--rule-width) solid var(--rule);
+	}
+}
+
+@media (max-width: 900px) and (min-width: 601px) {
+	[data-feature-grid] {
+		--grid-cols: 2;
+	}
+
+	[data-feature-grid] > [data-cell]:not(:nth-child(2n + 1)) {
+		border-left: var(--rule-width) solid var(--rule);
+	}
+
+	[data-feature-grid] > [data-cell]:nth-child(n + 3) {
+		border-top: var(--rule-width) solid var(--rule);
+	}
+}
+
+@media (max-width: 600px) {
+	[data-feature-grid] {
+		--grid-cols: 1;
+	}
+
+	[data-feature-grid] > [data-cell]:not(:first-child) {
+		border-top: var(--rule-width) solid var(--rule);
+	}
+}

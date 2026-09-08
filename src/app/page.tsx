@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { TOOLS } from "@/core/registry";
+import { supportedFormats } from "@/core/registry/stats";
 import { DotMatrix } from "@/design/families/DotMatrix";
+import { FeatureGrid } from "@/design/families/FeatureGrid";
 import { FeatureStrip } from "@/design/families/FeatureStrip";
 import { HeroBand } from "@/design/families/HeroBand";
 import { TerminalPanel } from "@/design/families/TerminalPanel";
@@ -19,6 +21,22 @@ const FEATURES = [
 	{ label: "Private", body: "No account, no telemetry." },
 	{ label: "Offline", body: "Works with the network off." },
 	{ label: "Honest", body: "Fidelity is stated, not implied." },
+];
+
+// v2's second, denser feature grid -- six informational claims rather than
+// the strip's five. "Open formats" reads `supportedFormats().length` rather
+// than a hand-typed count, so the claim cannot go stale as tools are added
+// to or removed from the registry.
+const GRID_FEATURES = [
+	{ label: "No upload", body: "Conversion runs in the page." },
+	{ label: "No account", body: "Nothing to sign up for." },
+	{ label: "No telemetry", body: "No analytics beacon." },
+	{ label: "Stated fidelity", body: "Lossless is labelled lossless." },
+	{
+		label: "Open formats",
+		body: `${supportedFormats().length} extensions in and out.`,
+	},
+	{ label: "Offline", body: "Cached and usable with no network." },
 ];
 
 export default function Home() {
@@ -85,6 +103,15 @@ export default function Home() {
 			 * was verified.
 			 */}
 			<FeatureStrip items={FEATURES} />
+			{/*
+			 * v2's second, denser feature grid: six cells in three columns with
+			 * hairline dividers between them, mounted below the five-up strip.
+			 * The two coexist because v2 places them at different points on the
+			 * page (`DESIGN.v2.md`'s first screen vs. its mid-page enterprise
+			 * section) with different cell counts and a different divider
+			 * treatment -- this is not a duplicate of `FeatureStrip`.
+			 */}
+			<FeatureGrid items={GRID_FEATURES} />
 			{/*
 			 * Derived from the registry rather than hand-listed, so adding a tool
 			 * adds its link here for free. Hard-coding one would quietly falsify

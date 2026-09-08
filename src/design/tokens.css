@@ -98,6 +98,16 @@
 	--strip-cols: 5;
 
 	/*
+	 * `FeatureGrid`'s column count, default three per v2's 3x2 enterprise
+	 * grid. `families.css` redefines this to 2 below 900px and to 1 below
+	 * 600px so the grid collapses in step with its divider rules -- the same
+	 * mechanism as `--strip-cols` immediately above, and for the identical
+	 * reason: `FeatureGrid` itself never sets `--grid-cols` inline, so there
+	 * is nothing on that element for these media queries to out-rank.
+	 */
+	--grid-cols: 3;
+
+	/*
 	 * v2's radius set: 0px for all structural elements (cards, panels, grids,
 	 * media). The guardrail forbids rounded cards, and v2's prose and five
 	 * card/button components specify 0px (see design-system.test.ts above
