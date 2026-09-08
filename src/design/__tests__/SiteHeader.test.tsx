@@ -85,13 +85,46 @@ describe("SiteHeader", () => {
 	it("draws the nav links as v2's nav-utility controls", () => {
 		// DESIGN.v2.md:137 — transparent fill, white text, 4px radius, 23px
 		// tall. That is the one place `--radius-control` is spent in this
-		// system, and it is visible: the global focus ring follows the
-		// border-radius, so a keyboard user sees the 4px corner.
+		// system, and it is visible: the global focus ring is the only thing
+		// that ever draws this control's shape, and an outline's corner
+		// radius is the element's own grown by the offset — 4px + 2px, so a
+		// keyboard user sees a 6px corner derived from this value.
 		render(<SiteHeader links={LINKS} cta={CTA} />);
 		const link = screen.getByRole("link", { name: "Tools" });
 		expect(link.style.borderRadius).toBe("var(--radius-control)");
 		expect(link.style.background).toBe("transparent");
 		expect(link.style.height).toBe("23px");
+	});
+
+	it("reserves room for the focus ring on every side of the scrolling nav", () => {
+		// `overflow-x: auto` cannot be scoped to one axis — `overflow-y`
+		// computes to `auto` alongside it, making the nav a clipping box on
+		// all four sides. The links were exactly as tall as the row and the
+		// outermost two sat flush against its ends, so the global
+		// `:focus-visible` ring (1px at `outline-offset: 2px`, so 2-3px
+		// outside the control) was clipped away and a keyboard user saw a
+		// stray hairline instead of a ring. Measured on the real export
+		// before the padding, ring pixels in the 1-4px annulus as
+		// top/bottom/left/right: 0/0/0/29 around the first nav link and
+		// 0/1/28/0 around the last.
+		//
+		// This is a structural assertion, not a visual one: happy-dom
+		// composites nothing, so it cannot see an outline clipped or drawn.
+		// What it can hold is that the scroll container still reserves room
+		// on every side, which is the line that was crossed.
+		const { container } = render(<SiteHeader links={LINKS} cta={CTA} />);
+		const nav = container.querySelector(
+			'nav[aria-label="Main"]',
+		) as HTMLElement;
+		expect(nav.style.overflowX).toBe("auto");
+		for (const side of [
+			nav.style.paddingTop,
+			nav.style.paddingBottom,
+			nav.style.paddingLeft,
+			nav.style.paddingRight,
+		]) {
+			expect(side).toBe("var(--space-base)");
+		}
 	});
 
 	it("puts the nav links in the document without a disclosure", () => {

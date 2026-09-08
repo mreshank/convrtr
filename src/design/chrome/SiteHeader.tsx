@@ -117,6 +117,38 @@ export function SiteHeader({ links, cta }: Props) {
 					// instead of squeezing the wordmark or the CTA.
 					minWidth: 0,
 					overflowX: "auto",
+					// Standoff for the focus ring, and it is load-bearing.
+					// `overflow-x: auto` cannot be scoped to one axis: the
+					// other computes to `auto` alongside it, so this element
+					// is a clipping box on all four sides. The links were
+					// exactly as tall as the row and the outermost two sat
+					// flush against its ends, so the global `:focus-visible`
+					// ring — 1px at `outline-offset: 2px`, i.e. 2-3px outside
+					// the control — had nowhere to land. Measured on the real
+					// export, ring pixels in the 1-4px annulus, as
+					// top/bottom/left/right: the first nav link went 0/0/0/29
+					// -> 73/75/31/31 and the last 0/1/28/0 -> 77/81/29/31,
+					// against 75/75/31/31 for a control with these exact
+					// styles rendered outside the nav. Before this line a
+					// keyboard user saw one stray hairline; after it, a ring
+					// on all four sides, at 1280px and at 420px where the row
+					// really does scroll.
+					//
+					// `--space-base` rather than the 3px the ring strictly
+					// needs: it is the scale's own unit, and 23 + 16 leaves
+					// the nav 39px inside a 64px bar, with room to grow again
+					// if a horizontal scrollbar appears.
+					//
+					// Longhands rather than the `padding` shorthand, for the
+					// reason the bottom border above is written out: a
+					// shorthand whose parts are all `var()` does not reparse
+					// into its components, so it round-trips through the
+					// CSSOM as the shorthand alone and no test can assert on
+					// a side.
+					paddingTop: "var(--space-base)",
+					paddingRight: "var(--space-base)",
+					paddingBottom: "var(--space-base)",
+					paddingLeft: "var(--space-base)",
 				}}
 			>
 				{links.map((link) => (
@@ -130,9 +162,16 @@ export function SiteHeader({ links, cta }: Props) {
 							// v2's nav-utility control: transparent fill,
 							// white text, 4px radius, 23px tall, 0/14px
 							// padding. The radius is not dead on a
-							// transparent control — the global
-							// `:focus-visible` outline follows it, so a
-							// keyboard user sees the 4px corner.
+							// transparent control: the global
+							// `:focus-visible` outline is the only thing that
+							// ever draws this control's shape, and an outline
+							// takes its corner radius from the element's own,
+							// grown by the offset — 4px here plus 2px of
+							// offset, so what a keyboard user sees is a 6px
+							// corner derived from this 4px value. Change the
+							// radius and the ring's corner changes with it.
+							// The ring is only visible at all because the nav
+							// above reserves vertical room for it.
 							height: "23px",
 							padding: "0 14px",
 							background: "transparent",
