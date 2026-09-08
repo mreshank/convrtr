@@ -4,6 +4,7 @@ import { supportedFormats } from "@/core/registry/stats";
 import { DotMatrix } from "@/design/families/DotMatrix";
 import { FeatureGrid } from "@/design/families/FeatureGrid";
 import { FeatureStrip } from "@/design/families/FeatureStrip";
+import { FormatStrip } from "@/design/families/FormatStrip";
 import { HeroBand } from "@/design/families/HeroBand";
 import { TerminalPanel } from "@/design/families/TerminalPanel";
 
@@ -112,6 +113,14 @@ export default function Home() {
 			 * treatment -- this is not a duplicate of `FeatureStrip`.
 			 */}
 			<FeatureGrid items={GRID_FEATURES} />
+			{/*
+			 * v2's scrolling logo rail, adapted: this product has no customer
+			 * logos, and inventing them would be fabrication on a page whose
+			 * whole claim is that it can be verified. The formats the registry
+			 * accepts or emits are the honest equivalent, and they are derived
+			 * so this cannot drift as tools are added.
+			 */}
+			<FormatStrip formats={supportedFormats()} />
 			{/*
 			 * Derived from the registry rather than hand-listed, so adding a tool
 			 * adds its link here for free. Hard-coding one would quietly falsify
