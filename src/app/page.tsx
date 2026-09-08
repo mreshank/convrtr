@@ -1,8 +1,25 @@
 import Link from "next/link";
 import { TOOLS } from "@/core/registry";
 import { DotMatrix } from "@/design/families/DotMatrix";
+import { FeatureStrip } from "@/design/families/FeatureStrip";
 import { HeroBand } from "@/design/families/HeroBand";
 import { TerminalPanel } from "@/design/families/TerminalPanel";
+
+// Five properties this product actually has, not five pieces of copy.
+// "Offline" rests on the service worker `layout.tsx` registers
+// (`ServiceWorkerRegistration`, backed by the generated `out/sw.js`); "Honest"
+// rests on `FidelityScore` encoding lossless/lossy as a solid-versus-dashed
+// ring rather than leaving it to a label. The other three are architectural:
+// every conversion in `src/core` runs client-side, decoding and encoding in
+// the browser tab with nothing sent anywhere, and there is no account system
+// or analytics call anywhere in this codebase.
+const FEATURES = [
+	{ label: "Local", body: "Files never leave the device." },
+	{ label: "Fast", body: "No round trip to a server." },
+	{ label: "Private", body: "No account, no telemetry." },
+	{ label: "Offline", body: "Works with the network off." },
+	{ label: "Honest", body: "Fidelity is stated, not implied." },
+];
 
 export default function Home() {
 	return (
@@ -61,6 +78,13 @@ export default function Home() {
 					]}
 				/>
 			</DotMatrix>
+			{/*
+			 * v2's five-up feature strip, mounted below the terminal panel per
+			 * Task 7. Each item is a property the product actually has, not
+			 * marketing copy -- see the FEATURES comment above for how each one
+			 * was verified.
+			 */}
+			<FeatureStrip items={FEATURES} />
 			{/*
 			 * Derived from the registry rather than hand-listed, so adding a tool
 			 * adds its link here for free. Hard-coding one would quietly falsify

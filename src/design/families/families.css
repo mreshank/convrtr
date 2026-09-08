@@ -35,3 +35,36 @@
 	outline-color: var(--ground);
 	outline-offset: -3px;
 }
+
+/*
+ * The five-up strip collapses to one column below 900px.
+ *
+ * An extension, not a restatement: v2 specifies five equal columns for the
+ * first screen and says nothing about narrow viewports. Five columns at 375px
+ * leave roughly 75px each, which is narrower than the labels they hold.
+ *
+ * This sets the `--strip-cols` custom property rather than the
+ * `grid-template-columns` shorthand directly, and `FeatureStrip` itself
+ * never sets `--strip-cols` inline -- both matter, together. An inline
+ * style value on an element always outranks any external rule that targets
+ * that same element, media query or not, for ANY property -- custom
+ * properties cascade by the same rules as everything else, so an inline
+ * `--strip-cols: 5` on the grid would defeat this override exactly as
+ * thoroughly as an inline `grid-template-columns: repeat(5, ...)` did.
+ * Measured twice, not assumed: an earlier version set the shorthand
+ * directly inline and this block changed nothing (five 43px tracks at
+ * 375px); the fix that followed kept the shorthand indirect but still set
+ * `--strip-cols: 5` inline on the same element, which changed nothing for
+ * the identical reason (confirmed with an isolated two-line reproduction --
+ * a plain non-important media-query rule cannot move a custom property a
+ * `style` attribute has already set on that same element). The version that
+ * actually works, here, leaves the grid with no local `--strip-cols` at
+ * all: the default of 5 comes from `:root` in `tokens.css` purely by
+ * inheritance, and this rule only has to beat that inherited value, which
+ * any matched declaration does without needing `!important`.
+ */
+@media (max-width: 900px) {
+	[data-feature-strip] {
+		--strip-cols: 1;
+	}
+}

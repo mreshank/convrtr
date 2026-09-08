@@ -88,6 +88,16 @@
 	--navbar-height: 64px;
 
 	/*
+	 * `FeatureStrip`'s column count, default five per v2's five-up strip.
+	 * `families.css` redefines this to 1 below 900px so the strip collapses
+	 * to a single column — an inline `gridTemplateColumns:
+	 * "repeat(var(--strip-cols), ...)"` reads this through the ordinary
+	 * cascade, where a literal `repeat(5, ...)` written inline could never
+	 * be reached by an external rule at all.
+	 */
+	--strip-cols: 5;
+
+	/*
 	 * v2's radius set: 0px for all structural elements (cards, panels, grids,
 	 * media). The guardrail forbids rounded cards, and v2's prose and five
 	 * card/button components specify 0px (see design-system.test.ts above
