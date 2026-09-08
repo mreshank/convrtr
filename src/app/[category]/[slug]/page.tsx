@@ -3,10 +3,15 @@ import { notFound } from "next/navigation";
 import { RelatedReading } from "@/components/content/RelatedReading";
 import { getPostsByTool } from "@/content/blog/registry";
 import { getTool, TOOLS } from "@/core/registry";
+import { ConverterPage } from "@/design/templates";
 import { buildToolJsonLd } from "@/lib/jsonld";
 import { ToolClient } from "./ToolClient";
 
 const SITE = "https://convrtr.mreshank.com";
+
+function label(category: string): string {
+	return `${category.charAt(0).toUpperCase()}${category.slice(1)}`;
+}
 
 export function generateStaticParams() {
 	return TOOLS.map((tool) => ({ category: tool.category, slug: tool.slug }));
@@ -42,6 +47,8 @@ export default async function ToolPage({
 	if (!tool) notFound();
 
 	const relatedPosts = getPostsByTool(tool.id);
+	const fromExt = (tool.accept.ext[0] ?? tool.output.ext).toUpperCase();
+	const toExt = tool.output.ext.toUpperCase();
 
 	return (
 		<>
@@ -52,8 +59,23 @@ export default async function ToolPage({
 					__html: JSON.stringify(buildToolJsonLd(tool, `${SITE}/${tool.id}`)),
 				}}
 			/>
-			<ToolClient toolId={tool.id} />
-			<RelatedReading posts={relatedPosts} />
+			{/*
+			 * `title` is `tool.seo.h1` — the page's one real headline. ToolClient
+			 * used to render this same text in its own <h1>; that line is gone
+			 * (see ToolClient.tsx) so the page has exactly one <h1>, which is
+			 * what the 42 Playwright specs that resolve it by name expect. The
+			 * format pair is folded into the eyebrow instead of competing for
+			 * the headline slot: it labels the conversion, it doesn't name the
+			 * page.
+			 */}
+			<ConverterPage
+				eyebrow={`${label(tool.category)} · ${fromExt} → ${toExt}`}
+				title={tool.seo.h1}
+				lede={tool.seo.intent}
+				related={<RelatedReading posts={relatedPosts} />}
+			>
+				<ToolClient toolId={tool.id} />
+			</ConverterPage>
 		</>
 	);
 }

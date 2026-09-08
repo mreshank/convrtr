@@ -728,8 +728,16 @@ export function ToolClient({ toolId }: { toolId: string }) {
 
 	return (
 		<main className="mx-auto flex max-w-4xl flex-col gap-6 p-8">
-			<div className="flex items-start justify-between">
-				<h1 className="text-[28px] tracking-[-0.02em]">{tool.seo.h1}</h1>
+			{/*
+			 * No <h1> here: ConverterPage (the template wrapping this component)
+			 * owns the page's one heading, and renders `tool.seo.h1` there. This
+			 * used to duplicate that exact text in a second <h1>, which broke
+			 * the document outline for screen readers and confused Playwright's
+			 * strict-mode heading locators. FidelityScore keeps its original
+			 * top-right position via `justify-end` now that it's the row's only
+			 * child.
+			 */}
+			<div className="flex items-start justify-end">
 				<FidelityScore
 					score={fidelityScore(tool, quality)}
 					label={describeFidelity(tool, quality)}
