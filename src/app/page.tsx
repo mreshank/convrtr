@@ -1,33 +1,40 @@
 import Link from "next/link";
 import { TOOLS } from "@/core/registry";
+import { DotMatrix } from "@/design/families/DotMatrix";
 import { FusedHeadline } from "@/design/families/FusedHeadline";
 
 export default function Home() {
 	return (
 		<main className="mx-auto flex w-full max-w-4xl flex-col gap-4 p-8">
-			<FusedHeadline as="h1" lead="Convert anything." cont="Nothing uploads." />
-			{/*
-			 * Derived from the registry rather than hand-listed, so adding a tool
-			 * adds its link here for free. Hard-coding one would quietly falsify
-			 * the architecture claim that nothing in `src/app` is per-tool.
-			 */}
-			<div className="flex flex-wrap gap-2">
-				{TOOLS.map((tool) => (
-					<Link
-						key={tool.id}
-						href={`/${tool.id}`}
-						className="mono border px-4 py-2 text-[12px]"
-						style={{
-							color: "var(--ink)",
-							borderColor: "var(--rule)",
-							borderRadius: "var(--radius)",
-						}}
-					>
-						{tool.accept.ext[0]?.toUpperCase()} {"→"}{" "}
-						{tool.output.ext.toUpperCase()}
-					</Link>
-				))}
-			</div>
+			<DotMatrix>
+				<FusedHeadline
+					as="h1"
+					lead="Convert anything."
+					cont="Nothing uploads."
+				/>
+				{/*
+				 * Derived from the registry rather than hand-listed, so adding a tool
+				 * adds its link here for free. Hard-coding one would quietly falsify
+				 * the architecture claim that nothing in `src/app` is per-tool.
+				 */}
+				<div className="flex flex-wrap gap-2">
+					{TOOLS.map((tool) => (
+						<Link
+							key={tool.id}
+							href={`/${tool.id}`}
+							className="mono border px-4 py-2 text-[12px]"
+							style={{
+								color: "var(--ink)",
+								borderColor: "var(--rule)",
+								borderRadius: "var(--radius)",
+							}}
+						>
+							{tool.accept.ext[0]?.toUpperCase()} {"→"}{" "}
+							{tool.output.ext.toUpperCase()}
+						</Link>
+					))}
+				</div>
+			</DotMatrix>
 			<span className="mono text-[11px]" style={{ color: "var(--ink-muted)" }}>
 				LOCAL ONLY · 0 BYTES UPLOADED · WORKS OFFLINE
 			</span>

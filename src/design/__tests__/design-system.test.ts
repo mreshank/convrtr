@@ -353,10 +353,19 @@ describe("spacing sweep regex", () => {
  * `LITERAL_HEX_ALLOWED` already draws for this file's `#000`. Scoped to the
  * "gradient" keyword only: a `box-shadow` or `backdrop-filter` written into
  * either file would still fail this guard.
+ *
+ * `radial-gradient` in these two files is DotMatrix's dot-matrix lattice
+ * (task 3) and the test that asserts on that same string literal. It is not
+ * an image asset and not a decorative wash — it is the exact, zero-request
+ * way to express a repeating dot lattice, and its colour comes from `--rule`,
+ * so it carries the same accountability the palette guard gives every other
+ * colour in the system.
  */
 const GRADIENT_ALLOWED = new Set([
 	join("src", "design", "primitives", "MediaFrame.tsx"),
 	join("src", "design", "__tests__", "MediaFrame.test.tsx"),
+	join("src", "design", "families", "DotMatrix.tsx"),
+	join("src", "design", "__tests__", "DotMatrix.test.tsx"),
 ]);
 
 describe("forbidden visual devices", () => {

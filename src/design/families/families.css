@@ -1,0 +1,7 @@
+/*
+ * Rules the families need that a React style object cannot express:
+ * descendant selectors, grid pseudo-element dividers, and keyframes.
+ *
+ * Anything expressible inline belongs inline, next to the component that
+ * owns it.
+ */
