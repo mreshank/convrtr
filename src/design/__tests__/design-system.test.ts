@@ -295,18 +295,113 @@ function numericConstants(content: string): Map<string, string> {
 }
 
 /**
+ * Evaluates an arithmetic expression built ONLY from number literals, the
+ * four basic operators and parentheses -- e.g. `8 + 9` or `(240 - 96) / 2`.
+ *
+ * This exists to close one specific hole: `` padding: `${8 + 9}px` `` is a
+ * *compile-time* constant, written as arithmetic instead of folded to `17`
+ * by hand, and the sweep should see straight through it exactly as if it had
+ * been written `padding: "17px"`. It is deliberately NOT a general
+ * expression evaluator -- the character-class guard below rejects anything
+ * containing a letter, so a variable reference (`ratio * 100`) is refused
+ * before a single character of it is parsed and falls through to
+ * `resolveTemplate`'s existing space-collapse untouched, which is what keeps
+ * that function's runtime-value exemption intact. A hand-rolled
+ * recursive-descent parser is used rather than `Function`/`eval` so
+ * evaluation can never run anything but the four operators implemented here.
+ */
+function evaluateArithmetic(expr: string): number | null {
+	if (!/^[\d\s+\-*/.()]+$/.test(expr)) return null;
+	let i = 0;
+	// `.charAt` rather than index access: it returns `""` past the end of the
+	// string instead of `undefined`, so every comparison below stays a plain
+	// string comparison with no extra null-checking noise.
+	const peek = () => expr.charAt(i);
+	const skipSpace = () => {
+		while (peek() === " ") i++;
+	};
+	const parseNumber = (): number | null => {
+		skipSpace();
+		const start = i;
+		while (i < expr.length && /[\d.]/.test(peek())) i++;
+		if (i === start) return null;
+		return Number(expr.slice(start, i));
+	};
+	const parseFactor = (): number | null => {
+		skipSpace();
+		if (peek() === "(") {
+			i++;
+			const value = parseExpr();
+			skipSpace();
+			if (peek() !== ")" || value === null) return null;
+			i++;
+			return value;
+		}
+		if (peek() === "-") {
+			i++;
+			const value = parseFactor();
+			return value === null ? null : -value;
+		}
+		return parseNumber();
+	};
+	const parseTerm = (): number | null => {
+		let value = parseFactor();
+		if (value === null) return null;
+		skipSpace();
+		while (peek() === "*" || peek() === "/") {
+			const op = peek();
+			i++;
+			const rhs = parseFactor();
+			if (rhs === null) return null;
+			value = op === "*" ? value * rhs : value / rhs;
+			skipSpace();
+		}
+		return value;
+	};
+	const parseExpr = (): number | null => {
+		let value = parseTerm();
+		if (value === null) return null;
+		skipSpace();
+		while (peek() === "+" || peek() === "-") {
+			const op = peek();
+			i++;
+			const rhs = parseTerm();
+			if (rhs === null) return null;
+			value = op === "+" ? value + rhs : value - rhs;
+			skipSpace();
+		}
+		return value;
+	};
+	const result = parseExpr();
+	skipSpace();
+	if (result === null || i !== expr.length || !Number.isFinite(result)) {
+		return null;
+	}
+	return result;
+}
+
+/**
  * A resolved template-literal value, plus the names it resolved through.
  *
  * The names matter to the caller: a length that arrived via a named module
  * constant is judged by a different rule than one written out on the spot
  * (see `isAdmissibleGeometryConstant`).
  *
- * An interpolation this sweep cannot evaluate — `${ratio * 100}`,
- * `${leftPercent}` — collapses to a space, which can never form part of a px
+ * An interpolation this sweep cannot evaluate -- `${ratio * 100}`,
+ * `${leftPercent}` -- collapses to a space, which can never form part of a px
  * length, so it is skipped rather than guessed at. That is a deliberate false negative:
  * a runtime-computed dimension is not a hard-coded one, and flagging every
  * `width: ${pct}%` would get this sweep deleted by the next person who trips
  * on it.
+ *
+ * That reasoning protects an expression containing an identifier --
+ * `ratio`, `leftPercent` -- because those can only be resolved at runtime.
+ * It never protected `${8 + 9}`: every operand there is already a literal
+ * sitting in the source, so the whole expression is exactly as static as
+ * `${17}` and deserves the same verdict. `evaluateArithmetic` folds that
+ * case first; only an expression containing something genuinely
+ * unresolvable (a name, a call, a ternary) still falls through to the
+ * space-collapse below.
  */
 function resolveTemplate(
 	value: string,
@@ -321,7 +416,9 @@ function resolveTemplate(
 			viaConstant = true;
 			return known;
 		}
-		return " ";
+		const arithmetic = evaluateArithmetic(trimmed);
+		if (arithmetic !== null) return String(arithmetic);
+		return " ";
 	});
 	return { resolved, viaConstant };
 }
@@ -425,6 +522,12 @@ describe("spacing sweep regex", () => {
 		// A named constant does not launder an off-scale value: 17 is not a
 		// multiple of --space-base by any reading.
 		"const BOX = 17;\nheight: `${BOX}px`",
+		// F2: arithmetic on literals is a compile-time constant, not a
+		// runtime value, and folds to 17 -- off-scale exactly like
+		// `${17}px` above. Confirmed by mutation: writing `FeatureGrid.tsx`'s
+		// `padding: "var(--gap-md)"` as `` padding: `${8 + 9}px` `` used to
+		// leave this suite green.
+		"padding: `${8 + 9}px`",
 	];
 
 	const mustNotFlag = [
@@ -464,6 +567,10 @@ describe("spacing sweep regex", () => {
 		// the same number is the SVG's own height, so it cannot be a token
 		// expression. See isAdmissibleGeometryConstant.
 		"const HEIGHT = 120;\nheight: `${HEIGHT}px`",
+		// F2: arithmetic that folds to an admitted literal (14, v2's
+		// nav-utility padding) is exactly as legitimate as writing that
+		// literal directly.
+		"padding: `${7 + 7}px`",
 		// biome-ignore-end lint/suspicious/noTemplateCurlyInString: end of
 		// the fixture range opened in mustFlag above.
 	];
@@ -474,6 +581,116 @@ describe("spacing sweep regex", () => {
 
 	it.each(mustNotFlag)("does not flag %j", (input) => {
 		expect(findAdHocSpacing(input)).toEqual([]);
+	});
+});
+
+/**
+ * F3: everything `findAdHocSpacing` above is structurally blind to.
+ *
+ * `SPACING_PROPERTY` anchors on JS object property names (`padding:`,
+ * `gap:`, ...); a Tailwind arbitrary-value utility written into a
+ * `className` string -- `p-[17px]`, `gap-[13px]`, `mt-[7px]` -- has no such
+ * property name anywhere for it to match, and is invisible to it.
+ * Confirmed by mutation: adding `className="meta p-[17px]"` to
+ * `FormatStrip.tsx`'s span passed both the spacing sweep and `biome check`.
+ *
+ * This sweep covers the natural ad-hoc-spacing idiom in a Tailwind
+ * codebase: the `p`/`m` families with their directional suffixes
+ * (`pt`, `px`, `mb`, ...), `gap`/`gap-x`/`gap-y`, `space-x`/`space-y`,
+ * and `w`/`h`/`top`/`left`/`right`/`bottom`, each followed by a bracketed
+ * value. It is intentionally narrower than "anything in a bracket that
+ * contains the digits and letters p-x": only a bracket whose ENTIRE
+ * content is a bare `<number>px` is judged as a literal, checked against
+ * the very same `ALLOWED_LITERAL_PX` scale the JS-object sweep uses, so
+ * the two can never drift into two different allowlists for one system. A
+ * bracket carrying a token reference (`p-[var(--gap-md)]`) is exactly as
+ * legitimate as `padding: "var(--gap-md)"` and passes for the same
+ * reason. A bracket carrying anything else -- `calc(100%-2px)`, a
+ * percentage, a `ch` unit -- is a different kind of value than a hard-coded
+ * spacing literal and is left alone rather than guessed at, the same
+ * deliberate-false-negative call `resolveTemplate` makes for a runtime
+ * `${...}` above.
+ */
+const CLASS_NAME_VALUE =
+	/\bclassName\s*=\s*(?:"([^"]*)"|'([^']*)'|\{`([^`]*)`\})/g;
+
+const TAILWIND_SPACING_UTILITY =
+	/\b-?(?:[pm][trblxy]?|gap(?:-[xy])?|space-[xy]|w|h|top|left|right|bottom)-\[([^\]]+)\]/g;
+
+function findAdHocTailwindSpacing(content: string): string[] {
+	const offenders: string[] = [];
+	for (const classMatch of content.matchAll(CLASS_NAME_VALUE)) {
+		const classes = classMatch[1] ?? classMatch[2] ?? classMatch[3] ?? "";
+		for (const utilityMatch of classes.matchAll(TAILWIND_SPACING_UTILITY)) {
+			const captured = utilityMatch[1];
+			if (captured === undefined) continue;
+			const value = captured.trim();
+			if (/^var\(/.test(value)) continue; // a token reference, not a literal
+			const px = /^(\d+(?:\.\d+)?)px$/.exec(value);
+			if (!px) continue; // not a bare px length -- calc()/%/ch, out of scope
+			if (ALLOWED_LITERAL_PX.has(Number(px[1]))) continue;
+			offenders.push(utilityMatch[0]);
+		}
+	}
+	return offenders;
+}
+
+describe("Tailwind arbitrary spacing", () => {
+	it("writes no ad-hoc arbitrary-value spacing utility", () => {
+		const offenders: string[] = [];
+		for (const { path, content } of sourceFileContents) {
+			if (!path.endsWith(".tsx")) continue;
+			for (const hit of findAdHocTailwindSpacing(content)) {
+				offenders.push(`${path}: ${hit}`);
+			}
+		}
+		expect(offenders).toEqual([]);
+	});
+});
+
+describe("Tailwind arbitrary spacing regex", () => {
+	// Pinned against fixtures directly, for the same reason every other
+	// sweep in this file is: a corpus that is clean today says nothing
+	// about whether the regex underneath it would catch tomorrow's
+	// violation.
+	const mustFlag = [
+		'className="meta p-[17px]"',
+		'className="gap-[13px] flex"',
+		'className="mt-[7px]"',
+		'className="flex gap-x-[9px] gap-y-[9px]"',
+		'className="space-x-[5px]"',
+		'className="-top-[7px]"',
+	];
+
+	const mustNotFlag = [
+		// An allowlisted literal -- 14px is v2's own nav-utility value.
+		'className="p-[14px]"',
+		// A token reference is as legitimate in a class as in a style object.
+		'className="p-[var(--gap-md)]"',
+		'className="gap-[var(--gap-sm)]"',
+		// Not spacing at all -- a font-size utility, not in the family list.
+		'className="text-[13px]"',
+		// `w` IS in the family list, but a calc() expression is not a bare
+		// px literal -- the same distinction `resolveTemplate` draws for a
+		// runtime `${...}px`.
+		'className="w-[calc(100%-2px)]"',
+		// A percentage is not a length this scale describes.
+		'className="w-[50%]"',
+		// No arbitrary value at all -- an ordinary Tailwind spacing scale
+		// utility, which this sweep does not police (a different, and
+		// separately maintained, scale).
+		'className="p-8 gap-4"',
+	];
+
+	it.each(mustFlag)(
+		"flags %j as an ad-hoc Tailwind spacing literal",
+		(input) => {
+			expect(findAdHocTailwindSpacing(input).length).toBeGreaterThan(0);
+		},
+	);
+
+	it.each(mustNotFlag)("does not flag %j", (input) => {
+		expect(findAdHocTailwindSpacing(input)).toEqual([]);
 	});
 });
 
