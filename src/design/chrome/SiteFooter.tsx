@@ -55,11 +55,36 @@ export function SiteFooter({ bio, socials, contact, credit }: Props) {
 				}}
 			>
 				<div style={{ gridColumn: "span 2" }}>
+					{/*
+					 * The footer half of the header's lockup, at the larger
+					 * size the band's own column allows.
+					 *
+					 * Weight 700 for the reason the header's wordmark is 700:
+					 * v2's display and headline faces are weight 400, so bold
+					 * is not a size cue here but the bold clause of v2's
+					 * bold/gray headline pattern, and it is what separates the
+					 * mark from the body copy directly beneath it.
+					 *
+					 * The tracking is scaled, and it has to be.
+					 * `--display-tracking` is a PX value — v2 specifies -2.7px
+					 * against its own 68px display size
+					 * (`DESIGN.v2.md:16-21`), which is -0.0397em. Letter
+					 * spacing in px does not scale with the font, so applying
+					 * it unchanged at 32px gives -0.0844em: 2.13x tighter than
+					 * v2 asks for. Measured on the real export, the word
+					 * rendered 96.53px that way against 115.42px untracked —
+					 * a 16.4% crush with the letters nearly touching. The
+					 * 32/68 factor restores v2's ratio (-1.27px at this size,
+					 * 106.53px rendered). The header's wordmark has no such
+					 * problem because it takes `--label-tracking` at
+					 * `--label-size`, the size that token was specified
+					 * against.
+					 */}
 					<p
 						style={{
 							fontSize: "32px",
 							fontWeight: 700,
-							letterSpacing: "var(--display-tracking)",
+							letterSpacing: "calc(var(--display-tracking) * 32 / 68)",
 						}}
 					>
 						convrtr
