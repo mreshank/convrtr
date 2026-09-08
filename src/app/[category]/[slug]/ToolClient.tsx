@@ -727,7 +727,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 	};
 
 	return (
-		<main className="mx-auto flex max-w-4xl flex-col gap-6 p-8">
+		<div className="mx-auto flex max-w-4xl flex-col gap-6 p-8">
 			{/*
 			 * No <h1> here: ConverterPage (the template wrapping this component)
 			 * owns the page's one heading, and renders `tool.seo.h1` there. This
@@ -736,6 +736,26 @@ export function ToolClient({ toolId }: { toolId: string }) {
 			 * strict-mode heading locators. FidelityScore keeps its original
 			 * top-right position via `justify-end` now that it's the row's only
 			 * child.
+			 *
+			 * This was also a <main>, nested inside layout.tsx's own <main
+			 * className="flex-1">. HTML forbids nesting main landmarks, and a
+			 * screen reader announced this page's main region twice. layout.tsx
+			 * owns the page's one main landmark for every route; the instrument
+			 * is content inside the page, not the page itself, so this is a
+			 * <div> now.
+			 *
+			 * `max-w-4xl` is left as-is, untested at this viewport: at 1920px it
+			 * never actually binds. `mx-auto` on a flex item disables the parent
+			 * column's cross-axis stretch, so this element's width is set by
+			 * shrink-to-fit against its own content, not by the 896px cap —
+			 * measured at 361px empty and 569px with a file loaded, both well
+			 * under the cap. It reads as a leftover from before this sat inside
+			 * a 1600px frame, not as deliberate framing; changing the actual
+			 * sizing behaviour is a separate concern from the landmark fix here.
+			 *
+			 * `gap-6` (24px) is `--gap-md` exactly; `p-8` (32px) matches nothing
+			 * in the scale (8/12/24/80px). Left both as Tailwind utilities
+			 * rather than convert one and not the other.
 			 */}
 			<div className="flex items-start justify-end">
 				<FidelityScore
@@ -1124,6 +1144,6 @@ export function ToolClient({ toolId }: { toolId: string }) {
 			<span className="mono text-[11px]" style={{ color: "var(--ink-muted)" }}>
 				LOCAL ONLY {"·"} 0 BYTES UPLOADED {"·"} WORKS OFFLINE
 			</span>
-		</main>
+		</div>
 	);
 }
