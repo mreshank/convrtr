@@ -1,10 +1,28 @@
 /*
  * The design system's values, per DESIGN.v2.md.
  *
- * Strictly monochrome: the only colour anywhere on the site comes from
- * sample photography, never from a token. `src/design/__tests__/tokens.test.ts`
- * enforces that mechanically, so a hue added here fails the suite rather
- * than shipping.
+ * Near-monochrome, and the qualifier matters: black ground, white ink, four
+ * neutrals, and one mint accent rationed exactly as v2 rations it — today a
+ * single chart stroke in `FidelityScore`. `src/design/__tests__/tokens.test.ts`
+ * closes the palette to those ten values and sweeps every `.tsx`, `.ts` and
+ * `.css` file under `src`, so an eleventh hex, colour function or named
+ * colour written into a token or straight into a component fails the suite
+ * rather than shipping. That sweep reads comments as well as declarations,
+ * which is why every measured colour recorded in this file and in the
+ * components is written as plain channel numbers rather than in CSS syntax.
+ *
+ * What that guard does NOT cover is worth stating here, because this
+ * comment used to read as absolute and was not. The sweep matches *declared
+ * literals*. A colour the browser picks on its own — a UA form-control
+ * accent, a system highlight — appears nowhere in the source for a regex to
+ * find. That is not hypothetical: `color-scheme: dark` below moved
+ * Chromium's default `accent-color`, and every `input[type=range]` and
+ * `input[type=checkbox]` on the site painted 153, 200, 255 — a cornflower
+ * blue more saturated than anything the palette holds, measured at 4772
+ * painted pixels across the trim controls on `/audio/trim-wav` — with the
+ * whole suite green. The `accent-color` declaration below is the fix. The
+ * guard did not catch it and could not, and the next colour the UA picks on
+ * our behalf will not fail a test either.
  *
  * There is one canvas: black, ink on it, for almost the whole site. The
  * pale band is a rare, deliberate inversion of that pairing — used only
@@ -15,6 +33,25 @@
 
 :root {
 	color-scheme: dark;
+
+	/*
+	 * Native controls, taken off the UA's palette and onto ours.
+	 *
+	 * `--ink` rather than `--accent`: v2 rations mint to CTA pills, icon
+	 * glyphs, code tokens and thin chart strokes, and a checkbox is none of
+	 * those — spending it on every native control across the tool pages is
+	 * the spread the guardrail forbids. White also agrees with what
+	 * `TimeRange` already draws around its two range inputs, whose selected
+	 * span is `--ink` and whose timeline is `--rule`.
+	 *
+	 * `accent-color` is inherited, and inherited properties resolve their
+	 * `var()` at the element that declares them — so this is white for the
+	 * whole document, including inside the two blocks that invert the canvas
+	 * by redefining `--ink` on their own root (`SiteFooter`, `ErrorPanel`).
+	 * Neither holds a native control today; one placed there would need its
+	 * own `accent-color: var(--ink)` to pick up the inversion.
+	 */
+	accent-color: var(--ink);
 
 	--ground: #000000;
 	--ink: #ffffff;
@@ -131,10 +168,11 @@ body {
  * weight 400, line-height 1.5 — no uppercase, no letter-spacing. DESIGN.md's
  * uppercase-plus-tracking metadata voice does not survive into v2; v2 puts
  * eyebrow labels in Inter `label-md` instead and reserves mono for code
- * panels, terminal timestamps and the CTA reading a shell command. `.meta`
- * still exists separately from `.mono` only so a labeled value can carry the
- * label-mono size without risking the uppercasing `.mono` must never apply
- * to real data.
+ * panels, terminal timestamps and the CTA reading a shell command.
+ *
+ * `.meta` still exists separately from `.mono` only so a labeled value can
+ * carry the label-mono size without risking the uppercasing `.mono` must
+ * never apply to real data.
  */
 .mono {
 	font-family: var(--font-mono);
