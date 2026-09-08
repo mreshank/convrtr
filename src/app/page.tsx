@@ -85,7 +85,23 @@ const GRID_FEATURES = [
 
 export default function Home() {
 	return (
-		<main className="mx-auto flex w-full max-w-4xl flex-col gap-4 p-8">
+		<main
+			// No `max-w-4xl` and no Tailwind `gap-*` here. This container used
+			// to impose its own 896px cap and a flat 16px gap on every child --
+			// dead weight, because each family below already carries its own
+			// `maxWidth: "var(--max-width)"` (1600px) and manages its own
+			// internal padding. A competing cap on the parent meant none of
+			// those family widths could ever bind at any viewport, and the
+			// 16px gap buried v2's "generous 240px section padding creating
+			// long black voids between bands" (DESIGN.v2.md:133) under a
+			// value 15 times smaller. `--section-pad` now drives the gap
+			// directly -- see `families.css`'s `[data-home-shell]` rules for
+			// the narrower-viewport tiers, which cannot live in this style
+			// object.
+			data-home-shell
+			className="flex w-full flex-col p-8"
+			style={{ gap: "var(--section-pad)" }}
+		>
 			{/*
 			 * The fused headline, the pill pair and the registry-derived chart,
 			 * under the dot-matrix grain -- replacing the separate FusedHeadline,
@@ -145,8 +161,31 @@ export default function Home() {
 			 * Task 7. Each item is a property the product actually has, not
 			 * marketing copy -- see the FEATURES comment above for how each one
 			 * was verified.
+			 *
+			 * Wrapped in a bare `<div>`, and that wrapper is load-bearing, not
+			 * decorative -- discovered measuring this very fix at 1920px.
+			 * `FeatureStrip`'s own root carries `maxWidth: var(--max-width)`
+			 * PLUS `margin: "0 auto"` on the SAME element, and that element is
+			 * now a direct flex child of this `<main>`. Per the flexbox
+			 * alignment spec, a flex item with an auto margin on the cross axis
+			 * (here, left/right, because `main` is a column flex) does NOT
+			 * stretch to fill the container even when `align-items` would
+			 * otherwise say so -- the auto margin absorbs the free space
+			 * instead, and the item is sized to its own content (measured
+			 * 1192px at a 1920px viewport, not 1600px). `HeroBand` never hit
+			 * this because `DotMatrix` already wraps it in exactly this kind
+			 * of plain, non-auto-margin div; the wrapper here gives
+			 * `FeatureStrip`, `FeatureGrid`, `ComplianceRow` and
+			 * `BranchDiagram` the same shape. The wrapper sets nothing itself:
+			 * with no margin of its own it stretches to `main`'s full content
+			 * width exactly as `align-items: normal` (`stretch`) intends, and
+			 * the family's own `max-width` + `margin: auto` then centers
+			 * correctly inside THAT plain block, one level down, where
+			 * auto-margin-vs-stretch is not a question block layout asks.
 			 */}
-			<FeatureStrip items={FEATURES} />
+			<div>
+				<FeatureStrip items={FEATURES} />
+			</div>
 			{/*
 			 * v2's second, denser feature grid: six cells in three columns with
 			 * hairline dividers between them, mounted below the five-up strip.
@@ -154,8 +193,13 @@ export default function Home() {
 			 * page (`DESIGN.v2.md`'s first screen vs. its mid-page enterprise
 			 * section) with different cell counts and a different divider
 			 * treatment -- this is not a duplicate of `FeatureStrip`.
+			 *
+			 * Wrapped for the same reason `FeatureStrip` above is -- see that
+			 * comment.
 			 */}
-			<FeatureGrid items={GRID_FEATURES} />
+			<div>
+				<FeatureGrid items={GRID_FEATURES} />
+			</div>
 			{/*
 			 * v2's scrolling logo rail, adapted: this product has no customer
 			 * logos, and inventing them would be fabrication on a page whose
@@ -196,8 +240,12 @@ export default function Home() {
 			 * (`conversionBranches("heic")` returns jpg, png, webp), so the
 			 * drawing is real data rather than a decorative network of
 			 * invented nodes.
+			 *
+			 * Wrapped for the flex-stretch reason recorded above `FeatureStrip`.
 			 */}
-			<BranchDiagram from="heic" to={conversionBranches("heic")} />
+			<div>
+				<BranchDiagram from="heic" to={conversionBranches("heic")} />
+			</div>
 			{/*
 			 * v2's compliance badge row and mint status dot, adapted for a
 			 * product with no certifications to badge -- see the
@@ -207,11 +255,15 @@ export default function Home() {
 			 * (`pnpm playwright test`, the suite's last step) and its
 			 * beacon-injection self-test proves the guard would catch a leak
 			 * rather than silently passing one.
+			 *
+			 * Wrapped for the flex-stretch reason recorded above `FeatureStrip`.
 			 */}
-			<ComplianceRow
-				claims={COMPLIANCE_CLAIMS}
-				status={{ label: "Verified in CI", ok: true }}
-			/>
+			<div>
+				<ComplianceRow
+					claims={COMPLIANCE_CLAIMS}
+					status={{ label: "Verified in CI", ok: true }}
+				/>
+			</div>
 		</main>
 	);
 }
