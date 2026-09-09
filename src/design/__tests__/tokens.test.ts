@@ -232,6 +232,7 @@ describe("required tokens", () => {
 		"--ink",
 		"--ink-muted",
 		"--rule",
+		"--rule-strong",
 		"--rule-width",
 		"--radius",
 		"--radius-card",
@@ -279,6 +280,23 @@ describe("required tokens", () => {
 
 	it("caps the rule at 1px", () => {
 		expect(css).toMatch(/--rule-width:\s*1px/);
+	});
+
+	/**
+	 * WCAG 1.4.11 (Non-text Contrast) requires 3:1 for a UI component
+	 * boundary or a graphical object needed to understand content. `--rule`
+	 * (`#303236`) is 1.64:1 against `--ground` (`#000000`) — correct for a
+	 * decorative divider, where 1.4.11 does not apply, but not legal for a
+	 * control boundary or a state encoded only in a border colour.
+	 *
+	 * `--rule-strong` is the palette-legal value for those sites: `#94979e`
+	 * is 7.18:1 against black, the only palette entry between `--rule`'s
+	 * 1.64:1 and white's 21:1. It is already `--ink-muted`'s value, so this
+	 * is a second name for an existing hue rather than an eleventh colour —
+	 * the palette-closure tests above stay green unchanged.
+	 */
+	it("declares --rule-strong at the ink-muted value, for 3:1 control boundaries", () => {
+		expect(css).toMatch(/--rule-strong:\s*#94979e/);
 	});
 });
 

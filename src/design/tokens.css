@@ -57,6 +57,23 @@
 	--ink: #ffffff;
 	--ink-muted: #94979e;
 	--rule: #303236;
+	/*
+	 * `--rule` is 1.64:1 against `--ground` — correct for a decorative
+	 * divider, where WCAG 1.4.11 does not apply, but not legal where a
+	 * border is the only encoding of a control's boundary or state (a
+	 * selected/unselected chip, a drop target's resting edge) or where it
+	 * is a graphical object needed to understand content (a range track, a
+	 * progress track, the fidelity ring's backing circle). Those sites use
+	 * `--rule-strong` instead.
+	 *
+	 * `#94979e` is the only palette-legal value that clears 3:1 against
+	 * `--ground`: it measures 7.18:1, versus 1.64:1 for `--rule` and 11.13:1
+	 * for `--accent` — nothing else in the closed ten-value palette falls
+	 * between. It is already `--ink-muted`'s value, so this extends the
+	 * existing visual language rather than adding an eleventh colour; the
+	 * palette-closure tests in `tokens.test.ts` stay green unchanged.
+	 */
+	--rule-strong: #94979e;
 	--rule-width: 1px;
 
 	/*
