@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { deriveFormatGroups, deriveTaskGroups } from "@/core/registry/groups";
 import { HubPage } from "@/design/templates";
+import { SITE } from "@/lib/site";
 import { GroupLinks } from "./GroupLinks";
-
-const SITE = "https://convrtr.mreshank.com";
 
 function label(text: string): string {
 	return `${text.charAt(0).toUpperCase()}${text.slice(1)}`;

@@ -4,8 +4,7 @@ import { ToolTable } from "@/app/tools/ToolTable";
 import { toToolRow } from "@/app/tools/toolRow";
 import { deriveTaskGroups } from "@/core/registry/groups";
 import { HubPage } from "@/design/templates";
-
-const SITE = "https://convrtr.mreshank.com";
+import { SITE } from "@/lib/site";
 
 function label(kind: string): string {
 	return `${kind.charAt(0).toUpperCase()}${kind.slice(1)}`;

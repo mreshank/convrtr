@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ArticlePage } from "@/design/templates";
+import { SITE } from "@/lib/site";
 
-const SITE = "https://convrtr.mreshank.com";
 const DATELINE = "9 September 2026";
 
 const PARAGRAPHS = [

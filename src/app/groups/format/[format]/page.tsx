@@ -4,8 +4,7 @@ import { ToolTable } from "@/app/tools/ToolTable";
 import { toToolRow } from "@/app/tools/toolRow";
 import { deriveFormatGroups } from "@/core/registry/groups";
 import { HubPage } from "@/design/templates";
-
-const SITE = "https://convrtr.mreshank.com";
+import { SITE } from "@/lib/site";
 
 /**
  * One route per format the registry actually produces a non-empty group

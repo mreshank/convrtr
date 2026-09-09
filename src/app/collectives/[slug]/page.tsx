@@ -3,8 +3,7 @@ import { notFound } from "next/navigation";
 import { COLLECTIVES, getCollective } from "@/content/collectives/registry";
 import { getTool } from "@/core/registry";
 import { ShowcasePage, type ShowcaseTool } from "@/design/templates";
-
-const SITE = "https://convrtr.mreshank.com";
+import { SITE } from "@/lib/site";
 
 /**
  * Which member tool carries each collective's one live demo, and which

@@ -5,8 +5,7 @@ import { BLOG_POSTS, getPost } from "@/content/blog/registry";
 import type { BlogPostMeta } from "@/content/blog/types";
 import { ArticlePage } from "@/design/templates";
 import { buildBlogPostingJsonLd } from "@/lib/jsonld";
-
-const SITE = "https://convrtr.mreshank.com";
+import { SITE } from "@/lib/site";
 
 export function generateStaticParams() {
 	return BLOG_POSTS.map((post) => ({ slug: post.slug }));

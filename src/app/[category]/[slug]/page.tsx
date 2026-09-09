@@ -5,9 +5,8 @@ import { getPostsByTool } from "@/content/blog/registry";
 import { getTool, TOOLS } from "@/core/registry";
 import { ConverterPage } from "@/design/templates";
 import { buildToolJsonLd } from "@/lib/jsonld";
+import { SITE } from "@/lib/site";
 import { ToolClient } from "./ToolClient";
-
-const SITE = "https://convrtr.mreshank.com";
 
 function label(category: string): string {
 	return `${category.charAt(0).toUpperCase()}${category.slice(1)}`;

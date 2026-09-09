@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { ToolSearch } from "@/components/instrument/ToolSearch";
 import { TOOLS } from "@/core/registry";
 import { HubPage } from "@/design/templates";
+import { SITE } from "@/lib/site";
 import { toToolRow } from "./toolRow";
-
-const SITE = "https://convrtr.mreshank.com";
 
 export function generateMetadata(): Metadata {
 	const title = "All tools — convrtr";

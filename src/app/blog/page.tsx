@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BLOG_POSTS } from "@/content/blog/registry";
 import { HubPage } from "@/design/templates";
-
-const SITE = "https://convrtr.mreshank.com";
+import { SITE } from "@/lib/site";
 
 export function generateMetadata(): Metadata {
 	const title = "Blog — convrtr";

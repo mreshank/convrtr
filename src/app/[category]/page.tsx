@@ -4,8 +4,7 @@ import { ToolTable } from "@/app/tools/ToolTable";
 import { toToolRow } from "@/app/tools/toolRow";
 import { CATEGORIES, type Category, getToolsByCategory } from "@/core/registry";
 import { HubPage } from "@/design/templates";
-
-const SITE = "https://convrtr.mreshank.com";
+import { SITE } from "@/lib/site";
 
 function isCategory(value: string): value is Category {
 	return (CATEGORIES as readonly string[]).includes(value);
