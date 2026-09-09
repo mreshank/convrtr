@@ -1,0 +1,150 @@
+/*
+ * Rules the chrome needs that a React style object cannot express: the media
+ * queries that turn `SiteHeader`'s one nav from an inline row into a
+ * disclosure panel, and the query that decides whether its toggle exists in
+ * the layout and the tab order at all.
+ *
+ * Anything expressible inline belongs inline, next to the component that owns
+ * it — the same rule `templates.css` and `families.css` state, and the reason
+ * only five declarations of `SiteHeader`'s styling live here.
+ *
+ * 600px is the boundary, and it is not a new number: `templates.css` already
+ * steps the band rhythm down at exactly 600, and `families.css` collapses
+ * `FeatureGrid` to a single column there. `SiteHeader.tsx` names the same
+ * width in `COLLAPSED`, which is what its `matchMedia` listener subscribes
+ * to. The two have to agree and cannot be made to by a token: a custom
+ * property is not usable in a media feature, and `matchMedia` takes a string,
+ * not a `var()`.
+ *
+ * Why the collapse is needed at all, measured on the built export at 375px:
+ * the nav's `scrollWidth` was 682 against a `clientWidth` of 59. The
+ * horizontal-scroll fallback the row still uses between 601 and ~900px was,
+ * at phone width, a 59px window onto 682px of content.
+ */
+
+/*
+ * The toggle exists only on the collapsed tier.
+ *
+ * Hidden here and revealed below, rather than shown inline in the component
+ * and hidden here, for two reasons. An inline `display` would out-rank this
+ * rule and force `!important` on it; and if this stylesheet fails to load the
+ * toggle stays hidden beside a nav that is still its inline row — the
+ * behaviour this file replaces, rather than a broken one.
+ *
+ * `display: none` and not `visibility: hidden`: the requirement is that the
+ * toggle leaves the tab order above 600px, which only `display: none`
+ * (or `visibility`, which also collapses focusability) delivers. `display`
+ * additionally takes it out of the flex row so it consumes no gap.
+ */
+[data-site-nav-toggle] {
+	display: none;
+}
+
+@media (max-width: 600px) {
+	[data-site-nav-toggle] {
+		display: inline-flex;
+		/*
+		 * The nav carries `margin-left: auto` inline, which is what pushes
+		 * the right-hand group over on the desktop tier. Here the nav is out
+		 * of flow (a fixed panel), so nothing is left in the row to do it and
+		 * the toggle takes the job over.
+		 */
+		margin-left: auto;
+	}
+
+	/*
+	 * The same `<nav aria-label="Main">`, restyled — not a second one. A
+	 * mobile copy would duplicate the landmark and every link in the
+	 * accessibility tree at every width, which is why the component renders
+	 * one nav and hangs `data-site-nav` / `data-open` off it instead.
+	 *
+	 * `position: fixed` resolves against the viewport rather than the sticky
+	 * header, because none of its ancestors establishes a containing block
+	 * for fixed descendants (no transform, filter, `will-change` or
+	 * `contain`). The header's own `z-index: 100` does create a stacking
+	 * context, and that is what puts this panel above page content without a
+	 * `z-index` of its own.
+	 *
+	 * `top: var(--navbar-height)` and not `0`: the bar stays visible above
+	 * the panel, so the control that closes it is on screen the whole time
+	 * the panel is open. The header is `box-sizing: border-box`, so its
+	 * hairline bottom rule sits inside the 64px and the panel starts exactly
+	 * below it.
+	 *
+	 * `--ground`, not the accent. `DESIGN.v2.md:175` rations mint to CTA
+	 * pills, icon glyphs and code tokens; a full-viewport panel is the
+	 * largest fill on the site and so is the one place it must not go.
+	 *
+	 * `background-color` rather than the `background` shorthand: the
+	 * shorthand would reset the two `background-image` layers below, which
+	 * are switched off deliberately and separately just underneath.
+	 */
+	[data-site-nav] {
+		position: fixed;
+		top: var(--navbar-height);
+		right: 0;
+		bottom: 0;
+		left: 0;
+		flex-direction: column;
+		justify-content: flex-start;
+		background-color: var(--ground);
+		/*
+		 * The scroll signal, off. Its two layers mark a row whose content is
+		 * cut off at the right edge; a column of links in a full-height panel
+		 * has no such edge, so leaving them on would paint a permanent
+		 * `--ink-muted` bar down the panel's right side signalling a
+		 * horizontal overflow that cannot occur.
+		 *
+		 * `!important` is not decoration here and there is no way around it:
+		 * the layers are declared inline, `SiteHeader.tsx` is pinned to
+		 * exactly those two `linear-gradient(`s by `design-system.test.ts`'s
+		 * `GRADIENT_ALLOWED`, and an author-important declaration is the only
+		 * thing in the cascade that outranks an inline style.
+		 *
+		 * `justify-content: flex-start` above, not `center`: a centred flex
+		 * container with more content than room puts the first items out of
+		 * reach past the scroll origin, and this panel scrolls (the nav's
+		 * inline `overflow-x: auto` computes `overflow-y: auto` alongside it)
+		 * whenever a short landscape viewport meets a long link list.
+		 */
+		background-image: none !important;
+		/*
+		 * Scroll chaining, stopped. The body is locked while the panel is
+		 * open, but a flick inside a panel that is not itself overflowing
+		 * would still chain to the document on platforms that allow it.
+		 */
+		overscroll-behavior: contain;
+	}
+
+	/*
+	 * Closed, the panel is not in the tab order — which is the requirement,
+	 * and `display: none` is what delivers it. `visibility: hidden` would
+	 * too, but would keep the element's box in the fixed position it was
+	 * given above.
+	 *
+	 * `!important` for the same cascade reason as the layers above: the nav's
+	 * `display: flex` is inline, because that is the desktop row's own
+	 * layout and belongs next to the component.
+	 */
+	[data-site-nav]:not([data-open]) {
+		display: none !important;
+	}
+
+	/*
+	 * The links keep v2's nav-utility treatment exactly — transparent fill,
+	 * white text, 4px radius, 23px tall, 0/14px padding, all of it inline on
+	 * the component. Two things change, and neither is one of those values:
+	 * the flex item stretches across the panel so the tap target is the full
+	 * row rather than the width of the label, and the label centres inside
+	 * it.
+	 *
+	 * `align-self` overrides the container's inline `align-items: center` per
+	 * item without either declaration having to fight the other, and in a
+	 * column flex container the cross axis is horizontal — so this stretches
+	 * width and leaves the 23px height alone.
+	 */
+	[data-site-nav] a {
+		align-self: stretch;
+		justify-content: center;
+	}
+}

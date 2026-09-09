@@ -2,6 +2,7 @@
 @import "../design/primitives/primitives.css";
 @import "../design/families/families.css";
 @import "../design/templates/templates.css";
+@import "../design/chrome/chrome.css";
 @import "tailwindcss";
 
 html {

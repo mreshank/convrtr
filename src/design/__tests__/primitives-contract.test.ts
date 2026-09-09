@@ -129,12 +129,15 @@ describe("primitives barrel", () => {
  * rather than a count, so adding a second client component is a deliberate
  * act — editing this list — rather than something that passes by accident.
  *
- * `SiteHeader` was the other entry. It held overlay open/close state, a Tab
- * trap and a scroll lock, all of which existed because its nav covered the
- * viewport. v2's navbar holds its links inline in a 64px bar that covers
- * nothing, so the state went and the directive with it — and the entry had
- * to leave this list too, since the second test below requires every name
- * here to still declare the directive.
+ * `SiteHeader` is the entry that has been both ways, and the round trip is
+ * the point. It held overlay state, a Tab trap and a scroll lock; v2's
+ * navbar put its links inline in a 64px bar that covers nothing, so the
+ * state went, the directive went, and the entry left this list. Then the
+ * inline row was measured at phone width and did not fit — `scrollWidth`
+ * 682 into `clientWidth` 59 — so the disclosure came back, deliberately,
+ * with all of that containment rather than without it, and so did the
+ * entry. Removing a name here is not a one-way door; what the list records
+ * is that each name's state is argued for, not assumed.
  *
  * The sweep runs over `primitives/`, `chrome/`, `families/` AND
  * `templates/`. Each directory had to be named explicitly: these helpers
@@ -163,6 +166,16 @@ const CLIENT_COMPONENT_ALLOWLIST = new Set([
 	// reason: `layout.tsx` exports `metadata` and so cannot itself become
 	// a client component to read the path directly.
 	"RouteAwareFooter.tsx",
+	// `SiteHeader` holds state again, and this entry records the decision
+	// rather than inheriting it. Below 600px its nav does not fit -- measured
+	// on the built export at 375px, `scrollWidth` 682 against `clientWidth`
+	// 59 -- so it collapses behind a disclosure toggle, and a panel over the
+	// page brings the containment the comment below this list describes back
+	// with it: open/closed state, an Escape handler, a Tab cycle over
+	// [toggle, ...links] and a body-scroll lock. None of those can be held by
+	// a server component. Above 600px nothing changed: the nav is the same
+	// inline row, and the toggle is `display: none` in `chrome.css`.
+	"SiteHeader.tsx",
 ]);
 
 function filesDeclaringUseClient(dir: string): string[] {
