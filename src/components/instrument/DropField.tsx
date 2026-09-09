@@ -47,7 +47,7 @@ export function DropField({ accept, formats, onFiles }: Props) {
 			}}
 			className="mono flex flex-col items-center gap-3 border p-8 text-center"
 			style={{
-				borderColor: active ? "var(--ink)" : "var(--rule)",
+				borderColor: active ? "var(--ink)" : "var(--rule-strong)",
 				borderRadius: "var(--radius)",
 				cursor: "pointer",
 			}}
@@ -62,7 +62,7 @@ export function DropField({ accept, formats, onFiles }: Props) {
 						key={format}
 						className="border px-2 py-1 text-[11px] tracking-[0.08em]"
 						style={{
-							borderColor: "var(--rule)",
+							borderColor: "var(--rule-strong)",
 							borderRadius: "var(--radius)",
 							color: "var(--ink-muted)",
 						}}

@@ -15,7 +15,7 @@ export function ProgressBar({ ratio, phase, elapsedSeconds }: Props) {
 				// sweep (`design-system.test.ts`) now catches; this track is
 				// painted with `--rule`, the hairline colour, so it reads as one.
 				className="h-px w-full"
-				style={{ background: "var(--rule)" }}
+				style={{ background: "var(--rule-strong)" }}
 			>
 				<div
 					className="h-full"

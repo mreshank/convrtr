@@ -74,7 +74,7 @@ export function ToolSearch({ rows }: { rows: ToolRow[] }) {
 					style={{
 						background: "transparent",
 						color: "var(--ink)",
-						borderColor: "var(--rule)",
+						borderColor: "var(--rule-strong)",
 						borderRadius: "var(--radius)",
 					}}
 				/>

@@ -51,7 +51,7 @@ export function TimeRange({ label, duration, start, end, onChange }: Props) {
 					// sweep in that file now catches; this track is painted with
 					// `--rule`, the hairline colour, so it reads as one.
 					className="absolute top-[14px] h-px w-full"
-					style={{ background: "var(--rule)" }}
+					style={{ background: "var(--rule-strong)" }}
 				/>
 				{/* The selected span, so the choice is legible without reading
 				    the numbers. */}

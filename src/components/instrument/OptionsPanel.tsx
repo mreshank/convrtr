@@ -57,7 +57,7 @@ function AdvancedControl({
 					className="mono"
 					style={{
 						background: "transparent",
-						borderColor: "var(--rule)",
+						borderColor: "var(--rule-strong)",
 						borderRadius: "var(--radius)",
 						color: "var(--ink)",
 					}}
@@ -146,7 +146,7 @@ export function OptionsPanel({ tool, state, onChange, duration }: Props) {
 							className="mono border px-4 py-2 text-[12px]"
 							style={{
 								color: selected ? "var(--ink)" : "var(--ink-muted)",
-								borderColor: selected ? "var(--ink)" : "var(--rule)",
+								borderColor: selected ? "var(--ink)" : "var(--rule-strong)",
 								borderRadius: "var(--radius)",
 								background: "transparent",
 							}}
@@ -176,7 +176,7 @@ export function OptionsPanel({ tool, state, onChange, duration }: Props) {
 			{open && (
 				<div
 					className="flex flex-col gap-6 border-t pt-4"
-					style={{ borderColor: "var(--rule)" }}
+					style={{ borderColor: "var(--rule-strong)" }}
 				>
 					{groups.map((group) => (
 						<div key={group} className="flex flex-col gap-3">

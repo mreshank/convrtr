@@ -110,7 +110,7 @@ export function FidelityScore({ score, label, fidelity, size = 36 }: Props) {
 					cy={center}
 					r={radius}
 					fill="none"
-					stroke="var(--rule)"
+					stroke="var(--rule-strong)"
 					strokeWidth={strokeWidth}
 				/>
 				{d && (
