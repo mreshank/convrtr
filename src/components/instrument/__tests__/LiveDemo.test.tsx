@@ -110,6 +110,39 @@ describe("LiveDemo on activation", () => {
 	});
 });
 
+describe("LiveDemo with a pinned presetId", () => {
+	// I4: podcast-kit's `why` names a specific preset ("the exact preset
+	// this catalogue's own WAV normaliser labels 'Podcast'"), which is
+	// `normalise-wav`'s "visually-lossless" id, target -16 LUFS -- not its
+	// "balanced" default of -14. Without `presetId`, the demo can never run
+	// the preset the page's own prose is about; this proves the prop
+	// actually changes which preset the pipeline runs, not just the label.
+	it("runs the named preset's params instead of the tool's default", async () => {
+		const inputBytes = new Uint8Array([1, 2, 3, 4]).buffer;
+		const outputBytes = new Uint8Array([5, 6, 7, 8]).buffer;
+		vi.spyOn(global, "fetch").mockResolvedValue(new Response(inputBytes));
+		const postMessageSpy = vi.spyOn(FakeWorker.prototype, "postMessage");
+
+		render(
+			<LiveDemo
+				toolId="audio/normalise-wav"
+				sampleId="podcast-clip-wav"
+				presetId="visually-lossless"
+			/>,
+		);
+
+		fireEvent.click(screen.getByRole("button", { name: "RUN DEMO" }));
+		await waitFor(() => expect(lastWorker).not.toBeNull());
+		respondDone(outputBytes);
+		await waitFor(() => expect(screen.getByTestId("facts")).toBeDefined());
+
+		const [request] = postMessageSpy.mock.calls[0] as [
+			{ params: Record<string, unknown> },
+		];
+		expect(request.params.target).toBe(-16);
+	});
+});
+
 describe("LiveDemo for a heavy-download tool", () => {
 	it("shows a labelled static specimen and no RUN DEMO affordance", () => {
 		render(<LiveDemo toolId="video/avi-to-mp4" sampleId="unused" />);

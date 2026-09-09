@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { COLLECTIVES, getCollective } from "@/content/collectives/registry";
-import { getTool } from "@/core/registry";
+import { getTool, type QualityPreset } from "@/core/registry";
 import { ShowcasePage, type ShowcaseTool } from "@/design/templates";
 import { SITE } from "@/lib/site";
 
@@ -13,11 +13,23 @@ import { SITE } from "@/lib/site";
  * own WAV normaliser, and strip-metadata's PNG stripper. A collective with no
  * generatable-input member simply gets no entry here, and `ShowcasePage`
  * renders its showcase band with no demo slot at all.
+ *
+ * I4: podcast-kit's `meta.ts` stakes its `why` on a specific fact -- "-16
+ * LUFS -- the exact preset this catalogue's own WAV normaliser labels
+ * 'Podcast'" -- but `normalise-wav`'s own `defaultPreset` is "balanced"
+ * (Streaming, -14 LUFS). Without `presetId` pinning the demo to
+ * "visually-lossless" (that tool's id for the Podcast preset), the page's
+ * interactive proof would run a different preset than the one its prose is
+ * about, and could never demonstrate the claim it exists to back up.
  */
-const DEMOS: Record<string, { toolId: string; sampleId: string }> = {
+const DEMOS: Record<
+	string,
+	{ toolId: string; sampleId: string; presetId?: QualityPreset }
+> = {
 	"podcast-kit": {
 		toolId: "audio/normalise-wav",
 		sampleId: "podcast-clip-wav",
+		presetId: "visually-lossless",
 	},
 	"strip-metadata": {
 		toolId: "image/remove-metadata-png",

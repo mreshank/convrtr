@@ -6,12 +6,13 @@ import { getSample } from "@/content/samples/registry";
 import { JobError, runJob } from "@/core/pipeline/client";
 import { makeJobId } from "@/core/pipeline/protocol";
 import {
+	applyPreset,
 	describeFidelity,
 	fidelityScore,
 	fidelityState,
 	initialQuality,
 } from "@/core/quality";
-import { getTool, type Tool } from "@/core/registry";
+import { getTool, type QualityPreset, type Tool } from "@/core/registry";
 import { AsymCard, MediaFrame, MonoMeta } from "@/design/primitives";
 import { formatBytes, formatDelta } from "@/lib/format";
 import { FidelityScore } from "./FidelityScore";
@@ -20,6 +21,16 @@ import { FileReadout } from "./FileReadout";
 type Props = {
 	toolId: string;
 	sampleId: string;
+	/**
+	 * Pins the demo to a specific preset instead of the tool's own
+	 * `defaultPreset` -- I4: a collective's `why` can stake a claim on a
+	 * named preset ("the exact preset this catalogue's own WAV normaliser
+	 * labels 'Podcast'"), and without a way to pin one, the interactive
+	 * proof on that page runs whatever preset happens to be the tool's
+	 * default, which need not be the one the prose is about. Omitted, this
+	 * falls back to `initialQuality(tool)`, unchanged from before.
+	 */
+	presetId?: QualityPreset;
 };
 
 type Readout = {
@@ -87,7 +98,7 @@ const PLACEHOLDER = (
  * checked first and unconditionally so nothing below it can be reached for
  * that tool.
  */
-export function LiveDemo({ toolId, sampleId }: Props) {
+export function LiveDemo({ toolId, sampleId, presetId }: Props) {
 	const tool = getTool(toolId);
 	const [state, setState] = useState<"idle" | "running" | "error">("idle");
 	const [readout, setReadout] = useState<Readout | null>(null);
@@ -105,6 +116,11 @@ export function LiveDemo({ toolId, sampleId }: Props) {
 	const sample = getSample(sampleId);
 	if (!sample) return null;
 
+	// I4: pinned to `presetId` when the caller names one, otherwise the
+	// tool's own default -- exactly `initialQuality`'s behaviour, so a demo
+	// with no `presetId` runs identically to before this prop existed.
+	const quality = presetId ? applyPreset(tool, presetId) : initialQuality(tool);
+
 	async function run() {
 		if (!tool || !sample) return;
 		setState("running");
@@ -117,7 +133,6 @@ export function LiveDemo({ toolId, sampleId }: Props) {
 			// `input` to the worker rather than copying it, which detaches it on
 			// the main thread and leaves `byteLength` reading 0 from then on.
 			const inputBytes = input.byteLength;
-			const quality = initialQuality(tool);
 			const output = await runJob(
 				{
 					id: makeJobId(),
@@ -177,7 +192,7 @@ export function LiveDemo({ toolId, sampleId }: Props) {
 						<FidelityScore
 							score={readout.fidelityValue}
 							label={readout.fidelityLabel}
-							fidelity={fidelityState(tool, initialQuality(tool))}
+							fidelity={fidelityState(tool, quality)}
 							size={28}
 						/>
 						<FileReadout

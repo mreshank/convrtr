@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { LiveDemo } from "@/components/instrument/LiveDemo";
+import type { QualityPreset } from "@/core/registry";
 import { AsymCard, MonoMeta } from "@/design/primitives";
 import { HubPage } from "./HubPage";
 
@@ -21,8 +22,15 @@ type Props = {
 	showcase: ShowcaseTool[];
 	/** Spec §8.1: at most one real, on-demand conversion per page. Omitted
 	 * entirely when a set has nothing this repo can generate an honest
-	 * sample for. */
-	demo?: { toolId: string; sampleId: string };
+	 * sample for.
+	 *
+	 * `presetId` is optional and defaults to the tool's own `defaultPreset`
+	 * when omitted -- but a collective whose `why` stakes a claim on a
+	 * specific preset (I4: podcast-kit's WAV normaliser demo has to run the
+	 * "Podcast (-16 LUFS)" preset its own prose names, not whichever preset
+	 * happens to be that tool's default) needs a way to pin one, or the
+	 * page's interactive proof can never match the page's own sentence. */
+	demo?: { toolId: string; sampleId: string; presetId?: QualityPreset };
 };
 
 const VARIANTS = ["a", "b", "c"] as const;
@@ -67,7 +75,41 @@ export function ShowcasePage({
 				</div>
 			</section>
 
-			{demo ? <LiveDemo toolId={demo.toolId} sampleId={demo.sampleId} /> : null}
+			{demo ? (
+				<section
+					aria-label="Live demo"
+					style={{
+						display: "flex",
+						flexDirection: "column",
+						gap: "var(--gap-sm)",
+					}}
+				>
+					<MonoMeta as="p">Try it</MonoMeta>
+					{/*
+					 * C1: `LiveDemo` used to render straight into `HubPage`'s
+					 * content column with no width of its own, inheriting the
+					 * full column instead of a cell -- 1232px against a sibling
+					 * tile's 296px at 1280px, four times over. The showcase
+					 * tiles above are sized by this same grid; putting the demo
+					 * in one grid cell too, rather than leaving it un-gridded,
+					 * is what makes it read as part of the same composition
+					 * instead of a break in it. `col-span-2` gives it a cell
+					 * twice a tile's width -- deliberately roomier, since it
+					 * carries a readout and a button a plain tile does not,
+					 * but still a bounded cell in the tiles' own grid, not the
+					 * whole column.
+					 */}
+					<div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+						<div className="col-span-2">
+							<LiveDemo
+								toolId={demo.toolId}
+								sampleId={demo.sampleId}
+								presetId={demo.presetId}
+							/>
+						</div>
+					</div>
+				</section>
+			) : null}
 		</HubPage>
 	);
 }
