@@ -1,12 +1,30 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ToolTable } from "@/app/tools/ToolTable";
-import { toToolRow } from "@/app/tools/toolRow";
 import { COLLECTIVES, getCollective } from "@/content/collectives/registry";
 import { getTool } from "@/core/registry";
-import { HubPage } from "@/design/templates";
+import { ShowcasePage, type ShowcaseTool } from "@/design/templates";
 
 const SITE = "https://convrtr.mreshank.com";
+
+/**
+ * Which member tool carries each collective's one live demo, and which
+ * generated sample feeds it. Chosen, not derived: `scripts/generate-samples.mjs`
+ * can only honestly produce a WAV and a PNG (spec §8's central constraint), so
+ * the demo tool has to be one that accepts that format as input -- podcast-kit's
+ * own WAV normaliser, and strip-metadata's PNG stripper. A collective with no
+ * generatable-input member simply gets no entry here, and `ShowcasePage`
+ * renders its showcase band with no demo slot at all.
+ */
+const DEMOS: Record<string, { toolId: string; sampleId: string }> = {
+	"podcast-kit": {
+		toolId: "audio/normalise-wav",
+		sampleId: "podcast-clip-wav",
+	},
+	"strip-metadata": {
+		toolId: "image/remove-metadata-png",
+		sampleId: "tagged-photo-png",
+	},
+};
 
 // A fully static export: a slug not returned here has no server to render it
 // on demand, so it must 404 rather than fall through to a dynamic render
@@ -54,18 +72,24 @@ export default async function CollectivePage({
 		const tool = getTool(id);
 		return tool ? [tool] : [];
 	});
-	const rows = tools.map(toToolRow);
+	const showcase: ShowcaseTool[] = tools.map((tool) => ({
+		id: tool.id,
+		href: `/${tool.id}`,
+		name: tool.seo.h1,
+		fromExt: tool.accept.ext[0] ?? tool.output.ext,
+		toExt: tool.output.ext,
+	}));
 
 	return (
-		<HubPage
+		<ShowcasePage
 			title={collective.title}
 			lede={collective.why}
 			count={{
 				value: tools.length,
 				noun: tools.length === 1 ? "tool" : "tools",
 			}}
-		>
-			<ToolTable rows={rows} caption={`${collective.title} tools`} />
-		</HubPage>
+			showcase={showcase}
+			demo={DEMOS[collective.slug]}
+		/>
 	);
 }
