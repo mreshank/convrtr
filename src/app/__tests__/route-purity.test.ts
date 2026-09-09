@@ -17,26 +17,67 @@ import { describe, expect, it } from "vitest";
  * has to recurse — unlike that helper's flat `readdirSync`, `src/app`
  * nests a route per URL segment (`[category]/[slug]/page.tsx`), so a
  * shallow walk would miss every dynamic segment two levels deep.
+ *
+ * **The import bans cover every `.tsx` under `src/app/`, not just
+ * `page.tsx`.** Spec §6.3's rule is about the route's whole rendered
+ * surface, not one filename: `src/app/groups/GroupLinks.tsx` is a sibling
+ * helper that `groups/page.tsx` renders and that already does real layout,
+ * and until this widened, it could import `@/design/families` or
+ * `@/design/primitives` and compose them inline with zero enforcement —
+ * proved by adding exactly that import to `GroupLinks.tsx` and watching the
+ * old `PAGE_FILES`-only guard stay green. The line-count caps below stay
+ * scoped to `page.tsx`, though: those measure the route entry's own body,
+ * and a helper component the route delegates to is not that body.
+ *
+ * `layout.tsx` is the one carve-out from the widened import ban, and it is
+ * deliberate rather than an oversight: it is Next's designated mount point
+ * for site chrome, and `SiteHeader`/`SiteFooter`/`DifferenceCursor` have to
+ * be composed directly from `@/design/primitives` *somewhere* — that is
+ * what a root layout is for, not the "route grows a hand-rolled layout"
+ * failure mode spec §6.3 targets in `page.tsx` and its helpers.
  */
 const APP_DIR = "src/app";
 const TEMPLATES_IMPORT = /from ["']@\/design\/templates["']/;
 const FAMILIES_IMPORT = /from ["']@\/design\/families["']/;
 const PRIMITIVES_IMPORT = /from ["']@\/design\/primitives["']/;
+/**
+ * A deep import reaches past the barrel into one of its own files --
+ * `@/design/templates/SomeFile` rather than `@/design/templates`. Proved as
+ * a real gap: a `SecretComposer.tsx` composing families inline, imported by
+ * full path from a route that also has a legitimate barrel import
+ * elsewhere in the same file, left the old guard green -- `TEMPLATES_IMPORT`
+ * only requires *some* line to match the barrel, and never inspected
+ * whether another line reached past it.
+ */
+const TEMPLATES_DEEP_IMPORT = /from ["']@\/design\/templates\//;
 
-function findPageFiles(dir: string): string[] {
+function findFiles(dir: string, matches: (entry: string) => boolean): string[] {
 	const out: string[] = [];
 	for (const entry of readdirSync(dir)) {
 		const full = join(dir, entry);
 		if (statSync(full).isDirectory()) {
-			out.push(...findPageFiles(full));
+			out.push(...findFiles(full, matches));
 			continue;
 		}
-		if (entry === "page.tsx") out.push(full);
+		if (matches(entry)) out.push(full);
 	}
 	return out;
 }
 
+function findPageFiles(dir: string): string[] {
+	return findFiles(dir, (entry) => entry === "page.tsx");
+}
+
+/** Every `.tsx` under `src/app/`, except the root layout -- see above. */
+function findRouteSurfaceFiles(dir: string): string[] {
+	return findFiles(
+		dir,
+		(entry) => entry.endsWith(".tsx") && entry !== "layout.tsx",
+	);
+}
+
 const PAGE_FILES = findPageFiles(APP_DIR);
+const ROUTE_SURFACE_FILES = findRouteSurfaceFiles(APP_DIR);
 
 /**
  * The line range of the default-exported component's body — from the
@@ -154,12 +195,42 @@ describe("route purity", () => {
 		expect(PAGE_FILES.length).toBeGreaterThanOrEqual(6);
 	});
 
+	// Same non-vacuity reasoning, for the wider `.tsx` walk: if this
+	// returned no more than `PAGE_FILES` itself, the widened bans below
+	// would silently be checking nothing beyond what they already checked
+	// before this guard was extended.
+	it("finds route surface files to check", () => {
+		expect(ROUTE_SURFACE_FILES.length).toBeGreaterThan(PAGE_FILES.length);
+	});
+
 	it.each(PAGE_FILES)("%s imports from @/design/templates", (file) => {
 		const source = readFileSync(file, "utf8");
 		expect(source, `${file} does not import from @/design/templates`).toMatch(
 			TEMPLATES_IMPORT,
 		);
 	});
+
+	/**
+	 * `TEMPLATES_IMPORT` only proves *some* line matches the barrel import --
+	 * it never checked that every `@/design/templates` reference goes
+	 * through the barrel. A route can carry a legitimate barrel import
+	 * *and* a second, deep import straight into `@/design/templates/SomeFile`
+	 * that reaches an unexported component, and the check above waves it
+	 * through because the barrel line alone already satisfied it. Proved:
+	 * a `SecretComposer.tsx` under `@/design/templates/` composing families
+	 * inline, imported by full path from `about/page.tsx` alongside its
+	 * ordinary `ArticlePage` barrel import, left the old guard green.
+	 */
+	it.each(PAGE_FILES)(
+		"%s imports @/design/templates only through the barrel",
+		(file) => {
+			const source = readFileSync(file, "utf8");
+			expect(
+				source,
+				`${file} deep-imports from @/design/templates/* -- import from the barrel (@/design/templates) instead`,
+			).not.toMatch(TEMPLATES_DEEP_IMPORT);
+		},
+	);
 
 	/**
 	 * The gap the previous guard left open: it asserted a route imports FROM
@@ -173,8 +244,14 @@ describe("route purity", () => {
 	 * and assembled into a band array inside the route component, on the one
 	 * route the whole rule most exists for. A route reaching for a family is
 	 * composing, not resolving data, and the guard above waved it through.
+	 *
+	 * Runs over `ROUTE_SURFACE_FILES` -- every `.tsx` under `src/app/` bar
+	 * `layout.tsx` -- rather than `PAGE_FILES`, so a sibling helper a route
+	 * delegates to (`GroupLinks.tsx`, `ToolClient.tsx`, `ToolTable.tsx`, ...)
+	 * is covered exactly the way `page.tsx` itself is. See the file-level
+	 * comment above for why `layout.tsx` alone is exempt.
 	 */
-	it.each(PAGE_FILES)(
+	it.each(ROUTE_SURFACE_FILES)(
 		"%s does not import from @/design/families or @/design/primitives",
 		(file) => {
 			const source = readFileSync(file, "utf8");

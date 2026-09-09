@@ -19,7 +19,7 @@ import { describe, expect, it } from "vitest";
  * serve the test equally well. What this guards against is a second
  * *source of truth*, not the substring appearing in an assertion.
  */
-const ROOTS = ["src", "scripts"];
+const ROOTS = ["src", "scripts", "e2e"];
 const CANONICAL_FILE = join("src", "lib", "site.ts");
 const ORIGIN_LITERAL = /https:\/\/convrtr\.mreshank\.com/;
 
