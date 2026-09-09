@@ -101,6 +101,13 @@ export function fidelityState(tool: Tool, state: QualityState): FidelityState {
 	if (!tool.quality.losslessAvailable) return "inherently-lossy";
 	if (state.params.lossless === 1 || state.params.lossless === true)
 		return "lossless";
+	// Most presets named "lossless" (a byte copy, a remux, a lossless codec
+	// like PNG or FLAC) have no engine parameter to set — `params.lossless`
+	// is a WebP encoder toggle, not a general representation of
+	// losslessness. The preset id is authoritative here for exactly the
+	// same reason it already is for `visually-lossless` below: the explicit
+	// param, when a tool actually has one, is checked first and still wins.
+	if (state.preset === "lossless") return "lossless";
 	if (state.preset === "visually-lossless") return "visually-lossless";
 	return "lossy";
 }
@@ -140,7 +147,9 @@ export function fidelityScore(tool: Tool, state: QualityState): number {
 
 	if (
 		tool.quality.losslessAvailable &&
-		(state.params.lossless === 1 || state.params.lossless === true)
+		(state.params.lossless === 1 ||
+			state.params.lossless === true ||
+			state.preset === "lossless")
 	) {
 		return 100;
 	}
