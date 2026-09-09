@@ -8,8 +8,16 @@ import type { SectionedPageContent } from "./types";
  * Each section's `lead`/`cont` headline carries the claim; the paragraph
  * beneath it carries the evidence -- the file, dependency or guard that
  * makes the claim checkable -- rather than repeating the headline back in
- * prose. The safety rule is unchanged and is the point: no headline states
- * a fact its own section's paragraph does not support.
+ * prose.
+ *
+ * The safety rule is unchanged and is the point: every headline claim is
+ * backed on this page, by its own paragraph wherever it can be. One cannot
+ * be, and it is worth naming rather than leaving for a reader to notice --
+ * the opening section's "every conversion happens locally, in your
+ * browser". What proves that is the static export and the network guard,
+ * which are the two sections directly beneath it. Any future edit that
+ * moves or deletes either of those leaves the opening claim standing on
+ * nothing.
  */
 export const privacy: SectionedPageContent = {
 	title: "Privacy",
@@ -72,7 +80,8 @@ export const privacy: SectionedPageContent = {
 				`That state is one flag in localStorage remembering that you've already
 				seen a one-time notice about very large downloads, plus scratch copies
 				of the file you're actively converting, held in your browser's Origin
-				Private File System until the conversion finishes.`,
+				Private File System until the conversion finishes — neither leaves the
+				device.`,
 			],
 		},
 		{
