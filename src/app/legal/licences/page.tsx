@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { getLicenceReport, type LicenceEntry } from "@/content/legal/licences";
+import { licences } from "@/content/pages/licences";
 import { LegalPage } from "@/design/templates";
 import { SITE } from "@/lib/site";
-
-const REVISED = "9 September 2026";
 
 export function generateMetadata(): Metadata {
 	const title = "Licences — convrtr";
@@ -46,15 +45,10 @@ export default function LicencesPage() {
 	const { entries, incomplete } = getLicenceReport();
 
 	return (
-		<LegalPage title="Licences" revised={REVISED}>
+		<LegalPage title={licences.title} revised={licences.updated}>
 			<div className="flex flex-col gap-6">
 				<p>
-					convrtr runs every conversion locally using the open-source engines
-					below. This list is generated from each engine's own installed{" "}
-					<code>package.json</code> — version and licence read live, not typed
-					by hand — and, for the engines that ship WebAssembly, a scan of the
-					files each one actually installs. A version bump cannot make this page
-					stale.
+					{licences.introBefore} <code>package.json</code> {licences.introAfter}
 				</p>
 				{incomplete.length > 0 ? (
 					<div data-incomplete className="flex flex-col gap-2">
