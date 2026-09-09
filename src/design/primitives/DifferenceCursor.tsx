@@ -82,10 +82,29 @@ export function DifferenceCursor() {
 		let currentX = 0;
 		let currentY = 0;
 		let frame = 0;
+		// Whether the pointer has reported a position yet. Until it has,
+		// there is no honest place to draw the circle: this element is
+		// `position: fixed; top: 0; left: 0`, so (0, 0) is not a neutral
+		// starting value, it is the top-left corner of the viewport —
+		// directly over the wordmark. Without this the page loaded with a
+		// 32px white disc parked on the logo, and it stayed there until the
+		// user happened to move the mouse. Visible in every screenshot taken
+		// of this site. The JSX below therefore starts the circle off-screen,
+		// and the first move snaps to the pointer instead of easing in, so
+		// the fix does not trade a disc on the logo for one flying in from
+		// the corner.
+		let seen = false;
 
 		const onMove = (event: PointerEvent) => {
 			targetX = event.clientX;
 			targetY = event.clientY;
+			if (!seen) {
+				seen = true;
+				currentX = targetX;
+				currentY = targetY;
+				paint();
+				return;
+			}
 			if (reducedMotion) {
 				currentX = targetX;
 				currentY = targetY;
@@ -100,11 +119,16 @@ export function DifferenceCursor() {
 		};
 
 		const tick = () => {
-			// 0.18 is slow enough to read as lag and fast enough that the
-			// circle never feels detached from the pointer.
-			currentX += (targetX - currentX) * 0.18;
-			currentY += (targetY - currentY) * 0.18;
-			paint();
+			// Nothing to ease toward until the pointer has been somewhere.
+			// Lerping from (0, 0) before then is what drew the circle onto
+			// the wordmark on load.
+			if (seen) {
+				// 0.18 is slow enough to read as lag and fast enough that the
+				// circle never feels detached from the pointer.
+				currentX += (targetX - currentX) * 0.18;
+				currentY += (targetY - currentY) * 0.18;
+				paint();
+			}
 			frame = requestAnimationFrame(tick);
 		};
 
@@ -128,6 +152,15 @@ export function DifferenceCursor() {
 				position: "fixed",
 				top: 0,
 				left: 0,
+				// Off-screen until the pointer reports a real position. See
+				// `seen` above: `top: 0; left: 0` with no `translate` is the
+				// top-left corner, not a neutral default, and the circle sat
+				// on the wordmark there on every load. This is the same
+				// individual `translate` property the lerp writes to, for the
+				// reason the comment above the component gives — it must
+				// never move to `transform`, where the hover `scale` would
+				// multiply it.
+				translate: `${-SIZE * 2}px ${-SIZE * 2}px`,
 				width: SIZE,
 				height: SIZE,
 				borderRadius: "50%",
