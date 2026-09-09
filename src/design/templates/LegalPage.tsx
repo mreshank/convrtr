@@ -17,6 +17,11 @@ type Props = {
  * `revised` rather than `dateline`, because a legal document's date is a
  * revision — the thing it names is "when this text last changed", not a
  * publication date — and the label should say so.
+ *
+ * The 56ch measure lives on the body only, not the header: an `<h1>` is a
+ * few words wherever this template is used ("Terms", "Licences") but the
+ * rule can't assume that stays true, and a longer title has no business
+ * being force-wrapped into a column sized for dense clause-heavy prose.
  */
 export function LegalPage({ title, revised, children }: Props) {
 	return (
@@ -29,7 +34,6 @@ export function LegalPage({ title, revised, children }: Props) {
 			}}
 		>
 			<header
-				data-legal-prose
 				style={{
 					display: "flex",
 					flexDirection: "column",

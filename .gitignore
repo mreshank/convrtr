@@ -24,6 +24,8 @@
 /playwright/.cache/
 # scratch from browser-driven verification
 /.playwright-mcp/
+# evidence a review pass drops in the repo root -- never committed
+/review-screens/
 
 # production
 /build
