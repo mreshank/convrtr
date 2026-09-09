@@ -130,31 +130,42 @@ export function SiteHeader({ links, cta }: Props) {
 					 * was added to keep visible.
 					 *
 					 * This is the two-layer background trick instead, the
-					 * standard CSS-only "scroll shadow": one gradient (`local`
+					 * standard CSS-only "scroll shadow": a cover layer (`local`
 					 * attachment) travels WITH the scrolled content, glued to its
-					 * true trailing edge; the other (`scroll` attachment, the
+					 * true trailing edge; the tint (`scroll` attachment, the
 					 * default) stays fixed to the row's own right edge. Both are
 					 * background layers, painted BEHIND the links and their ring,
 					 * so neither ever dims a foreground pixel -- only the flat
 					 * black behind it. At rest, or once scrolled all the way to
-					 * the last link, the `local` layer sits exactly on top of the
-					 * `scroll` one and its own `--ground` fill hides it
-					 * completely -- nothing shows when there is nothing to show.
-					 * The moment content extends past the visible row the
-					 * `local` layer slides right along with it, uncovering the
-					 * `--ink-muted` tint underneath: the signal appears exactly
-					 * when, and only when, something is actually cut off. No JS,
-					 * no scroll listener, and the left edge is left alone --
-					 * scrolled to the start there is nothing hidden behind the
-					 * first link for a matching left-edge fade to ever earn.
+					 * the last link, the cover sits exactly on top of the tint and
+					 * hides it -- nothing shows when there is nothing to show. The
+					 * moment content extends past the visible row the cover slides
+					 * right along with it, uncovering the `--ink-muted` tint
+					 * underneath: the signal appears exactly when, and only when,
+					 * something is actually cut off. No JS, no scroll listener,
+					 * and the left edge is left alone -- scrolled to the start
+					 * there is nothing hidden behind the first link for a matching
+					 * left-edge fade to ever earn.
+					 *
+					 * The cover is FLAT `--ground`, not a gradient to transparent,
+					 * and that is the whole difference between this working and
+					 * not. A cover that fades cannot hide an opaque tint beneath
+					 * it: 6px in from the right edge a 24px fade is ~75% opaque
+					 * over a 12px tint that is still ~50% opaque, which composites
+					 * to a visible grey smudge. Measured on the built export, the
+					 * fading cover left a grey bar painted at 1280px where the nav
+					 * does not overflow at all (`scrollWidth === clientWidth ===
+					 * 682`) -- a permanent artifact beside the last link rather
+					 * than a scroll signal. Flat cover, and the two layers are the
+					 * same width so the cover spans every pixel the tint paints.
 					 */
 					backgroundImage: [
-						"linear-gradient(to left, var(--ground), transparent)",
+						"linear-gradient(var(--ground), var(--ground))",
 						"linear-gradient(to left, var(--ink-muted), transparent)",
 					].join(", "),
 					backgroundRepeat: "no-repeat",
 					backgroundPosition: "right, right",
-					backgroundSize: "var(--gap-md) 100%, var(--gap-sm) 100%",
+					backgroundSize: "var(--gap-sm) 100%, var(--gap-sm) 100%",
 					backgroundAttachment: "local, scroll",
 					// Standoff for the focus ring, and it is load-bearing.
 					// `overflow-x: auto` cannot be scoped to one axis: the
