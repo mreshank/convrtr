@@ -22,12 +22,25 @@
  * branching threads instead of a soft cloud -- the same warp
  * (`domainWarp`) the shared preamble already exposes, composed here rather
  * than restated.
+ *
+ * Fix round (polish pass, item 3): the exit-gate walk measured this as the
+ * "most graphically assertive element on most pages" against a footer
+ * contrast margin (~5.1-5.6:1) far thinner than the hero and terminal
+ * shaders' (~6:1, after their own fix round). Two independent knobs, not
+ * one: the domain scale below dropped from `3.2` to `2.4` -- fewer, larger
+ * branch cells per screen, which is density, the thing a viewer actually
+ * reads as "busy" -- and `SiteFooter.tsx`'s `intensity` dropped from `0.45`
+ * to `0.3`, which is contrast margin, a separate axis a scale change alone
+ * cannot fix (the ridge's own peak value is still ~1.0 regardless of how
+ * far apart the ridges sit). The ridge width (`0.018`, immediately below)
+ * is untouched: widening it thickens each line, which is the opposite of
+ * "quiet" -- v2 asks for "fine" lines, and thinning was never the problem.
  */
 export const BRANCH_NETWORK_FRAGMENT = `
 void main() {
 	vec2 uv = gl_FragCoord.xy / u_resolution.xy;
 	float aspect = u_resolution.x / max(u_resolution.y, 1.0);
-	vec2 p = vec2(uv.x * aspect, uv.y) * 3.2;
+	vec2 p = vec2(uv.x * aspect, uv.y) * 2.4;
 
 	vec2 warp = domainWarp(p + vec2(0.0, u_time * 0.015));
 	float field = fbm(p + warp * 1.5);

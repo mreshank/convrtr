@@ -100,7 +100,17 @@ export function SiteFooter({
 			{!plain && (
 				<ShaderSurface
 					fragment={BRANCH_NETWORK_FRAGMENT}
-					intensity={0.45}
+					// Polish-pass item 3: the exit-gate walk measured this
+					// texture's worst-case composited contrast near the wordmark
+					// at ~5.1-5.6:1 -- clearing the 4.5:1 floor, but by far the
+					// thinnest margin of the three shaders (hero/terminal sit
+					// near 6:1 after their own fix round) -- and singled it out
+					// as the most graphically assertive element on most pages.
+					// Dropped from 0.45 to 0.3, alongside a lower domain-scale
+					// constant in `branchNetwork.ts` for the density half of the
+					// same complaint; see that file for the arithmetic and the
+					// re-measured contrast.
+					intensity={0.3}
 					label="footer-branch-network"
 				/>
 			)}
