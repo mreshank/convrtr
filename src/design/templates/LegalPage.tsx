@@ -37,10 +37,20 @@ function clean(text: string) {
  * revision — the thing it names is "when this text last changed", not a
  * publication date — and the label should say so.
  *
- * The 56ch measure lives on the body only, not the header: an `<h1>` is a
- * few words wherever this template is used ("Terms", "Licences") but the
- * rule can't assume that stays true, and a longer title has no business
- * being force-wrapped into a column sized for dense clause-heavy prose.
+ * The measure goes on the header as well as the body, the same way
+ * `ArticlePage` puts `data-prose` on both. It used to sit on the body
+ * alone, so that a long title would never be force-wrapped into a column
+ * sized for dense clause-heavy prose. The cost of that was not visible from
+ * the source: `[data-legal-prose]` is `margin-inline: auto`, so leaving the
+ * header outside it did not widen the header's column, it moved the body's.
+ * Measured at 1280px on the built export, the `<h1>` sat at x=24 while every
+ * section beneath it sat at x=357 — the title alone against the page gutter
+ * and the prose adrift in the middle, on all four routes this template
+ * serves (/privacy, /legal/terms, /legal/privacy-policy, /legal/licences).
+ *
+ * The wrap the old arrangement was avoiding costs nothing to accept:
+ * `ArticlePage` already wraps its own titles at 68ch, and 56ch is far wider
+ * than "Privacy Policy", the longest title any route passes here.
  */
 export function LegalPage({ title, revised, sections, children }: Props) {
 	return (
@@ -53,6 +63,7 @@ export function LegalPage({ title, revised, sections, children }: Props) {
 			}}
 		>
 			<header
+				data-legal-prose
 				style={{
 					display: "flex",
 					flexDirection: "column",
