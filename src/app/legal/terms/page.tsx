@@ -14,21 +14,12 @@ export function generateMetadata(): Metadata {
 	};
 }
 
-function clean(text: string) {
-	return text.replace(/\s+/g, " ").trim();
-}
-
 export default function TermsPage() {
 	return (
-		<LegalPage title={terms.title} revised={terms.updated}>
-			<div className="flex flex-col gap-6">
-				{terms.sections.map((section) => (
-					<section key={section.heading} className="flex flex-col gap-2">
-						<h2 className="meta">{section.heading}</h2>
-						<p>{clean(section.body)}</p>
-					</section>
-				))}
-			</div>
-		</LegalPage>
+		<LegalPage
+			title={terms.title}
+			revised={terms.updated}
+			sections={terms.sections}
+		/>
 	);
 }

@@ -15,19 +15,12 @@ export function generateMetadata(): Metadata {
 	};
 }
 
-function clean(text: string) {
-	return text.replace(/\s+/g, " ").trim();
-}
-
 export default function HowItWorksPage() {
 	return (
-		<ArticlePage title={howItWorks.title} dateline={howItWorks.updated}>
-			<div className="flex flex-col gap-4">
-				{howItWorks.paragraphs.map((paragraph, index) => (
-					// biome-ignore lint/suspicious/noArrayIndexKey: static, never reordered
-					<p key={index}>{clean(paragraph)}</p>
-				))}
-			</div>
-		</ArticlePage>
+		<ArticlePage
+			title={howItWorks.title}
+			dateline={howItWorks.updated}
+			sections={howItWorks.sections}
+		/>
 	);
 }

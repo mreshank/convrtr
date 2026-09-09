@@ -116,8 +116,16 @@ const familyFiles = readdirSync(FAMILIES_DIR).filter((name) =>
  *                 tighter than DotMatrix's own value, silently changing that
  *                 consumer's width instead of just duplicating it -- the
  *                 same reasoning that keeps EditorialPage's shell padding-only.
+ *   ProseSection  one section of running prose (`/about`, `/privacy`,
+ *                 `/legal/terms`, ...), always mounted inside `ArticlePage`'s
+ *                 `[data-prose]` or `LegalPage`'s `[data-legal-prose]`, both of
+ *                 which already carry the page's prose measure in
+ *                 `templates.css`. A `var(--max-width)` cap here would compete
+ *                 with that ambient measure rather than duplicate it -- the
+ *                 same trap `TerminalPanel`'s own doc comment records for a
+ *                 capped element nested inside a narrower measure elsewhere.
  *
- * None of the three renders a full-width page section on its own, so "every
+ * None of these renders a full-width page section on its own, so "every
  * band declares its own cap" below does not apply to them -- named here
  * rather than left for a looser check to miss the distinction.
  */
@@ -125,6 +133,7 @@ const NOT_BAND_LEVEL = new Set([
 	"BarChart.tsx",
 	"FusedHeadline.tsx",
 	"DotMatrix.tsx",
+	"ProseSection.tsx",
 ]);
 
 describe("band gutter: one owner, not four patches", () => {

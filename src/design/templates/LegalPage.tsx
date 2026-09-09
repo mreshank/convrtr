@@ -1,11 +1,30 @@
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
+import type { PageSection } from "@/content/pages/types";
+import { ProseSection } from "@/design/families";
+import { Hairline } from "@/design/primitives";
 
 type Props = {
 	title: string;
 	/** Formatted by the route; the template only renders it in the mono voice. */
 	revised: string;
-	children: ReactNode;
+	/**
+	 * v2's content-band sequence for this document's body -- a `FusedHeadline`
+	 * per section, composed via `ProseSection`. Optional and additive to
+	 * `children`, which stays the slot `/legal/licences` renders its derived
+	 * dependency list into: `route-purity.test.ts` forbids a route (or a
+	 * helper it renders) from importing `@/design/families` directly, so this
+	 * is the slot a legal route uses to reach `ProseSection` -- hand over
+	 * data, and this template does the composing, the same way `HubPage`
+	 * already does for `ListingRows`.
+	 */
+	sections?: PageSection[];
+	children?: ReactNode;
 };
+
+/** Paragraphs in `@/content/pages/*` are wrapped for source readability; this collapses that whitespace back to single spaces before it reaches the DOM. */
+function clean(text: string) {
+	return text.replace(/\s+/g, " ").trim();
+}
 
 /**
  * Spec §6.2: `LegalPage` is `ArticlePage` at a narrower measure, with a mono
@@ -23,7 +42,7 @@ type Props = {
  * rule can't assume that stays true, and a longer title has no business
  * being force-wrapped into a column sized for dense clause-heavy prose.
  */
-export function LegalPage({ title, revised, children }: Props) {
+export function LegalPage({ title, revised, sections, children }: Props) {
 	return (
 		<article
 			style={{
@@ -56,7 +75,30 @@ export function LegalPage({ title, revised, children }: Props) {
 				</p>
 			</header>
 
-			<div data-legal-prose>{children}</div>
+			<div
+				data-legal-prose
+				style={{
+					display: "flex",
+					flexDirection: "column",
+					gap: "var(--gap-md)",
+				}}
+			>
+				{sections?.map((section, index) => (
+					<Fragment key={section.lead}>
+						{index > 0 ? <Hairline /> : null}
+						<ProseSection
+							eyebrow={section.eyebrow}
+							lead={section.lead}
+							cont={section.cont}
+						>
+							{section.paragraphs.map((paragraph) => (
+								<p key={paragraph}>{clean(paragraph)}</p>
+							))}
+						</ProseSection>
+					</Fragment>
+				))}
+				{children}
+			</div>
 		</article>
 	);
 }

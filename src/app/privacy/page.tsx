@@ -15,19 +15,12 @@ export function generateMetadata(): Metadata {
 	};
 }
 
-function clean(text: string) {
-	return text.replace(/\s+/g, " ").trim();
-}
-
 export default function PrivacyPage() {
 	return (
-		<LegalPage title={privacy.title} revised={privacy.updated}>
-			<div className="flex flex-col gap-4">
-				{privacy.paragraphs.map((paragraph, index) => (
-					// biome-ignore lint/suspicious/noArrayIndexKey: static, never reordered
-					<p key={index}>{clean(paragraph)}</p>
-				))}
-			</div>
-		</LegalPage>
+		<LegalPage
+			title={privacy.title}
+			revised={privacy.updated}
+			sections={privacy.sections}
+		/>
 	);
 }

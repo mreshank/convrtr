@@ -1,12 +1,31 @@
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
+import type { PageSection } from "@/content/pages/types";
+import { ProseSection } from "@/design/families";
+import { Hairline } from "@/design/primitives";
 
 type Props = {
 	title: string;
 	/** Rendered in the mono voice, already formatted by the route. */
 	dateline: string;
-	children: ReactNode;
+	/**
+	 * v2's content-band sequence for this page's body -- a mono eyebrow and a
+	 * `FusedHeadline` per topic, composed via `ProseSection`. Optional and
+	 * additive to `children`, which stays the slot `/blog/[slug]` renders its
+	 * MDX `<Content />` into: `route-purity.test.ts` forbids a route (or a
+	 * helper it renders) from importing `@/design/families` directly, so this
+	 * is the slot a prose route uses to reach `ProseSection` -- hand over
+	 * data, and this template does the composing, the same way `HubPage`
+	 * already does for `ListingRows`.
+	 */
+	sections?: PageSection[];
+	children?: ReactNode;
 	related?: ReactNode;
 };
+
+/** Paragraphs in `@/content/pages/*` are wrapped for source readability; this collapses that whitespace back to single spaces before it reaches the DOM. */
+function clean(text: string) {
+	return text.replace(/\s+/g, " ").trim();
+}
 
 /**
  * The article shape: a headline, a mono dateline, a body at a prose measure,
@@ -21,7 +40,13 @@ type Props = {
  * The date is formatted by the route rather than here. A template that parsed
  * dates would need a locale, and the route already knows the post's own.
  */
-export function ArticlePage({ title, dateline, children, related }: Props) {
+export function ArticlePage({
+	title,
+	dateline,
+	sections,
+	children,
+	related,
+}: Props) {
 	return (
 		<article
 			style={{
@@ -55,7 +80,30 @@ export function ArticlePage({ title, dateline, children, related }: Props) {
 				</h1>
 			</header>
 
-			<div data-prose>{children}</div>
+			<div
+				data-prose
+				style={{
+					display: "flex",
+					flexDirection: "column",
+					gap: "var(--gap-lg)",
+				}}
+			>
+				{sections?.map((section, index) => (
+					<Fragment key={section.lead}>
+						{index > 0 ? <Hairline /> : null}
+						<ProseSection
+							eyebrow={section.eyebrow}
+							lead={section.lead}
+							cont={section.cont}
+						>
+							{section.paragraphs.map((paragraph) => (
+								<p key={paragraph}>{clean(paragraph)}</p>
+							))}
+						</ProseSection>
+					</Fragment>
+				))}
+				{children}
+			</div>
 
 			{related ? (
 				<div data-related data-prose>

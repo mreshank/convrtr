@@ -15,22 +15,12 @@ export function generateMetadata(): Metadata {
 	};
 }
 
-// Paragraphs in @/content/pages/about are wrapped for source readability;
-// this collapses the resulting whitespace back to single spaces before it
-// reaches the DOM.
-function clean(text: string) {
-	return text.replace(/\s+/g, " ").trim();
-}
-
 export default function AboutPage() {
 	return (
-		<ArticlePage title={about.title} dateline={about.updated}>
-			<div className="flex flex-col gap-4">
-				{about.paragraphs.map((paragraph, index) => (
-					// biome-ignore lint/suspicious/noArrayIndexKey: static, never reordered
-					<p key={index}>{clean(paragraph)}</p>
-				))}
-			</div>
-		</ArticlePage>
+		<ArticlePage
+			title={about.title}
+			dateline={about.updated}
+			sections={about.sections}
+		/>
 	);
 }
