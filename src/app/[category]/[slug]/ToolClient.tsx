@@ -727,7 +727,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 	};
 
 	return (
-		<div className="mx-auto flex max-w-4xl flex-col gap-6 p-8">
+		<div className="mx-auto flex w-full max-w-4xl flex-col gap-[var(--gap-md)] p-[calc(var(--space-base)*4)]">
 			{/*
 			 * No <h1> here: ConverterPage (the template wrapping this component)
 			 * owns the page's one heading, and renders `tool.seo.h1` there. This
@@ -744,18 +744,27 @@ export function ToolClient({ toolId }: { toolId: string }) {
 			 * is content inside the page, not the page itself, so this is a
 			 * <div> now.
 			 *
-			 * `max-w-4xl` is left as-is, untested at this viewport: at 1920px it
-			 * never actually binds. `mx-auto` on a flex item disables the parent
-			 * column's cross-axis stretch, so this element's width is set by
-			 * shrink-to-fit against its own content, not by the 896px cap —
-			 * measured at 361px empty and 569px with a file loaded, both well
-			 * under the cap. It reads as a leftover from before this sat inside
-			 * a 1600px frame, not as deliberate framing; changing the actual
-			 * sizing behaviour is a separate concern from the landmark fix here.
+			 * `max-w-4xl` was the right cap but never bound: this div is a flex
+			 * item inside ConverterPage's column, and `mx-auto` on a flex item
+			 * disables the parent's cross-axis stretch, so without an explicit
+			 * width the element sized itself to shrink-to-fit content — measured
+			 * at 361px empty and 569px with a file loaded, both far under the
+			 * 896px cap, inside the 1600px frame. `w-full` now gives it the
+			 * frame's width, `max-w-4xl` caps that at 896px, and `mx-auto`
+			 * centres the capped result — the same three-part pattern
+			 * (width/cap/centre) `var(--max-width)` + `margin: 0 auto` uses
+			 * everywhere else in this design system, just expressed as
+			 * utilities instead of inline style. Measured at 1920, 1280 and
+			 * 375: the instrument now reaches 896px and centres in the frame
+			 * whenever the frame is wide enough to allow it, and a form
+			 * surface — drop field, options panel, batch table — reads better
+			 * at that width than stretched to the full 1600px frame would.
 			 *
-			 * `gap-6` (24px) is `--gap-md` exactly; `p-8` (32px) matches nothing
-			 * in the scale (8/12/24/80px). Left both as Tailwind utilities
-			 * rather than convert one and not the other.
+			 * `gap-6` (24px) was `--gap-md` exactly, so it is now
+			 * `gap-[var(--gap-md)]`. `p-8` (32px) matched nothing in the scale
+			 * (8/12/24/80px) but is 4 × `--space-base` (8px), so it is now
+			 * `p-[calc(var(--space-base)*4)]` rather than a bare literal or a
+			 * new token.
 			 */}
 			<div className="flex items-start justify-end">
 				<FidelityScore
