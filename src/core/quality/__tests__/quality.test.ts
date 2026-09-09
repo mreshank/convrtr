@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { TOOLS } from "@/core/registry";
 import { pngToJpg } from "@/core/registry/tools/png-to-jpg";
 import { pngToWebp } from "@/core/registry/tools/png-to-webp";
+import { removeMetadataPng } from "@/core/registry/tools/remove-metadata-png";
 import {
 	applyPreset,
 	describeFidelity,
@@ -285,5 +286,62 @@ describe("the shipped defaults", () => {
 		expect(fidelityState(pngToWebp, initialQuality(pngToWebp))).toBe(
 			"lossless",
 		);
+	});
+});
+
+/**
+ * `visually-lossless` has always been inferred from the preset id; `lossless`
+ * was not, and that asymmetry was the bug. A tool like `remove-metadata-png`
+ * has exactly one preset — `id: "lossless"`, `params: {}` — because copying
+ * bytes verbatim has no engine parameter to set. Without an id-based branch,
+ * that preset falls through to `lossy` at score 50, which is what put a
+ * dashed LOSSY ring on a byte-for-byte copy.
+ */
+describe("the lossless preset id, on a tool with no lossless param to read", () => {
+	it("reports lossless and scores 100 for remove-metadata-png's lossless preset", () => {
+		const state = initialQuality(removeMetadataPng);
+		expect(state.preset).toBe("lossless");
+		expect(state.params.lossless).toBeUndefined();
+		expect(fidelityState(removeMetadataPng, state)).toBe("lossless");
+		expect(fidelityScore(removeMetadataPng, state)).toBe(100);
+	});
+
+	it("does not let a lossless preset id override losslessAvailable: false", () => {
+		const inherentlyLossy = {
+			...removeMetadataPng,
+			quality: { ...removeMetadataPng.quality, losslessAvailable: false },
+		};
+		const state = initialQuality(inherentlyLossy);
+		expect(fidelityState(inherentlyLossy, state)).toBe("inherently-lossy");
+		expect(fidelityScore(inherentlyLossy, state)).toBeLessThan(100);
+	});
+
+	it("still reports lossless from an explicit params.lossless: 1 (WebP path unbroken)", () => {
+		// pngToWebp's lossless preset carries a real lossless:1 param. The new
+		// id-based branch must not change this — the explicit param still wins
+		// on its own terms, ahead of the id check.
+		const state = initialQuality(pngToWebp);
+		expect(state.params.lossless).toBe(1);
+		expect(fidelityState(pngToWebp, state)).toBe("lossless");
+		expect(fidelityScore(pngToWebp, state)).toBe(100);
+	});
+
+	it("still reports visually-lossless, not lossless, for WebP's visually-lossless preset", () => {
+		// This preset sets params.lossless: 0 — it must never be pulled into
+		// "lossless" by an id-based branch, since its id is not "lossless".
+		const state = applyPreset(pngToWebp, "visually-lossless");
+		expect(state.params.lossless).toBe(0);
+		expect(fidelityState(pngToWebp, state)).toBe("visually-lossless");
+		expect(fidelityState(pngToWebp, state)).not.toBe("lossless");
+	});
+
+	it("still reports a genuinely lossy preset as lossy", () => {
+		const state = initialQuality(pngToJpg);
+		expect(state.preset).toBe("balanced");
+		expect(fidelityState(pngToJpg, state)).toBe("inherently-lossy");
+
+		const webpBalanced = applyPreset(pngToWebp, "balanced");
+		expect(fidelityState(pngToWebp, webpBalanced)).toBe("lossy");
+		expect(fidelityScore(pngToWebp, webpBalanced)).toBe(78);
 	});
 });
