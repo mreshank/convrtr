@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Hairline } from "@/design/primitives/Hairline";
 import { MonoMeta } from "@/design/primitives/MonoMeta";
+import { BRANCH_NETWORK_FRAGMENT, ShaderSurface } from "@/design/texture";
 
 type LinkItem = { href: string; label: string };
 
@@ -40,6 +41,18 @@ type Props = {
  *
  * Redefining the tokens fixes both for every descendant at once, and means
  * nothing inside this file needs to know it is inverted.
+ *
+ * `branchNetwork` sits behind all of it: the footer element itself gets
+ * `position: relative` for the canvas to fill, and every real child -- the
+ * link grid, the `Hairline`, the credit line -- moves inside one
+ * `position: relative` wrapper so it paints in the same later stacking
+ * stage as the canvas, in DOM order, on top rather than under it (the same
+ * trap and the same fix `HeroBand.tsx` and `TerminalPanel.tsx` document).
+ * The fragment itself paints `--surface-alt` as its own base fill with
+ * `--rule-subtle` lines on top -- GLSL cannot read this element's locally
+ * redefined custom properties, so `branchNetwork.ts` states the footer's
+ * inverted colours as literal palette constants rather than reaching for
+ * tokens it cannot see.
  */
 export function SiteFooter({
 	bio,
@@ -64,108 +77,131 @@ export function SiteFooter({
 				// pale inversion is the right failure direction.
 				["--rule" as string]: "var(--rule-subtle)",
 				["--ink-muted" as string]: "var(--ink-inverse)",
+				position: "relative",
 				background: "var(--ground)",
 				color: "var(--ink)",
 				padding: "var(--gap-md)",
 			}}
 		>
+			<ShaderSurface
+				fragment={BRANCH_NETWORK_FRAGMENT}
+				intensity={0.45}
+				label="footer-branch-network"
+			/>
 			<div
 				style={{
-					display: "grid",
+					position: "relative",
+					display: "flex",
+					flexDirection: "column",
 					gap: "var(--gap-md)",
-					gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
 				}}
 			>
-				<div style={{ gridColumn: "span 2" }}>
-					{/*
-					 * The footer half of the header's lockup, at the larger
-					 * size the band's own column allows.
-					 *
-					 * Weight 700 for the reason the header's wordmark is 700:
-					 * v2's display and headline faces are weight 400, so bold
-					 * is not a size cue here but the bold clause of v2's
-					 * bold/gray headline pattern, and it is what separates the
-					 * mark from the body copy directly beneath it.
-					 *
-					 * The tracking is scaled, and it has to be.
-					 * `--display-tracking` is a PX value — v2 specifies -2.7px
-					 * against its own 68px display size
-					 * (`DESIGN.v2.md:16-21`), which is -0.0397em. Letter
-					 * spacing in px does not scale with the font, so applying
-					 * it unchanged at 32px gives -0.0844em: 2.13x tighter than
-					 * v2 asks for. Measured on the real export, the word
-					 * rendered 96.53px that way against 115.42px untracked —
-					 * a 16.4% crush with the letters nearly touching. The
-					 * 32/68 factor restores v2's ratio (-1.27px at this size,
-					 * 106.53px rendered). The header's wordmark has no such
-					 * problem because it takes `--label-tracking` at
-					 * `--label-size`, the size that token was specified
-					 * against.
-					 */}
-					<p
-						style={{
-							fontSize: "32px",
-							fontWeight: 700,
-							letterSpacing: "calc(var(--display-tracking) * 32 / 68)",
-						}}
-					>
-						convrtr
-					</p>
-					<p style={{ maxWidth: "32ch" }}>{bio}</p>
+				<div
+					style={{
+						display: "grid",
+						gap: "var(--gap-md)",
+						gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+					}}
+				>
+					<div style={{ gridColumn: "span 2" }}>
+						{/*
+						 * The footer half of the header's lockup, at the larger
+						 * size the band's own column allows.
+						 *
+						 * Weight 700 for the reason the header's wordmark is 700:
+						 * v2's display and headline faces are weight 400, so bold
+						 * is not a size cue here but the bold clause of v2's
+						 * bold/gray headline pattern, and it is what separates the
+						 * mark from the body copy directly beneath it.
+						 *
+						 * The tracking is scaled, and it has to be.
+						 * `--display-tracking` is a PX value — v2 specifies -2.7px
+						 * against its own 68px display size
+						 * (`DESIGN.v2.md:16-21`), which is -0.0397em. Letter
+						 * spacing in px does not scale with the font, so applying
+						 * it unchanged at 32px gives -0.0844em: 2.13x tighter than
+						 * v2 asks for. Measured on the real export, the word
+						 * rendered 96.53px that way against 115.42px untracked —
+						 * a 16.4% crush with the letters nearly touching. The
+						 * 32/68 factor restores v2's ratio (-1.27px at this size,
+						 * 106.53px rendered). The header's wordmark has no such
+						 * problem because it takes `--label-tracking` at
+						 * `--label-size`, the size that token was specified
+						 * against.
+						 */}
+						<p
+							style={{
+								fontSize: "32px",
+								fontWeight: 700,
+								letterSpacing: "calc(var(--display-tracking) * 32 / 68)",
+							}}
+						>
+							convrtr
+						</p>
+						<p style={{ maxWidth: "32ch" }}>{bio}</p>
+					</div>
+
+					<nav aria-label="Socials">
+						<MonoMeta as="div">Socials</MonoMeta>
+						{socials.map((item) => (
+							<Link
+								key={item.href}
+								href={item.href}
+								style={{ display: "block" }}
+							>
+								{item.label}
+							</Link>
+						))}
+					</nav>
+
+					<nav aria-label="Contact">
+						<MonoMeta as="div">Contact</MonoMeta>
+						{contact.map((item) => (
+							<Link
+								key={item.href}
+								href={item.href}
+								style={{ display: "block" }}
+							>
+								{item.label}
+							</Link>
+						))}
+					</nav>
+
+					{explore.length > 0 ? (
+						<nav aria-label="Explore">
+							<MonoMeta as="div">Explore</MonoMeta>
+							{explore.map((item) => (
+								<Link
+									key={item.href}
+									href={item.href}
+									style={{ display: "block" }}
+								>
+									{item.label}
+								</Link>
+							))}
+						</nav>
+					) : null}
+
+					{legal.length > 0 ? (
+						<nav aria-label="Legal">
+							<MonoMeta as="div">Legal</MonoMeta>
+							{legal.map((item) => (
+								<Link
+									key={item.href}
+									href={item.href}
+									style={{ display: "block" }}
+								>
+									{item.label}
+								</Link>
+							))}
+						</nav>
+					) : null}
 				</div>
 
-				<nav aria-label="Socials">
-					<MonoMeta as="div">Socials</MonoMeta>
-					{socials.map((item) => (
-						<Link key={item.href} href={item.href} style={{ display: "block" }}>
-							{item.label}
-						</Link>
-					))}
-				</nav>
+				<Hairline />
 
-				<nav aria-label="Contact">
-					<MonoMeta as="div">Contact</MonoMeta>
-					{contact.map((item) => (
-						<Link key={item.href} href={item.href} style={{ display: "block" }}>
-							{item.label}
-						</Link>
-					))}
-				</nav>
-
-				{explore.length > 0 ? (
-					<nav aria-label="Explore">
-						<MonoMeta as="div">Explore</MonoMeta>
-						{explore.map((item) => (
-							<Link
-								key={item.href}
-								href={item.href}
-								style={{ display: "block" }}
-							>
-								{item.label}
-							</Link>
-						))}
-					</nav>
-				) : null}
-
-				{legal.length > 0 ? (
-					<nav aria-label="Legal">
-						<MonoMeta as="div">Legal</MonoMeta>
-						{legal.map((item) => (
-							<Link
-								key={item.href}
-								href={item.href}
-								style={{ display: "block" }}
-							>
-								{item.label}
-							</Link>
-						))}
-					</nav>
-				) : null}
+				<p style={{ fontSize: "14px" }}>{credit}</p>
 			</div>
-
-			<Hairline />
-
-			<p style={{ fontSize: "14px" }}>{credit}</p>
 		</footer>
 	);
 }

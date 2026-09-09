@@ -767,8 +767,10 @@ function findGradientValues(content: string): string[] {
  *
  * `DotMatrix`'s `radial-gradient` is the dot-matrix lattice (task 3). Not an
  * image asset and not a decorative wash: it is the exact, zero-request way to
- * express a repeating dot lattice, and its colour comes from `--rule`, so it
- * is as accountable as every other colour in the system.
+ * express a repeating dot lattice, and its colour comes from `--rule-subtle`
+ * (fix round 1: `--rule` measured 4.39:1 against `--ink-muted` text painted
+ * underneath it, under the 4.5:1 AA floor), so it is as accountable as every
+ * other colour in the system.
  *
  * Three entries left when comments stopped counting. `BarChart.tsx` never had
  * a gradient. `MediaFrame.test.tsx` and `DotMatrix.test.tsx` assert on the

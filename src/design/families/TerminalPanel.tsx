@@ -1,3 +1,5 @@
+import { HALFTONE_FRAGMENT, ShaderSurface } from "@/design/texture";
+
 type Tone = "ink" | "muted" | "accent";
 
 type Line = {
@@ -62,6 +64,16 @@ const TONE: Record<Tone, string> = {
  * column, say) makes the cap a harmless no-op: `max-width` never forces a box
  * wider than its container allows, only narrower, so this renders correctly
  * at any container width the panel is given, cap engaged or not.
+ *
+ * `halftone` sits behind the log lines, confined to the `<figure>` itself
+ * (v2's "recurs faintly behind code-panel graphics" -- this panel IS the
+ * code panel) rather than the outer `maxWidth` wrapper, which draws nothing
+ * of its own and exists only to centre the figure. The figure already needs
+ * `position: relative` for the halftone canvas to fill (`inset: 0` resolves
+ * against the nearest positioned ancestor's padding box), and giving it that
+ * has the same side effect `HeroBand.tsx` documents: the log lines wrapper
+ * below also gets `position: relative` so it paints in the same later
+ * stacking stage as the canvas, in DOM order, on top rather than under it.
  */
 export function TerminalPanel({ lines, label }: Props) {
 	return (
@@ -79,6 +91,7 @@ export function TerminalPanel({ lines, label }: Props) {
 				data-terminal
 				aria-label={label}
 				style={{
+					position: "relative",
 					background: "var(--surface)",
 					// Longhands, not the `border` shorthand -- the same reason
 					// SiteHeader.tsx and Hairline.tsx give: a shorthand whose parts
@@ -93,22 +106,29 @@ export function TerminalPanel({ lines, label }: Props) {
 					overflowX: "auto",
 				}}
 			>
-				{lines.map((line, index) => (
-					<div
-						// biome-ignore lint/suspicious/noArrayIndexKey: the text alone is not unique -- a real log repeats lines -- and the index alone loses identity when lines are prepended; the composite is the honest key.
-						key={`${index}-${line.text}`}
-						data-line
-						className="mono"
-						style={{
-							color: TONE[line.tone ?? "ink"],
-							fontSize: "var(--mono-size)",
-							lineHeight: "var(--body-leading)",
-							whiteSpace: "pre",
-						}}
-					>
-						{line.text}
-					</div>
-				))}
+				<ShaderSurface
+					fragment={HALFTONE_FRAGMENT}
+					intensity={0.22}
+					label="terminal-halftone"
+				/>
+				<div style={{ position: "relative" }}>
+					{lines.map((line, index) => (
+						<div
+							// biome-ignore lint/suspicious/noArrayIndexKey: the text alone is not unique -- a real log repeats lines -- and the index alone loses identity when lines are prepended; the composite is the honest key.
+							key={`${index}-${line.text}`}
+							data-line
+							className="mono"
+							style={{
+								color: TONE[line.tone ?? "ink"],
+								fontSize: "var(--mono-size)",
+								lineHeight: "var(--body-leading)",
+								whiteSpace: "pre",
+							}}
+						>
+							{line.text}
+						</div>
+					))}
+				</div>
 			</figure>
 		</div>
 	);
