@@ -494,3 +494,105 @@ describe("custom-property reference pattern", () => {
 		expect(captures(input)).toEqual([]);
 	});
 });
+
+/**
+ * GLSL is a colour-bearing language the sweeps above have never read. Every
+ * check in "palette closure" matches CSS/JS colour syntax -- `#hex`,
+ * `rgb(...)`, a bare colour keyword -- and a shader's `vec3(0.60, 0.56,
+ * 0.98)` matches none of it, even though it paints exactly as real a colour
+ * on the page as a `background: "#3B82F6"` would. The reference shaders
+ * this texture plan draws on ship palettes like `#0F0D2B` and `#9890FA`
+ * specified as `vec3` literals; without a guard that reads GLSL specifically,
+ * one of those could sit in `src/design/texture/glsl/` untouched by every
+ * other test in this file.
+ *
+ * Scoped to `src/design/texture/glsl/` rather than all of `PALETTE_CORPUS`:
+ * `vec3` is also a legitimate GLSL type for non-colour data (coordinates,
+ * warp offsets), so treating every `vec3(...)` anywhere in `src` as a colour
+ * would be wrong. Inside `glsl/` specifically, `preamble.ts` documents that
+ * the palette constants are the only `vec3` colour literals a shader may
+ * declare -- everything else in that file works in `vec2`/`float`/`mat2` for
+ * exactly this reason -- so the scope itself is part of the enforcement.
+ */
+const GLSL_CORPUS = collectSourceFiles("src/design/texture/glsl", [".ts"]).map(
+	(path) => ({ path, content: readFileSync(path, "utf8") }),
+);
+
+/** A shader's 0-1 float channel, converted back to the 8-bit value a hex
+ * literal states, so it can be checked against `ALLOWED_COLOURS`. */
+function channelToByte(value: number): number {
+	return Math.max(0, Math.min(255, Math.round(value * 255)));
+}
+
+function byteToHex(byte: number): string {
+	return byte.toString(16).padStart(2, "0");
+}
+
+// `vec3(r, g, b)` where each component is a bare numeric literal -- the only
+// shape a colour constant takes in this codebase's shaders. A `vec3` built
+// from variables or expressions (`vec3(p, 0.0)`, `vec3(warp, t)`) does not
+// match, because it is not a colour literal for this guard to check.
+const VEC3_COLOUR_LITERAL =
+	/\bvec3\(\s*(-?\d*\.?\d+)\s*,\s*(-?\d*\.?\d+)\s*,\s*(-?\d*\.?\d+)\s*\)/g;
+
+describe("palette closure reads GLSL", () => {
+	it("declares no vec3 colour literal outside the monochrome set", () => {
+		const offenders: string[] = [];
+		for (const { path, content } of GLSL_CORPUS) {
+			for (const match of content.matchAll(VEC3_COLOUR_LITERAL)) {
+				const [whole, r, g, b] = match;
+				const hex = `#${[r, g, b]
+					.map((channel) => byteToHex(channelToByte(Number(channel))))
+					.join("")}`;
+				if (!ALLOWED_COLOURS.has(hex)) {
+					offenders.push(`${path}: ${whole} -> ${hex}`);
+				}
+			}
+		}
+		expect(offenders).toEqual([]);
+	});
+
+	// Non-vacuity: an empty `glsl/` directory, or a preamble that dropped its
+	// palette constants, would pass the test above for having nothing to
+	// check against it. `ShaderSurface`'s preamble declares all ten palette
+	// values as named `vec3`s, so this floor is comfortably clear of zero.
+	it("finds vec3 colour literals in the corpus to test against", () => {
+		const total = GLSL_CORPUS.reduce(
+			(sum, { content }) =>
+				sum + [...content.matchAll(VEC3_COLOUR_LITERAL)].length,
+			0,
+		);
+		expect(total).toBeGreaterThan(0);
+	});
+});
+
+/**
+ * Pins `VEC3_COLOUR_LITERAL` and the byte-conversion round-trip against
+ * fixtures, the same reasoning as every other pattern table in this file: a
+ * guard whose only corpus is today's clean `preamble.ts` proves nothing about
+ * whether the regex or the rounding is actually right.
+ */
+describe("vec3 colour literal pattern", () => {
+	it("matches v2's accent and converts back to its exact hex", () => {
+		const [match] = [
+			..."vec3(0.2039, 0.8353, 0.6039)".matchAll(VEC3_COLOUR_LITERAL),
+		];
+		expect(match?.slice(1)).toEqual(["0.2039", "0.8353", "0.6039"]);
+	});
+
+	it("does not match a vec3 built from a variable, not a literal", () => {
+		expect([..."vec3(warp, 0.0)".matchAll(VEC3_COLOUR_LITERAL)]).toEqual([]);
+	});
+
+	// The mutation the brief asks this guard to prove it catches: the Silk
+	// accent from the supplied reference palette, converted to the same
+	// 0-1 vec3 shape a shader would actually declare it in.
+	it("converts the supplied Silk accent to a hex outside the ten", () => {
+		const [match] = [..."vec3(0.60, 0.56, 0.98)".matchAll(VEC3_COLOUR_LITERAL)];
+		const [, r, g, b] = match ?? [];
+		const hex = `#${[r, g, b]
+			.map((channel) => byteToHex(channelToByte(Number(channel))))
+			.join("")}`;
+		expect(ALLOWED_COLOURS.has(hex)).toBe(false);
+	});
+});

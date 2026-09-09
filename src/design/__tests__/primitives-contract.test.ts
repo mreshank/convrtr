@@ -148,7 +148,15 @@ describe("primitives barrel", () => {
  * So the allowlist gains no entries for `templates/` either, and a template
  * that acquires the directive without being added to it fails.
  */
-const CLIENT_COMPONENT_ALLOWLIST = new Set(["DifferenceCursor.tsx"]);
+const CLIENT_COMPONENT_ALLOWLIST = new Set([
+	"DifferenceCursor.tsx",
+	// `ShaderSurface` (`src/design/texture/`) owns a WebGL context, an
+	// animation loop, an `IntersectionObserver` and pointer listeners --
+	// state a server component cannot hold. It is the one client component
+	// the texture plan adds; everything built on top of it in that
+	// directory is composition and stays a server component.
+	"ShaderSurface.tsx",
+]);
 
 function filesDeclaringUseClient(dir: string): string[] {
 	return readdirSync(dir)
@@ -198,6 +206,20 @@ describe("server-component guard", () => {
 		expect(offenders).toEqual([]);
 	});
 
+	it('allows "use client" only on the allowlisted texture components', () => {
+		// `src/design/texture/` is the fifth composition layer this sweep
+		// covers, added when `ShaderSurface` shipped as this plan's one
+		// client component. Same reasoning as `families/` and `templates/`
+		// above sitting outside every check until named explicitly: a
+		// directory nobody passes to `filesDeclaringUseClient` is a
+		// directory nobody checks, so this had to be added rather than
+		// assumed to fall under an existing sweep.
+		const offenders = filesDeclaringUseClient("src/design/texture").filter(
+			(name) => !CLIENT_COMPONENT_ALLOWLIST.has(name),
+		);
+		expect(offenders).toEqual([]);
+	});
+
 	it('still requires "use client" on every allowlisted component', () => {
 		// Guards the allowlist itself against going stale in the other
 		// direction — an entry that no longer needs the directive should be
@@ -207,6 +229,7 @@ describe("server-component guard", () => {
 			...filesDeclaringUseClient("src/design/chrome"),
 			...filesDeclaringUseClient("src/design/families"),
 			...filesDeclaringUseClient("src/design/templates"),
+			...filesDeclaringUseClient("src/design/texture"),
 		]);
 		for (const name of CLIENT_COMPONENT_ALLOWLIST) {
 			expect(declaring.has(name)).toBe(true);
