@@ -94,7 +94,7 @@ export default async function CollectivePage({
 	return (
 		<ShowcasePage
 			title={collective.title}
-			lede={collective.why}
+			reason={collective.why}
 			count={{
 				value: tools.length,
 				noun: tools.length === 1 ? "tool" : "tools",

@@ -15,7 +15,15 @@ export type ShowcaseTool = {
 type Props = {
 	eyebrow?: string;
 	title: string;
-	lede: string;
+	/**
+	 * The set's reason for existing -- a collective's `why`, the thing that
+	 * separates it from a group. Fused into `HubPage`'s headline as the
+	 * muted continuation, rather than handed over as a plain `lede`: a group
+	 * is mechanical and needs no justification, but a collective's whole
+	 * claim rests on this sentence, so it has to lead the page, not follow
+	 * the title as an afterthought a reader can skip.
+	 */
+	reason: string;
 	count?: { value: number; noun: string };
 	/** Spec §8.4: a non-interactive grid of the set's member tools, each
 	 * linking to its own converter. Used above the demo, never in place of it. */
@@ -37,9 +45,13 @@ const VARIANTS = ["a", "b", "c"] as const;
 
 /**
  * `HubPage` plus spec §8.4's showcase band and §8.1's demo slot — the shape
- * shared by every group and collective page: an eyebrow, headline and lede
- * (from `HubPage`), a plain-link grid of the set's tools, and at most one
- * `LiveDemo` beneath it.
+ * shared by every group and collective page: an eyebrow, a headline that
+ * fuses the title with its `reason` (from `HubPage`), a plain-link grid of
+ * the set's tools, and at most one `LiveDemo` beneath it.
+ *
+ * `title`/`reason` reach `HubPage` as one fused-headline pair rather than a
+ * title-plus-lede, so the reason is the second clause of the headline
+ * itself, not a paragraph a reader can scroll past before reading it.
  *
  * The showcase band is deliberately inert — every tile is a `Link`, nothing
  * here fetches or converts. `LiveDemo` is the one place on this page a real
@@ -48,13 +60,17 @@ const VARIANTS = ["a", "b", "c"] as const;
 export function ShowcasePage({
 	eyebrow,
 	title,
-	lede,
+	reason,
 	count,
 	showcase,
 	demo,
 }: Props) {
 	return (
-		<HubPage eyebrow={eyebrow} title={title} lede={lede} count={count}>
+		<HubPage
+			eyebrow={eyebrow}
+			title={{ lead: title, cont: reason }}
+			count={count}
+		>
 			<section
 				aria-label="Tools in this set"
 				style={{

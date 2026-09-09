@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ToolTable } from "@/app/tools/ToolTable";
 import { toToolRow } from "@/app/tools/toolRow";
 import { deriveFormatGroups } from "@/core/registry/groups";
+import { conversionBranches } from "@/core/registry/stats";
 import { HubPage } from "@/design/templates";
 import { SITE } from "@/lib/site";
 
@@ -57,6 +58,12 @@ export default async function FormatGroupPage({
 
 	const rows = group.tools.map(toToolRow);
 
+	// Handed over unconditionally, not gated on `.length > 0`: `HubPage`
+	// forwards this straight to `BranchDiagram`, which already returns
+	// `null` for an empty `to` list -- a format with no outward branches
+	// (svg, jxl, ...) draws nothing, and this route never has to know that.
+	const branches = conversionBranches(format);
+
 	return (
 		<HubPage
 			title={`${format.toUpperCase()} tools`}
@@ -65,6 +72,7 @@ export default async function FormatGroupPage({
 				value: rows.length,
 				noun: rows.length === 1 ? "tool" : "tools",
 			}}
+			branch={{ from: format, to: branches }}
 		>
 			<ToolTable rows={rows} caption={`${format.toUpperCase()} tools`} />
 		</HubPage>

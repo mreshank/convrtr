@@ -1,5 +1,10 @@
 import type { ReactNode } from "react";
-import { type ListingItem, ListingRows } from "@/design/families";
+import {
+	BranchDiagram,
+	FusedHeadline,
+	type ListingItem,
+	ListingRows,
+} from "@/design/families";
 
 /**
  * One `ListingRows` worth of data, plus the optional heading that separates
@@ -14,10 +19,28 @@ export type ListingSection = {
 type Props = {
 	/** Small mono label above the headline. Optional — not every hub needs one. */
 	eyebrow?: string;
-	title: string;
-	lede: string;
+	/**
+	 * A plain string for every hub but one. `ShowcasePage` passes the
+	 * `{ lead, cont }` pair instead, for the one hub whose second sentence IS
+	 * the reason the page exists -- a collective's `why`. Fusing it into the
+	 * headline (see `FusedHeadline`) is what makes it lead the page rather
+	 * than sit underneath as a lede a reader can skip past.
+	 */
+	title: string | { lead: string; cont: string };
+	/** Optional because the fused-title hub above says everything `lede`
+	 * would have said, inside the headline itself -- a second copy beneath
+	 * it would be the same sentence twice. */
+	lede?: string;
 	/** v2's data-readout voice applied to a hub: "53 conversions". */
 	count?: { value: number; noun: string };
+	/**
+	 * The conversion graph rooted at this hub, when it has one -- see
+	 * `BranchDiagram`. Optional and handed over unconditionally: the family
+	 * itself returns `null` for an empty `to` list, so a format with no
+	 * outward branches (e.g. `svg`) still renders nothing here, with no
+	 * emptiness check needed at either call site.
+	 */
+	branch?: { from: string; to: string[] };
 	/**
 	 * v2's ruled table of rows -- see `ListingRows`. `route-purity.test.ts`
 	 * forbids a route (or a helper it renders) from importing
@@ -45,6 +68,7 @@ export function HubPage({
 	title,
 	lede,
 	count,
+	branch,
 	sections,
 	children,
 }: Props) {
@@ -66,33 +90,41 @@ export function HubPage({
 				</p>
 			) : null}
 
-			<h1
-				style={{
-					fontSize: "var(--headline-size)",
-					fontWeight: 400,
-					letterSpacing: "var(--headline-tracking)",
-					lineHeight: "var(--display-leading)",
-					color: "var(--ink)",
-				}}
-			>
-				{title}
-			</h1>
+			{typeof title === "string" ? (
+				<h1
+					style={{
+						fontSize: "var(--headline-size)",
+						fontWeight: 400,
+						letterSpacing: "var(--headline-tracking)",
+						lineHeight: "var(--display-leading)",
+						color: "var(--ink)",
+					}}
+				>
+					{title}
+				</h1>
+			) : (
+				<FusedHeadline lead={title.lead} cont={title.cont} as="h1" />
+			)}
 
-			<p
-				style={{
-					color: "var(--ink-muted)",
-					fontSize: "var(--body-size)",
-					lineHeight: "var(--body-leading)",
-				}}
-			>
-				{lede}
-			</p>
+			{lede ? (
+				<p
+					style={{
+						color: "var(--ink-muted)",
+						fontSize: "var(--body-size)",
+						lineHeight: "var(--body-leading)",
+					}}
+				>
+					{lede}
+				</p>
+			) : null}
 
 			{count ? (
 				<p data-count className="mono" style={{ color: "var(--ink-muted)" }}>
 					{`${count.value} ${count.noun}`}
 				</p>
 			) : null}
+
+			{branch ? <BranchDiagram from={branch.from} to={branch.to} /> : null}
 
 			{sections?.map((section) => (
 				<div
