@@ -1,5 +1,6 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import { useEffect, useState } from "react";
 import { getSample } from "@/content/samples/registry";
 import { JobError, runJob } from "@/core/pipeline/client";
@@ -28,6 +29,43 @@ type Readout = {
 	fidelityLabel: string;
 	fidelityValue: number;
 	imageUrl?: string;
+};
+
+/**
+ * Both this component's own cards sit on `--surface-alt`, the pale ground
+ * `SiteFooter` is the only other place in the system to invert to -- and
+ * every text/border colour inside them (`MonoMeta`, `FileReadout`,
+ * `FidelityScore`'s ink stroke and label, the RUN DEMO border, the static
+ * specimen's dashed border and body copy) reads `var(--ink)` / `var(--ink-muted)`
+ * / `var(--rule)`, which resolve to white / grey / near-black-on-black --
+ * the values meant for the site's black canvas. Setting only `background`
+ * to the literal token, as this used to, left every one of those colours
+ * unchanged: white text measured at 1.16:1 against the pale card, far below
+ * even large-text AA.
+ *
+ * `SiteFooter.tsx` already solved exactly this by redefining the tokens
+ * rather than each descendant's colour -- redefining `--ink`/`--ink-muted`/
+ * `--rule` here the same way fixes every one of those consumers at once,
+ * including two components (`FileReadout`, `FidelityScore`) that have no
+ * idea they might ever sit on anything but the black canvas.
+ *
+ * `color: var(--ink)` has to be restated here too, alongside the custom
+ * property, not just the property alone -- `body { color: var(--ink) }` in
+ * tokens.css resolves `color` to white once, at the body, and CSS `color`
+ * is an inherited property: a descendant that never redeclares `color`
+ * keeps inheriting that already-resolved white no matter what `--ink`
+ * itself is redefined to further down. `MonoMeta`'s `.meta` class does not
+ * redeclare `color`, so without this line here it stayed white regardless
+ * of the token redefinition above -- measured at 1.16:1 against the pale
+ * card before this line existed.
+ */
+const PALE_CARD_TOKENS: CSSProperties = {
+	["--ground" as string]: "var(--surface-alt)",
+	["--ink" as string]: "var(--ink-inverse)",
+	["--ink-muted" as string]: "var(--ink-inverse)",
+	["--rule" as string]: "var(--rule-subtle)",
+	background: "var(--ground)",
+	color: "var(--ink)",
 };
 
 const PLACEHOLDER = (
@@ -117,7 +155,7 @@ export function LiveDemo({ toolId, sampleId }: Props) {
 		<AsymCard variant="b" aspect="4/3">
 			<div
 				className="flex h-full flex-col justify-between gap-3 p-4"
-				style={{ background: "var(--surface-alt)" }}
+				style={PALE_CARD_TOKENS}
 			>
 				<MediaFrame>
 					{readout?.imageUrl ? (
@@ -186,9 +224,9 @@ function HeavySpecimen({ tool }: { tool: Tool }) {
 			<div
 				className="flex h-full flex-col justify-center gap-3 border p-6"
 				style={{
+					...PALE_CARD_TOKENS,
 					borderColor: "var(--ink)",
 					borderStyle: "dashed",
-					background: "var(--surface-alt)",
 				}}
 			>
 				<span

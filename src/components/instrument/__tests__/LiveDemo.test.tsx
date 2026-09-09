@@ -118,4 +118,26 @@ describe("LiveDemo for a heavy-download tool", () => {
 		expect(screen.getByText(/31MB/)).toBeDefined();
 		expect(screen.queryByRole("button", { name: "RUN DEMO" })).toBeNull();
 	});
+
+	it("inverts its own ink alongside the ground, not the ground alone", () => {
+		// Measured on the real export before this held: white `--ink` text
+		// (`MonoMeta`'s "podcast-clip.wav", `FileReadout`, `FidelityScore`)
+		// sat on the pale `--surface-alt` card at 1.16:1 -- the ground token
+		// was redefined but `color` was left unset, so it kept inheriting
+		// the black canvas's already-resolved white from `body`. Fixed at
+		// 15.88:1 by also stating `color: var(--ink)` on this same element,
+		// the same pairing `SiteFooter` states on its own root.
+		const { container } = render(
+			<LiveDemo toolId="video/avi-to-mp4" sampleId="unused" />,
+		);
+		const card = Array.from(
+			container.querySelectorAll<HTMLElement>("div"),
+		).find(
+			(el) => el.style.getPropertyValue("--ground") === "var(--surface-alt)",
+		);
+		expect(card).toBeDefined();
+		expect(card?.style.getPropertyValue("--ink")).toBe("var(--ink-inverse)");
+		expect(card?.style.color).toBe("var(--ink)");
+		expect(card?.style.background).toBe("var(--ground)");
+	});
 });

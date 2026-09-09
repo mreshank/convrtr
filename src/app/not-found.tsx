@@ -30,10 +30,18 @@ import Link from "next/link";
  * inheriting the right ground is one deletion away from the defect again.
  * `flex-1` is part of that: the ground has to reach the bottom of the
  * viewport, not just the height of the text.
+ *
+ * This root is a `<div>`, not a `<main>`: layout.tsx already wraps every
+ * route's children in its own `<main className="flex-1">`, so a second one
+ * here nested inside it doubled the page's main landmark -- the same defect
+ * `d25385d` fixed for the tool route's `ToolClient`, just missed here since
+ * this file isn't a `page.tsx` and so sits outside what `route-purity.test.ts`
+ * walks. `flex flex-1 flex-col` still does the layout work; only the tag
+ * changed.
  */
 export default function NotFound() {
 	return (
-		<main
+		<div
 			className="flex flex-1 flex-col"
 			style={{ background: "var(--ground)", color: "var(--ink)" }}
 		>
@@ -54,6 +62,6 @@ export default function NotFound() {
 					ALL CONVERTERS
 				</Link>
 			</div>
-		</main>
+		</div>
 	);
 }

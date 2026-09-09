@@ -40,9 +40,11 @@ describe("the 404 page exists at all", () => {
 describe("NotFound", () => {
 	it("states the canvas on its own root instead of inheriting it", () => {
 		// The injected `body` rule is precisely what this page overrides, so
-		// it does not rely on `body` for its ground or its ink.
+		// it does not rely on `body` for its ground or its ink. The root is a
+		// `<div>`, not a `<main>` — layout.tsx already supplies the page's one
+		// main landmark, so this file doesn't nest a second one inside it.
 		const { container } = render(<NotFound />);
-		const root = container.querySelector("main") as HTMLElement;
+		const root = container.firstElementChild as HTMLElement;
 		expect(root.style.background).toBe("var(--ground)");
 		expect(root.style.color).toBe("var(--ink)");
 	});
@@ -52,8 +54,17 @@ describe("NotFound", () => {
 		// showing whatever `body` carries — the thing this page must not
 		// depend on.
 		const { container } = render(<NotFound />);
-		const root = container.querySelector("main") as HTMLElement;
+		const root = container.firstElementChild as HTMLElement;
 		expect(root.className).toContain("flex-1");
+	});
+
+	it("does not nest a second <main> inside layout.tsx's own one", () => {
+		// The exact defect commit d25385d fixed for the tool route
+		// (ToolClient's own <main> doubling up on layout.tsx's) also applied
+		// here: HTML forbids nesting main landmarks, and a screen reader
+		// announced the page's main region twice.
+		const { container } = render(<NotFound />);
+		expect(container.querySelectorAll("main").length).toBe(0);
 	});
 
 	it("offers a way back into the site", () => {
