@@ -7,6 +7,7 @@
  * added to the directory without joining it.
  */
 
+export { RouteAwareFooter } from "../chrome/RouteAwareFooter";
 export { SiteFooter } from "../chrome/SiteFooter";
 export { SiteHeader } from "../chrome/SiteHeader";
 export { ArrowUpRight } from "./ArrowUpRight";

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Inter } from "next/font/google";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
-import { SiteFooter, SiteHeader } from "@/design/primitives";
+import { RouteAwareFooter, SiteHeader } from "@/design/primitives";
 import { DifferenceCursor } from "@/design/primitives/DifferenceCursor";
 import "./globals.css";
 
@@ -85,7 +85,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 				<DifferenceCursor />
 				<SiteHeader links={NAV} cta={CTA} />
 				<main className="flex-1">{children}</main>
-				<SiteFooter
+				<RouteAwareFooter
 					bio={TAGLINE}
 					socials={SOCIALS}
 					contact={CONTACT}

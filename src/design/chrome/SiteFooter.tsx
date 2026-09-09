@@ -5,7 +5,7 @@ import { BRANCH_NETWORK_FRAGMENT, ShaderSurface } from "@/design/texture";
 
 type LinkItem = { href: string; label: string };
 
-type Props = {
+export type SiteFooterProps = {
 	bio: string;
 	socials: LinkItem[];
 	contact: LinkItem[];
@@ -25,6 +25,19 @@ type Props = {
 	 */
 	legal?: LinkItem[];
 	credit: string;
+	/**
+	 * Set by `RouteAwareFooter` on a converter route. `SiteFooter` sits in
+	 * the root layout, so it renders on every route including the
+	 * converter's — the one page `texture-placement.test.ts` guarantees at
+	 * the source level never imports `@/design/texture` itself. That guard
+	 * cannot see through a shared layout, and the footer's own
+	 * `ShaderSurface` slipped past it: the built converter route rendered a
+	 * canvas anyway. `plain` is the fix — skip the shader, keep everything
+	 * else (the pale band, its tokens, its links) identical. Defaults to
+	 * false so every existing caller, including this file's own tests,
+	 * keeps rendering the textured footer unchanged.
+	 */
+	plain?: boolean;
 };
 
 /**
@@ -61,7 +74,8 @@ export function SiteFooter({
 	explore = [],
 	legal = [],
 	credit,
-}: Props) {
+	plain = false,
+}: SiteFooterProps) {
 	return (
 		<footer
 			style={{
@@ -83,11 +97,13 @@ export function SiteFooter({
 				padding: "var(--gap-md)",
 			}}
 		>
-			<ShaderSurface
-				fragment={BRANCH_NETWORK_FRAGMENT}
-				intensity={0.45}
-				label="footer-branch-network"
-			/>
+			{!plain && (
+				<ShaderSurface
+					fragment={BRANCH_NETWORK_FRAGMENT}
+					intensity={0.45}
+					label="footer-branch-network"
+				/>
+			)}
 			<div
 				style={{
 					position: "relative",

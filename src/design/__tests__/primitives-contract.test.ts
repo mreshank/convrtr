@@ -156,6 +156,13 @@ const CLIENT_COMPONENT_ALLOWLIST = new Set([
 	// the texture plan adds; everything built on top of it in that
 	// directory is composition and stays a server component.
 	"ShaderSurface.tsx",
+	// `RouteAwareFooter` needs `usePathname()` to tell a converter route
+	// apart from every other one, so it can ask `SiteFooter` to skip its
+	// shader there -- a hook, which only a client component can call. It
+	// sits in the root layout in place of `SiteFooter` for exactly that
+	// reason: `layout.tsx` exports `metadata` and so cannot itself become
+	// a client component to read the path directly.
+	"RouteAwareFooter.tsx",
 ]);
 
 function filesDeclaringUseClient(dir: string): string[] {
