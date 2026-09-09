@@ -87,6 +87,7 @@ export default async function CollectivePage({
 		id: tool.id,
 		href: `/${tool.id}`,
 		name: tool.seo.h1,
+		category: tool.category,
 		fromExt: tool.accept.ext[0] ?? tool.output.ext,
 		toExt: tool.output.ext,
 	}));

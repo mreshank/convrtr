@@ -777,10 +777,23 @@ function findGradientValues(content: string): string[] {
  * bare strings `"linear-gradient"` and `"radial-gradient"` with no function
  * call after them, so they no longer match this pattern at all — verified by
  * removing them and running, not by reading.
+ *
+ * `SiteHeader`'s two `linear-gradient`s are the polish pass's scroll-edge
+ * signal for the nav row's `overflow-x: auto` (spec item 2): a same-toned
+ * `--ground` gradient with `background-attachment: local` sits on top of a
+ * `--ink-muted` one with the default `scroll` attachment, so the tint only
+ * shows through once real content scrolls out of view. Like the mask above,
+ * this pair controls visibility of a cut edge, not a decorative wash — and
+ * unlike a `box-shadow` (banned outright, below) it costs nothing extra to
+ * paint and needs no JS to know when to appear.
  */
 const GRADIENT_ALLOWED = new Map<string, string[]>([
 	[join("src", "design", "primitives", "MediaFrame.tsx"), ["linear-gradient("]],
 	[join("src", "design", "families", "DotMatrix.tsx"), ["radial-gradient("]],
+	[
+		join("src", "design", "chrome", "SiteHeader.tsx"),
+		["linear-gradient(", "linear-gradient("],
+	],
 ]);
 
 describe("forbidden visual devices", () => {
@@ -809,7 +822,7 @@ describe("forbidden visual devices", () => {
 		expect(offenders).toEqual([]);
 	});
 
-	it("still sees the two gradients it exempts", () => {
+	it("still sees the gradients it exempts", () => {
 		// Non-vacuity, the same way "still sees the rule it exists to police"
 		// works for the cursor guard. If the mask or the lattice moves to
 		// another file, or is deleted, this fails rather than the exemption

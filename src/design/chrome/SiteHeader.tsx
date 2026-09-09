@@ -117,6 +117,45 @@ export function SiteHeader({ links, cta }: Props) {
 					// instead of squeezing the wordmark or the CTA.
 					minWidth: 0,
 					overflowX: "auto",
+					/*
+					 * The signal that this row scrolls, added without a disclosure
+					 * and without touching the focus-ring fix below it.
+					 *
+					 * A `mask-image` fade was the first shape tried and rejected:
+					 * masking the scroll container fades its own painted pixels,
+					 * ring included, and the ring for the last link sits inside
+					 * the same few pixels a fade needs to occupy to read as a
+					 * fade at all -- there is no width that hides the cut-off
+					 * text without also dimming the exact ring the padding below
+					 * was added to keep visible.
+					 *
+					 * This is the two-layer background trick instead, the
+					 * standard CSS-only "scroll shadow": one gradient (`local`
+					 * attachment) travels WITH the scrolled content, glued to its
+					 * true trailing edge; the other (`scroll` attachment, the
+					 * default) stays fixed to the row's own right edge. Both are
+					 * background layers, painted BEHIND the links and their ring,
+					 * so neither ever dims a foreground pixel -- only the flat
+					 * black behind it. At rest, or once scrolled all the way to
+					 * the last link, the `local` layer sits exactly on top of the
+					 * `scroll` one and its own `--ground` fill hides it
+					 * completely -- nothing shows when there is nothing to show.
+					 * The moment content extends past the visible row the
+					 * `local` layer slides right along with it, uncovering the
+					 * `--ink-muted` tint underneath: the signal appears exactly
+					 * when, and only when, something is actually cut off. No JS,
+					 * no scroll listener, and the left edge is left alone --
+					 * scrolled to the start there is nothing hidden behind the
+					 * first link for a matching left-edge fade to ever earn.
+					 */
+					backgroundImage: [
+						"linear-gradient(to left, var(--ground), transparent)",
+						"linear-gradient(to left, var(--ink-muted), transparent)",
+					].join(", "),
+					backgroundRepeat: "no-repeat",
+					backgroundPosition: "right, right",
+					backgroundSize: "var(--gap-md) 100%, var(--gap-sm) 100%",
+					backgroundAttachment: "local, scroll",
 					// Standoff for the focus ring, and it is load-bearing.
 					// `overflow-x: auto` cannot be scoped to one axis: the
 					// other computes to `auto` alongside it, so this element
