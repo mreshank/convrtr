@@ -20,6 +20,8 @@ import { describe, expect, it } from "vitest";
  */
 const APP_DIR = "src/app";
 const TEMPLATES_IMPORT = /from ["']@\/design\/templates["']/;
+const FAMILIES_IMPORT = /from ["']@\/design\/families["']/;
+const PRIMITIVES_IMPORT = /from ["']@\/design\/primitives["']/;
 
 function findPageFiles(dir: string): string[] {
 	const out: string[] = [];
@@ -158,6 +160,34 @@ describe("route purity", () => {
 			TEMPLATES_IMPORT,
 		);
 	});
+
+	/**
+	 * The gap the previous guard left open: it asserted a route imports FROM
+	 * `@/design/templates`, never that it imports ONLY from there among
+	 * design directories. A route can satisfy "imports from templates" while
+	 * also reaching past the template straight into `@/design/families` or
+	 * `@/design/primitives` and composing them into JSX inline -- which is
+	 * exactly the layout spec §6.3 forbids ("it resolves data from a
+	 * registry and hands it to a template ... never inline JSX in a route").
+	 * `src/app/page.tsx` did precisely this: nine families imported directly
+	 * and assembled into a band array inside the route component, on the one
+	 * route the whole rule most exists for. A route reaching for a family is
+	 * composing, not resolving data, and the guard above waved it through.
+	 */
+	it.each(PAGE_FILES)(
+		"%s does not import from @/design/families or @/design/primitives",
+		(file) => {
+			const source = readFileSync(file, "utf8");
+			expect(
+				source,
+				`${file} imports directly from @/design/families -- compose it in a template instead`,
+			).not.toMatch(FAMILIES_IMPORT);
+			expect(
+				source,
+				`${file} imports directly from @/design/primitives -- compose it in a template instead`,
+			).not.toMatch(PRIMITIVES_IMPORT);
+		},
+	);
 
 	it.each(PAGE_FILES)(
 		"%s's default-exported component is at most 50 lines",
