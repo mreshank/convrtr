@@ -24,15 +24,16 @@ export const metadata: Metadata = {
 	description: TAGLINE,
 };
 
-// Only routes with a page.tsx belong here. Groups and collectives are being
-// built concurrently by other agents and are not linked yet — a header link
-// to an unbuilt route is a 404 shipped in the chrome of every page. The
-// marketing and legal pages (about, how-it-works, privacy) are built as of
-// this task, so they join the primary nav; the formal documents
-// (terms, the privacy policy, licences) go in the footer's Legal column
-// below instead, per that split's own reasoning.
+// Only routes with a page.tsx belong here — a header link to an unbuilt
+// route is a 404 shipped in the chrome of every page. Every route this plan
+// set out to build now exists, including groups and collectives, so both
+// join the primary nav; the formal documents (terms, the privacy policy,
+// licences) go in the footer's Legal column below instead, per that split's
+// own reasoning.
 const NAV = [
 	{ href: "/tools", label: "Tools" },
+	{ href: "/groups", label: "Groups" },
+	{ href: "/collectives", label: "Collectives" },
 	{ href: "/blog", label: "Blog" },
 	{ href: "/about", label: "About" },
 	{ href: "/how-it-works", label: "How it works" },
@@ -52,6 +53,14 @@ const CONTACT = [
 		href: "https://github.com/mreshank/convrtr/issues",
 		label: "Issues",
 	},
+];
+
+// The registry-derived hubs, echoed in the footer alongside the header nav
+// so they're reachable from every page even when a visitor lands scrolled
+// past the bar.
+const EXPLORE = [
+	{ href: "/groups", label: "Groups" },
+	{ href: "/collectives", label: "Collectives" },
 ];
 
 // The formal documents, grouped separately from the header's visitor-facing
@@ -80,6 +89,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 					bio={TAGLINE}
 					socials={SOCIALS}
 					contact={CONTACT}
+					explore={EXPLORE}
 					legal={LEGAL}
 					credit={`© ${new Date().getFullYear()} convrtr`}
 				/>

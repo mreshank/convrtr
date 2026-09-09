@@ -9,6 +9,14 @@ type Props = {
 	socials: LinkItem[];
 	contact: LinkItem[];
 	/**
+	 * The registry-derived hubs — groups and collectives — added once those
+	 * routes existed to link. Optional and defaulted to empty for the same
+	 * reason `legal` is: a caller that predates them, and
+	 * `SiteFooter.test.tsx`'s own fixture, keep rendering the same footer
+	 * they always did.
+	 */
+	explore?: LinkItem[];
+	/**
 	 * The formal documents — terms, the privacy policy, licences — added
 	 * once those routes existed to link. Optional and defaulted to empty
 	 * so a caller that predates them, and `SiteFooter.test.tsx`'s own
@@ -37,6 +45,7 @@ export function SiteFooter({
 	bio,
 	socials,
 	contact,
+	explore = [],
 	legal = [],
 	credit,
 }: Props) {
@@ -122,6 +131,21 @@ export function SiteFooter({
 						</Link>
 					))}
 				</nav>
+
+				{explore.length > 0 ? (
+					<nav aria-label="Explore">
+						<MonoMeta as="div">Explore</MonoMeta>
+						{explore.map((item) => (
+							<Link
+								key={item.href}
+								href={item.href}
+								style={{ display: "block" }}
+							>
+								{item.label}
+							</Link>
+						))}
+					</nav>
+				) : null}
 
 				{legal.length > 0 ? (
 					<nav aria-label="Legal">

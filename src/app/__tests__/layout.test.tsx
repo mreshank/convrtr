@@ -30,9 +30,8 @@ describe("RootLayout", () => {
 
 	it("routes every nav destination to a route that exists", () => {
 		// A header link to a route with no page.tsx is a 404 shipped in the
-		// chrome of every page. Task 5 adds the marketing and legal pages;
-		// groups and collectives are still being built by other agents and
-		// stay off this list until they land.
+		// chrome of every page. Every route this plan set out to build now
+		// exists, including groups and collectives, so both join this list.
 		render(
 			<RootLayout params={Promise.resolve({})}>
 				<main>content</main>
@@ -41,6 +40,8 @@ describe("RootLayout", () => {
 		const built = new Set([
 			"/",
 			"/tools",
+			"/groups",
+			"/collectives",
 			"/blog",
 			"/about",
 			"/how-it-works",
