@@ -8,6 +8,13 @@ type Props = {
 	bio: string;
 	socials: LinkItem[];
 	contact: LinkItem[];
+	/**
+	 * The formal documents — terms, the privacy policy, licences — added
+	 * once those routes existed to link. Optional and defaulted to empty
+	 * so a caller that predates them, and `SiteFooter.test.tsx`'s own
+	 * fixture, keep rendering the same three-group footer they always did.
+	 */
+	legal?: LinkItem[];
 	credit: string;
 };
 
@@ -26,7 +33,13 @@ type Props = {
  * Redefining the tokens fixes both for every descendant at once, and means
  * nothing inside this file needs to know it is inverted.
  */
-export function SiteFooter({ bio, socials, contact, credit }: Props) {
+export function SiteFooter({
+	bio,
+	socials,
+	contact,
+	legal = [],
+	credit,
+}: Props) {
 	return (
 		<footer
 			style={{
@@ -109,6 +122,21 @@ export function SiteFooter({ bio, socials, contact, credit }: Props) {
 						</Link>
 					))}
 				</nav>
+
+				{legal.length > 0 ? (
+					<nav aria-label="Legal">
+						<MonoMeta as="div">Legal</MonoMeta>
+						{legal.map((item) => (
+							<Link
+								key={item.href}
+								href={item.href}
+								style={{ display: "block" }}
+							>
+								{item.label}
+							</Link>
+						))}
+					</nav>
+				) : null}
 			</div>
 
 			<Hairline />

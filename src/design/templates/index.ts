@@ -11,3 +11,4 @@ export { ConverterPage } from "./ConverterPage";
 export { EditorialPage } from "./EditorialPage";
 export { HomePage } from "./HomePage";
 export { HubPage } from "./HubPage";
+export { LegalPage } from "./LegalPage";

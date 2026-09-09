@@ -38,4 +38,40 @@
 	max-width: 68ch;
 	margin-inline: auto;
 	width: 100%;
+	/*
+	 * A file path or URL cited inline (this project's own copy leans on
+	 * both — "src/components/ServiceWorkerRegistration.tsx",
+	 * "e2e/network-guard.ts") has no space for the browser's default
+	 * line-breaking to use: "/" is not a break opportunity. Measured on
+	 * the real export at 375px, that pushed /how-it-works' document
+	 * scrollWidth to 397px against a 375px viewport — ink overflow from
+	 * one unbroken token, invisible to a check of any element's own
+	 * bounding box, since a block's box width is set by CSS layout, not
+	 * by content that spills past it. `overflow-wrap: break-word` only
+	 * breaks a word that cannot otherwise fit on its own line, so it
+	 * changes nothing about how ordinary prose wraps.
+	 */
+	overflow-wrap: break-word;
+}
+
+/*
+ * The legal measure. Spec §6.2: `LegalPage` is `ArticlePage` at a narrower
+ * measure — legal text is denser and more clause-heavy than editorial prose,
+ * and a shorter line reads better against that density. 56ch against
+ * `[data-prose]`'s 68ch, the same centred convention.
+ */
+[data-legal-prose] {
+	max-width: 56ch;
+	margin-inline: auto;
+	width: 100%;
+	/*
+	 * Same reasoning as `[data-prose]` above, and the narrower 56ch measure
+	 * makes it matter more, not less: /legal/licences lists each engine's
+	 * own `.wasm` install paths (e.g.
+	 * "lib/magic-kernel/pkg/jsquash_magic_kernel_bg.wasm"), a derived,
+	 * un-shortened fact this page cannot soften without becoming less
+	 * accurate. Measured on the real export at 375px, that pushed
+	 * scrollWidth to 408px before this rule.
+	 */
+	overflow-wrap: break-word;
 }

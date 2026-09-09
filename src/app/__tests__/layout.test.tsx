@@ -30,14 +30,25 @@ describe("RootLayout", () => {
 
 	it("routes every nav destination to a route that exists", () => {
 		// A header link to a route with no page.tsx is a 404 shipped in the
-		// chrome of every page. The route map in the spec lists /tools and
-		// /blog as built; groups and collectives are later plans.
+		// chrome of every page. Task 5 adds the marketing and legal pages;
+		// groups and collectives are still being built by other agents and
+		// stay off this list until they land.
 		render(
 			<RootLayout params={Promise.resolve({})}>
 				<main>content</main>
 			</RootLayout>,
 		);
-		const built = new Set(["/", "/tools", "/blog"]);
+		const built = new Set([
+			"/",
+			"/tools",
+			"/blog",
+			"/about",
+			"/how-it-works",
+			"/privacy",
+			"/legal/terms",
+			"/legal/privacy-policy",
+			"/legal/licences",
+		]);
 		for (const link of screen.getAllByRole("link")) {
 			const href = link.getAttribute("href") ?? "";
 			if (href.startsWith("/")) expect(built.has(href)).toBe(true);
