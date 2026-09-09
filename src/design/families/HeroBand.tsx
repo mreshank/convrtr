@@ -73,7 +73,12 @@ export function HeroBand({ lead, cont, cta, secondary }: Props) {
 				style={{
 					maxWidth: "var(--max-width)",
 					margin: "0 auto",
-					padding: "var(--gap-lg) var(--gap-md)",
+					// Vertical only -- the horizontal gutter is `EditorialPage`'s
+					// shell's job now (see its own comment). Keeping a horizontal
+					// value here too would double-gutter this band: the shell's
+					// padding plus this section's own would inset it twice as far
+					// as every sibling band.
+					padding: "var(--gap-lg) 0",
 					display: "flex",
 					flexDirection: "column",
 					gap: "var(--gap-md)",

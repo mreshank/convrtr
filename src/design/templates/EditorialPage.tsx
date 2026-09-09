@@ -24,6 +24,21 @@ type Props = {
  * The narrow-viewport rhythm lives in `templates.css`: 240px between every band
  * is right at desktop and absurd at 375px, and a media query cannot be written
  * in a style object.
+ *
+ * The shell also owns the page's horizontal gutter, as `var(--gap-md)`
+ * padding -- and padding only, never a `max-width` alongside it. Four bands
+ * (`BranchDiagram`, `ComplianceRow`, `FeatureStrip`, `ToolGrid`) set only
+ * `var(--max-width)` with no padding of their own, so below 1600px that cap
+ * never bound and they ran flush to the viewport edge, while `HeroBand` and
+ * `FormatStrip` carried their own horizontal padding and stayed inset. The
+ * page read as inconsistent because it was: some bands touching the glass,
+ * others not. One shell padding, applied once here, replaces those four
+ * potential copies that would otherwise have to agree -- `band-gutter.test.ts`
+ * guards both halves: that a capped band declares no horizontal padding of
+ * its own, and that this shell does. A `max-width` here instead would eat its
+ * own padding before any child's `var(--max-width)` got to measure against
+ * it, which is the exact failure this file's own comment above already
+ * records for the missing cap -- the same trap, the other property.
  */
 export function EditorialPage({ hero, bands }: Props) {
 	return (
@@ -33,6 +48,7 @@ export function EditorialPage({ hero, bands }: Props) {
 				display: "flex",
 				flexDirection: "column",
 				gap: "var(--section-pad)",
+				padding: "0 var(--gap-md)",
 			}}
 		>
 			{hero}

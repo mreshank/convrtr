@@ -24,20 +24,32 @@ export function FormatStrip({ formats }: Props) {
 	if (formats.length === 0) return null;
 
 	return (
-		<Marquee ariaLabel="Supported file formats">
-			{formats.map((format) => (
-				<span
-					key={format}
-					className="meta"
-					style={{
-						color: "var(--ink-muted)",
-						padding: "0 var(--gap-md)",
-						whiteSpace: "nowrap",
-					}}
-				>
-					{format.toUpperCase()}
-				</span>
-			))}
-		</Marquee>
+		// The declared full-bleed exemption from `EditorialPage`'s shell gutter
+		// -- named in `band-gutter.test.ts` rather than left for a broad
+		// pattern to miss. Every other band wants the shell's inset; this one
+		// is v2's continuous scroll, and a rail that stops short of the glass
+		// on both edges reads as paused, not scrolling. Cancelling the shell's
+		// own `var(--gap-md)` padding with the equal-and-opposite negative
+		// margin restores true edge-to-edge bleed for this band alone, without
+		// this band or `EditorialPage` needing to know about each other's
+		// exact value -- they already agree, because they both read the same
+		// token.
+		<div style={{ marginInline: "calc(var(--gap-md) * -1)" }}>
+			<Marquee ariaLabel="Supported file formats">
+				{formats.map((format) => (
+					<span
+						key={format}
+						className="meta"
+						style={{
+							color: "var(--ink-muted)",
+							padding: "0 var(--gap-md)",
+							whiteSpace: "nowrap",
+						}}
+					>
+						{format.toUpperCase()}
+					</span>
+				))}
+			</Marquee>
+		</div>
 	);
 }
