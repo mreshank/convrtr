@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { BLOG_POSTS } from "@/content/blog/registry";
 import { HubPage } from "@/design/templates";
 import { SITE } from "@/lib/site";
@@ -16,6 +15,19 @@ export function generateMetadata(): Metadata {
 	};
 }
 
+/**
+ * "27 August 2026" -- the mono dateline voice, matching the exact format
+ * `blog/[slug]/page.tsx`'s own `formatDateline` renders on the post itself,
+ * so a reader sees the same date on the index row and the article it opens.
+ */
+function formatDateline(iso: string): string {
+	return new Intl.DateTimeFormat("en-GB", {
+		day: "numeric",
+		month: "long",
+		year: "numeric",
+	}).format(new Date(iso));
+}
+
 export default function BlogIndexPage() {
 	const posts = [...BLOG_POSTS].sort((a, b) =>
 		b.publishedAt.localeCompare(a.publishedAt),
@@ -29,19 +41,16 @@ export default function BlogIndexPage() {
 				value: posts.length,
 				noun: posts.length === 1 ? "post" : "posts",
 			}}
-		>
-			<ul className="flex flex-col gap-6">
-				{posts.map((post) => (
-					<li key={post.slug} className="flex flex-col gap-1">
-						<Link href={`/blog/${post.slug}`} className="text-[18px] underline">
-							{post.title}
-						</Link>
-						<p className="text-[14px]" style={{ color: "var(--ink-muted)" }}>
-							{post.description}
-						</p>
-					</li>
-				))}
-			</ul>
-		</HubPage>
+			sections={[
+				{
+					items: posts.map((post) => ({
+						href: `/blog/${post.slug}`,
+						title: post.title,
+						meta: formatDateline(post.publishedAt),
+						description: post.description,
+					})),
+				},
+			]}
+		/>
 	);
 }

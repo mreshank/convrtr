@@ -7,5 +7,6 @@ export { FeatureStrip } from "./FeatureStrip";
 export { FormatStrip } from "./FormatStrip";
 export { FusedHeadline } from "./FusedHeadline";
 export { HeroBand } from "./HeroBand";
+export { type ListingItem, ListingRows } from "./ListingRows";
 export { TerminalPanel } from "./TerminalPanel";
 export { ToolGrid } from "./ToolGrid";

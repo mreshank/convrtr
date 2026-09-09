@@ -157,3 +157,15 @@
 		border-top: var(--rule-width) solid var(--rule);
 	}
 }
+
+/*
+ * `ListingRows`'s dividers, between rows and never around them -- the same
+ * shape as `FeatureGrid`'s above, simplified for a single column: a stack
+ * has no breakpoint-dependent column count to restate, so one rule covers
+ * every viewport. A top border on every row but the first means row 1 has
+ * no top border and no row ever has a bottom border, which is what keeps a
+ * list of N rows to N-1 rules rather than N+1 (one per row, plus a frame).
+ */
+[data-listing-rows] > [data-row]:not(:first-child) {
+	border-top: var(--rule-width) solid var(--rule);
+}

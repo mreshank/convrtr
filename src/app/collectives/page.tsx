@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { COLLECTIVES } from "@/content/collectives/registry";
 import { HubPage } from "@/design/templates";
 import { SITE } from "@/lib/site";
@@ -27,22 +26,18 @@ export default function CollectivesIndexPage() {
 				value: collectives.length,
 				noun: collectives.length === 1 ? "collective" : "collectives",
 			}}
-		>
-			<ul className="flex flex-col gap-6">
-				{collectives.map((collective) => (
-					<li key={collective.slug} className="flex flex-col gap-1">
-						<Link
-							href={`/collectives/${collective.slug}`}
-							className="text-[18px] underline"
-						>
-							{collective.title}
-						</Link>
-						<p className="text-[14px]" style={{ color: "var(--ink-muted)" }}>
-							{collective.why}
-						</p>
-					</li>
-				))}
-			</ul>
-		</HubPage>
+			sections={[
+				{
+					items: collectives.map((collective) => ({
+						href: `/collectives/${collective.slug}`,
+						title: collective.title,
+						meta: `${collective.toolIds.length} ${
+							collective.toolIds.length === 1 ? "tool" : "tools"
+						}`,
+						description: collective.why,
+					})),
+				},
+			]}
+		/>
 	);
 }

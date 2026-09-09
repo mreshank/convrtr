@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { deriveFormatGroups, deriveTaskGroups } from "@/core/registry/groups";
 import { HubPage } from "@/design/templates";
 import { SITE } from "@/lib/site";
-import { GroupLinks } from "./GroupLinks";
 
 function label(text: string): string {
 	return `${text.charAt(0).toUpperCase()}${text.slice(1)}`;
@@ -32,17 +31,6 @@ export default function GroupsIndexPage() {
 	const formatGroups = deriveFormatGroups();
 	const taskGroups = deriveTaskGroups();
 
-	const formatLinks = formatGroups.map((group) => ({
-		href: `/groups/format/${group.format}`,
-		label: group.format.toUpperCase(),
-		count: group.tools.length,
-	}));
-	const taskLinks = taskGroups.map((group) => ({
-		href: `/groups/task/${group.kind}`,
-		label: label(group.kind),
-		count: group.tools.length,
-	}));
-
 	return (
 		<HubPage
 			title="Browse by format or task"
@@ -51,9 +39,24 @@ export default function GroupsIndexPage() {
 				value: formatGroups.length + taskGroups.length,
 				noun: "groups",
 			}}
-		>
-			<GroupLinks heading="BY FORMAT" links={formatLinks} />
-			<GroupLinks heading="BY TASK" links={taskLinks} />
-		</HubPage>
+			sections={[
+				{
+					heading: "BY FORMAT",
+					items: formatGroups.map((group) => ({
+						href: `/groups/format/${group.format}`,
+						title: group.format.toUpperCase(),
+						meta: String(group.tools.length),
+					})),
+				},
+				{
+					heading: "BY TASK",
+					items: taskGroups.map((group) => ({
+						href: `/groups/task/${group.kind}`,
+						title: label(group.kind),
+						meta: String(group.tools.length),
+					})),
+				},
+			]}
+		/>
 	);
 }
