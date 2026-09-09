@@ -55,6 +55,33 @@
 }
 
 /*
+ * The converter's working measure. `ConverterPage`'s shell imposes no width
+ * of its own — same reasoning as `EditorialPage`, which learned this lesson
+ * first: a `max-w-4xl` on that shell clamped every family's own
+ * `var(--max-width)` permanently dead, because a competing cap on the
+ * ancestor eats into the width its children then measure themselves
+ * against. Putting the cap on the shell here would do the identical thing to
+ * `--converter-width` one level down: the shell's own horizontal padding
+ * would come out of the 896px before anything inside got to use it, so the
+ * instrument would land at 896px minus that padding rather than the full
+ * 896px `ToolClient` actually needs.
+ *
+ * So each block — the eyebrow, the `<h1>`, the lede, and the instrument
+ * itself — carries this attribute and measures itself against the shell's
+ * full padded content width independently, the same way `[data-prose]`
+ * above lets `ArticlePage`'s header, body and related slot each centre on
+ * their own rather than the `<article>` wrapping them all in one shared cap.
+ * Four elements computing the same `max-width` against the same available
+ * width land at the same size and the same centred position, which is the
+ * alignment this exists to guarantee.
+ */
+[data-converter-measure] {
+	max-width: var(--converter-width);
+	margin-inline: auto;
+	width: 100%;
+}
+
+/*
  * The legal measure. Spec §6.2: `LegalPage` is `ArticlePage` at a narrower
  * measure — legal text is denser and more clause-heavy than editorial prose,
  * and a shorter line reads better against that density. 56ch against

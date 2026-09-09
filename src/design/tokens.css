@@ -103,6 +103,23 @@
 	--max-width: 1600px;
 	--grid-gap: 128px;
 	--navbar-height: 64px;
+	/*
+	 * `ConverterPage`'s working measure. Not `--max-width`: that token is
+	 * the wide editorial frame `HeroBand`, `ToolGrid`, `HubPage`,
+	 * `FeatureStrip`, `FeatureGrid`, `ComplianceRow` and `BranchDiagram`
+	 * centre themselves in, and a converter page is a focused task surface
+	 * rather than a full-bleed editorial band — the same reasoning
+	 * `ArticlePage`'s 68ch prose measure is deliberately not `--max-width`
+	 * either, just for a working surface instead of a reading one.
+	 *
+	 * 896px because that is what the instrument (`ToolClient`'s root div)
+	 * already needs — matches Tailwind's `max-w-4xl`, which `ToolClient` no
+	 * longer states itself: this token is the one place that number lives
+	 * now, so the page's heading and its instrument can never drift back out
+	 * of step the way they did when the heading sat in the 1600px frame and
+	 * only the instrument capped itself at 896px.
+	 */
+	--converter-width: 896px;
 
 	/*
 	 * `FeatureStrip`'s column count, default five per v2's five-up strip.

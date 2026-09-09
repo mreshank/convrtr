@@ -38,4 +38,36 @@ describe("ConverterPage", () => {
 		);
 		expect(container.querySelector("[data-related]")).toBeNull();
 	});
+
+	it("imposes no width cap of its own on the shell", () => {
+		// The instrument's measure has to reach --converter-width in full.
+		// A competing cap on this shell would eat into it the same way a
+		// stub wrapper's max-w-4xl once made every family's own
+		// var(--max-width) permanently dead on EditorialPage.
+		const { container } = render(
+			<ConverterPage eyebrow="x" title="y" lede="z">
+				<div />
+			</ConverterPage>,
+		);
+		const shell = container.querySelector("[data-converter]") as HTMLElement;
+		expect(shell.style.maxWidth).toBe("");
+	});
+
+	it("gives the eyebrow, heading, lede and instrument the same measure", () => {
+		// Each block carries data-converter-measure and centres itself against
+		// the shell's content width independently -- templates.css applies
+		// --converter-width to all four, which is what keeps the title
+		// directly above the instrument instead of aligned to the wider frame.
+		const { container } = render(
+			<ConverterPage eyebrow="x" title="y" lede="z">
+				<div data-testid="instrument" />
+			</ConverterPage>,
+		);
+		const measured = container.querySelectorAll("[data-converter-measure]");
+		expect(measured.length).toBe(4);
+		const instrumentWrapper = screen.getByTestId("instrument").parentElement;
+		expect(instrumentWrapper?.hasAttribute("data-converter-measure")).toBe(
+			true,
+		);
+	});
 });

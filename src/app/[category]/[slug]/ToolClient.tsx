@@ -727,7 +727,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 	};
 
 	return (
-		<div className="mx-auto flex w-full max-w-4xl flex-col gap-[var(--gap-md)] p-[calc(var(--space-base)*4)]">
+		<div className="flex w-full flex-col gap-[var(--gap-md)] p-[calc(var(--space-base)*4)]">
 			{/*
 			 * No <h1> here: ConverterPage (the template wrapping this component)
 			 * owns the page's one heading, and renders `tool.seo.h1` there. This
@@ -744,21 +744,18 @@ export function ToolClient({ toolId }: { toolId: string }) {
 			 * is content inside the page, not the page itself, so this is a
 			 * <div> now.
 			 *
-			 * `max-w-4xl` was the right cap but never bound: this div is a flex
-			 * item inside ConverterPage's column, and `mx-auto` on a flex item
-			 * disables the parent's cross-axis stretch, so without an explicit
-			 * width the element sized itself to shrink-to-fit content — measured
-			 * at 361px empty and 569px with a file loaded, both far under the
-			 * 896px cap, inside the 1600px frame. `w-full` now gives it the
-			 * frame's width, `max-w-4xl` caps that at 896px, and `mx-auto`
-			 * centres the capped result — the same three-part pattern
-			 * (width/cap/centre) `var(--max-width)` + `margin: 0 auto` uses
-			 * everywhere else in this design system, just expressed as
-			 * utilities instead of inline style. Measured at 1920, 1280 and
-			 * 375: the instrument now reaches 896px and centres in the frame
-			 * whenever the frame is wide enough to allow it, and a form
-			 * surface — drop field, options panel, batch table — reads better
-			 * at that width than stretched to the full 1600px frame would.
+			 * `mx-auto w-full max-w-4xl` used to live here, capping and centring
+			 * this div at 896px independently of ConverterPage — the same 896
+			 * expressed a second, unrelated way (Tailwind's `max-w-4xl` literal)
+			 * right beside the page heading, which sat in the surrounding
+			 * 1600px frame and never matched it: the title measured ~328px left
+			 * of the instrument it names at 1920px. `ConverterPage` now wraps
+			 * this component in a `[data-converter-measure]` element — the same
+			 * `--converter-width` (896px) token its heading pieces measure
+			 * against — so this div only needs `w-full` to reach exactly the
+			 * width that ancestor already caps and centres. Two 896s that had
+			 * to independently agree are one token now; a bare `max-w-4xl` here
+			 * would put the second one right back.
 			 *
 			 * `gap-6` (24px) was `--gap-md` exactly, so it is now
 			 * `gap-[var(--gap-md)]`. `p-8` (32px) matched nothing in the scale
