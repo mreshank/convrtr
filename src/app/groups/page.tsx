@@ -63,7 +63,7 @@ export default function GroupsIndexPage() {
 				value: formatGroups.length + taskGroups.length,
 				noun: "groups",
 			}}
-			sections={[
+			grid={[
 				{
 					heading: "BY FORMAT",
 					items: formatGroups.map((group) => ({
@@ -71,6 +71,10 @@ export default function GroupsIndexPage() {
 						title: group.format.toUpperCase(),
 						meta: toolCount(group.tools),
 						description: categoriesSpanned(group.tools).join(", "),
+						tools: group.tools.map((tool) => ({
+							href: `/${tool.id}`,
+							title: tool.seo.title,
+						})),
 					})),
 				},
 				{
@@ -80,6 +84,10 @@ export default function GroupsIndexPage() {
 						title: label(group.kind),
 						meta: toolCount(group.tools),
 						description: categoriesSpanned(group.tools).join(", "),
+						tools: group.tools.map((tool) => ({
+							href: `/${tool.id}`,
+							title: tool.seo.title,
+						})),
 					})),
 				},
 			]}
