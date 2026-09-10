@@ -13,7 +13,7 @@ export const HEIC_BRANCHES = conversionBranches("heic");
 export const HERO_PROPS = {
 	lead: "Convert anything.",
 	cont: "Nothing uploads.",
-	cta: { href: "/tools", label: "Start converting" },
+	cta: { href: "/convert", label: "Start converting" },
 	secondary: { href: "/blog", label: "Read the blog" },
 };
 
