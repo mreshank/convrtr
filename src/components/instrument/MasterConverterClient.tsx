@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useId, useRef, useState } from "react";
+import { Fragment, useEffect, useId, useMemo, useRef, useState } from "react";
 import { ErrorPanel } from "@/components/instrument/ErrorPanel";
 import { HeavyDownloadGate } from "@/components/instrument/HeavyDownloadGate";
 import { outputFilename, readFile, saveOutput } from "@/core/io";
@@ -54,17 +54,354 @@ const ALL_ACCEPTS = {
 	mime: Array.from(new Set(TOOLS.flatMap((t) => t.accept.mime))),
 };
 
-const POPULAR_FORMATS = [
-	"PNG",
-	"JPG",
-	"WEBP",
-	"HEIC",
-	"MP4",
-	"MOV",
-	"WAV",
-	"MP3",
-	"PDF",
+const POPULAR_CATEGORIES = [
+	{ label: "IMAGE", formats: ["PNG", "JPG", "WEBP", "AVIF", "HEIC", "SVG"] },
+	{ label: "VIDEO", formats: ["MP4", "WEBM", "MOV", "AVI"] },
+	{ label: "AUDIO", formats: ["MP3", "WAV", "FLAC", "AAC"] },
+	{ label: "DOCS", formats: ["PDF"] },
 ];
+
+export type FileCategory =
+	| "all"
+	| "image"
+	| "video"
+	| "audio"
+	| "document"
+	| "other";
+
+function categorizeFile(ext: string): FileCategory {
+	const e = ext.toLowerCase();
+	if (
+		[
+			"png",
+			"jpg",
+			"jpeg",
+			"webp",
+			"avif",
+			"heic",
+			"svg",
+			"gif",
+			"jxl",
+		].includes(e)
+	)
+		return "image";
+	if (["mp4", "webm", "mov", "mkv", "avi"].includes(e)) return "video";
+	if (["mp3", "wav", "flac", "aac", "opus", "m4a", "ogg"].includes(e))
+		return "audio";
+	if (["pdf"].includes(e)) return "document";
+	return "other";
+}
+
+function CategoryGlyph({ category }: { category: FileCategory }) {
+	switch (category) {
+		case "image":
+			return (
+				<svg
+					width="14"
+					height="14"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					strokeWidth="2"
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					aria-hidden="true"
+					style={{ color: "var(--accent)" }}
+				>
+					<rect x="3" y="3" width="18" height="18" rx="0" />
+					<circle cx="8.5" cy="8.5" r="1.5" />
+					<polyline points="21 15 16 10 5 21" />
+				</svg>
+			);
+		case "video":
+			return (
+				<svg
+					width="14"
+					height="14"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					strokeWidth="2"
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					aria-hidden="true"
+					style={{ color: "var(--accent)" }}
+				>
+					<rect x="2" y="2" width="20" height="20" rx="0" />
+					<polygon points="10 8 16 12 10 16 10 8" />
+				</svg>
+			);
+		case "audio":
+			return (
+				<svg
+					width="14"
+					height="14"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					strokeWidth="2"
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					aria-hidden="true"
+					style={{ color: "var(--accent)" }}
+				>
+					<path d="M9 18V5l12-2v13" />
+					<circle cx="6" cy="18" r="3" />
+					<circle cx="18" cy="16" r="3" />
+				</svg>
+			);
+		case "document":
+			return (
+				<svg
+					width="14"
+					height="14"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					strokeWidth="2"
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					aria-hidden="true"
+					style={{ color: "var(--accent)" }}
+				>
+					<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+					<polyline points="14 2 14 8 20 8" />
+					<line x1="16" y1="13" x2="8" y2="13" />
+					<line x1="16" y1="17" x2="8" y2="17" />
+				</svg>
+			);
+		default:
+			return (
+				<svg
+					width="14"
+					height="14"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					strokeWidth="2"
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					aria-hidden="true"
+					style={{ color: "var(--ink-muted)" }}
+				>
+					<polyline points="21 8 21 21 3 21 3 8" />
+					<rect x="1" y="3" width="22" height="5" />
+					<line x1="10" y1="12" x2="14" y2="12" />
+				</svg>
+			);
+	}
+}
+
+/**
+ * Encapsulated image micro-thumbnail with automatic URL cleanup
+ */
+function ImageMicroThumbnail({ file }: { file: File }) {
+	const [thumbUrl, setThumbUrl] = useState<string | null>(null);
+
+	useEffect(() => {
+		const isImg =
+			file.type.startsWith("image/") ||
+			["png", "jpg", "jpeg", "webp", "avif", "gif", "svg"].some((e) =>
+				file.name.toLowerCase().endsWith(`.${e}`),
+			);
+		if (!isImg) return;
+
+		let url = "";
+		try {
+			url = URL.createObjectURL(file);
+			setThumbUrl(url);
+		} catch {
+			// URL creation failed (e.g. invalid file buffer)
+		}
+
+		return () => {
+			if (url) URL.revokeObjectURL(url);
+		};
+	}, [file]);
+
+	if (!thumbUrl) return null;
+
+	return (
+		// biome-ignore lint/performance/noImgElement: client-side blob object URL
+		<img
+			src={thumbUrl}
+			alt=""
+			className="h-5 w-5 object-cover shrink-0 border"
+			style={{
+				borderColor: "var(--rule)",
+				borderRadius: "var(--radius)",
+			}}
+		/>
+	);
+}
+
+/**
+ * Preview modal for inspecting converted image output
+ */
+function ImagePreviewModal({
+	item,
+	onClose,
+	onSave,
+}: {
+	item: MasterItem;
+	onClose: () => void;
+	onSave: () => void;
+}) {
+	const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+	useEffect(() => {
+		if (!item.output || !item.tool) return;
+		let url = "";
+		try {
+			const blob = new Blob([item.output], { type: item.tool.output.mime });
+			url = URL.createObjectURL(blob);
+			setPreviewUrl(url);
+		} catch {
+			// fallback
+		}
+
+		return () => {
+			if (url) URL.revokeObjectURL(url);
+		};
+	}, [item]);
+
+	return (
+		<div
+			role="dialog"
+			aria-modal="true"
+			aria-label={`Preview converted ${item.file.name}`}
+			className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+		>
+			<div
+				className="flex flex-col gap-4 border p-6 max-w-xl w-full"
+				style={{
+					background: "var(--ground)",
+					borderColor: "var(--rule-strong)",
+					borderRadius: "var(--radius)",
+				}}
+			>
+				<div
+					className="flex items-center justify-between border-b pb-3"
+					style={{ borderColor: "var(--rule)" }}
+				>
+					<div className="flex items-center gap-2">
+						<span
+							className="mono text-[11px] font-medium"
+							style={{ color: "var(--accent)" }}
+						>
+							[ OUTPUT PREVIEW ]
+						</span>
+						<span className="mono text-[12px] truncate max-w-xs">
+							{item.file.name}
+						</span>
+					</div>
+					<button
+						type="button"
+						onClick={onClose}
+						className="mono text-[14px]"
+						style={{ color: "var(--ink-muted)", cursor: "pointer" }}
+					>
+						✕
+					</button>
+				</div>
+
+				{/* Preview Image Container */}
+				<div
+					className="flex items-center justify-center border p-4 max-h-80 overflow-hidden"
+					style={{
+						borderColor: "var(--rule)",
+						background: "var(--surface)",
+						borderRadius: "var(--radius)",
+					}}
+				>
+					{previewUrl ? (
+						// biome-ignore lint/performance/noImgElement: client-side blob object URL
+						<img
+							src={previewUrl}
+							alt={`Converted output of ${item.file.name}`}
+							className="max-h-72 object-contain"
+						/>
+					) : (
+						<span
+							className="mono text-[12px]"
+							style={{ color: "var(--ink-muted)" }}
+						>
+							Preview not available for this binary format
+						</span>
+					)}
+				</div>
+
+				{/* Metrics readout */}
+				<div
+					className="flex flex-wrap items-center justify-between gap-2 border px-3 py-2"
+					style={{
+						borderColor: "var(--rule)",
+						borderRadius: "var(--radius)",
+						background: "var(--surface)",
+					}}
+				>
+					<span
+						className="mono text-[11px]"
+						style={{ color: "var(--ink-muted)" }}
+					>
+						ORIGINAL: {formatBytes(item.file.size)} ({item.ext.toUpperCase()})
+					</span>
+					<span className="mono text-[11px]" style={{ color: "var(--accent)" }}>
+						OUTPUT: {item.outputSize ? formatBytes(item.outputSize) : "—"} (
+						{item.targetExt.toUpperCase()})
+					</span>
+					{item.outputSize && (
+						<span
+							className="mono text-[11px] font-medium px-1.5 py-0.5"
+							style={{
+								background: "var(--accent)",
+								color: "var(--ground)",
+								borderRadius: "var(--radius-pill)",
+							}}
+						>
+							SAVED {formatDelta(item.file.size, item.outputSize)}
+						</span>
+					)}
+				</div>
+
+				{/* Action buttons */}
+				<div className="flex items-center justify-end gap-3 pt-2">
+					<button
+						type="button"
+						onClick={onClose}
+						className="mono border px-3 py-1.5 text-[12px]"
+						style={{
+							borderColor: "var(--rule-strong)",
+							color: "var(--ink-muted)",
+							borderRadius: "var(--radius-pill)",
+							background: "transparent",
+							cursor: "pointer",
+						}}
+					>
+						CLOSE
+					</button>
+					<button
+						type="button"
+						onClick={() => {
+							onSave();
+							onClose();
+						}}
+						className="mono border px-4 py-1.5 text-[12px] font-medium"
+						style={{
+							borderColor: "var(--accent)",
+							background: "var(--accent)",
+							color: "var(--ground)",
+							borderRadius: "var(--radius-pill)",
+							cursor: "pointer",
+						}}
+					>
+						DOWNLOAD FILE
+					</button>
+				</div>
+			</div>
+		</div>
+	);
+}
 
 const cellStyle = {
 	borderColor: "var(--rule)",
@@ -73,6 +410,7 @@ const cellStyle = {
 export function MasterConverterClient() {
 	const fileInputId = useId();
 	const addMoreInputId = useId();
+	const secondaryDropInputId = useId();
 	const [items, setItems] = useState<MasterItem[]>([]);
 	const [globalTarget, setGlobalTarget] = useState<string>("");
 	const [qualityPreset, setQualityPreset] = useState<QualityPreset>("balanced");
@@ -85,6 +423,25 @@ export function MasterConverterClient() {
 		code: ErrorCode;
 		detail: string;
 	} | null>(null);
+
+	// Table search, category filtering and sorting state
+	const [tableSearch, setTableSearch] = useState("");
+	const [statusFilter, setStatusFilter] = useState<
+		"all" | "ready" | "done" | "error"
+	>("all");
+	const [categoryFilter, setCategoryFilter] = useState<FileCategory>("all");
+	const [sortColumn, setSortColumn] = useState<
+		"name" | "size" | "status" | "default"
+	>("default");
+	const [sortAsc, setSortAsc] = useState(true);
+
+	// Preview modal state
+	const [activePreviewItem, setActivePreviewItem] = useState<MasterItem | null>(
+		null,
+	);
+
+	// Copy report state
+	const [copiedReport, setCopiedReport] = useState(false);
 
 	const controllerRef = useRef<AbortController | null>(null);
 	const startedAtRef = useRef<number>(0);
@@ -176,6 +533,25 @@ export function MasterConverterClient() {
 	const commonTargets = getCommonTargetFormats(selectedFiles);
 	const allAvailableTargets = getAllTargetFormats(selectedFiles);
 
+	// Detected format breakdown (e.g. PNG: 3, PDF: 1)
+	const formatBreakdown = useMemo(() => {
+		const counts: Record<string, number> = {};
+		for (const item of items) {
+			const tag = item.ext.toUpperCase() || "UNKNOWN";
+			counts[tag] = (counts[tag] ?? 0) + 1;
+		}
+		return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+	}, [items]);
+
+	// Detected available categories in current queue
+	const availableCategories = useMemo(() => {
+		const set = new Set<FileCategory>();
+		for (const item of items) {
+			set.add(categorizeFile(item.ext));
+		}
+		return Array.from(set);
+	}, [items]);
+
 	// Apply a global target format across all compatible selected items
 	const applyGlobalTarget = (target: string) => {
 		setGlobalTarget(target);
@@ -219,6 +595,10 @@ export function MasterConverterClient() {
 
 	const removeUnselected = () => {
 		setItems((prev) => prev.filter((item) => item.selected));
+	};
+
+	const pruneCompleted = () => {
+		setItems((prev) => prev.filter((item) => item.status !== "done"));
 	};
 
 	const removeItem = (id: string) => {
@@ -318,6 +698,18 @@ export function MasterConverterClient() {
 			(item) => item.selected && item.targetExt && item.tool,
 		);
 		runConversionBatch(toConvert);
+	};
+
+	const retryItem = (id: string) => {
+		const item = items.find((i) => i.id === id);
+		if (!item?.tool) return;
+		runConversionBatch([item]);
+	};
+
+	const retryAllFailed = () => {
+		const failed = items.filter((i) => i.status === "error" && i.tool);
+		if (failed.length === 0) return;
+		runConversionBatch(failed);
 	};
 
 	const runConversionBatch = async (toConvert: MasterItem[]) => {
@@ -473,9 +865,162 @@ export function MasterConverterClient() {
 	};
 
 	const doneCount = items.filter((item) => item.status === "done").length;
+	const errorCount = items.filter((item) => item.status === "error").length;
+	const readyCount = items.filter(
+		(item) => item.status === "idle" || item.status === "queued",
+	).length;
+
+	// Compute overall conversion progress percentage across active batch
+	const activeConvertingItems = items.filter(
+		(item) =>
+			item.status === "converting" ||
+			item.status === "queued" ||
+			item.status === "done",
+	);
+	const overallProgressRatio =
+		activeConvertingItems.length > 0
+			? activeConvertingItems.reduce(
+					(acc, item) => acc + (item.status === "done" ? 1 : item.ratio),
+					0,
+				) / activeConvertingItems.length
+			: 0;
+
+	// Total saved bytes calculation across completed items
+	const doneItemsWithOutput = items.filter(
+		(item) => item.status === "done" && item.outputSize !== undefined,
+	);
+	const totalInputBytes = doneItemsWithOutput.reduce(
+		(acc, item) => acc + item.file.size,
+		0,
+	);
+	const totalOutputBytes = doneItemsWithOutput.reduce(
+		(acc, item) => acc + (item.outputSize ?? 0),
+		0,
+	);
+	const hasSavings =
+		doneItemsWithOutput.length > 0 && totalInputBytes > totalOutputBytes;
+
+	// Copy summary report to clipboard
+	const copySummaryReport = async () => {
+		const lines = [
+			"CONVRTR STUDIO BATCH REPORT",
+			"===========================",
+			`Total Files: ${items.length}`,
+			`Completed: ${doneCount}`,
+			`Failed: ${errorCount}`,
+			`Input Volume: ${formatBytes(totalInputBytes)}`,
+			`Output Volume: ${formatBytes(totalOutputBytes)}`,
+			hasSavings
+				? `Total Saved: ${formatDelta(totalInputBytes, totalOutputBytes)}`
+				: "",
+			"",
+			"Files:",
+			...doneItemsWithOutput.map(
+				(item) =>
+					`• ${item.file.name} (${item.ext.toUpperCase()}) → ${item.targetExt.toUpperCase()}: ${formatBytes(item.file.size)} → ${formatBytes(item.outputSize ?? 0)}`,
+			),
+		]
+			.filter(Boolean)
+			.join("\n");
+
+		try {
+			if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+				await navigator.clipboard.writeText(lines);
+				setCopiedReport(true);
+				setTimeout(() => setCopiedReport(false), 2000);
+			}
+		} catch {
+			// Clipboard API write fallback
+		}
+	};
+
+	// Displayed items considering search filter, category filter, and sorting
+	const displayedItems = useMemo(() => {
+		let result = items;
+
+		// Filter by search query
+		if (tableSearch.trim()) {
+			const q = tableSearch.trim().toLowerCase();
+			result = result.filter(
+				(item) =>
+					item.file.name.toLowerCase().includes(q) ||
+					item.ext.toLowerCase().includes(q) ||
+					item.targetExt.toLowerCase().includes(q),
+			);
+		}
+
+		// Filter by status tab
+		if (statusFilter === "ready") {
+			result = result.filter(
+				(item) =>
+					item.status === "idle" ||
+					item.status === "queued" ||
+					item.status === "converting",
+			);
+		} else if (statusFilter === "done") {
+			result = result.filter((item) => item.status === "done");
+		} else if (statusFilter === "error") {
+			result = result.filter((item) => item.status === "error");
+		}
+
+		// Filter by category
+		if (categoryFilter !== "all") {
+			result = result.filter(
+				(item) => categorizeFile(item.ext) === categoryFilter,
+			);
+		}
+
+		// Sort
+		if (sortColumn === "name") {
+			result = result.slice().sort((a, b) => {
+				const cmp = a.file.name.localeCompare(b.file.name);
+				return sortAsc ? cmp : -cmp;
+			});
+		} else if (sortColumn === "size") {
+			result = result.slice().sort((a, b) => {
+				const cmp = a.file.size - b.file.size;
+				return sortAsc ? cmp : -cmp;
+			});
+		} else if (sortColumn === "status") {
+			result = result.slice().sort((a, b) => {
+				const cmp = a.status.localeCompare(b.status);
+				return sortAsc ? cmp : -cmp;
+			});
+		}
+
+		return result;
+	}, [items, tableSearch, statusFilter, categoryFilter, sortColumn, sortAsc]);
+
+	const toggleSort = (col: "name" | "size" | "status") => {
+		if (sortColumn === col) {
+			if (!sortAsc) {
+				setSortColumn("default");
+				setSortAsc(true);
+			} else {
+				setSortAsc(false);
+			}
+		} else {
+			setSortColumn(col);
+			setSortAsc(true);
+		}
+	};
+
+	const detectedHardwareCores =
+		typeof navigator !== "undefined" && navigator.hardwareConcurrency
+			? navigator.hardwareConcurrency
+			: 4;
 
 	return (
 		<div className="flex flex-col gap-6" data-testid="master-converter">
+			{/* Preview Modal */}
+			{activePreviewItem && (
+				<ImagePreviewModal
+					item={activePreviewItem}
+					onClose={() => setActivePreviewItem(null)}
+					onSave={() => handleSaveRow(activePreviewItem)}
+				/>
+			)}
+
 			{/* Top Error Alert */}
 			{topError && <ErrorPanel code={topError.code} detail={topError.detail} />}
 
@@ -488,7 +1033,7 @@ export function MasterConverterClient() {
 				/>
 			)}
 
-			{/* Empty State / Initial Drop Zone */}
+			{/* Empty State / Initial Drop Zone with Blueprint Aesthetics */}
 			{items.length === 0 && (
 				// biome-ignore lint/a11y/useSemanticElements: drop zone needs drag-and-drop handlers and a nested file input, which a native <button> can't host.
 				<div
@@ -517,34 +1062,111 @@ export function MasterConverterClient() {
 							document.getElementById(fileInputId)?.click();
 						}
 					}}
-					className="mono flex flex-col items-center gap-4 border border-dashed p-12 text-center transition-colors opacity-75"
+					className="mono relative flex flex-col items-center gap-4 border border-dashed p-12 text-center transition-all"
 					style={{
-						borderColor: dropActive ? "var(--ink)" : "var(--rule-strong)",
+						borderColor: dropActive ? "var(--accent)" : "var(--rule-strong)",
+						background: dropActive ? "var(--surface)" : "transparent",
 						borderRadius: "var(--radius)",
 						cursor: "pointer",
 					}}
 				>
+					{/* Blueprint technical corner markers */}
+					<span
+						className="absolute top-2 left-2 text-[10px]"
+						style={{ color: "var(--rule-strong)" }}
+					>
+						┌
+					</span>
+					<span
+						className="absolute top-2 right-2 text-[10px]"
+						style={{ color: "var(--rule-strong)" }}
+					>
+						┐
+					</span>
+					<span
+						className="absolute bottom-2 left-2 text-[10px]"
+						style={{ color: "var(--rule-strong)" }}
+					>
+						└
+					</span>
+					<span
+						className="absolute bottom-2 right-2 text-[10px]"
+						style={{ color: "var(--rule-strong)" }}
+					>
+						┘
+					</span>
+
+					{/* Terminal header bracket */}
+					<span
+						className="mono text-[11px] tracking-[0.08em]"
+						style={{ color: "var(--accent)" }}
+					>
+						[ UNIVERSAL MULTI-FORMAT PROCESSING ENGINE ]
+					</span>
+
 					<span className="text-[14px] font-medium tracking-[0.06em]">
 						DROP FILES HERE TO CONVERT
 					</span>
 					<span className="text-[13px]" style={{ color: "var(--ink-muted)" }}>
 						Drop multiple files of any type, or click to browse
 					</span>
-					<div className="flex flex-wrap justify-center gap-2 pt-2">
-						{POPULAR_FORMATS.map((fmt) => (
-							<span
-								key={fmt}
-								className="border px-2 py-1 text-[11px] tracking-[0.08em]"
-								style={{
-									borderColor: "var(--rule-strong)",
-									borderRadius: "var(--radius)",
-									color: "var(--ink-muted)",
-								}}
-							>
-								{fmt}
-							</span>
-						))}
+
+					{/* Supported Category Chips */}
+					<div className="flex flex-col gap-2 pt-2">
+						<div className="flex flex-wrap justify-center gap-3">
+							{POPULAR_CATEGORIES.map((cat) => (
+								<div
+									key={cat.label}
+									className="flex items-center gap-1 border px-2 py-1"
+									style={{
+										borderColor: "var(--rule)",
+										borderRadius: "var(--radius)",
+										background: "var(--surface)",
+									}}
+								>
+									<span
+										className="mono text-[10px]"
+										style={{ color: "var(--accent)" }}
+									>
+										{cat.label}:
+									</span>
+									<span
+										className="mono text-[10px]"
+										style={{ color: "var(--ink-muted)" }}
+									>
+										{cat.formats.join(" · ")}
+									</span>
+								</div>
+							))}
+						</div>
 					</div>
+
+					{/* Security & Architecture Badge */}
+					<div
+						className="flex items-center gap-2 border px-3 py-1 mt-2"
+						style={{
+							borderColor: "var(--rule)",
+							borderRadius: "var(--radius-pill)",
+							background: "var(--surface)",
+						}}
+					>
+						<span
+							style={{
+								width: "var(--space-base)",
+								height: "var(--space-base)",
+								borderRadius: "50%",
+								background: "var(--accent)",
+								display: "inline-block",
+							}}
+						/>
+						<span
+							className="mono text-[11px]"
+							style={{ color: "var(--ink-muted)" }}
+						>
+							100% PRIVATE · CLIENT-SIDE WASM · ZERO SERVER UPLOADS
+						</span>
+					</div>
+
 					<input
 						id={fileInputId}
 						type="file"
@@ -566,133 +1188,441 @@ export function MasterConverterClient() {
 			{/* Active Studio Workspace */}
 			{items.length > 0 && (
 				<div className="flex flex-col gap-4">
-					{/* Controls & Customization Bar */}
+					{/* High-Density Cockpit Telemetry Strip */}
 					<div
-						className="flex flex-wrap items-center justify-between gap-4 border p-4"
+						className="relative flex flex-wrap items-center justify-between gap-3 border px-4 py-2.5"
 						style={{
 							borderColor: "var(--rule)",
 							borderRadius: "var(--radius)",
 							background: "var(--surface)",
 						}}
 					>
-						{/* Left: Selection count and quick actions */}
+						{/* Corner ticks */}
+						<span
+							className="absolute top-1 left-1 text-[9px]"
+							style={{ color: "var(--rule)" }}
+						>
+							┌
+						</span>
+						<span
+							className="absolute top-1 right-1 text-[9px]"
+							style={{ color: "var(--rule)" }}
+						>
+							┐
+						</span>
+
+						{/* Left telemetry items */}
 						<div className="flex flex-wrap items-center gap-3">
-							<span className="mono text-[13px] font-medium">
-								{selectedCount} of {totalCount} selected
-							</span>
-							{selectedCount > 0 && (
+							<div className="flex items-center gap-1.5">
 								<span
-									className="mono text-[12px]"
-									style={{ color: "var(--ink-muted)" }}
+									style={{
+										width: "var(--space-base)",
+										height: "var(--space-base)",
+										borderRadius: "50%",
+										background: "var(--accent)",
+										display: "inline-block",
+									}}
+								/>
+								<span
+									className="mono text-[11px] font-medium"
+									style={{ color: "var(--ink)" }}
 								>
-									({formatBytes(selectedBytes)})
+									STUDIO QUEUE: {totalCount}{" "}
+									{totalCount === 1 ? "FILE" : "FILES"}
 								</span>
-							)}
+							</div>
+
 							<div className="h-3 w-px" style={{ background: "var(--rule)" }} />
-							<div className="flex flex-wrap gap-1">
-								<button
-									type="button"
-									onClick={() => setAllSelection(true)}
-									className="mono border px-2 py-0.5 text-[11px]"
-									style={{
-										borderColor: "var(--rule-strong)",
-										borderRadius: "var(--radius)",
-										color: "var(--ink)",
-										background: "transparent",
-									}}
-								>
-									SELECT ALL
-								</button>
-								<button
-									type="button"
-									onClick={() => setAllSelection(false)}
-									className="mono border px-2 py-0.5 text-[11px]"
-									style={{
-										borderColor: "var(--rule-strong)",
-										borderRadius: "var(--radius)",
-										color: "var(--ink-muted)",
-										background: "transparent",
-									}}
-								>
-									DESELECT
-								</button>
-								<button
-									type="button"
-									onClick={invertSelection}
-									className="mono border px-2 py-0.5 text-[11px]"
-									style={{
-										borderColor: "var(--rule-strong)",
-										borderRadius: "var(--radius)",
-										color: "var(--ink-muted)",
-										background: "transparent",
-									}}
-								>
-									INVERT
-								</button>
-								{totalCount > selectedCount && (
-									<button
-										type="button"
-										onClick={removeUnselected}
-										className="mono border px-2 py-0.5 text-[11px]"
+
+							<span
+								className="mono text-[11px]"
+								style={{ color: "var(--ink-muted)" }}
+							>
+								{formatBytes(items.reduce((s, i) => s + i.file.size, 0))}{" "}
+								PAYLOAD
+							</span>
+
+							<div className="h-3 w-px" style={{ background: "var(--rule)" }} />
+
+							{/* Formats distribution pills */}
+							<div className="flex flex-wrap items-center gap-1">
+								{formatBreakdown.slice(0, 4).map(([fmt, count]) => (
+									<span
+										key={fmt}
+										className="mono border px-1.5 py-0.2 text-[10px]"
 										style={{
 											borderColor: "var(--rule)",
 											borderRadius: "var(--radius)",
-											color: "var(--ink-muted)",
-											background: "transparent",
+											color: "var(--ink)",
+											background: "var(--ground)",
 										}}
 									>
-										PRUNE UNCHECKED
-									</button>
+										{fmt} × {count}
+									</span>
+								))}
+								{formatBreakdown.length > 4 && (
+									<span
+										className="mono text-[10px]"
+										style={{ color: "var(--ink-muted)" }}
+									>
+										+{formatBreakdown.length - 4} more
+									</span>
 								)}
 							</div>
 						</div>
 
-						{/* Right: Global Target, Quality, Add more */}
-						<div className="flex flex-wrap items-center gap-3">
+						{/* Right telemetry: Concurrency & privacy */}
+						<div className="flex items-center gap-2">
+							<span
+								className="mono text-[10px]"
+								style={{ color: "var(--ink-muted)" }}
+							>
+								PARALLEL WORKERS: {detectedHardwareCores} CORES · 100%
+								IN-BROWSER
+							</span>
+						</div>
+					</div>
+
+					{/* Overall Batch Progress Indicator during conversion */}
+					{isConverting && (
+						<div
+							className="flex flex-col gap-2 border p-4"
+							style={{
+								borderColor: "var(--accent)",
+								borderRadius: "var(--radius)",
+								background: "var(--surface)",
+							}}
+						>
+							<div className="flex justify-between items-center">
+								<div className="flex items-center gap-2">
+									<span
+										style={{
+											width: "var(--space-base)",
+											height: "var(--space-base)",
+											borderRadius: "50%",
+											background: "var(--accent)",
+											display: "inline-block",
+										}}
+									/>
+									<span
+										className="mono text-[12px] font-medium"
+										style={{ color: "var(--accent)" }}
+									>
+										BATCH CONVERSION IN PROGRESS
+									</span>
+								</div>
+								<span
+									className="mono text-[12px]"
+									style={{ color: "var(--ink)" }}
+								>
+									{formatPercent(overallProgressRatio)} ·{" "}
+									{formatDuration(elapsedSeconds)} ELAPSED
+								</span>
+							</div>
+
+							<div
+								className="h-1.5 w-full overflow-hidden"
+								style={{ background: "var(--ground)" }}
+							>
+								<div
+									className="h-full transition-all duration-150"
+									style={{
+										width: `${overallProgressRatio * 100}%`,
+										background: "var(--accent)",
+									}}
+								/>
+							</div>
+						</div>
+					)}
+
+					{/* Total Savings Callout Banner when finished */}
+					{!isConverting && doneCount > 0 && (
+						<div
+							className="flex flex-wrap items-center justify-between gap-3 border px-4 py-3"
+							style={{
+								borderColor: "var(--accent)",
+								borderRadius: "var(--radius)",
+								background: "var(--surface)",
+							}}
+						>
 							<div className="flex items-center gap-2">
-								<label
-									htmlFor="global-target-select"
+								<span
+									className="mono text-[12px] font-medium"
+									style={{ color: "var(--accent)" }}
+								>
+									✓ BATCH OPTIMIZATION COMPLETE
+								</span>
+								<span
 									className="mono text-[12px]"
 									style={{ color: "var(--ink-muted)" }}
 								>
-									CONVERT SELECTED TO:
-								</label>
-								<select
-									id="global-target-select"
-									value={globalTarget}
-									onChange={(e) => applyGlobalTarget(e.target.value)}
-									className="mono border px-2 py-1 text-[12px]"
-									style={{
-										borderColor: "var(--ink)",
-										borderRadius: "var(--radius)",
-										background: "var(--ground)",
-										color: "var(--ink)",
-									}}
-								>
-									<option value="">Choose target...</option>
-									{commonTargets.length > 0 && (
-										<optgroup label="Compatible with all selected">
-											{commonTargets.map((ext) => (
-												<option key={ext} value={ext}>
-													{ext.toUpperCase()} (all {selectedCount})
-												</option>
-											))}
-										</optgroup>
-									)}
-									{allAvailableTargets.length > commonTargets.length && (
-										<optgroup label="Other available formats">
-											{allAvailableTargets
-												.filter((ext) => !commonTargets.includes(ext))
-												.map((ext) => (
-													<option key={ext} value={ext}>
-														{ext.toUpperCase()}
-													</option>
-												))}
-										</optgroup>
-									)}
-								</select>
+									· Processed {formatBytes(totalInputBytes)} down to{" "}
+									{formatBytes(totalOutputBytes)}
+								</span>
 							</div>
 
+							<div className="flex items-center gap-2">
+								<button
+									type="button"
+									onClick={copySummaryReport}
+									className="mono border px-2.5 py-0.5 text-[11px]"
+									style={{
+										borderColor: "var(--rule-strong)",
+										borderRadius: "var(--radius-pill)",
+										background: "var(--ground)",
+										color: copiedReport ? "var(--accent)" : "var(--ink)",
+										cursor: "pointer",
+									}}
+								>
+									{copiedReport ? "COPIED ✓" : "COPY REPORT"}
+								</button>
+								{hasSavings && (
+									<span
+										className="mono text-[12px] font-medium px-2 py-0.5"
+										style={{
+											background: "var(--accent)",
+											color: "var(--ground)",
+											borderRadius: "var(--radius-pill)",
+										}}
+									>
+										SAVED {formatDelta(totalInputBytes, totalOutputBytes)}
+									</span>
+								)}
+							</div>
+						</div>
+					)}
+
+					{/* Controls & Customization Bar */}
+					<div
+						className="flex flex-col gap-3 border p-4"
+						style={{
+							borderColor: "var(--rule)",
+							borderRadius: "var(--radius)",
+							background: "var(--surface)",
+						}}
+					>
+						{/* Top row: Selection count and quick selection actions */}
+						<div className="flex flex-wrap items-center justify-between gap-3">
+							<div className="flex flex-wrap items-center gap-3">
+								<span className="mono text-[13px] font-medium">
+									{selectedCount} of {totalCount} selected
+								</span>
+								{selectedCount > 0 && (
+									<span
+										className="mono text-[12px]"
+										style={{ color: "var(--ink-muted)" }}
+									>
+										({formatBytes(selectedBytes)})
+									</span>
+								)}
+								<div
+									className="h-3 w-px"
+									style={{ background: "var(--rule)" }}
+								/>
+								<div className="flex flex-wrap gap-1">
+									<button
+										type="button"
+										onClick={() => setAllSelection(true)}
+										className="mono border px-2 py-0.5 text-[11px]"
+										style={{
+											borderColor: "var(--rule-strong)",
+											borderRadius: "var(--radius)",
+											color: "var(--ink)",
+											background: "transparent",
+											cursor: "pointer",
+										}}
+									>
+										SELECT ALL
+									</button>
+									<button
+										type="button"
+										onClick={() => setAllSelection(false)}
+										className="mono border px-2 py-0.5 text-[11px]"
+										style={{
+											borderColor: "var(--rule-strong)",
+											borderRadius: "var(--radius)",
+											color: "var(--ink-muted)",
+											background: "transparent",
+											cursor: "pointer",
+										}}
+									>
+										DESELECT
+									</button>
+									<button
+										type="button"
+										onClick={invertSelection}
+										className="mono border px-2 py-0.5 text-[11px]"
+										style={{
+											borderColor: "var(--rule-strong)",
+											borderRadius: "var(--radius)",
+											color: "var(--ink-muted)",
+											background: "transparent",
+											cursor: "pointer",
+										}}
+									>
+										INVERT
+									</button>
+									{totalCount > selectedCount && (
+										<button
+											type="button"
+											onClick={removeUnselected}
+											className="mono border px-2 py-0.5 text-[11px]"
+											style={{
+												borderColor: "var(--rule)",
+												borderRadius: "var(--radius)",
+												color: "var(--ink-muted)",
+												background: "transparent",
+												cursor: "pointer",
+											}}
+										>
+											PRUNE UNCHECKED
+										</button>
+									)}
+									{doneCount > 0 && (
+										<button
+											type="button"
+											onClick={pruneCompleted}
+											className="mono border px-2 py-0.5 text-[11px]"
+											style={{
+												borderColor: "var(--rule)",
+												borderRadius: "var(--radius)",
+												color: "var(--accent)",
+												background: "transparent",
+												cursor: "pointer",
+											}}
+										>
+											PRUNE COMPLETED
+										</button>
+									)}
+								</div>
+							</div>
+
+							{/* Add More Files Button */}
+							<div className="flex items-center gap-2">
+								<button
+									type="button"
+									onClick={() => addMoreInputRef.current?.click()}
+									className="mono border px-3 py-1 text-[12px] font-medium"
+									style={{
+										borderColor: "var(--rule-strong)",
+										borderRadius: "var(--radius)",
+										color: "var(--ink)",
+										background: "var(--ground)",
+										cursor: "pointer",
+									}}
+								>
+									+ ADD FILES
+								</button>
+								<input
+									ref={addMoreInputRef}
+									id={addMoreInputId}
+									type="file"
+									multiple
+									hidden
+									accept={[
+										...ALL_ACCEPTS.mime,
+										...ALL_ACCEPTS.ext.map((e) => `.${e}`),
+									].join(",")}
+									onChange={(e) => {
+										if (e.target.files) {
+											handleFiles(Array.from(e.target.files));
+										}
+									}}
+								/>
+							</div>
+						</div>
+
+						{/* Bottom row: Global Target Selector, Quick Target Shortcuts & Quality Preset */}
+						<div
+							className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t"
+							style={{ borderColor: "var(--rule)" }}
+						>
+							<div className="flex flex-wrap items-center gap-3">
+								<div className="flex items-center gap-2">
+									<label
+										htmlFor="global-target-select"
+										className="mono text-[12px]"
+										style={{ color: "var(--ink-muted)" }}
+									>
+										CONVERT SELECTED TO:
+									</label>
+									<select
+										id="global-target-select"
+										value={globalTarget}
+										onChange={(e) => applyGlobalTarget(e.target.value)}
+										className="mono border px-2 py-1 text-[12px]"
+										style={{
+											borderColor: "var(--ink)",
+											borderRadius: "var(--radius)",
+											background: "var(--ground)",
+											color: "var(--ink)",
+											cursor: "pointer",
+										}}
+									>
+										<option value="">Choose target...</option>
+										{commonTargets.length > 0 && (
+											<optgroup label="Compatible with all selected">
+												{commonTargets.map((ext) => (
+													<option key={ext} value={ext}>
+														{ext.toUpperCase()} (all {selectedCount})
+													</option>
+												))}
+											</optgroup>
+										)}
+										{allAvailableTargets.length > commonTargets.length && (
+											<optgroup label="Other available formats">
+												{allAvailableTargets
+													.filter((ext) => !commonTargets.includes(ext))
+													.map((ext) => (
+														<option key={ext} value={ext}>
+															{ext.toUpperCase()}
+														</option>
+													))}
+											</optgroup>
+										)}
+									</select>
+								</div>
+
+								{/* One-click common target shortcuts */}
+								{commonTargets.length > 0 && (
+									<div className="flex flex-wrap items-center gap-1.5">
+										<span
+											className="mono text-[11px]"
+											style={{ color: "var(--ink-muted)" }}
+										>
+											QUICK:
+										</span>
+										{commonTargets.slice(0, 5).map((target) => (
+											<button
+												key={target}
+												type="button"
+												onClick={() => applyGlobalTarget(target)}
+												className="mono border px-2 py-0.5 text-[11px]"
+												style={{
+													borderColor:
+														globalTarget === target
+															? "var(--accent)"
+															: "var(--rule-strong)",
+													background:
+														globalTarget === target
+															? "var(--accent)"
+															: "var(--ground)",
+													color:
+														globalTarget === target
+															? "var(--ground)"
+															: "var(--ink)",
+													borderRadius: "var(--radius)",
+													cursor: "pointer",
+												}}
+											>
+												→ {target.toUpperCase()}
+											</button>
+										))}
+									</div>
+								)}
+							</div>
+
+							{/* Quality Preset */}
 							<div className="flex items-center gap-2">
 								<label
 									htmlFor="quality-preset-select"
@@ -713,6 +1643,7 @@ export function MasterConverterClient() {
 										borderRadius: "var(--radius)",
 										background: "var(--ground)",
 										color: "var(--ink)",
+										cursor: "pointer",
 									}}
 								>
 									{QUALITY_PRESETS.map((preset) => (
@@ -722,37 +1653,224 @@ export function MasterConverterClient() {
 									))}
 								</select>
 							</div>
-
-							<button
-								type="button"
-								onClick={() => addMoreInputRef.current?.click()}
-								className="mono border px-3 py-1 text-[12px]"
-								style={{
-									borderColor: "var(--rule-strong)",
-									borderRadius: "var(--radius)",
-									color: "var(--ink)",
-									background: "transparent",
-								}}
-							>
-								+ ADD FILES
-							</button>
-							<input
-								ref={addMoreInputRef}
-								id={addMoreInputId}
-								type="file"
-								multiple
-								hidden
-								accept={[
-									...ALL_ACCEPTS.mime,
-									...ALL_ACCEPTS.ext.map((e) => `.${e}`),
-								].join(",")}
-								onChange={(e) => {
-									if (e.target.files) {
-										handleFiles(Array.from(e.target.files));
-									}
-								}}
-							/>
 						</div>
+					</div>
+
+					{/* Search, Status Tabs & Category Filter Bar */}
+					<div
+						className="flex flex-col gap-2 border p-3"
+						style={{
+							borderColor: "var(--rule)",
+							borderRadius: "var(--radius)",
+							background: "var(--surface)",
+						}}
+					>
+						{/* Top row: Status Tabs & Search Input */}
+						<div className="flex flex-wrap items-center justify-between gap-3">
+							{/* Status Filter Tabs */}
+							<div className="flex items-center gap-1">
+								<button
+									type="button"
+									onClick={() => setStatusFilter("all")}
+									className="mono px-2 py-1 text-[11px]"
+									style={{
+										background:
+											statusFilter === "all" ? "var(--ground)" : "transparent",
+										color:
+											statusFilter === "all"
+												? "var(--ink)"
+												: "var(--ink-muted)",
+										borderWidth: "var(--rule-width)",
+										borderStyle: "solid",
+										borderColor:
+											statusFilter === "all"
+												? "var(--rule-strong)"
+												: "transparent",
+										borderRadius: "var(--radius)",
+										cursor: "pointer",
+									}}
+								>
+									ALL ({items.length})
+								</button>
+								<button
+									type="button"
+									onClick={() => setStatusFilter("ready")}
+									className="mono px-2 py-1 text-[11px]"
+									style={{
+										background:
+											statusFilter === "ready"
+												? "var(--ground)"
+												: "transparent",
+										color:
+											statusFilter === "ready"
+												? "var(--ink)"
+												: "var(--ink-muted)",
+										borderWidth: "var(--rule-width)",
+										borderStyle: "solid",
+										borderColor:
+											statusFilter === "ready"
+												? "var(--rule-strong)"
+												: "transparent",
+										borderRadius: "var(--radius)",
+										cursor: "pointer",
+									}}
+								>
+									READY ({readyCount})
+								</button>
+								{doneCount > 0 && (
+									<button
+										type="button"
+										onClick={() => setStatusFilter("done")}
+										className="mono px-2 py-1 text-[11px]"
+										style={{
+											background:
+												statusFilter === "done"
+													? "var(--ground)"
+													: "transparent",
+											color:
+												statusFilter === "done"
+													? "var(--accent)"
+													: "var(--ink-muted)",
+											borderWidth: "var(--rule-width)",
+											borderStyle: "solid",
+											borderColor:
+												statusFilter === "done"
+													? "var(--accent)"
+													: "transparent",
+											borderRadius: "var(--radius)",
+											cursor: "pointer",
+										}}
+									>
+										DONE ({doneCount})
+									</button>
+								)}
+								{errorCount > 0 && (
+									<button
+										type="button"
+										onClick={() => setStatusFilter("error")}
+										className="mono px-2 py-1 text-[11px]"
+										style={{
+											background:
+												statusFilter === "error"
+													? "var(--ground)"
+													: "transparent",
+											color:
+												statusFilter === "error"
+													? "var(--rule-strong)"
+													: "var(--ink-muted)",
+											borderWidth: "var(--rule-width)",
+											borderStyle: "solid",
+											borderColor:
+												statusFilter === "error"
+													? "var(--rule-strong)"
+													: "transparent",
+											borderRadius: "var(--radius)",
+											cursor: "pointer",
+										}}
+									>
+										ERRORS ({errorCount})
+									</button>
+								)}
+							</div>
+
+							{/* Search Input */}
+							<div className="flex items-center gap-2">
+								<input
+									type="search"
+									placeholder="Filter files..."
+									value={tableSearch}
+									onChange={(e) => setTableSearch(e.target.value)}
+									aria-label="Filter batch files table"
+									className="mono border px-2 py-1 text-[12px]"
+									style={{
+										borderColor: "var(--rule)",
+										borderRadius: "var(--radius)",
+										background: "var(--ground)",
+										color: "var(--ink)",
+										outline: "none",
+									}}
+								/>
+								{tableSearch && (
+									<button
+										type="button"
+										onClick={() => setTableSearch("")}
+										className="mono text-[11px]"
+										style={{ color: "var(--accent)", cursor: "pointer" }}
+									>
+										CLEAR
+									</button>
+								)}
+							</div>
+						</div>
+
+						{/* Bottom row: Category Filter Pills if more than 1 category exists */}
+						{availableCategories.length > 1 && (
+							<div
+								className="flex flex-wrap items-center gap-1.5 pt-2 border-t"
+								style={{ borderColor: "var(--rule)" }}
+							>
+								<span
+									className="mono text-[10px]"
+									style={{ color: "var(--ink-muted)" }}
+								>
+									KIND:
+								</span>
+								<button
+									type="button"
+									onClick={() => setCategoryFilter("all")}
+									className="mono px-2 py-0.5 text-[10px]"
+									style={{
+										background:
+											categoryFilter === "all"
+												? "var(--ground)"
+												: "transparent",
+										color:
+											categoryFilter === "all"
+												? "var(--ink)"
+												: "var(--ink-muted)",
+										borderWidth: "var(--rule-width)",
+										borderStyle: "solid",
+										borderColor:
+											categoryFilter === "all"
+												? "var(--rule-strong)"
+												: "transparent",
+										borderRadius: "var(--radius-pill)",
+										cursor: "pointer",
+									}}
+								>
+									ALL TYPES
+								</button>
+								{availableCategories.map((cat) => (
+									<button
+										key={cat}
+										type="button"
+										onClick={() => setCategoryFilter(cat)}
+										className="mono px-2 py-0.5 text-[10px]"
+										style={{
+											background:
+												categoryFilter === cat
+													? "var(--ground)"
+													: "transparent",
+											color:
+												categoryFilter === cat
+													? "var(--accent)"
+													: "var(--ink-muted)",
+											borderWidth: "var(--rule-width)",
+											borderStyle: "solid",
+											borderColor:
+												categoryFilter === cat
+													? "var(--accent)"
+													: "transparent",
+											borderRadius: "var(--radius-pill)",
+											cursor: "pointer",
+										}}
+									>
+										{cat.toUpperCase()} (
+										{items.filter((i) => categorizeFile(i.ext) === cat).length})
+									</button>
+								))}
+							</div>
+						)}
 					</div>
 
 					{/* File List Table */}
@@ -784,17 +1902,19 @@ export function MasterConverterClient() {
 									</th>
 									<th
 										scope="col"
-										className="border-b px-3 py-2.5 text-left font-normal"
+										className="border-b px-3 py-2.5 text-left font-normal cursor-pointer"
 										style={{ ...cellStyle, color: "var(--ink-muted)" }}
+										onClick={() => toggleSort("name")}
 									>
-										FILE
+										FILE {sortColumn === "name" ? (sortAsc ? "↑" : "↓") : ""}
 									</th>
 									<th
 										scope="col"
-										className="border-b px-3 py-2.5 text-right font-normal"
+										className="border-b px-3 py-2.5 text-right font-normal cursor-pointer"
 										style={{ ...cellStyle, color: "var(--ink-muted)" }}
+										onClick={() => toggleSort("size")}
 									>
-										IN
+										IN {sortColumn === "size" ? (sortAsc ? "↑" : "↓") : ""}
 									</th>
 									<th
 										scope="col"
@@ -819,10 +1939,12 @@ export function MasterConverterClient() {
 									</th>
 									<th
 										scope="col"
-										className="border-b px-3 py-2.5 text-left font-normal"
+										className="border-b px-3 py-2.5 text-left font-normal cursor-pointer"
 										style={{ ...cellStyle, color: "var(--ink-muted)" }}
+										onClick={() => toggleSort("status")}
 									>
-										STATUS
+										STATUS{" "}
+										{sortColumn === "status" ? (sortAsc ? "↑" : "↓") : ""}
 									</th>
 									<th
 										scope="col"
@@ -834,13 +1956,14 @@ export function MasterConverterClient() {
 								</tr>
 							</thead>
 							<tbody>
-								{items.map((item) => {
+								{displayedItems.map((item) => {
 									const availableTargets = getAvailableTargetFormatsForFile(
 										item.file,
 									);
 									const isConvertingRow = item.status === "converting";
 									const isDoneRow = item.status === "done";
 									const isErrorRow = item.status === "error";
+									const category = categorizeFile(item.ext);
 
 									return (
 										<Fragment key={item.id}>
@@ -869,12 +1992,14 @@ export function MasterConverterClient() {
 													/>
 												</td>
 
-												{/* File Name & Input Badge */}
+												{/* File Name, Category Glyph & Micro-Thumbnail */}
 												<td
 													className="border-b px-3 py-2 text-left"
 													style={cellStyle}
 												>
 													<div className="flex items-center gap-2">
+														<CategoryGlyph category={category} />
+														<ImageMicroThumbnail file={item.file} />
 														<span className="truncate max-w-xs">
 															{item.file.name}
 														</span>
@@ -951,9 +2076,20 @@ export function MasterConverterClient() {
 													className="border-b px-3 py-2 text-right"
 													style={cellStyle}
 												>
-													{isDoneRow && item.outputSize !== undefined
-														? formatDelta(item.file.size, item.outputSize)
-														: "—"}
+													{isDoneRow && item.outputSize !== undefined ? (
+														<span
+															style={{
+																color:
+																	item.file.size > item.outputSize
+																		? "var(--accent)"
+																		: "var(--ink-muted)",
+															}}
+														>
+															{formatDelta(item.file.size, item.outputSize)}
+														</span>
+													) : (
+														"—"
+													)}
 												</td>
 
 												{/* Status / Live Progress */}
@@ -968,10 +2104,10 @@ export function MasterConverterClient() {
 																style={{ background: "var(--rule)" }}
 															>
 																<div
-																	className="h-full"
+																	className="h-full transition-all"
 																	style={{
 																		width: `${item.ratio * 100}%`,
-																		background: "var(--ink)",
+																		background: "var(--accent)",
 																	}}
 																/>
 															</div>
@@ -980,13 +2116,47 @@ export function MasterConverterClient() {
 																{item.phase || "CONVERTING"}
 															</span>
 														</div>
+													) : isDoneRow ? (
+														<span
+															className="mono border px-1.5 py-0.5 text-[10px]"
+															style={{
+																color: "var(--accent)",
+																borderColor: "var(--accent)",
+																borderRadius: "var(--radius)",
+																background: "var(--surface)",
+															}}
+														>
+															✓ DONE
+														</span>
+													) : isErrorRow ? (
+														<div className="flex items-center gap-1.5">
+															<span
+																className="mono border px-1.5 py-0.5 text-[10px]"
+																style={{
+																	color: "var(--rule-strong)",
+																	borderColor: "var(--rule-strong)",
+																	borderRadius: "var(--radius)",
+																}}
+															>
+																ERROR
+															</span>
+															<button
+																type="button"
+																onClick={() => retryItem(item.id)}
+																className="mono text-[10px]"
+																style={{
+																	color: "var(--accent)",
+																	cursor: "pointer",
+																	textDecoration: "underline",
+																}}
+															>
+																RETRY
+															</button>
+														</div>
 													) : (
 														<span
 															style={{
-																color:
-																	isDoneRow || isErrorRow
-																		? "var(--ink)"
-																		: "var(--ink-muted)",
+																color: "var(--ink-muted)",
 															}}
 														>
 															{item.status.toUpperCase()}
@@ -994,26 +2164,46 @@ export function MasterConverterClient() {
 													)}
 												</td>
 
-												{/* Actions: Remove or Save */}
+												{/* Actions: Save / Preview / Remove */}
 												<td
 													className="border-b px-3 py-2 text-right"
 													style={cellStyle}
 												>
 													{isDoneRow ? (
-														<button
-															type="button"
-															onClick={() => handleSaveRow(item)}
-															aria-label={`Save ${item.file.name}`}
-															className="mono border px-2 py-0.5 text-[11px]"
-															style={{
-																color: "var(--ink)",
-																borderColor: "var(--ink)",
-																borderRadius: "var(--radius)",
-																background: "transparent",
-															}}
-														>
-															SAVE
-														</button>
+														<div className="flex items-center justify-end gap-1.5">
+															{category === "image" && item.output && (
+																<button
+																	type="button"
+																	onClick={() => setActivePreviewItem(item)}
+																	aria-label={`Preview ${item.file.name}`}
+																	className="mono border px-1.5 py-0.5 text-[10px]"
+																	style={{
+																		color: "var(--ink-muted)",
+																		borderColor: "var(--rule-strong)",
+																		borderRadius: "var(--radius)",
+																		background: "transparent",
+																		cursor: "pointer",
+																	}}
+																>
+																	VIEW
+																</button>
+															)}
+															<button
+																type="button"
+																onClick={() => handleSaveRow(item)}
+																aria-label={`Save ${item.file.name}`}
+																className="mono border px-2 py-0.5 text-[11px]"
+																style={{
+																	color: "var(--ground)",
+																	borderColor: "var(--accent)",
+																	borderRadius: "var(--radius)",
+																	background: "var(--accent)",
+																	cursor: "pointer",
+																}}
+															>
+																SAVE
+															</button>
+														</div>
 													) : (
 														<button
 															type="button"
@@ -1024,6 +2214,7 @@ export function MasterConverterClient() {
 															style={{
 																color: "var(--ink-muted)",
 																background: "transparent",
+																cursor: "pointer",
 															}}
 														>
 															✕
@@ -1032,7 +2223,7 @@ export function MasterConverterClient() {
 												</td>
 											</tr>
 
-											{/* Error Panel Row */}
+											{/* Inline Error Panel Row */}
 											{isErrorRow && item.error && (
 												<tr data-testid="item-error-row">
 													<td colSpan={8} className="border-b p-0">
@@ -1047,8 +2238,75 @@ export function MasterConverterClient() {
 										</Fragment>
 									);
 								})}
+
+								{displayedItems.length === 0 && (
+									<tr>
+										<td
+											colSpan={8}
+											className="border-b px-3 py-6 text-center text-[12px]"
+											style={{ ...cellStyle, color: "var(--ink-muted)" }}
+										>
+											No files match &ldquo;{tableSearch}&rdquo; in current
+											filter
+										</td>
+									</tr>
+								)}
 							</tbody>
 						</table>
+					</div>
+
+					{/* Secondary Dropzone Strip: Allows fast ingestion without leaving table view */}
+					{/* biome-ignore lint/a11y/useSemanticElements: drop zone needs drag-and-drop handlers and a nested file input, which a native <button> can't host. */}
+					<div
+						role="button"
+						tabIndex={0}
+						onDragOver={(e) => {
+							e.preventDefault();
+							setDropActive(true);
+						}}
+						onDragLeave={() => setDropActive(false)}
+						onDrop={(e) => {
+							e.preventDefault();
+							setDropActive(false);
+							if (e.dataTransfer.files) {
+								handleFiles(Array.from(e.dataTransfer.files));
+							}
+						}}
+						onClick={() =>
+							document.getElementById(secondaryDropInputId)?.click()
+						}
+						onKeyDown={(e) => {
+							if (e.key === "Enter" || e.key === " ") {
+								e.preventDefault();
+								document.getElementById(secondaryDropInputId)?.click();
+							}
+						}}
+						className="mono flex items-center justify-center border border-dashed py-3 text-center transition-all"
+						style={{
+							borderColor: dropActive ? "var(--accent)" : "var(--rule)",
+							background: dropActive ? "var(--surface)" : "transparent",
+							borderRadius: "var(--radius)",
+							cursor: "pointer",
+						}}
+					>
+						<span className="text-[11px]" style={{ color: "var(--ink-muted)" }}>
+							+ DROP MORE FILES HERE OR CLICK TO BROWSE
+						</span>
+						<input
+							id={secondaryDropInputId}
+							type="file"
+							multiple
+							hidden
+							accept={[
+								...ALL_ACCEPTS.mime,
+								...ALL_ACCEPTS.ext.map((e) => `.${e}`),
+							].join(",")}
+							onChange={(e) => {
+								if (e.target.files) {
+									handleFiles(Array.from(e.target.files));
+								}
+							}}
+						/>
 					</div>
 
 					{/* Action & Status Footer */}
@@ -1072,6 +2330,23 @@ export function MasterConverterClient() {
 										? `${doneCount} of ${selectedCount} files converted`
 										: `${selectedCount} files ready to convert`}
 							</span>
+
+							{errorCount > 0 && !isConverting && (
+								<button
+									type="button"
+									onClick={retryAllFailed}
+									className="mono border px-2 py-1 text-[11px]"
+									style={{
+										color: "var(--accent)",
+										borderColor: "var(--accent)",
+										borderRadius: "var(--radius)",
+										background: "var(--ground)",
+										cursor: "pointer",
+									}}
+								>
+									RETRY FAILED ({errorCount})
+								</button>
+							)}
 						</div>
 
 						{/* Right action buttons */}
@@ -1086,6 +2361,7 @@ export function MasterConverterClient() {
 										borderColor: "var(--ink)",
 										borderRadius: "var(--radius-pill)",
 										background: "transparent",
+										cursor: "pointer",
 									}}
 								>
 									CANCEL
@@ -1101,6 +2377,7 @@ export function MasterConverterClient() {
 											borderColor: "var(--rule-strong)",
 											borderRadius: "var(--radius-pill)",
 											background: "transparent",
+											cursor: "pointer",
 										}}
 									>
 										CLEAR ALL
@@ -1116,6 +2393,7 @@ export function MasterConverterClient() {
 												background: "var(--ink)",
 												borderColor: "var(--ink)",
 												borderRadius: "var(--radius-pill)",
+												cursor: "pointer",
 											}}
 										>
 											DOWNLOAD ALL (ZIP)

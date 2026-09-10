@@ -4,6 +4,7 @@ import {
 	formatDelta,
 	formatDuration,
 	formatPercent,
+	parseToolTitle,
 } from "../format";
 
 describe("formatBytes", () => {
@@ -58,5 +59,39 @@ describe("formatDuration", () => {
 describe("formatPercent", () => {
 	it("renders a 0-1 ratio as a whole percentage", () => {
 		expect(formatPercent(0.67)).toBe("67%");
+	});
+});
+
+describe("parseToolTitle", () => {
+	it("splits title with em dash tagline and site name", () => {
+		const result = parseToolTitle(
+			"Convert PNG to JPG — free, private, in your browser | convrtr",
+		);
+		expect(result.primary).toBe("Convert PNG to JPG");
+		expect(result.secondary).toBe(
+			" — free, private, in your browser | convrtr",
+		);
+	});
+
+	it("splits title with pipe separator only", () => {
+		const result = parseToolTitle(
+			"Compress a JPG to a target file size | convrtr",
+		);
+		expect(result.primary).toBe("Compress a JPG to a target file size");
+		expect(result.secondary).toBe(" | convrtr");
+	});
+
+	it("does not split on hyphen within words like re-encoding", () => {
+		const result = parseToolTitle(
+			"Convert MKV to MP4 without re-encoding | convrtr",
+		);
+		expect(result.primary).toBe("Convert MKV to MP4 without re-encoding");
+		expect(result.secondary).toBe(" | convrtr");
+	});
+
+	it("leaves titles without separators untouched", () => {
+		const result = parseToolTitle("Convert PNG to JPG");
+		expect(result.primary).toBe("Convert PNG to JPG");
+		expect(result.secondary).toBeUndefined();
 	});
 });

@@ -161,4 +161,38 @@ describe("GroupGrid", () => {
 		);
 		expect(shaderCanvas).toBeDefined();
 	});
+
+	it("renders tool tagline with subdued opacity and smaller size in listing", () => {
+		const items = [
+			{
+				href: "/groups/format/png",
+				title: "PNG",
+				tools: [
+					{
+						href: "/png-to-jpg",
+						title:
+							"Convert PNG to JPG — free, private, in your browser | convrtr",
+					},
+				],
+			},
+		];
+
+		render(<GroupGrid items={items} />);
+		fireEvent.click(screen.getByRole("button", { name: /PNG/ }));
+
+		const link = screen.getByRole("link", {
+			name: "Convert PNG to JPG — free, private, in your browser | convrtr",
+		});
+		expect(link).toBeDefined();
+
+		// Primary action text
+		expect(within(link).getByText("Convert PNG to JPG")).toBeDefined();
+
+		// Secondary tagline with subdued opacity and smaller font size
+		const tagline = within(link).getByText(/free, private, in your browser/i);
+		expect(tagline).toBeDefined();
+		expect(tagline.style.fontSize).toBe("12px");
+		expect(tagline.style.opacity).toBe("0.65");
+		expect(tagline.style.color).toBe("var(--ink-muted)");
+	});
 });

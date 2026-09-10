@@ -195,4 +195,103 @@ describe("MasterConverterClient", () => {
 
 		fireEvent.click(zipBtn);
 	});
+
+	it("filters items by search query and category", () => {
+		render(<MasterConverterClient />);
+		const dropField = screen.getByTestId("drop-field");
+
+		const files = [
+			new File(["a"], "landscape.png", { type: "image/png" }),
+			new File(["b"], "portrait.jpg", { type: "image/jpeg" }),
+			new File(["c"], "podcast.mp3", { type: "audio/mpeg" }),
+		];
+
+		fireEvent.drop(dropField, {
+			dataTransfer: { files },
+		});
+
+		expect(screen.getAllByTestId("converter-item-row")).toHaveLength(3);
+
+		// Search for "land"
+		const searchInput = screen.getByLabelText("Filter batch files table");
+		fireEvent.change(searchInput, { target: { value: "land" } });
+
+		let rows = screen.getAllByTestId("converter-item-row");
+		expect(rows).toHaveLength(1);
+		expect(screen.getByText("landscape.png")).toBeDefined();
+
+		// Clear search
+		fireEvent.change(searchInput, { target: { value: "" } });
+		expect(screen.getAllByTestId("converter-item-row")).toHaveLength(3);
+
+		// Filter by category: AUDIO
+		const audioPill = screen.getByRole("button", { name: /AUDIO \(1\)/i });
+		fireEvent.click(audioPill);
+
+		rows = screen.getAllByTestId("converter-item-row");
+		expect(rows).toHaveLength(1);
+		expect(screen.getByText("podcast.mp3")).toBeDefined();
+
+		// Reset category filter: ALL TYPES
+		const allTypesPill = screen.getByRole("button", { name: "ALL TYPES" });
+		fireEvent.click(allTypesPill);
+		expect(screen.getAllByTestId("converter-item-row")).toHaveLength(3);
+	});
+
+	it("supports sorting by name and size", () => {
+		render(<MasterConverterClient />);
+		const dropField = screen.getByTestId("drop-field");
+
+		const files = [
+			new File(["medium content"], "zebra.png", { type: "image/png" }),
+			new File(["tiny"], "alpha.png", { type: "image/png" }),
+		];
+
+		fireEvent.drop(dropField, {
+			dataTransfer: { files },
+		});
+
+		// Click FILE column header to sort
+		const fileHeader = screen.getByRole("columnheader", { name: /^FILE/ });
+		fireEvent.click(fileHeader);
+
+		let rows = screen.getAllByTestId("converter-item-row");
+		expect(rows[0]?.textContent).toContain("alpha.png");
+		expect(rows[1]?.textContent).toContain("zebra.png");
+
+		// Click again to reverse sort
+		fireEvent.click(fileHeader);
+		rows = screen.getAllByTestId("converter-item-row");
+		expect(rows[0]?.textContent).toContain("zebra.png");
+		expect(rows[1]?.textContent).toContain("alpha.png");
+	});
+
+	it("supports pruning completed items and copying report", async () => {
+		render(<MasterConverterClient />);
+		const dropField = screen.getByTestId("drop-field");
+
+		const files = [new File(["1"], "done-item.png", { type: "image/png" })];
+
+		fireEvent.drop(dropField, {
+			dataTransfer: { files },
+		});
+
+		const convertBtn = screen.getByRole("button", { name: /CONVERT 1 FILE/i });
+		fireEvent.click(convertBtn);
+
+		await screen.findByRole("button", { name: /Save done-item/i });
+
+		// COPY REPORT button is present
+		const copyReportBtn = screen.getByRole("button", { name: "COPY REPORT" });
+		expect(copyReportBtn).toBeDefined();
+
+		// PRUNE COMPLETED button removes the completed item
+		const pruneCompletedBtn = screen.getByRole("button", {
+			name: "PRUNE COMPLETED",
+		});
+		fireEvent.click(pruneCompletedBtn);
+
+		// With all items pruned, dropzone should reappear
+		expect(screen.getByTestId("drop-field")).toBeDefined();
+	});
 });

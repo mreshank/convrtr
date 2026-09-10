@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { parseToolTitle } from "@/lib/format";
 import { deriveTaskGroups, type Kind } from "@/core/registry/groups";
 
 type Props = {
@@ -221,22 +222,40 @@ export function ToolsMegaMenu({ triggerLabel, triggerHref }: Props) {
 											paddingLeft: "var(--space-base)",
 										}}
 									>
-										{group.tools.map((tool) => (
-											<li key={tool.id}>
-												<Link
-													href={`/${tool.id}`}
-													onClick={close}
-													style={{
-														display: "block",
-														padding: "var(--space-base) var(--gap-sm)",
-														color: "var(--ink)",
-														fontSize: "var(--body-size)",
-													}}
-												>
-													{tool.seo.title}
-												</Link>
-											</li>
-										))}
+										{group.tools.map((tool) => {
+											const { primary, secondary } = parseToolTitle(
+												tool.seo.title,
+											);
+											return (
+												<li key={tool.id}>
+													<Link
+														href={`/${tool.id}`}
+														onClick={close}
+														aria-label={tool.seo.title}
+														style={{
+															display: "block",
+															padding: "var(--space-base) var(--gap-sm)",
+															color: "var(--ink)",
+															fontSize: "var(--body-size)",
+														}}
+													>
+														<span>{primary}</span>
+														{secondary ? (
+															<span
+																style={{
+																	fontSize: "12px",
+																	fontWeight: 400,
+																	color: "var(--ink-muted)",
+																	opacity: 0.65,
+																}}
+															>
+																{secondary}
+															</span>
+														) : null}
+													</Link>
+												</li>
+											);
+										})}
 									</ul>
 								))
 						: null}

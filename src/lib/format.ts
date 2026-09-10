@@ -62,3 +62,25 @@ export function formatTimecode(seconds: number): string {
 	const rest = safe - minutes * 60;
 	return `${minutes}:${rest.toFixed(2).padStart(5, "0")}`;
 }
+
+/**
+ * Splits a full tool title (e.g. from `tool.seo.title`) into its primary action
+ * label (the actual information) and secondary tagline/branding suffix
+ * (e.g. " — free, private, in your browser | convrtr").
+ *
+ * Matches when a separator (" — ", " – ", " - ", or " | ") is surrounded by
+ * whitespace, avoiding hyphens inside hyphenated words like "re-encoding".
+ */
+export function parseToolTitle(rawTitle: string): {
+	primary: string;
+	secondary?: string;
+} {
+	const match = rawTitle.match(/^(.*?)((\s+[—–-]\s+|\s+\|\s+)(.*))$/);
+	if (!match) {
+		return { primary: rawTitle };
+	}
+	return {
+		primary: match[1].trim(),
+		secondary: match[2],
+	};
+}

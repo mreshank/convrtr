@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { parseToolTitle } from "@/lib/format";
 import { ArrowUpRight } from "@/design/primitives/ArrowUpRight";
 
 export type ListingItem = {
@@ -77,17 +78,34 @@ export function ListingRows({ items }: Props) {
 							gap: "var(--space-base)",
 						}}
 					>
-						<span
-							data-title
-							style={{
-								fontSize: "var(--label-size)",
-								fontWeight: "var(--label-weight)",
-								letterSpacing: "var(--label-tracking)",
-								color: "var(--ink)",
-							}}
-						>
-							{item.title}
-						</span>
+						{(() => {
+							const { primary, secondary } = parseToolTitle(item.title);
+							return (
+								<span
+									data-title
+									style={{
+										fontSize: "var(--label-size)",
+										fontWeight: "var(--label-weight)",
+										letterSpacing: "var(--label-tracking)",
+										color: "var(--ink)",
+									}}
+								>
+									<span>{primary}</span>
+									{secondary ? (
+										<span
+											style={{
+												fontSize: "12px",
+												fontWeight: 400,
+												color: "var(--ink-muted)",
+												opacity: 0.65,
+											}}
+										>
+											{secondary}
+										</span>
+									) : null}
+								</span>
+							);
+						})()}
 						{item.description ? (
 							<span
 								style={{

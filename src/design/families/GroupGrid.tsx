@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { parseToolTitle } from "@/lib/format";
 import { HALFTONE_FRAGMENT, ShaderSurface } from "@/design/texture";
 
 export type GroupGridToolItem = {
@@ -153,7 +154,7 @@ export function GroupGrid({ items, defaultSide = "right" }: Props) {
 					const previewChips =
 						formatPreviews.length > 0
 							? formatPreviews
-							: item.tools.slice(0, 2).map((t) => t.title);
+							: item.tools.slice(0, 2).map((t) => parseToolTitle(t.title).primary);
 					const remainingCount = item.tools.length - previewChips.length;
 
 					return (
@@ -764,51 +765,70 @@ export function GroupGrid({ items, defaultSide = "right" }: Props) {
 					padding: "0 var(--gap-md)",
 				}}
 			>
-				{displayedTools.map((tool) => (
-					<Link
-						key={tool.href}
-						href={tool.href}
-						aria-label={tool.title}
-						style={{
-							display: "flex",
-							flexDirection: "column",
-							justifyContent: "space-between",
-							gap: "var(--space-base)",
-							padding: "var(--gap-sm)",
-							background: "var(--ground)",
-							borderWidth: "var(--rule-width)",
-							borderStyle: "solid",
-							borderColor: "var(--rule)",
-							color: "var(--ink)",
-							textDecoration: "none",
-							transition:
-								"border-color var(--dur-hover) var(--ease), background-color var(--dur-hover) var(--ease)",
-						}}
-					>
-						<div
+				{displayedTools.map((tool) => {
+					const { primary, secondary } = parseToolTitle(tool.title);
+					return (
+						<Link
+							key={tool.href}
+							href={tool.href}
+							aria-label={tool.title}
 							style={{
 								display: "flex",
+								flexDirection: "column",
 								justifyContent: "space-between",
-								alignItems: "flex-start",
 								gap: "var(--space-base)",
+								padding: "var(--gap-sm)",
+								background: "var(--ground)",
+								borderWidth: "var(--rule-width)",
+								borderStyle: "solid",
+								borderColor: "var(--rule)",
+								color: "var(--ink)",
+								textDecoration: "none",
+								transition:
+									"border-color var(--dur-hover) var(--ease), background-color var(--dur-hover) var(--ease)",
 							}}
 						>
-							<span
+							<div
 								style={{
-									fontSize: "14px",
-									fontWeight: 500,
-									lineHeight: 1.3,
+									display: "flex",
+									justifyContent: "space-between",
+									alignItems: "flex-start",
+									gap: "var(--space-base)",
 								}}
 							>
-								{tool.title}
-							</span>
-							<span
-								aria-hidden="true"
-								style={{ color: "var(--accent)", fontSize: "13px" }}
-							>
-								↗
-							</span>
-						</div>
+								<span
+									style={{
+										fontSize: "14px",
+										fontWeight: 500,
+										lineHeight: 1.3,
+										color: "var(--ink)",
+									}}
+								>
+									<span>{primary}</span>
+									{secondary ? (
+										<span
+											style={{
+												fontSize: "12px",
+												fontWeight: 400,
+												color: "var(--ink-muted)",
+												opacity: 0.65,
+											}}
+										>
+											{secondary}
+										</span>
+									) : null}
+								</span>
+								<span
+									aria-hidden="true"
+									style={{
+										color: "var(--accent)",
+										fontSize: "13px",
+										flexShrink: 0,
+									}}
+								>
+									↗
+								</span>
+							</div>
 						{tool.acceptExt && tool.outputExt ? (
 							<div
 								style={{
@@ -863,7 +883,8 @@ export function GroupGrid({ items, defaultSide = "right" }: Props) {
 							</span>
 						) : null}
 					</Link>
-				))}
+					);
+				})}
 				{displayedTools.length === 0 ? (
 					<p
 						style={{
