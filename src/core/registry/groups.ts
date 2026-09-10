@@ -37,7 +37,6 @@ export function deriveTypeGroups(): TypeGroup[] {
 	})).filter((group) => group.tools.length > 0);
 }
 
-
 /**
  * Every tool, grouped by every file-format extension it touches on either
  * side of the conversion.

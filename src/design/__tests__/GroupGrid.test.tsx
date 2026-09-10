@@ -122,5 +122,43 @@ describe("GroupGrid", () => {
 		expect(screen.getByRole("link", { name: "HEIC to JPG" })).toBeDefined();
 		expect(screen.queryByRole("link", { name: "PNG to WebP" })).toBeNull();
 	});
-});
 
+	it("renders format preview pills on closed cards", () => {
+		const items = [
+			{
+				href: "/groups/format/png",
+				title: "PNG",
+				meta: "raster",
+				tools: [
+					{
+						href: "/png-to-webp",
+						title: "PNG to WebP",
+						acceptExt: ["png"],
+						outputExt: "webp",
+					},
+					{
+						href: "/png-to-jpg",
+						title: "PNG to JPG",
+						acceptExt: ["png"],
+						outputExt: "jpg",
+					},
+				],
+			},
+		];
+
+		render(<GroupGrid items={items} />);
+		expect(screen.getByText("PNG → WEBP")).toBeDefined();
+		expect(screen.getByText("PNG → JPG")).toBeDefined();
+		expect(screen.getByText("2 CONVERSIONS")).toBeDefined();
+	});
+
+	it("renders ambient halftone shader inside the expanded panel", () => {
+		const { container } = render(<GroupGrid items={ITEMS} />);
+		fireEvent.click(screen.getByRole("button", { name: /PNG/ }));
+
+		const shaderCanvas = container.querySelector(
+			'canvas[data-shader="group-workspace-halftone"]',
+		);
+		expect(shaderCanvas).toBeDefined();
+	});
+});

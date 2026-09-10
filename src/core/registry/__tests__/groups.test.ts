@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { TOOLS } from "@/core/registry";
-import { deriveFormatGroups, deriveTaskGroups, deriveTypeGroups } from "@/core/registry/groups";
+import {
+	deriveFormatGroups,
+	deriveTaskGroups,
+	deriveTypeGroups,
+} from "@/core/registry/groups";
 
 describe("deriveFormatGroups", () => {
 	it("groups every tool under each format it accepts or emits", () => {
@@ -78,4 +82,3 @@ describe("deriveTypeGroups", () => {
 		expect(total).toBe(TOOLS.length);
 	});
 });
-

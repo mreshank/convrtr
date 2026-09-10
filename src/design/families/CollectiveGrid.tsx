@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useId, useMemo, useState } from "react";
 import { ArrowUpRight } from "@/design/primitives/ArrowUpRight";
+import { BRANCH_NETWORK_FRAGMENT, ShaderSurface } from "@/design/texture";
 
 export type CollectiveToolItem = {
 	id: string;
@@ -67,6 +68,8 @@ export function CollectiveGrid({ collectives }: Props) {
 			<div
 				data-collective-toolbar
 				style={{
+					position: "relative",
+					overflow: "hidden",
 					display: "flex",
 					flexDirection: "column",
 					gap: "var(--gap-sm)",
@@ -75,79 +78,94 @@ export function CollectiveGrid({ collectives }: Props) {
 					padding: "var(--gap-md)",
 				}}
 			>
+				<ShaderSurface
+					fragment={BRANCH_NETWORK_FRAGMENT}
+					intensity={0.14}
+					label="collective-toolbar-network"
+				/>
 				<div
 					style={{
+						position: "relative",
+						zIndex: 1,
 						display: "flex",
-						flexWrap: "wrap",
-						alignItems: "center",
-						justifyContent: "space-between",
+						flexDirection: "column",
 						gap: "var(--gap-sm)",
 					}}
 				>
 					<div
 						style={{
-							position: "relative",
-							flex: "1 1 300px",
 							display: "flex",
+							flexWrap: "wrap",
 							alignItems: "center",
+							justifyContent: "space-between",
+							gap: "var(--gap-sm)",
 						}}
 					>
-						<label htmlFor={searchId} className="sr-only">
-							Search collectives
-						</label>
-						<input
-							id={searchId}
-							type="search"
-							value={query}
-							onChange={(e) => setQuery(e.target.value)}
-							placeholder="Search by mission, tool name, or format (e.g. WAV, MP3, EXIF, metadata)…"
-							className="mono"
+						<div
 							style={{
-								width: "100%",
-								background: "var(--ground)",
-								border: "var(--rule-width) solid var(--rule)",
-								color: "var(--ink)",
-								fontSize: "var(--mono-size)",
-								padding: "var(--space-base) var(--gap-sm)",
-								borderRadius: "var(--radius)",
-								outline: "none",
+								position: "relative",
+								flex: "1 1 300px",
+								display: "flex",
+								alignItems: "center",
 							}}
-						/>
-						{query && (
-							<button
-								type="button"
-								onClick={() => setQuery("")}
-								aria-label="Clear search query"
+						>
+							<label htmlFor={searchId} className="sr-only">
+								Search collectives
+							</label>
+							<input
+								id={searchId}
+								type="search"
+								value={query}
+								onChange={(e) => setQuery(e.target.value)}
+								placeholder="Search by mission, tool name, or format (e.g. WAV, MP3, EXIF, metadata)…"
 								className="mono"
 								style={{
-									position: "absolute",
-									right: "var(--space-base)",
-									background: "transparent",
-									border: "none",
-									color: "var(--ink-muted)",
-									cursor: "pointer",
+									width: "100%",
+									background: "var(--ground)",
+									border: "var(--rule-width) solid var(--rule)",
+									color: "var(--ink)",
 									fontSize: "var(--mono-size)",
-									padding: "0 var(--space-base)",
+									padding: "var(--space-base) var(--gap-sm)",
+									borderRadius: "var(--radius)",
+									outline: "none",
 								}}
-							>
-								✕
-							</button>
-						)}
-					</div>
+							/>
+							{query && (
+								<button
+									type="button"
+									onClick={() => setQuery("")}
+									aria-label="Clear search query"
+									className="mono"
+									style={{
+										position: "absolute",
+										right: "var(--space-base)",
+										background: "transparent",
+										border: "none",
+										color: "var(--ink-muted)",
+										cursor: "pointer",
+										fontSize: "var(--mono-size)",
+										padding: "0 var(--space-base)",
+									}}
+								>
+									✕
+								</button>
+							)}
+						</div>
 
-					<p
-						data-count
-						className="mono"
-						style={{
-							color: "var(--ink-muted)",
-							fontSize: "var(--mono-size)",
-							margin: 0,
-						}}
-					>
-						{isFiltered
-							? `SHOWING ${filteredCollectives.length} OF ${collectives.length} COLLECTIVES`
-							: `${collectives.length} CURATED COLLECTIVES`}
-					</p>
+						<p
+							data-count
+							className="mono"
+							style={{
+								color: "var(--ink-muted)",
+								fontSize: "var(--mono-size)",
+								margin: 0,
+							}}
+						>
+							{isFiltered
+								? `SHOWING ${filteredCollectives.length} OF ${collectives.length} COLLECTIVES`
+								: `${collectives.length} CURATED COLLECTIVES`}
+						</p>
+					</div>
 				</div>
 			</div>
 

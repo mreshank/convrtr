@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { HALFTONE_FRAGMENT, ShaderSurface } from "@/design/texture";
 
 export type GroupGridToolItem = {
 	href: string;
@@ -25,34 +26,106 @@ type Props = {
 	defaultSide?: "right" | "left";
 };
 
+/** Computes Levenshtein edit distance between two strings for typo tolerance. */
+function levenshtein(a: string, b: string): number {
+	const m = a.length;
+	const n = b.length;
+	let prev = new Array<number>(n + 1);
+	let curr = new Array<number>(n + 1);
+
+	for (let j = 0; j <= n; j++) prev[j] = j;
+
+	for (let i = 1; i <= m; i++) {
+		curr[0] = i;
+		const charA = a[i - 1];
+		for (let j = 1; j <= n; j++) {
+			const cost = charA === b[j - 1] ? 0 : 1;
+			const del = (prev[j] ?? 0) + 1;
+			const ins = (curr[j - 1] ?? 0) + 1;
+			const sub = (prev[j - 1] ?? 0) + cost;
+			curr[j] = Math.min(del, ins, sub);
+		}
+		const temp = prev;
+		prev = curr;
+		curr = temp;
+	}
+	return prev[n] ?? 0;
+}
+
+/** Fuzzy matches a tool item against user query. */
+function matchesToolFuzzy(tool: GroupGridToolItem, query: string): boolean {
+	const trimmed = query.trim().toLowerCase();
+	if (!trimmed) return true;
+	const tokens = trimmed.split(/\s+/).filter(Boolean);
+
+	const title = tool.title.toLowerCase();
+	const from = (tool.acceptExt || []).join(" ").toLowerCase();
+	const to = (tool.outputExt || "").toLowerCase();
+	const kind = (tool.kind || "").toLowerCase();
+	const category = (tool.category || "").toLowerCase();
+	const haystack = `${title} ${from} ${to} ${kind} ${category}`;
+
+	return tokens.every((token) => {
+		if (haystack.includes(token)) return true;
+		if (token.length >= 4) {
+			const words = haystack.split(/\W+/).filter(Boolean);
+			for (const w of words) {
+				if (w.length >= 4) {
+					const dist = levenshtein(token, w);
+					if (dist <= 1) {
+						if (
+							token.length >= 5 ||
+							w.length >= 5 ||
+							Math.abs(token.length - w.length) === 1
+						) {
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
+	});
+}
+
 /**
  * `/groups`' interactive card grid:
- * When closed, displays groups in a multi-column responsive grid.
+ * When closed, displays groups in a multi-column responsive grid with
+ * live conversion counts, category badges, and format transformation preview pills.
  * When a group is clicked, it expands as a spacious master-detail workspace
- * on the side (docked right by default, with left dock toggle) instead of
- * an in-place accordion that disrupts the grid flow.
- *
- * The expanded workspace utilizes horizontal screen space with a multi-column
- * tool cards grid, format conversion badges, search filter, and direct hub links.
+ * on the side with ambient halftone texture, fuzzy search, format filter chips,
+ * and direct hub links.
  */
 export function GroupGrid({ items, defaultSide = "right" }: Props) {
 	const [openHref, setOpenHref] = useState<string | null>(null);
 	const [panelSide, setPanelSide] = useState<"right" | "left">(defaultSide);
 	const [filter, setFilter] = useState("");
+	const [selectedFormat, setSelectedFormat] = useState<string | null>(null);
 
 	const activeItem = items.find((item) => item.href === openHref);
 
+	const availableFormats = useMemo(() => {
+		if (!activeItem) return [];
+		const set = new Set<string>();
+		for (const t of activeItem.tools) {
+			if (t.acceptExt) {
+				for (const ext of t.acceptExt) set.add(ext.toUpperCase());
+			}
+			if (t.outputExt) set.add(t.outputExt.toUpperCase());
+		}
+		return Array.from(set).sort();
+	}, [activeItem]);
+
 	const displayedTools = activeItem
 		? activeItem.tools.filter((tool) => {
-				if (!filter.trim()) return true;
-				const q = filter.toLowerCase();
-				return (
-					tool.title.toLowerCase().includes(q) ||
-					(tool.acceptExt &&
-						tool.acceptExt.some((e) => e.toLowerCase().includes(q))) ||
-					(tool.outputExt && tool.outputExt.toLowerCase().includes(q)) ||
-					(tool.kind && tool.kind.toLowerCase().includes(q))
-				);
+				if (selectedFormat) {
+					const matchFrom = tool.acceptExt?.some(
+						(e) => e.toUpperCase() === selectedFormat,
+					);
+					const matchTo = tool.outputExt?.toUpperCase() === selectedFormat;
+					if (!matchFrom && !matchTo) return false;
+				}
+				return matchesToolFuzzy(tool, filter);
 			})
 		: [];
 
@@ -69,53 +142,212 @@ export function GroupGrid({ items, defaultSide = "right" }: Props) {
 					margin: "0 auto",
 				}}
 			>
-				{items.map((item) => (
-					<button
-						key={item.href}
-						type="button"
-						aria-expanded={false}
-						onClick={() => {
-							setOpenHref(item.href);
-							setFilter("");
-						}}
-						style={{
-							display: "flex",
-							flexDirection: "column",
-							alignItems: "flex-start",
-							gap: "var(--space-base)",
-							padding: "var(--gap-sm)",
-							textAlign: "left",
-							background: "transparent",
-							borderWidth: "var(--rule-width)",
-							borderStyle: "solid",
-							borderColor: "var(--rule)",
-							color: "var(--ink)",
-							cursor: "pointer",
-							transition:
-								"border-color var(--dur-hover) var(--ease), background-color var(--dur-hover) var(--ease)",
-						}}
-					>
-						<span
+				{items.map((item) => {
+					const formatPreviews = item.tools
+						.filter((t) => t.acceptExt && t.outputExt)
+						.slice(0, 3)
+						.map(
+							(t) =>
+								`${t.acceptExt?.[0]?.toUpperCase()} → ${t.outputExt?.toUpperCase()}`,
+						);
+					const previewChips =
+						formatPreviews.length > 0
+							? formatPreviews
+							: item.tools.slice(0, 2).map((t) => t.title);
+					const remainingCount = item.tools.length - previewChips.length;
+
+					return (
+						<button
+							key={item.href}
+							type="button"
+							aria-expanded={false}
+							onClick={() => {
+								setOpenHref(item.href);
+								setFilter("");
+								setSelectedFormat(null);
+							}}
 							style={{
-								fontSize: "var(--label-size)",
-								fontWeight: "var(--label-weight)",
-								letterSpacing: "var(--label-tracking)",
+								display: "flex",
+								flexDirection: "column",
+								alignItems: "stretch",
+								justifyContent: "space-between",
+								gap: "var(--gap-sm)",
+								padding: "var(--gap-sm)",
+								textAlign: "left",
+								background: "transparent",
+								borderWidth: "var(--rule-width)",
+								borderStyle: "solid",
+								borderColor: "var(--rule)",
+								color: "var(--ink)",
+								cursor: "pointer",
+								transition:
+									"border-color var(--dur-hover) var(--ease), background-color var(--dur-hover) var(--ease)",
 							}}
 						>
-							{item.title}
-						</span>
-						{item.meta ? (
-							<span className="mono" style={{ color: "var(--ink-muted)" }}>
-								{item.meta}
-							</span>
-						) : null}
-						{item.description ? (
-							<span style={{ color: "var(--ink-muted)" }}>
-								{item.description}
-							</span>
-						) : null}
-					</button>
-				))}
+							<div
+								style={{
+									display: "flex",
+									flexDirection: "column",
+									gap: "var(--space-base)",
+								}}
+							>
+								{/* Header metadata row */}
+								<div
+									style={{
+										display: "flex",
+										justifyContent: "space-between",
+										alignItems: "center",
+										width: "100%",
+									}}
+								>
+									{item.meta ? (
+										<span
+											className="mono"
+											style={{
+												fontSize: "11px",
+												letterSpacing: "var(--label-tracking)",
+												color: "var(--accent)",
+												borderWidth: "var(--rule-width)",
+												borderStyle: "solid",
+												borderColor: "var(--rule)",
+												padding: "0 var(--space-base)",
+												background: "var(--surface)",
+											}}
+										>
+											{item.meta.toUpperCase()}
+										</span>
+									) : (
+										<span />
+									)}
+									<div
+										style={{
+											display: "flex",
+											alignItems: "center",
+											gap: "var(--space-base)",
+										}}
+									>
+										<span
+											style={{
+												width: "var(--space-base)",
+												height: "var(--space-base)",
+												borderRadius: "50%",
+												background: "var(--accent)",
+												display: "inline-block",
+											}}
+										/>
+										<span
+											className="mono"
+											style={{
+												fontSize: "11px",
+												color: "var(--ink-muted)",
+												letterSpacing: "var(--label-tracking)",
+											}}
+										>
+											{item.tools.length} CONVERSIONS
+										</span>
+									</div>
+								</div>
+
+								{/* Title & Description */}
+								<span
+									style={{
+										fontSize: "var(--label-size)",
+										fontWeight: "var(--label-weight)",
+										letterSpacing: "var(--label-tracking)",
+										color: "var(--ink)",
+									}}
+								>
+									{item.title}
+								</span>
+								{item.description ? (
+									<span
+										style={{
+											color: "var(--ink-muted)",
+											fontSize: "13px",
+											lineHeight: "var(--body-leading)",
+										}}
+									>
+										{item.description}
+									</span>
+								) : null}
+
+								{/* Preview format chips */}
+								{previewChips.length > 0 ? (
+									<div
+										style={{
+											display: "flex",
+											flexWrap: "wrap",
+											gap: "var(--space-base)",
+											alignItems: "center",
+											paddingTop: "var(--space-base)",
+										}}
+									>
+										{previewChips.map((chip) => (
+											<span
+												key={chip}
+												className="mono"
+												style={{
+													fontSize: "11px",
+													padding: "0 var(--space-base)",
+													background: "var(--surface)",
+													borderWidth: "var(--rule-width)",
+													borderStyle: "solid",
+													borderColor: "var(--rule)",
+													color: "var(--ink)",
+												}}
+											>
+												{chip}
+											</span>
+										))}
+										{remainingCount > 0 ? (
+											<span
+												className="mono"
+												style={{
+													fontSize: "11px",
+													color: "var(--ink-muted)",
+												}}
+											>
+												+{remainingCount} MORE
+											</span>
+										) : null}
+									</div>
+								) : null}
+							</div>
+
+							{/* Card footer prompt */}
+							<div
+								style={{
+									display: "flex",
+									justifyContent: "space-between",
+									alignItems: "center",
+									width: "100%",
+									paddingTop: "var(--space-base)",
+									borderTop: "var(--rule-width) solid var(--rule)",
+								}}
+							>
+								<span
+									className="mono"
+									style={{
+										fontSize: "11px",
+										color: "var(--accent)",
+										letterSpacing: "var(--label-tracking)",
+									}}
+								>
+									EXPAND WORKSPACE
+								</span>
+								<span
+									aria-hidden="true"
+									style={{
+										fontSize: "11px",
+										color: "var(--accent)",
+									}}
+								>
+									↘
+								</span>
+							</div>
+						</button>
+					);
+				})}
 			</div>
 		);
 	}
@@ -141,6 +373,7 @@ export function GroupGrid({ items, defaultSide = "right" }: Props) {
 							} else {
 								setOpenHref(item.href);
 								setFilter("");
+								setSelectedFormat(null);
 							}
 						}}
 						style={{
@@ -153,7 +386,7 @@ export function GroupGrid({ items, defaultSide = "right" }: Props) {
 							background: isOpen ? "var(--surface)" : "transparent",
 							borderWidth: "var(--rule-width)",
 							borderStyle: "solid",
-							borderColor: isOpen ? "var(--ink)" : "var(--rule)",
+							borderColor: isOpen ? "var(--accent)" : "var(--rule)",
 							color: "var(--ink)",
 							cursor: "pointer",
 							transition:
@@ -189,11 +422,31 @@ export function GroupGrid({ items, defaultSide = "right" }: Props) {
 								</span>
 							) : null}
 						</div>
-						{item.meta ? (
-							<span className="mono" style={{ color: "var(--ink-muted)" }}>
-								{item.meta}
+						<div
+							style={{
+								display: "flex",
+								justifyContent: "space-between",
+								alignItems: "center",
+								width: "100%",
+							}}
+						>
+							{item.meta ? (
+								<span
+									className="mono"
+									style={{ color: "var(--ink-muted)", fontSize: "11px" }}
+								>
+									{item.meta}
+								</span>
+							) : (
+								<span />
+							)}
+							<span
+								className="mono"
+								style={{ color: "var(--ink-muted)", fontSize: "11px" }}
+							>
+								{item.tools.length} tools
 							</span>
-						) : null}
+						</div>
 						{item.description ? (
 							<span style={{ color: "var(--ink-muted)", fontSize: "13px" }}>
 								{item.description}
@@ -209,10 +462,10 @@ export function GroupGrid({ items, defaultSide = "right" }: Props) {
 		<section
 			aria-label={activeItem.title}
 			style={{
+				position: "relative",
 				display: "flex",
 				flexDirection: "column",
 				gap: "var(--gap-md)",
-				padding: "var(--gap-md)",
 				borderWidth: "var(--rule-width)",
 				borderStyle: "solid",
 				borderColor: "var(--rule)",
@@ -220,140 +473,302 @@ export function GroupGrid({ items, defaultSide = "right" }: Props) {
 				minWidth: 0,
 			}}
 		>
+			{/* Ambient texture workspace header */}
 			<div
 				style={{
-					display: "flex",
-					justifyContent: "space-between",
-					alignItems: "flex-start",
-					gap: "var(--gap-sm)",
-					flexWrap: "wrap",
+					position: "relative",
+					overflow: "hidden",
+					padding: "var(--gap-md)",
+					borderBottom: "var(--rule-width) solid var(--rule)",
+					background: "var(--surface)",
 				}}
 			>
+				<ShaderSurface
+					fragment={HALFTONE_FRAGMENT}
+					intensity={0.16}
+					label="group-workspace-halftone"
+				/>
 				<div
 					style={{
+						position: "relative",
+						zIndex: 1,
 						display: "flex",
-						flexDirection: "column",
-						gap: "var(--space-base)",
+						justifyContent: "space-between",
+						alignItems: "flex-start",
+						gap: "var(--gap-sm)",
+						flexWrap: "wrap",
 					}}
 				>
-					<h2
-						style={{
-							fontSize: "28px",
-							fontWeight: 400,
-							letterSpacing: "var(--headline-tracking)",
-							color: "var(--ink)",
-							margin: 0,
-						}}
-					>
-						{activeItem.title}
-					</h2>
 					<div
 						style={{
 							display: "flex",
-							gap: "var(--gap-sm)",
-							alignItems: "center",
-							flexWrap: "wrap",
+							flexDirection: "column",
+							gap: "var(--space-base)",
 						}}
 					>
-						{activeItem.meta ? (
+						<h2
+							style={{
+								fontSize: "28px",
+								fontWeight: 400,
+								letterSpacing: "var(--headline-tracking)",
+								color: "var(--ink)",
+								margin: 0,
+							}}
+						>
+							{activeItem.title}
+						</h2>
+						<div
+							style={{
+								display: "flex",
+								gap: "var(--gap-sm)",
+								alignItems: "center",
+								flexWrap: "wrap",
+							}}
+						>
+							{activeItem.meta ? (
+								<span
+									className="mono"
+									style={{
+										color: "var(--accent)",
+										fontSize: "11px",
+										borderWidth: "var(--rule-width)",
+										borderStyle: "solid",
+										borderColor: "var(--rule)",
+										padding: "0 var(--space-base)",
+										background: "var(--ground)",
+									}}
+								>
+									{activeItem.meta}
+								</span>
+							) : null}
 							<span
 								className="mono"
-								style={{ color: "var(--accent)", fontSize: "13px" }}
+								style={{ color: "var(--ink-muted)", fontSize: "11px" }}
 							>
-								{activeItem.meta}
+								{activeItem.tools.length} CONVERSIONS AVAILABLE
 							</span>
-						) : null}
-						{activeItem.description ? (
-							<span style={{ color: "var(--ink-muted)", fontSize: "13px" }}>
-								{activeItem.description}
-							</span>
-						) : null}
+							{activeItem.description ? (
+								<span style={{ color: "var(--ink-muted)", fontSize: "13px" }}>
+									{activeItem.description}
+								</span>
+							) : null}
+						</div>
 					</div>
-				</div>
 
-				<div
-					style={{
-						display: "flex",
-						gap: "var(--space-base)",
-						alignItems: "center",
-					}}
-				>
-					<button
-						type="button"
-						onClick={() =>
-							setPanelSide(panelSide === "right" ? "left" : "right")
-						}
-						aria-label={`Dock panel ${panelSide === "right" ? "left" : "right"}`}
+					<div
 						style={{
-							padding: "var(--space-base)",
-							fontSize: "12px",
-							background: "transparent",
-							borderWidth: "var(--rule-width)",
-							borderStyle: "solid",
-							borderColor: "var(--rule)",
-							color: "var(--ink-muted)",
-							cursor: "pointer",
+							display: "flex",
+							gap: "var(--space-base)",
+							alignItems: "center",
 						}}
 					>
-						{panelSide === "right" ? "← Dock Left" : "Dock Right →"}
-					</button>
-					<button
-						type="button"
-						onClick={() => setOpenHref(null)}
-						aria-label="Close panel"
-						style={{
-							padding: "var(--space-base)",
-							fontSize: "12px",
-							background: "transparent",
-							borderWidth: "var(--rule-width)",
-							borderStyle: "solid",
-							borderColor: "var(--rule)",
-							color: "var(--ink-muted)",
-							cursor: "pointer",
-						}}
-					>
-						✕ Close
-					</button>
-
-
+						<button
+							type="button"
+							onClick={() =>
+								setPanelSide(panelSide === "right" ? "left" : "right")
+							}
+							aria-label={`Dock panel ${panelSide === "right" ? "left" : "right"}`}
+							style={{
+								padding: "var(--space-base)",
+								fontSize: "12px",
+								background: "var(--ground)",
+								borderWidth: "var(--rule-width)",
+								borderStyle: "solid",
+								borderColor: "var(--rule)",
+								color: "var(--ink-muted)",
+								cursor: "pointer",
+							}}
+						>
+							{panelSide === "right" ? "← Dock Left" : "Dock Right →"}
+						</button>
+						<button
+							type="button"
+							onClick={() => setOpenHref(null)}
+							aria-label="Close panel"
+							style={{
+								padding: "var(--space-base)",
+								fontSize: "12px",
+								background: "var(--ground)",
+								borderWidth: "var(--rule-width)",
+								borderStyle: "solid",
+								borderColor: "var(--rule)",
+								color: "var(--ink-muted)",
+								cursor: "pointer",
+							}}
+						>
+							✕ Close
+						</button>
+					</div>
 				</div>
 			</div>
 
-			{activeItem.tools.length > 4 ? (
-				<div>
-					<input
-						type="text"
-						placeholder={`Search ${activeItem.tools.length} conversions...`}
-						value={filter}
-						onChange={(e) => setFilter(e.target.value)}
-						aria-label={`Filter ${activeItem.title} tools`}
+			{/* Search & Filter Toolbar */}
+			<div
+				style={{
+					display: "flex",
+					flexDirection: "column",
+					gap: "var(--space-base)",
+					padding: "0 var(--gap-md)",
+				}}
+			>
+				{activeItem.tools.length > 4 ? (
+					<div
 						style={{
-							width: "100%",
-							padding: "var(--space-base) var(--gap-sm)",
-							background: "var(--ground)",
-							borderWidth: "var(--rule-width)",
-							borderStyle: "solid",
-							borderColor: "var(--rule)",
-							color: "var(--ink)",
-							fontSize: "14px",
-							outline: "none",
-							boxSizing: "border-box",
+							display: "flex",
+							flexDirection: "column",
+							gap: "var(--space-base)",
 						}}
-					/>
-				</div>
-			) : null}
+					>
+						<input
+							type="text"
+							placeholder={`Search ${activeItem.tools.length} conversions (supports typo fuzzy search)...`}
+							value={filter}
+							onChange={(e) => setFilter(e.target.value)}
+							aria-label={`Filter ${activeItem.title} tools`}
+							style={{
+								width: "100%",
+								padding: "var(--space-base) var(--gap-sm)",
+								background: "var(--ground)",
+								borderWidth: "var(--rule-width)",
+								borderStyle: "solid",
+								borderColor: "var(--rule)",
+								color: "var(--ink)",
+								fontSize: "14px",
+								outline: "none",
+								boxSizing: "border-box",
+							}}
+						/>
 
+						{/* Format Quick Filter Pills */}
+						{availableFormats.length > 1 && availableFormats.length <= 12 ? (
+							<div
+								style={{
+									display: "flex",
+									flexWrap: "wrap",
+									gap: "var(--space-base)",
+									alignItems: "center",
+								}}
+							>
+								<span
+									className="mono"
+									style={{
+										fontSize: "11px",
+										color: "var(--ink-muted)",
+										letterSpacing: "var(--label-tracking)",
+									}}
+								>
+									FILTER BY FORMAT:
+								</span>
+								<button
+									type="button"
+									onClick={() => setSelectedFormat(null)}
+									className="mono"
+									style={{
+										fontSize: "11px",
+										padding: "0 var(--space-base)",
+										background:
+											selectedFormat === null ? "var(--ink)" : "var(--ground)",
+										color:
+											selectedFormat === null
+												? "var(--ground)"
+												: "var(--ink-muted)",
+										borderWidth: "var(--rule-width)",
+										borderStyle: "solid",
+										borderColor:
+											selectedFormat === null ? "var(--ink)" : "var(--rule)",
+										cursor: "pointer",
+									}}
+								>
+									ALL
+								</button>
+								{availableFormats.map((fmt) => {
+									const isSelected = selectedFormat === fmt;
+									return (
+										<button
+											key={fmt}
+											type="button"
+											onClick={() => setSelectedFormat(isSelected ? null : fmt)}
+											className="mono"
+											style={{
+												fontSize: "11px",
+												padding: "0 var(--space-base)",
+												background: isSelected
+													? "var(--accent)"
+													: "var(--ground)",
+												color: isSelected ? "var(--ground)" : "var(--ink)",
+												borderWidth: "var(--rule-width)",
+												borderStyle: "solid",
+												borderColor: isSelected
+													? "var(--accent)"
+													: "var(--rule)",
+												cursor: "pointer",
+											}}
+										>
+											{fmt}
+										</button>
+									);
+								})}
+							</div>
+						) : null}
+
+						{/* Readout */}
+						<div
+							style={{
+								display: "flex",
+								justifyContent: "space-between",
+								alignItems: "center",
+							}}
+						>
+							<span
+								className="mono"
+								style={{
+									fontSize: "11px",
+									color: "var(--ink-muted)",
+									letterSpacing: "var(--label-tracking)",
+								}}
+							>
+								SHOWING {displayedTools.length} OF {activeItem.tools.length}{" "}
+								CONVERSIONS
+							</span>
+							{filter || selectedFormat ? (
+								<button
+									type="button"
+									onClick={() => {
+										setFilter("");
+										setSelectedFormat(null);
+									}}
+									className="mono"
+									style={{
+										fontSize: "11px",
+										color: "var(--accent)",
+										background: "transparent",
+										border: "none",
+										cursor: "pointer",
+										padding: 0,
+									}}
+								>
+									RESET FILTERS
+								</button>
+							) : null}
+						</div>
+					</div>
+				) : null}
+			</div>
+
+			{/* Tool Cards Grid */}
 			<div
 				style={{
 					display: "grid",
 					gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
 					gap: "var(--gap-sm)",
+					padding: "0 var(--gap-md)",
 				}}
 			>
 				{displayedTools.map((tool) => (
 					<Link
 						key={tool.href}
 						href={tool.href}
+						aria-label={tool.title}
 						style={{
 							display: "flex",
 							flexDirection: "column",
@@ -366,6 +781,8 @@ export function GroupGrid({ items, defaultSide = "right" }: Props) {
 							borderColor: "var(--rule)",
 							color: "var(--ink)",
 							textDecoration: "none",
+							transition:
+								"border-color var(--dur-hover) var(--ease), background-color var(--dur-hover) var(--ease)",
 						}}
 					>
 						<div
@@ -387,7 +804,7 @@ export function GroupGrid({ items, defaultSide = "right" }: Props) {
 							</span>
 							<span
 								aria-hidden="true"
-								style={{ color: "var(--ink-muted)", fontSize: "13px" }}
+								style={{ color: "var(--accent)", fontSize: "13px" }}
 							>
 								↗
 							</span>
@@ -402,7 +819,15 @@ export function GroupGrid({ items, defaultSide = "right" }: Props) {
 							>
 								<span
 									className="mono"
-									style={{ fontSize: "11px", color: "var(--accent)" }}
+									style={{
+										fontSize: "11px",
+										color: "var(--accent)",
+										background: "var(--surface)",
+										borderWidth: "var(--rule-width)",
+										borderStyle: "solid",
+										borderColor: "var(--rule)",
+										padding: "0 var(--space-base)",
+									}}
 								>
 									{tool.acceptExt.map((e) => e.toUpperCase()).join("/")}
 								</span>
@@ -416,13 +841,20 @@ export function GroupGrid({ items, defaultSide = "right" }: Props) {
 								</span>
 								<span
 									className="mono"
-									style={{ fontSize: "11px", color: "var(--accent)" }}
+									style={{
+										fontSize: "11px",
+										color: "var(--accent)",
+										background: "var(--surface)",
+										borderWidth: "var(--rule-width)",
+										borderStyle: "solid",
+										borderColor: "var(--rule)",
+										padding: "0 var(--space-base)",
+									}}
 								>
 									{tool.outputExt.toUpperCase()}
 								</span>
 							</div>
 						) : tool.kind ? (
-
 							<span
 								className="mono"
 								style={{ fontSize: "11px", color: "var(--ink-muted)" }}
@@ -438,6 +870,7 @@ export function GroupGrid({ items, defaultSide = "right" }: Props) {
 							color: "var(--ink-muted)",
 							fontSize: "14px",
 							gridColumn: "1 / -1",
+							padding: "var(--gap-sm) 0",
 						}}
 					>
 						No tools match &ldquo;{filter}&rdquo;
@@ -450,14 +883,14 @@ export function GroupGrid({ items, defaultSide = "right" }: Props) {
 					display: "flex",
 					justifyContent: "space-between",
 					alignItems: "center",
-					paddingTop: "var(--space-base)",
+					padding: "var(--gap-sm) var(--gap-md)",
 					borderTop: "var(--rule-width) solid var(--rule)",
 				}}
 			>
 				<Link
 					href={activeItem.href}
 					className="mono"
-					style={{ color: "var(--ink-muted)", fontSize: "13px" }}
+					style={{ color: "var(--accent)", fontSize: "13px" }}
 				>
 					View all →
 				</Link>

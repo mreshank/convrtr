@@ -11,6 +11,7 @@ import {
 	type ListingItem,
 	ListingRows,
 } from "@/design/families";
+import { HALFTONE_FRAGMENT, ShaderSurface } from "@/design/texture";
 
 /**
  * One `ListingRows` worth of data, plus the optional heading that separates
@@ -104,45 +105,85 @@ export function HubPage({
 				gap: "var(--gap-md)",
 			}}
 		>
-			{eyebrow ? (
-				<p className="meta" style={{ color: "var(--ink-muted)" }}>
-					{eyebrow}
-				</p>
-			) : null}
-
-			{typeof title === "string" ? (
-				<h1
+			<header
+				data-hub-header
+				style={{
+					position: "relative",
+					overflow: "hidden",
+					display: "flex",
+					flexDirection: "column",
+					gap: "var(--gap-sm)",
+					padding: "var(--gap-md)",
+					background: "var(--surface)",
+					borderWidth: "var(--rule-width)",
+					borderStyle: "solid",
+					borderColor: "var(--rule)",
+				}}
+			>
+				<ShaderSurface
+					fragment={HALFTONE_FRAGMENT}
+					intensity={0.14}
+					label="hub-header-halftone"
+				/>
+				<div
 					style={{
-						fontSize: "var(--headline-size)",
-						fontWeight: 400,
-						letterSpacing: "var(--headline-tracking)",
-						lineHeight: "var(--display-leading)",
-						color: "var(--ink)",
+						position: "relative",
+						zIndex: 1,
+						display: "flex",
+						flexDirection: "column",
+						gap: "var(--space-base)",
 					}}
 				>
-					{title}
-				</h1>
-			) : (
-				<FusedHeadline lead={title.lead} cont={title.cont} as="h1" />
-			)}
+					{eyebrow ? (
+						<p
+							className="meta"
+							style={{ color: "var(--ink-muted)", margin: 0 }}
+						>
+							{eyebrow}
+						</p>
+					) : null}
 
-			{lede ? (
-				<p
-					style={{
-						color: "var(--ink-muted)",
-						fontSize: "var(--body-size)",
-						lineHeight: "var(--body-leading)",
-					}}
-				>
-					{lede}
-				</p>
-			) : null}
+					{typeof title === "string" ? (
+						<h1
+							style={{
+								fontSize: "var(--headline-size)",
+								fontWeight: 400,
+								letterSpacing: "var(--headline-tracking)",
+								lineHeight: "var(--display-leading)",
+								color: "var(--ink)",
+								margin: 0,
+							}}
+						>
+							{title}
+						</h1>
+					) : (
+						<FusedHeadline lead={title.lead} cont={title.cont} as="h1" />
+					)}
 
-			{count ? (
-				<p data-count className="mono" style={{ color: "var(--ink-muted)" }}>
-					{`${count.value} ${count.noun}`}
-				</p>
-			) : null}
+					{lede ? (
+						<p
+							style={{
+								color: "var(--ink-muted)",
+								fontSize: "var(--body-size)",
+								lineHeight: "var(--body-leading)",
+								margin: 0,
+							}}
+						>
+							{lede}
+						</p>
+					) : null}
+
+					{count ? (
+						<p
+							data-count
+							className="mono"
+							style={{ color: "var(--accent)", margin: 0 }}
+						>
+							{`${count.value} ${count.noun}`}
+						</p>
+					) : null}
+				</div>
+			</header>
 
 			{branch ? <BranchDiagram from={branch.from} to={branch.to} /> : null}
 

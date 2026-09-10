@@ -117,4 +117,20 @@ describe("filterToolRows", () => {
 		filterToolRows(ROWS, "png");
 		expect(ROWS).toEqual(copy);
 	});
+
+	it("filters by category option", () => {
+		const result = filterToolRows(ROWS, "", { category: "video" });
+		expect(result.map((r) => r.id)).toEqual(["video/mp4-to-webm"]);
+	});
+
+	it("filters by task/kind option", () => {
+		const result = filterToolRows(ROWS, "", { kind: "convert" });
+		expect(result.length).toBe(3);
+	});
+
+	it("fuzzy matches queries with small typos", () => {
+		// "webpp" with double p should match "image/png-to-webp"
+		const result = filterToolRows(ROWS, "webpp");
+		expect(result.map((r) => r.id)).toEqual(["image/png-to-webp"]);
+	});
 });

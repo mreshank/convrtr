@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useId, useMemo, useState } from "react";
 import { ArrowUpRight } from "@/design/primitives/ArrowUpRight";
+import { HALFTONE_FRAGMENT, ShaderSurface } from "@/design/texture";
 
 export type BlogGridItem = {
 	slug: string;
@@ -30,23 +31,26 @@ type SortOption =
 function levenshtein(a: string, b: string): number {
 	const m = a.length;
 	const n = b.length;
-	const dp: number[][] = Array.from({ length: m + 1 }, () =>
-		new Array(n + 1).fill(0),
-	);
-	for (let i = 0; i <= m; i++) dp[i][0] = i;
-	for (let j = 0; j <= n; j++) dp[0][j] = j;
+	let prev = new Array<number>(n + 1);
+	let curr = new Array<number>(n + 1);
+
+	for (let j = 0; j <= n; j++) prev[j] = j;
 
 	for (let i = 1; i <= m; i++) {
+		curr[0] = i;
+		const charA = a[i - 1];
 		for (let j = 1; j <= n; j++) {
-			const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-			dp[i][j] = Math.min(
-				dp[i - 1][j] + 1,
-				dp[i][j - 1] + 1,
-				dp[i - 1][j - 1] + cost,
-			);
+			const cost = charA === b[j - 1] ? 0 : 1;
+			const del = (prev[j] ?? 0) + 1;
+			const ins = (curr[j - 1] ?? 0) + 1;
+			const sub = (prev[j - 1] ?? 0) + cost;
+			curr[j] = Math.min(del, ins, sub);
 		}
+		const temp = prev;
+		prev = curr;
+		curr = temp;
 	}
-	return dp[m][n];
+	return prev[n] ?? 0;
 }
 
 /** Checks whether sub is an ordered subsequence of str. */
@@ -218,6 +222,8 @@ export function BlogGrid({ posts }: Props) {
 			<div
 				data-blog-toolbar
 				style={{
+					position: "relative",
+					overflow: "hidden",
 					display: "flex",
 					flexDirection: "column",
 					gap: "var(--gap-sm)",
@@ -226,199 +232,214 @@ export function BlogGrid({ posts }: Props) {
 					padding: "var(--gap-md)",
 				}}
 			>
-				{/* Search Row */}
+				<ShaderSurface
+					fragment={HALFTONE_FRAGMENT}
+					intensity={0.14}
+					label="blog-toolbar-halftone"
+				/>
 				<div
 					style={{
+						position: "relative",
+						zIndex: 1,
 						display: "flex",
-						flexWrap: "wrap",
-						alignItems: "center",
-						justifyContent: "space-between",
+						flexDirection: "column",
 						gap: "var(--gap-sm)",
 					}}
 				>
+					{/* Search Row */}
 					<div
 						style={{
-							position: "relative",
-							flex: "1 1 300px",
 							display: "flex",
+							flexWrap: "wrap",
 							alignItems: "center",
+							justifyContent: "space-between",
+							gap: "var(--gap-sm)",
 						}}
 					>
-						<label htmlFor={searchId} className="sr-only">
-							Search articles
-						</label>
-						<input
-							id={searchId}
-							type="search"
-							value={query}
-							onChange={(e) => {
-								setQuery(e.target.value);
-								if (e.target.value.trim() && sort === "newest") {
-									setSort("relevance");
-								} else if (!e.target.value.trim() && sort === "relevance") {
-									setSort("newest");
-								}
-							}}
-							placeholder="Fuzzy search titles, tags, encryption, formats…"
-							className="mono"
+						<div
 							style={{
-								width: "100%",
-								background: "var(--ground)",
-								border: "var(--rule-width) solid var(--rule)",
-								color: "var(--ink)",
-								fontSize: "var(--mono-size)",
-								padding: "var(--space-base) var(--gap-sm)",
-								borderRadius: "var(--radius)",
-								outline: "none",
+								position: "relative",
+								flex: "1 1 300px",
+								display: "flex",
+								alignItems: "center",
 							}}
-						/>
-						{query && (
-							<button
-								type="button"
-								onClick={() => setQuery("")}
-								aria-label="Clear search query"
+						>
+							<label htmlFor={searchId} className="sr-only">
+								Search articles
+							</label>
+							<input
+								id={searchId}
+								type="search"
+								value={query}
+								onChange={(e) => {
+									setQuery(e.target.value);
+									if (e.target.value.trim() && sort === "newest") {
+										setSort("relevance");
+									} else if (!e.target.value.trim() && sort === "relevance") {
+										setSort("newest");
+									}
+								}}
+								placeholder="Fuzzy search titles, tags, encryption, formats…"
 								className="mono"
 								style={{
-									position: "absolute",
-									right: "var(--space-base)",
-									background: "transparent",
-									border: "none",
-									color: "var(--ink-muted)",
-									cursor: "pointer",
+									width: "100%",
+									background: "var(--ground)",
+									border: "var(--rule-width) solid var(--rule)",
+									color: "var(--ink)",
 									fontSize: "var(--mono-size)",
-									padding: "0 var(--space-base)",
+									padding: "var(--space-base) var(--gap-sm)",
+									borderRadius: "var(--radius)",
+									outline: "none",
+								}}
+							/>
+							{query && (
+								<button
+									type="button"
+									onClick={() => setQuery("")}
+									aria-label="Clear search query"
+									className="mono"
+									style={{
+										position: "absolute",
+										right: "var(--space-base)",
+										background: "transparent",
+										border: "none",
+										color: "var(--ink-muted)",
+										cursor: "pointer",
+										fontSize: "var(--mono-size)",
+										padding: "0 var(--space-base)",
+									}}
+								>
+									✕
+								</button>
+							)}
+						</div>
+
+						{/* Sort Selector */}
+						<div
+							style={{
+								display: "flex",
+								alignItems: "center",
+								gap: "var(--space-base)",
+							}}
+						>
+							<label
+								htmlFor={sortId}
+								className="meta"
+								style={{ color: "var(--ink-muted)" }}
+							>
+								SORT
+							</label>
+							<select
+								id={sortId}
+								value={sort}
+								onChange={(e) => setSort(e.target.value as SortOption)}
+								className="mono"
+								style={{
+									background: "var(--ground)",
+									border: "var(--rule-width) solid var(--rule)",
+									color: "var(--ink)",
+									fontSize: "var(--mono-size)",
+									padding: "var(--space-base) var(--gap-sm)",
+									borderRadius: "var(--radius)",
+									cursor: "pointer",
 								}}
 							>
-								✕
-							</button>
-						)}
+								<option value="newest">Newest First</option>
+								<option value="oldest">Oldest First</option>
+								<option value="title-asc">Title A → Z</option>
+								<option value="title-desc">Title Z → A</option>
+								{query.trim() && <option value="relevance">Relevance</option>}
+							</select>
+						</div>
 					</div>
 
-					{/* Sort Selector */}
+					{/* Tag Filter Pills */}
 					<div
 						style={{
 							display: "flex",
+							flexWrap: "wrap",
 							alignItems: "center",
 							gap: "var(--space-base)",
 						}}
 					>
-						<label
-							htmlFor={sortId}
+						<span
 							className="meta"
-							style={{ color: "var(--ink-muted)" }}
-						>
-							SORT
-						</label>
-						<select
-							id={sortId}
-							value={sort}
-							onChange={(e) => setSort(e.target.value as SortOption)}
-							className="mono"
 							style={{
-								background: "var(--ground)",
-								border: "var(--rule-width) solid var(--rule)",
-								color: "var(--ink)",
-								fontSize: "var(--mono-size)",
-								padding: "var(--space-base) var(--gap-sm)",
-								borderRadius: "var(--radius)",
-								cursor: "pointer",
+								color: "var(--ink-muted)",
+								marginRight: "var(--space-base)",
 							}}
 						>
-							<option value="newest">Newest First</option>
-							<option value="oldest">Oldest First</option>
-							<option value="title-asc">Title A → Z</option>
-							<option value="title-desc">Title Z → A</option>
-							{query.trim() && <option value="relevance">Relevance</option>}
-						</select>
-					</div>
-				</div>
+							TAGS
+						</span>
 
-				{/* Tag Filter Pills */}
-				<div
-					style={{
-						display: "flex",
-						flexWrap: "wrap",
-						alignItems: "center",
-						gap: "var(--space-base)",
-					}}
-				>
-					<span
-						className="meta"
-						style={{
-							color: "var(--ink-muted)",
-							marginRight: "var(--space-base)",
-						}}
-					>
-						TAGS
-					</span>
-
-					<button
-						type="button"
-						onClick={() => setSelectedTag("all")}
-						className="mono"
-						style={{
-							background:
-								selectedTag === "all" ? "var(--ink)" : "var(--ground)",
-							color:
-								selectedTag === "all" ? "var(--ground)" : "var(--ink-muted)",
-							border: "var(--rule-width) solid var(--rule)",
-							fontSize: "var(--mono-size)",
-							padding: "0 14px",
-							height: "23px",
-							cursor: "pointer",
-							borderRadius: "var(--radius)",
-							fontWeight: selectedTag === "all" ? 600 : 400,
-							transition: "all var(--dur-hover) var(--ease)",
-						}}
-					>
-						{`ALL (${posts.length})`}
-					</button>
-
-					{tagsWithCount.map(([tag, count]) => {
-						const isSelected = selectedTag === tag;
-						return (
-							<button
-								key={tag}
-								type="button"
-								onClick={() => setSelectedTag(isSelected ? "all" : tag)}
-								className="mono"
-								style={{
-									background: isSelected ? "var(--ink)" : "var(--ground)",
-									color: isSelected ? "var(--ground)" : "var(--ink-muted)",
-									border: "var(--rule-width) solid var(--rule)",
-									fontSize: "var(--mono-size)",
-									padding: "0 14px",
-									height: "23px",
-									cursor: "pointer",
-									borderRadius: "var(--radius)",
-									fontWeight: isSelected ? 600 : 400,
-									transition: "all var(--dur-hover) var(--ease)",
-								}}
-							>
-								{`#${tag.toUpperCase()} (${count})`}
-							</button>
-						);
-					})}
-
-					{isFiltered && (
 						<button
 							type="button"
-							onClick={resetFilters}
+							onClick={() => setSelectedTag("all")}
 							className="mono"
 							style={{
-								background: "transparent",
-								border: "none",
-								color: "var(--accent)",
+								background:
+									selectedTag === "all" ? "var(--ink)" : "var(--ground)",
+								color:
+									selectedTag === "all" ? "var(--ground)" : "var(--ink-muted)",
+								border: "var(--rule-width) solid var(--rule)",
 								fontSize: "var(--mono-size)",
+								padding: "0 14px",
+								height: "23px",
 								cursor: "pointer",
-								textDecoration: "underline",
-								textUnderlineOffset: "3px",
-								marginLeft: "auto",
+								borderRadius: "var(--radius)",
+								fontWeight: selectedTag === "all" ? 600 : 400,
+								transition: "all var(--dur-hover) var(--ease)",
 							}}
 						>
-							Reset filters
+							{`ALL (${posts.length})`}
 						</button>
-					)}
+
+						{tagsWithCount.map(([tag, count]) => {
+							const isSelected = selectedTag === tag;
+							return (
+								<button
+									key={tag}
+									type="button"
+									onClick={() => setSelectedTag(isSelected ? "all" : tag)}
+									className="mono"
+									style={{
+										background: isSelected ? "var(--ink)" : "var(--ground)",
+										color: isSelected ? "var(--ground)" : "var(--ink-muted)",
+										border: "var(--rule-width) solid var(--rule)",
+										fontSize: "var(--mono-size)",
+										padding: "0 14px",
+										height: "23px",
+										cursor: "pointer",
+										borderRadius: "var(--radius)",
+										fontWeight: isSelected ? 600 : 400,
+										transition: "all var(--dur-hover) var(--ease)",
+									}}
+								>
+									{`#${tag.toUpperCase()} (${count})`}
+								</button>
+							);
+						})}
+
+						{isFiltered && (
+							<button
+								type="button"
+								onClick={resetFilters}
+								className="mono"
+								style={{
+									background: "transparent",
+									border: "none",
+									color: "var(--accent)",
+									fontSize: "var(--mono-size)",
+									cursor: "pointer",
+									textDecoration: "underline",
+									textUnderlineOffset: "3px",
+									marginLeft: "auto",
+								}}
+							>
+								Reset filters
+							</button>
+						)}
+					</div>
 				</div>
 			</div>
 

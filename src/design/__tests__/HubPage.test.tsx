@@ -119,4 +119,14 @@ describe("HubPage", () => {
 		expect(screen.getByText("Podcast Suite")).toBeDefined();
 		expect(screen.getByText("1 CURATED COLLECTIVES")).toBeDefined();
 	});
+
+	it("renders ambient halftone shader canvas in hub header", () => {
+		const { container } = render(
+			<HubPage title="All Tools" lede="Description" />,
+		);
+		const shaderCanvas = container.querySelector(
+			'canvas[data-shader="hub-header-halftone"]',
+		);
+		expect(shaderCanvas).toBeDefined();
+	});
 });
