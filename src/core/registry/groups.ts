@@ -1,5 +1,5 @@
-import { TOOLS } from "./index";
-import type { Tool } from "./types";
+import { CATEGORIES, TOOLS } from "./index";
+import type { Category, Tool } from "./types";
 
 /**
  * A tool's declared `kind`, read off `Tool` rather than re-declared here --
@@ -9,6 +9,34 @@ export type Kind = Tool["kind"];
 
 export type FormatGroup = { format: string; tools: Tool[] };
 export type TaskGroup = { kind: Kind; tools: Tool[] };
+export type TypeGroup = { category: Category; label: string; tools: Tool[] };
+
+export const TYPE_LABELS: Record<Category, string> = {
+	image: "Images",
+	video: "Videos",
+	audio: "Audio",
+	document: "Documents",
+	data: "Data",
+};
+
+/**
+ * Every tool, grouped by high-level file type (category) that ordinary users
+ * understand (Images, Videos, Audio, Documents).
+ *
+ * Normal people identify files by broad type rather than technical extensions
+ * (HEIC, JXL, FLAC, Opus). Grouping by type provides an intuitive first-tier
+ * hierarchy. Categories with no registered tools are omitted.
+ *
+ * Order follows `CATEGORIES` declaration order for stability.
+ */
+export function deriveTypeGroups(): TypeGroup[] {
+	return CATEGORIES.map((category) => ({
+		category,
+		label: TYPE_LABELS[category],
+		tools: TOOLS.filter((tool) => tool.category === category),
+	})).filter((group) => group.tools.length > 0);
+}
+
 
 /**
  * Every tool, grouped by every file-format extension it touches on either

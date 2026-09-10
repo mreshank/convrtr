@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { TOOLS } from "@/core/registry";
-import { deriveFormatGroups, deriveTaskGroups } from "@/core/registry/groups";
+import { deriveFormatGroups, deriveTaskGroups, deriveTypeGroups } from "@/core/registry/groups";
 
 describe("deriveFormatGroups", () => {
 	it("groups every tool under each format it accepts or emits", () => {
@@ -49,3 +49,33 @@ describe("deriveTaskGroups", () => {
 		expect(total).toBe(TOOLS.length);
 	});
 });
+
+describe("deriveTypeGroups", () => {
+	it("groups tools by familiar category type and emits human labels", () => {
+		const groups = deriveTypeGroups();
+		const categories = groups.map((g) => g.category);
+		expect(categories).toContain("image");
+		expect(categories).toContain("video");
+		expect(categories).toContain("audio");
+		expect(categories).toContain("document");
+
+		const imageGroup = groups.find((g) => g.category === "image");
+		expect(imageGroup?.label).toBe("Images");
+		expect(imageGroup?.tools.length).toBeGreaterThan(0);
+	});
+
+	it("omits types that have no registered tools", () => {
+		const groups = deriveTypeGroups();
+		const categories = groups.map((g) => g.category);
+		expect(categories).not.toContain("data");
+		for (const group of groups) {
+			expect(group.tools.length).toBeGreaterThan(0);
+		}
+	});
+
+	it("accounts for every tool exactly once across all types", () => {
+		const total = deriveTypeGroups().reduce((n, g) => n + g.tools.length, 0);
+		expect(total).toBe(TOOLS.length);
+	});
+});
+

@@ -70,4 +70,57 @@ describe("GroupGrid", () => {
 		fireEvent.click(screen.getByRole("button", { name: /PNG/ }));
 		expect(screen.queryByRole("region", { name: /PNG/ })).toBeNull();
 	});
+
+	it("closes the panel when the close button is clicked", () => {
+		render(<GroupGrid items={ITEMS} />);
+		fireEvent.click(screen.getByRole("button", { name: /PNG/ }));
+		expect(screen.getByRole("region", { name: /PNG/ })).toBeDefined();
+
+		fireEvent.click(screen.getByRole("button", { name: /close panel/i }));
+		expect(screen.queryByRole("region", { name: /PNG/ })).toBeNull();
+	});
+
+	it("supports docking the expanded panel on either right or left side", () => {
+		const { container } = render(<GroupGrid items={ITEMS} />);
+		fireEvent.click(screen.getByRole("button", { name: /PNG/ }));
+
+		const grid = container.querySelector("[data-group-grid]") as HTMLElement;
+		expect(grid.getAttribute("data-dock")).toBe("right");
+
+		fireEvent.click(screen.getByRole("button", { name: /dock panel left/i }));
+		expect(grid.getAttribute("data-dock")).toBe("left");
+
+		fireEvent.click(screen.getByRole("button", { name: /dock panel right/i }));
+		expect(grid.getAttribute("data-dock")).toBe("right");
+	});
+
+	it("filters tools inside the expanded panel when typing in search input", () => {
+		const itemsWithManyTools = [
+			{
+				href: "/groups/type/image",
+				title: "Images",
+				meta: "5 tools",
+				tools: [
+					{ href: "/png-to-webp", title: "PNG to WebP" },
+					{ href: "/png-to-jpg", title: "PNG to JPG" },
+					{ href: "/jpg-to-png", title: "JPG to PNG" },
+					{ href: "/heic-to-jpg", title: "HEIC to JPG" },
+					{ href: "/avif-to-png", title: "AVIF to PNG" },
+				],
+			},
+		];
+
+		render(<GroupGrid items={itemsWithManyTools} />);
+		fireEvent.click(screen.getByRole("button", { name: /Images/ }));
+
+		const filterInput = screen.getByRole("textbox", {
+			name: /filter images tools/i,
+		});
+		expect(filterInput).toBeDefined();
+
+		fireEvent.change(filterInput, { target: { value: "HEIC" } });
+		expect(screen.getByRole("link", { name: "HEIC to JPG" })).toBeDefined();
+		expect(screen.queryByRole("link", { name: "PNG to WebP" })).toBeNull();
+	});
 });
+

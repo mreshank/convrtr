@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import { CATEGORIES, type Category, type Tool } from "@/core/registry";
-import { deriveFormatGroups, deriveTaskGroups } from "@/core/registry/groups";
+import {
+	deriveFormatGroups,
+	deriveTaskGroups,
+	deriveTypeGroups,
+	type FormatGroup,
+	type TaskGroup,
+	type TypeGroup,
+} from "@/core/registry/groups";
 import { HubPage } from "@/design/templates";
 import { SITE } from "@/lib/site";
 
@@ -8,27 +15,69 @@ function label(text: string): string {
 	return `${text.charAt(0).toUpperCase()}${text.slice(1)}`;
 }
 
-/**
- * The distinct categories a group's tools touch, in `CATEGORIES`' declared
- * order rather than `Set` iteration order -- so "image, video" reads the
- * same regardless of which tool in the group happens to be registered
- * first, the same stability reason `toolsByCategory` sorts by the declared
- * list rather than by count.
- */
 function categoriesSpanned(tools: Tool[]): Category[] {
 	const present = new Set(tools.map((tool) => tool.category));
 	return CATEGORIES.filter((category) => present.has(category));
 }
 
-/** "1 tool" / "12 tools" -- v2's data-readout voice, singular-aware. */
+function formatsCovered(tools: Tool[]): string[] {
+	const set = new Set<string>();
+	for (const tool of tools) {
+		for (const ext of tool.accept.ext) set.add(ext.toUpperCase());
+		set.add(tool.output.ext.toUpperCase());
+	}
+	return [...set].sort();
+}
+
 function toolCount(tools: Tool[]): string {
 	return `${tools.length} ${tools.length === 1 ? "tool" : "tools"}`;
 }
 
+function toolItems(tools: Tool[]) {
+	return tools.map((tool) => ({
+		href: `/${tool.id}`,
+		title: tool.seo.title,
+		kind: tool.kind,
+		category: tool.category,
+		acceptExt: tool.accept.ext,
+		outputExt: tool.output.ext,
+	}));
+}
+
+function toTypeItem(group: TypeGroup) {
+	return {
+		href: `/${group.category}`,
+		title: group.label,
+		meta: toolCount(group.tools),
+		description: formatsCovered(group.tools).join(", "),
+		tools: toolItems(group.tools),
+	};
+}
+
+function toFormatItem(group: FormatGroup) {
+	return {
+		href: `/groups/format/${group.format}`,
+		title: group.format.toUpperCase(),
+		meta: toolCount(group.tools),
+		description: categoriesSpanned(group.tools).join(", "),
+		tools: toolItems(group.tools),
+	};
+}
+
+function toTaskItem(group: TaskGroup) {
+	return {
+		href: `/groups/task/${group.kind}`,
+		title: label(group.kind),
+		meta: toolCount(group.tools),
+		description: categoriesSpanned(group.tools).join(", "),
+		tools: toolItems(group.tools),
+	};
+}
+
 export function generateMetadata(): Metadata {
-	const title = "Browse by format or task — convrtr";
+	const title = "Browse by type, format, or task — convrtr";
 	const description =
-		"Every conversion convrtr supports, grouped by file format and by what it does to a file.";
+		"Every conversion convrtr supports, grouped by file type, by format, and by what it does to a file.";
 	return {
 		title,
 		description,
@@ -37,59 +86,23 @@ export function generateMetadata(): Metadata {
 	};
 }
 
-/**
- * Both dimensions are derived from the live registry -- see
- * `src/core/registry/groups.ts` -- so a link here can never point at a
- * route the export didn't actually produce: `deriveFormatGroups` and
- * `deriveTaskGroups` already drop any group with no tools, and a tool
- * registered elsewhere shows up under its formats and its kind with no
- * change to this file.
- *
- * Each row's `meta` and `description` are both derived from the same
- * `group.tools` the link itself points at -- a tool count and the
- * categories that count spans, never a hand-written figure. That is what
- * turns "PNG" into an answer to "what's in there" before the reader even
- * clicks through.
- */
 export default function GroupsIndexPage() {
+	const typeGroups = deriveTypeGroups();
 	const formatGroups = deriveFormatGroups();
 	const taskGroups = deriveTaskGroups();
 
 	return (
 		<HubPage
-			title="Browse by format or task"
-			lede="Every conversion, grouped two ways: by file format, and by what it does."
+			title="Browse by type, format, or task"
+			lede="Every conversion, grouped three ways: by file type, by format, and by what it does."
 			count={{
-				value: formatGroups.length + taskGroups.length,
+				value: typeGroups.length + formatGroups.length + taskGroups.length,
 				noun: "groups",
 			}}
 			grid={[
-				{
-					heading: "BY FORMAT",
-					items: formatGroups.map((group) => ({
-						href: `/groups/format/${group.format}`,
-						title: group.format.toUpperCase(),
-						meta: toolCount(group.tools),
-						description: categoriesSpanned(group.tools).join(", "),
-						tools: group.tools.map((tool) => ({
-							href: `/${tool.id}`,
-							title: tool.seo.title,
-						})),
-					})),
-				},
-				{
-					heading: "BY TASK",
-					items: taskGroups.map((group) => ({
-						href: `/groups/task/${group.kind}`,
-						title: label(group.kind),
-						meta: toolCount(group.tools),
-						description: categoriesSpanned(group.tools).join(", "),
-						tools: group.tools.map((tool) => ({
-							href: `/${tool.id}`,
-							title: tool.seo.title,
-						})),
-					})),
-				},
+				{ heading: "BY TYPE", items: typeGroups.map(toTypeItem) },
+				{ heading: "BY FORMAT", items: formatGroups.map(toFormatItem) },
+				{ heading: "BY TASK", items: taskGroups.map(toTaskItem) },
 			]}
 		/>
 	);

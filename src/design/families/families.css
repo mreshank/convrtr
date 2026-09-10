@@ -186,3 +186,25 @@
 		--grid-cols: 1;
 	}
 }
+
+/*
+ * `GroupGrid` in expanded mode: master-detail split layout.
+ * On desktop (above 900px), it splits between master column (~340px)
+ * and detail workspace panel (remaining width, either right-docked or left-docked).
+ * Below 900px, it collapses to a single stacked column.
+ */
+[data-group-grid][data-expanded="true"] {
+	grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
+}
+
+[data-group-grid][data-expanded="true"][data-dock="left"] {
+	grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+}
+
+@media (max-width: 900px) {
+	[data-group-grid][data-expanded="true"],
+	[data-group-grid][data-expanded="true"][data-dock="left"] {
+		grid-template-columns: 1fr;
+	}
+}
+
