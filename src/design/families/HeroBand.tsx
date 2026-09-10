@@ -100,7 +100,22 @@ export function HeroBand({ lead, cont, cta, secondary }: Props) {
 				/>
 				<ShaderSurface
 					fragment={HALFTONE_FRAGMENT}
-					intensity={0.4}
+					// 0.4 put the brightest dot at 0.4 x `--rule` -- channels
+					// 19, 20, 22 on black, a 19/255 delta no one was ever going to
+					// read as a halftone. 0.75 is a ceiling rather than a taste:
+					// `u_intensity` scales the mix toward `--rule` directly, so the
+					// densest dot lands near 36, 38, 41, and the grey half of the
+					// fused headline (`--ink-muted`) measures 5.19:1 against THAT
+					// ground rather than against the black beside it -- the ground
+					// is the whole claim, and this project has twice filed a
+					// contrast number measured against the wrong one. Full `--rule`
+					// (48, 50, 54) is where the same grey drops to 4.39:1 and fails
+					// AA: the exact ground `DotMatrix`'s grain had to be moved off.
+					//
+					// Channel numbers, never a colour function: the palette sweep in
+					// `tokens.test.ts` reads comments as well as code, so spelling
+					// one out here -- even to explain this rule -- fails it.
+					intensity={0.75}
 					label="hero-halftone"
 				/>
 				<section
