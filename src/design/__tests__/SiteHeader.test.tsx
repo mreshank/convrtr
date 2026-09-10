@@ -429,6 +429,7 @@ describe("SiteHeader", () => {
 		const [trigger] = screen
 			.getAllByRole("link", { name: "Tools" })
 			.filter((el) => el.hasAttribute("aria-expanded"));
+		if (!trigger) throw new Error("expected a mega-menu trigger link");
 		expect(trigger.getAttribute("aria-expanded")).toBe("false");
 		expect(screen.getByRole("link", { name: "Blog" })).toBeDefined();
 	});

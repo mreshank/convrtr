@@ -128,6 +128,12 @@ export function SiteHeader({ links, cta }: Props) {
 			// so a keyboard user who tabs past the last link must arrive
 			// somewhere they can get out from, and it is what makes the
 			// no-links case still a trap.
+			//
+			// Note: this also picks up the CSS-hidden ToolsMegaMenu trigger
+			// anchor on mobile (it's `display: none` there, not removed from
+			// the DOM) -- harmless today since a hidden element can't take
+			// focus, but worth knowing if that trigger ever becomes visible
+			// at this breakpoint.
 			const cycle: HTMLElement[] = [
 				toggle,
 				...nav.querySelectorAll<HTMLElement>("a[href]"),
@@ -468,10 +474,7 @@ export function SiteHeader({ links, cta }: Props) {
 							 * wrapper out of the flex layout `ToolsMegaMenu`'s own
 							 * root already participates in.
 							 */}
-							<span
-								data-mega-menu-trigger
-								style={{ display: "contents" }}
-							>
+							<span data-mega-menu-trigger style={{ display: "contents" }}>
 								<ToolsMegaMenu
 									triggerLabel={link.label}
 									triggerHref={link.href}

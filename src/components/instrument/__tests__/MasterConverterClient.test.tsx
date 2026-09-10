@@ -223,8 +223,6 @@ describe("MasterConverterClient", () => {
 		fireEvent.change(targetSelect, { target: { value: otherOption.value } });
 
 		expect(row.getAttribute("data-status")).toBe("idle");
-		expect(
-			screen.queryByRole("button", { name: /Save img1/i }),
-		).toBeNull();
+		expect(screen.queryByRole("button", { name: /Save img1/i })).toBeNull();
 	});
 });
