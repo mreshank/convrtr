@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import {
+	Fragment,
+	useCallback,
+	useEffect,
+	useId,
+	useRef,
+	useState,
+} from "react";
 import { ToolsMegaMenu } from "./ToolsMegaMenu";
 
 type LinkItem = { href: string; label: string; megaMenu?: boolean };
@@ -450,11 +457,59 @@ export function SiteHeader({ links, cta }: Props) {
 			>
 				{links.map((link) =>
 					link.megaMenu ? (
-						<ToolsMegaMenu
-							key={link.href}
-							triggerLabel={link.label}
-							triggerHref={link.href}
-						/>
+						<Fragment key={link.href}>
+							{/*
+							 * Desktop trigger: `ToolsMegaMenu`'s own hover/focus
+							 * disclosure. Its own `<Link>` `preventDefault()`s every
+							 * click to toggle the panel instead of navigating, which
+							 * is correct above 600px but would be a dead tap target
+							 * below it once `chrome.css` hides the panel this same
+							 * click is meant to open. `display: contents` keeps the
+							 * wrapper out of the flex layout `ToolsMegaMenu`'s own
+							 * root already participates in.
+							 */}
+							<span
+								data-mega-menu-trigger
+								style={{ display: "contents" }}
+							>
+								<ToolsMegaMenu
+									triggerLabel={link.label}
+									triggerHref={link.href}
+								/>
+							</span>
+							{/*
+							 * Mobile fallback: a real, navigable `<Link>` for the
+							 * same destination, styled like every other nav-utility
+							 * control. `chrome.css` shows this one only below 600px
+							 * and hides the trigger above -- the same "always render
+							 * both, let CSS decide" pattern this file already uses
+							 * for its own hamburger toggle.
+							 */}
+							<Link
+								href={link.href}
+								data-mega-menu-fallback
+								onClick={() => {
+									if (!open) return;
+									close();
+								}}
+								style={{
+									display: "inline-flex",
+									alignItems: "center",
+									flexShrink: 0,
+									height: "23px",
+									padding: "0 14px",
+									background: "transparent",
+									color: "var(--ink)",
+									borderRadius: "var(--radius-control)",
+									fontSize: "var(--label-size)",
+									letterSpacing: "var(--label-tracking)",
+									fontWeight: "var(--label-weight)",
+									whiteSpace: "nowrap",
+								}}
+							>
+								{link.label}
+							</Link>
+						</Fragment>
 					) : (
 						<Link
 							key={link.href}

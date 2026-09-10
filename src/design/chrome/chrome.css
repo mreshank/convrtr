@@ -153,11 +153,38 @@
  * `ToolsMegaMenu` is a desktop-only affordance: below 600px its trigger
  * lives inside `SiteHeader`'s own collapsed panel, which is already a
  * full-viewport disclosure -- nesting a second one inside it would trap
- * focus two layers deep for no reason. The trigger keeps working as a
- * plain navigation link there; only the hover/focus panel is suppressed.
+ * focus two layers deep for no reason. This rule keeps its internal panel
+ * from ever opening below 600px regardless of state; belt-and-suspenders
+ * alongside the `[data-mega-menu-trigger]` rule below, which already
+ * removes the trigger (and this panel with it) from the layout at the
+ * same width.
  */
 @media (max-width: 600px) {
 	[data-mega-menu] {
 		display: none !important;
+	}
+}
+
+/*
+ * Two controls for one megaMenu nav item: `ToolsMegaMenu`'s own hover/focus
+ * trigger for the desktop inline row, and a plain fallback `<Link>` for
+ * SiteHeader's mobile collapsed panel -- mirroring the same "always render
+ * both, let CSS pick" pattern this file already uses for the hamburger
+ * toggle above. Without the fallback, tapping this item below 600px would
+ * preventDefault (ToolsMegaMenu's own click handler) and toggle open a
+ * panel this same query hides, producing a dead tap target with no
+ * navigation and no visible feedback.
+ */
+[data-mega-menu-fallback] {
+	display: none;
+}
+
+@media (max-width: 600px) {
+	[data-mega-menu-trigger] {
+		display: none;
+	}
+
+	[data-mega-menu-fallback] {
+		display: inline-flex;
 	}
 }

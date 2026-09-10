@@ -421,9 +421,40 @@ describe("SiteHeader", () => {
 		];
 		render(<SiteHeader links={links} cta={CTA} />);
 
-		const trigger = screen.getByRole("link", { name: "Tools" });
+		// Two anchors now share the "Tools" accessible name -- the desktop
+		// mega-menu trigger and the mobile fallback link (see the next test)
+		// -- so the trigger has to be picked out by the attribute only it
+		// carries, rather than by a `getByRole` that would otherwise throw on
+		// finding more than one match.
+		const [trigger] = screen
+			.getAllByRole("link", { name: "Tools" })
+			.filter((el) => el.hasAttribute("aria-expanded"));
 		expect(trigger.getAttribute("aria-expanded")).toBe("false");
 		expect(screen.getByRole("link", { name: "Blog" })).toBeDefined();
+	});
+
+	it("renders a real, navigable fallback link for a megaMenu item, for the mobile panel", () => {
+		// `ToolsMegaMenu`'s own trigger `preventDefault()`s every click to
+		// toggle its hover/focus panel instead of navigating -- correct above
+		// 600px, but a dead tap target below it once `chrome.css` hides that
+		// panel. This fallback `<Link>` is the real, navigable control for
+		// narrow viewports; `chrome.css` hides it above 600px and hides the
+		// trigger below, mirroring the same "always render both, let CSS
+		// decide" pattern this file already uses for the hamburger toggle.
+		const links = [{ href: "/tools", label: "Tools", megaMenu: true }];
+		const { container } = render(<SiteHeader links={links} cta={CTA} />);
+
+		// Three anchors share this href here: the mega-menu trigger, its
+		// mobile fallback, and the navbar CTA pill (`CTA.href` is also
+		// "/tools" in this fixture).
+		expect(container.querySelectorAll("a[href='/tools']")).toHaveLength(3);
+		const fallback = container.querySelector(
+			"[data-mega-menu-fallback]",
+		) as HTMLElement;
+		expect(fallback).not.toBeNull();
+		expect(fallback.getAttribute("href")).toBe("/tools");
+		expect(fallback.textContent).toBe("Tools");
+		expect(fallback.hasAttribute("aria-expanded")).toBe(false);
 	});
 
 	it("renders with no links at all", () => {
