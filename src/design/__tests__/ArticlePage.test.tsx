@@ -55,4 +55,42 @@ describe("ArticlePage", () => {
 		);
 		expect(screen.getByTestId("rel")).toBeDefined();
 	});
+
+	it("renders a space-efficient section grid when given sections", () => {
+		const sections = [
+			{
+				eyebrow: "STATIC EXPORT",
+				lead: "Converts locally.",
+				cont: "No server in the loop.",
+				paragraphs: ['next.config.ts builds with output: "export".'],
+			},
+			{
+				eyebrow: "WEB WORKER",
+				lead: "WASM engines.",
+				cont: "Native speed.",
+				paragraphs: ["Runs off main thread. See /privacy."],
+			},
+		];
+
+		const { container } = render(
+			<ArticlePage
+				title="About convrtr"
+				dateline="9 September 2026"
+				sections={sections}
+			/>,
+		);
+
+		expect(container.querySelector("[data-section-grid]")).not.toBeNull();
+		const cards = container.querySelectorAll("[data-section-card]");
+		expect(cards.length).toBe(2);
+
+		const navLinks = container.querySelectorAll(
+			"nav[aria-label='Section shortcuts'] a",
+		);
+		expect(navLinks.length).toBe(2);
+
+		// Verified that token code pills and links are rendered
+		expect(container.querySelector("code.mono")).not.toBeNull();
+		expect(container.querySelector("a[href='/privacy']")).not.toBeNull();
+	});
 });

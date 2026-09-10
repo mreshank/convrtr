@@ -517,7 +517,7 @@ export function MasterConverterClient() {
 							document.getElementById(fileInputId)?.click();
 						}
 					}}
-					className="mono flex flex-col items-center gap-4 border p-12 text-center transition-colors"
+					className="mono flex flex-col items-center gap-4 border border-dashed p-12 text-center transition-colors opacity-75"
 					style={{
 						borderColor: dropActive ? "var(--ink)" : "var(--rule-strong)",
 						borderRadius: "var(--radius)",

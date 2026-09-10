@@ -102,3 +102,69 @@
 	 */
 	overflow-wrap: break-word;
 }
+
+/*
+ * Section grid layout for structured overview pages (/about, /how-it-works, /privacy).
+ * Utilizes the full responsive container width instead of confining content
+ * to a narrow 56-68ch column with empty side voids.
+ */
+[data-section-grid] {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: var(--gap-md);
+	width: 100%;
+}
+
+@media (max-width: 900px) {
+	[data-section-grid] {
+		grid-template-columns: 1fr;
+		gap: var(--gap-sm);
+	}
+}
+
+[data-section-card] {
+	background: var(--surface);
+	border: var(--rule-width) solid var(--rule);
+	padding: var(--gap-md);
+	display: flex;
+	flex-direction: column;
+	gap: var(--gap-sm);
+	transition: border-color var(--dur-hover) var(--ease);
+}
+
+[data-section-card]:hover {
+	border-color: var(--rule-strong);
+}
+
+/* Feature card spanning two columns on wide viewports when featured */
+[data-section-card][data-featured="true"] {
+	grid-column: span 2;
+}
+
+@media (max-width: 900px) {
+	[data-section-card][data-featured="true"] {
+		grid-column: span 1;
+	}
+}
+
+/* Quick jump link pills in header */
+[data-jump-pill] {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 10px;
+	background: var(--surface);
+	border: var(--rule-width) solid var(--rule);
+	color: var(--ink-muted);
+	font-size: var(--mono-size);
+	font-family: var(--font-mono);
+	text-decoration: none;
+	transition:
+		border-color var(--dur-hover) var(--ease),
+		color var(--dur-hover) var(--ease);
+}
+
+[data-jump-pill]:hover {
+	border-color: var(--rule-strong);
+	color: var(--ink);
+}

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { privacy } from "@/content/pages/privacy";
-import { LegalPage } from "@/design/templates";
+import { ArticlePage } from "@/design/templates";
 import { SITE } from "@/lib/site";
 
 export function generateMetadata(): Metadata {
@@ -17,9 +17,9 @@ export function generateMetadata(): Metadata {
 
 export default function PrivacyPage() {
 	return (
-		<LegalPage
+		<ArticlePage
 			title={privacy.title}
-			revised={privacy.updated}
+			dateline={`Revised ${privacy.updated}`}
 			sections={privacy.sections}
 		/>
 	);
