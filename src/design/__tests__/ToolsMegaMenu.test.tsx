@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { ToolsMegaMenu } from "@/design/chrome/ToolsMegaMenu";
 
@@ -55,6 +55,43 @@ describe("ToolsMegaMenu", () => {
 
 		expect(trigger.getAttribute("aria-expanded")).toBe("false");
 		expect(document.activeElement).toBe(trigger);
+	});
+
+	it("does not swallow the next real focus-open after Escape is pressed while focus never left the trigger", () => {
+		// Regression test for a bug `fireEvent.focus` cannot catch: it
+		// dispatches a synthetic focus event without changing
+		// `document.activeElement`, so the component's real `.focus()` call
+		// inside its Escape handler always looked like a genuine focus
+		// change in that style of test. Real browsers (and happy-dom) don't
+		// re-dispatch `focus` when `.focus()` is called on an element that
+		// is already `document.activeElement` -- so pressing Escape with
+		// focus still genuinely on the trigger (never having moved away) is
+		// a no-op re-focus, and a suppression flag armed unconditionally on
+		// every Escape would never get cleared, silently swallowing the
+		// *next* real focus-open.
+		render(<ToolsMegaMenu triggerLabel="Tools" triggerHref="/tools" />);
+		const trigger = screen.getByRole("link", { name: "Tools" });
+
+		act(() => {
+			trigger.focus();
+		});
+		expect(document.activeElement).toBe(trigger);
+		expect(trigger.getAttribute("aria-expanded")).toBe("true");
+
+		fireEvent.keyDown(document, { key: "Escape" });
+
+		expect(trigger.getAttribute("aria-expanded")).toBe("false");
+		expect(document.activeElement).toBe(trigger);
+
+		// The trigger never lost focus across that Escape, so this second
+		// real `.focus()` call is the one that was silently failing to
+		// reopen the menu before the fix.
+		act(() => {
+			trigger.blur();
+			trigger.focus();
+		});
+		expect(document.activeElement).toBe(trigger);
+		expect(trigger.getAttribute("aria-expanded")).toBe("true");
 	});
 
 	it("toggles open and closed on click, for pointers that do not hover", () => {

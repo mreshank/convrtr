@@ -66,8 +66,16 @@ export function ToolsMegaMenu({ triggerLabel, triggerHref }: Props) {
 			close();
 			// Re-focusing the trigger below dispatches its own focus event,
 			// which bubbles to this component's wrapping `onFocus` handler and
-			// would otherwise reopen the menu right after `close()` ran.
-			suppressNextFocus.current = true;
+			// would otherwise reopen the menu right after `close()` ran -- but
+			// only when focus actually moves. If the trigger is already
+			// `document.activeElement` (Escape pressed with focus still on the
+			// trigger, having never left it), `.focus()` below is a no-op: no
+			// new focus event fires, so nothing would ever clear the flag, and
+			// the *next* real focus-open would be silently swallowed. Only
+			// arm the suppression when focus is actually about to move.
+			if (document.activeElement !== triggerRef.current) {
+				suppressNextFocus.current = true;
+			}
 			triggerRef.current?.focus();
 		}
 		document.addEventListener("keydown", onKeyDown);
