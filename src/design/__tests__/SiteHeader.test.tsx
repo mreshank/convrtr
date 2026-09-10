@@ -414,6 +414,18 @@ describe("SiteHeader", () => {
 		document.body.style.overflow = "";
 	});
 
+	it("renders a mega-menu trigger instead of a plain link for a megaMenu item", () => {
+		const links = [
+			{ href: "/tools", label: "Tools", megaMenu: true },
+			{ href: "/blog", label: "Blog" },
+		];
+		render(<SiteHeader links={links} cta={CTA} />);
+
+		const trigger = screen.getByRole("link", { name: "Tools" });
+		expect(trigger.getAttribute("aria-expanded")).toBe("false");
+		expect(screen.getByRole("link", { name: "Blog" })).toBeDefined();
+	});
+
 	it("renders with no links at all", () => {
 		// The old trap had a guard that silently stopped intercepting on an
 		// empty array. There is no trap now, but an empty list still has to

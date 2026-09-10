@@ -148,3 +148,16 @@
 		justify-content: center;
 	}
 }
+
+/*
+ * `ToolsMegaMenu` is a desktop-only affordance: below 600px its trigger
+ * lives inside `SiteHeader`'s own collapsed panel, which is already a
+ * full-viewport disclosure -- nesting a second one inside it would trap
+ * focus two layers deep for no reason. The trigger keeps working as a
+ * plain navigation link there; only the hover/focus panel is suppressed.
+ */
+@media (max-width: 600px) {
+	[data-mega-menu] {
+		display: none !important;
+	}
+}

@@ -32,7 +32,7 @@ export const metadata: Metadata = {
 // own reasoning.
 const NAV = [
 	{ href: "/convert", label: "Convert" },
-	{ href: "/tools", label: "Tools" },
+	{ href: "/tools", label: "Tools", megaMenu: true },
 	{ href: "/groups", label: "Groups" },
 	{ href: "/collectives", label: "Collectives" },
 	{ href: "/blog", label: "Blog" },

@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { ToolsMegaMenu } from "./ToolsMegaMenu";
 
-type LinkItem = { href: string; label: string };
+type LinkItem = { href: string; label: string; megaMenu?: boolean };
 
 type Props = {
 	links: LinkItem[];
@@ -447,61 +448,69 @@ export function SiteHeader({ links, cta }: Props) {
 					paddingLeft: "var(--space-base)",
 				}}
 			>
-				{links.map((link) => (
-					<Link
-						key={link.href}
-						href={link.href}
-						// Following a link closes the panel. Without this the
-						// menu stays open over the page it just navigated to,
-						// because a client-side route change never unmounts
-						// this component. Guarded on `open` so a mouse click
-						// on the inline desktop row does not pull focus off
-						// the link and onto a hidden button.
-						onClick={() => {
-							if (!open) return;
-							close();
-						}}
-						style={{
-							display: "inline-flex",
-							alignItems: "center",
-							flexShrink: 0,
-							// v2's nav-utility control: transparent fill,
-							// white text, 4px radius, 23px tall, 0/14px
-							// padding. The radius is not dead on a
-							// transparent control: the global
-							// `:focus-visible` outline is the only thing that
-							// ever draws this control's shape, and an outline
-							// takes its corner radius from the element's own,
-							// grown by the offset — 4px here plus 2px of
-							// offset, so what a keyboard user sees is a 6px
-							// corner derived from this 4px value. Change the
-							// radius and the ring's corner changes with it.
-							// The ring is only visible at all because the nav
-							// above reserves vertical room for it.
-							//
-							// The panel reuses this treatment unchanged, per
-							// the closed design system: it is v2's one
-							// nav-utility control, and a second, taller
-							// variant invented for the panel would be a
-							// component the spec does not have. `chrome.css`
-							// stretches it across the panel's width so the
-							// tap target is the full row, which changes the
-							// cross-size of the flex item and none of the
-							// values here.
-							height: "23px",
-							padding: "0 14px",
-							background: "transparent",
-							color: "var(--ink)",
-							borderRadius: "var(--radius-control)",
-							fontSize: "var(--label-size)",
-							letterSpacing: "var(--label-tracking)",
-							fontWeight: "var(--label-weight)",
-							whiteSpace: "nowrap",
-						}}
-					>
-						{link.label}
-					</Link>
-				))}
+				{links.map((link) =>
+					link.megaMenu ? (
+						<ToolsMegaMenu
+							key={link.href}
+							triggerLabel={link.label}
+							triggerHref={link.href}
+						/>
+					) : (
+						<Link
+							key={link.href}
+							href={link.href}
+							// Following a link closes the panel. Without this the
+							// menu stays open over the page it just navigated to,
+							// because a client-side route change never unmounts
+							// this component. Guarded on `open` so a mouse click
+							// on the inline desktop row does not pull focus off
+							// the link and onto a hidden button.
+							onClick={() => {
+								if (!open) return;
+								close();
+							}}
+							style={{
+								display: "inline-flex",
+								alignItems: "center",
+								flexShrink: 0,
+								// v2's nav-utility control: transparent fill,
+								// white text, 4px radius, 23px tall, 0/14px
+								// padding. The radius is not dead on a
+								// transparent control: the global
+								// `:focus-visible` outline is the only thing that
+								// ever draws this control's shape, and an outline
+								// takes its corner radius from the element's own,
+								// grown by the offset — 4px here plus 2px of
+								// offset, so what a keyboard user sees is a 6px
+								// corner derived from this 4px value. Change the
+								// radius and the ring's corner changes with it.
+								// The ring is only visible at all because the nav
+								// above reserves vertical room for it.
+								//
+								// The panel reuses this treatment unchanged, per
+								// the closed design system: it is v2's one
+								// nav-utility control, and a second, taller
+								// variant invented for the panel would be a
+								// component the spec does not have. `chrome.css`
+								// stretches it across the panel's width so the
+								// tap target is the full row, which changes the
+								// cross-size of the flex item and none of the
+								// values here.
+								height: "23px",
+								padding: "0 14px",
+								background: "transparent",
+								color: "var(--ink)",
+								borderRadius: "var(--radius-control)",
+								fontSize: "var(--label-size)",
+								letterSpacing: "var(--label-tracking)",
+								fontWeight: "var(--label-weight)",
+								whiteSpace: "nowrap",
+							}}
+						>
+							{link.label}
+						</Link>
+					),
+				)}
 			</nav>
 
 			{/* v2's `navbar-cta`: white fill, black text, pill corners, 36px. */}
