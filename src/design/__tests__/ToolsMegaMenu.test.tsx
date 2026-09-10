@@ -129,4 +129,32 @@ describe("ToolsMegaMenu", () => {
 		fireEvent.focus(screen.getByRole("link", { name: "Tools" }));
 		expect(document.body.style.overflow).toBe("");
 	});
+
+	it("renders tool tagline with subdued opacity and smaller font size", () => {
+		render(<ToolsMegaMenu triggerLabel="Tools" triggerHref="/tools" />);
+		const trigger = screen.getByRole("link", { name: "Tools" });
+		fireEvent.focus(trigger);
+
+		const panel = screen.getByRole("group", { name: "Tools" });
+		const groupRows = screen.getAllByRole("button", { name: /^\S+ \(\d+\)$/ });
+		const firstRow = groupRows[0];
+		if (!firstRow) throw new Error("expected at least one task group row");
+
+		fireEvent.mouseEnter(firstRow);
+
+		// Find any tool link with a tagline
+		const toolLinks = within(panel).getAllByRole("link");
+		const linkWithTagline = toolLinks.find((link) =>
+			within(link).queryByText(/free|lossless|browser/i),
+		);
+		if (linkWithTagline) {
+			const tagline = within(linkWithTagline).getByText(
+				/free|lossless|browser/i,
+			);
+			expect(tagline.style.fontSize).toBe("12px");
+			expect(tagline.style.opacity).toBe("0.65");
+			expect(tagline.style.color).toBe("var(--ink-muted)");
+		}
+	});
 });
+
