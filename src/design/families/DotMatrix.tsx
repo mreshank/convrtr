@@ -35,7 +35,6 @@ type Props = {
 export function DotMatrix({ children }: Props) {
 	return (
 		<div style={{ position: "relative", isolation: "isolate" }}>
-			{children}
 			<div
 				data-grain
 				aria-hidden="true"
@@ -46,8 +45,10 @@ export function DotMatrix({ children }: Props) {
 					backgroundImage:
 						"radial-gradient(var(--rule-subtle) 1px, transparent 1px)",
 					backgroundSize: "var(--gap-sm) var(--gap-sm)",
+					zIndex: 0,
 				}}
 			/>
+			<div style={{ position: "relative", zIndex: 1 }}>{children}</div>
 		</div>
 	);
 }

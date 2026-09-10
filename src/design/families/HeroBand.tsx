@@ -121,6 +121,7 @@ export function HeroBand({ lead, cont, cta, secondary }: Props) {
 				<section
 					style={{
 						position: "relative",
+						zIndex: 2,
 						maxWidth: "var(--max-width)",
 						margin: "0 auto",
 						// Vertical only -- the horizontal gutter is `EditorialPage`'s
@@ -142,6 +143,8 @@ export function HeroBand({ lead, cont, cta, secondary }: Props) {
 
 					<div
 						style={{
+							position: "relative",
+							zIndex: 10,
 							display: "flex",
 							flexWrap: "wrap",
 							gap: "var(--gap-sm)",

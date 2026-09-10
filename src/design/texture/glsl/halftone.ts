@@ -42,31 +42,27 @@ void main() {
 	vec2 cellUv = fract(p / cell) - 0.5;
 	vec2 cellCenter = (cellId + 0.5) * cell;
 
-	// Sampled once per cell -- cellCenter never varies inside a cell, so
-	// every pixel in it reads the same n and therefore the same radius.
-	float n = fbm(cellCenter * 3.0 + u_time * 0.02);
+	// Organic drift motion across time
+	vec2 drift = vec2(u_time * 0.09, u_time * 0.05);
+	float n = fbm(cellCenter * 3.2 + drift);
 
-	// The ramp is what makes this a halftone screen rather than a field of
-	// noise. A halftone reproduces a TONE by varying dot area across the
-	// frame; without a gradient underneath it there is nothing being
-	// reproduced, and the result reads as uniform speckle -- which is what
-	// this did. "across" runs 0 at the left edge to 1 at the right, so the
-	// screen opens up into the empty right half of the hero and closes to
-	// nothing under the headline and the buttons on the left.
-	//
-	// Multiplied, not added: where the ramp is 0 the cell has no dot at all,
-	// rather than a small one. That is what keeps the text side of the band
-	// pure ground rather than merely dim.
-	//
-	// No backticks anywhere in this string: the whole shader is a JS template
-	// literal, so one would end it mid-comment and take the build with it.
+	// Gentle ambient wave harmonics for a living digital fabric feel
+	float wave = sin(cellCenter.x * 4.5 - u_time * 0.45) * cos(cellCenter.y * 5.0 + u_time * 0.35) * 0.16;
+
+	// Interactive pointer reaction when hovering
+	vec2 mousePos = vec2(u_mouse.x * aspect, u_mouse.y);
+	float mouseDist = length(cellCenter - mousePos);
+	float mouseProximity = smoothstep(0.38, 0.0, mouseDist) * u_pointer;
+
+	// Halftone density gradient across the screen
 	float across = cellCenter.x / max(aspect, 0.0001);
 	float ramp = smoothstep(0.12, 1.0, across);
-	float field = clamp(ramp * (0.55 + clamp(n, 0.0, 1.0) * 0.45), 0.0, 1.0);
+	float field = clamp(ramp * (0.44 + clamp(n + wave, 0.0, 1.0) * 0.46 + mouseProximity * 0.26), 0.0, 1.0);
 	float radius = field * 0.46;
 
 	float dot = smoothstep(radius, radius - 0.09, length(cellUv));
-	vec3 color = mix(palette_ground, palette_rule, dot * u_intensity);
+	vec3 dotColor = mix(palette_rule, palette_accent, clamp(mouseProximity * 1.6, 0.0, 1.0));
+	vec3 color = mix(palette_ground, dotColor, dot * u_intensity);
 	gl_FragColor = vec4(color, 1.0);
 }
 `;

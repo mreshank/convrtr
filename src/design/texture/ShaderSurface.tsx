@@ -152,6 +152,7 @@ precision mediump float;
 uniform vec2 u_resolution;
 uniform float u_time;
 uniform float u_pointer;
+uniform vec2 u_mouse;
 uniform float u_intensity;
 ${PALETTE_GLSL}
 ${NOISE_GLSL}
@@ -180,6 +181,7 @@ ${fragment}
 		const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
 		const timeLocation = gl.getUniformLocation(program, "u_time");
 		const pointerLocation = gl.getUniformLocation(program, "u_pointer");
+		const mouseLocation = gl.getUniformLocation(program, "u_mouse");
 		const intensityLocation = gl.getUniformLocation(program, "u_intensity");
 
 		const parent = canvas.parentElement;
@@ -192,6 +194,10 @@ ${fragment}
 		// target.
 		let pointerCurrent = 0;
 		let pointerTarget = 0;
+		let mouseCurrentX = 0.5;
+		let mouseCurrentY = 0.5;
+		let mouseTargetX = 0.5;
+		let mouseTargetY = 0.5;
 		let raf = 0;
 		let onScreen = true;
 		let tabHidden = document.visibilityState === "hidden";
@@ -215,6 +221,8 @@ ${fragment}
 		const draw = (now: number) => {
 			resize();
 			pointerCurrent += (pointerTarget - pointerCurrent) * 0.08;
+			mouseCurrentX += (mouseTargetX - mouseCurrentX) * 0.1;
+			mouseCurrentY += (mouseTargetY - mouseCurrentY) * 0.1;
 			// biome-ignore lint/correctness/useHookAtTopLevel: gl.useProgram again, WebGL's API rather than a React hook.
 			gl.useProgram(program);
 			if (resolutionLocation) {
@@ -222,6 +230,8 @@ ${fragment}
 			}
 			if (timeLocation) gl.uniform1f(timeLocation, (now - start) / 1000);
 			if (pointerLocation) gl.uniform1f(pointerLocation, pointerCurrent);
+			if (mouseLocation)
+				gl.uniform2f(mouseLocation, mouseCurrentX, mouseCurrentY);
 			if (intensityLocation) gl.uniform1f(intensityLocation, intensity);
 			gl.drawArrays(gl.TRIANGLES, 0, 3);
 		};
@@ -256,9 +266,18 @@ ${fragment}
 		const onPointerLeave = () => {
 			pointerTarget = 0;
 		};
+		const onPointerMove = (e: PointerEvent) => {
+			if (!parent) return;
+			const rect = parent.getBoundingClientRect();
+			if (rect.width > 0 && rect.height > 0) {
+				mouseTargetX = (e.clientX - rect.left) / rect.width;
+				mouseTargetY = 1.0 - (e.clientY - rect.top) / rect.height;
+			}
+		};
 		if (!reducedMotion && parent) {
 			parent.addEventListener("pointerenter", onPointerEnter);
 			parent.addEventListener("pointerleave", onPointerLeave);
+			parent.addEventListener("pointermove", onPointerMove);
 		}
 
 		const intersectionObserver = new IntersectionObserver((entries) => {
@@ -290,6 +309,7 @@ ${fragment}
 			if (parent) {
 				parent.removeEventListener("pointerenter", onPointerEnter);
 				parent.removeEventListener("pointerleave", onPointerLeave);
+				parent.removeEventListener("pointermove", onPointerMove);
 			}
 			gl.deleteProgram(program);
 			gl.deleteBuffer(positionBuffer);

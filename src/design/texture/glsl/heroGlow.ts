@@ -51,10 +51,11 @@ void main() {
 	float topMask = smoothstep(0.55, 0.85, uv.y);
 
 	// Two soft, dark radial glows -- barely lighter than the ground, never
-	// a bright hero spotlight.
+	// a bright hero spotlight, with a subtle breathing pulse.
 	float glowA = smoothstep(0.85, 0.0, length(p - vec2(-0.32, 0.34)));
 	float glowB = smoothstep(0.70, 0.0, length(p - vec2(0.38, 0.30)));
-	float glow = (glowA * 0.55 + glowB * 0.35) * topMask;
+	float glowPulse = 0.94 + 0.06 * sin(u_time * 0.6);
+	float glow = (glowA * 0.55 + glowB * 0.35) * topMask * glowPulse;
 	vec3 color = mix(palette_ground, palette_surface, glow * u_intensity);
 
 	// Three thin, fixed vertical bars -- few enough to read as strokes, not
@@ -63,9 +64,9 @@ void main() {
 	float dx0 = abs(uv.x - 0.16) * aspect;
 	float dx1 = abs(uv.x - 0.50) * aspect;
 	float dx2 = abs(uv.x - 0.83) * aspect;
-	float shimmer0 = 0.85 + 0.15 * fbm(vec2(1.3, u_time * 0.12));
-	float shimmer1 = 0.85 + 0.15 * fbm(vec2(6.7, u_time * 0.12));
-	float shimmer2 = 0.85 + 0.15 * fbm(vec2(11.9, u_time * 0.12));
+	float shimmer0 = 0.80 + 0.20 * fbm(vec2(1.3, u_time * 0.24));
+	float shimmer1 = 0.80 + 0.20 * fbm(vec2(6.7, u_time * 0.24));
+	float shimmer2 = 0.80 + 0.20 * fbm(vec2(11.9, u_time * 0.24));
 	float bar0 = smoothstep(0.007, 0.0, dx0) * shimmer0;
 	float bar1 = smoothstep(0.007, 0.0, dx1) * shimmer1;
 	float bar2 = smoothstep(0.007, 0.0, dx2) * shimmer2;
