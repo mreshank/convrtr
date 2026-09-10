@@ -169,3 +169,20 @@
 [data-listing-rows] > [data-row]:not(:first-child) {
 	border-top: var(--rule-width) solid var(--rule);
 }
+
+/*
+ * `GroupGrid` collapses at the same widths `FeatureGrid` already does,
+ * reusing the same `--grid-cols` custom property rather than inventing a
+ * second one -- both grids share the same 3/2/1 column rhythm.
+ */
+@media (max-width: 900px) and (min-width: 601px) {
+	[data-group-grid] {
+		--grid-cols: 2;
+	}
+}
+
+@media (max-width: 600px) {
+	[data-group-grid] {
+		--grid-cols: 1;
+	}
+}

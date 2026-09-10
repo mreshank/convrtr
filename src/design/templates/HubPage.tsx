@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import {
 	BranchDiagram,
 	FusedHeadline,
+	GroupGrid,
+	type GroupGridItem,
 	type ListingItem,
 	ListingRows,
 } from "@/design/families";
@@ -51,6 +53,13 @@ type Props = {
 	 * format and by task.
 	 */
 	sections?: ListingSection[];
+	/**
+	 * The 2D-grid alternative to `sections` -- `/groups` uses this instead
+	 * of `sections`/`ListingRows` so its two dimensions (format, task) read
+	 * as distinct groups in space rather than one flat ruled list. A hub
+	 * passes one or the other, never both.
+	 */
+	grid?: { heading?: string; items: GroupGridItem[] }[];
 	children?: ReactNode;
 };
 
@@ -70,6 +79,7 @@ export function HubPage({
 	count,
 	branch,
 	sections,
+	grid,
 	children,
 }: Props) {
 	return (
@@ -165,6 +175,24 @@ export function HubPage({
 					<div>
 						<ListingRows items={section.items} />
 					</div>
+				</div>
+			))}
+
+			{grid?.map((section) => (
+				<div
+					key={section.heading ?? "grid"}
+					style={{
+						display: "flex",
+						flexDirection: "column",
+						gap: "var(--gap-sm)",
+					}}
+				>
+					{section.heading ? (
+						<p className="meta" style={{ color: "var(--ink-muted)" }}>
+							{section.heading}
+						</p>
+					) : null}
+					<GroupGrid items={section.items} />
 				</div>
 			))}
 

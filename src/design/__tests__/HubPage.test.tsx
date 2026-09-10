@@ -57,4 +57,28 @@ describe("HubPage", () => {
 		expect(h1.style.fontSize).toBe("var(--headline-size)");
 		expect(h1.style.fontWeight).toBe("400");
 	});
+
+	it("renders a GroupGrid section when given `grid` instead of `sections`", () => {
+		render(
+			<HubPage
+				title="Browse by format or task"
+				lede="x"
+				grid={[
+					{
+						heading: "BY FORMAT",
+						items: [
+							{
+								href: "/groups/format/png",
+								title: "PNG",
+								meta: "3 tools",
+								tools: [{ href: "/png-to-webp", title: "PNG to WebP" }],
+							},
+						],
+					},
+				]}
+			/>,
+		);
+		expect(screen.getByText("BY FORMAT")).toBeDefined();
+		expect(screen.getByRole("button", { name: /PNG/ })).toBeDefined();
+	});
 });

@@ -176,6 +176,18 @@ const CLIENT_COMPONENT_ALLOWLIST = new Set([
 	// a server component. Above 600px nothing changed: the nav is the same
 	// inline row, and the toggle is `display: none` in `chrome.css`.
 	"SiteHeader.tsx",
+	// `ToolsMegaMenu` holds open/closed and active-group state and attaches
+	// hover/focus/Escape handlers -- none of which a server component can
+	// do. Unlike `SiteHeader`'s mobile disclosure it is NOT a full-viewport
+	// panel: no portal, no scroll lock, no focus trap -- a small anchored
+	// panel scoped to normal document flow, open only while its trigger or
+	// panel has hover or focus.
+	"ToolsMegaMenu.tsx",
+	// `GroupGrid` holds which single cell is expanded -- a server component
+	// cannot hold that state. Every other family stays a server component;
+	// this is the one family whose whole purpose is the expand/collapse
+	// interaction the groups index needs.
+	"GroupGrid.tsx",
 ]);
 
 function filesDeclaringUseClient(dir: string): string[] {
