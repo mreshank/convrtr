@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { parseToolTitle } from "@/lib/format";
 import { HALFTONE_FRAGMENT, ShaderSurface } from "@/design/texture";
+import { parseToolTitle } from "@/lib/format";
 
 export type GroupGridToolItem = {
 	href: string;
@@ -154,7 +154,9 @@ export function GroupGrid({ items, defaultSide = "right" }: Props) {
 					const previewChips =
 						formatPreviews.length > 0
 							? formatPreviews
-							: item.tools.slice(0, 2).map((t) => parseToolTitle(t.title).primary);
+							: item.tools
+									.slice(0, 2)
+									.map((t) => parseToolTitle(t.title).primary);
 					const remainingCount = item.tools.length - previewChips.length;
 
 					return (
@@ -829,60 +831,60 @@ export function GroupGrid({ items, defaultSide = "right" }: Props) {
 									↗
 								</span>
 							</div>
-						{tool.acceptExt && tool.outputExt ? (
-							<div
-								style={{
-									display: "flex",
-									alignItems: "center",
-									gap: "var(--space-base)",
-								}}
-							>
+							{tool.acceptExt && tool.outputExt ? (
+								<div
+									style={{
+										display: "flex",
+										alignItems: "center",
+										gap: "var(--space-base)",
+									}}
+								>
+									<span
+										className="mono"
+										style={{
+											fontSize: "11px",
+											color: "var(--accent)",
+											background: "var(--surface)",
+											borderWidth: "var(--rule-width)",
+											borderStyle: "solid",
+											borderColor: "var(--rule)",
+											padding: "0 var(--space-base)",
+										}}
+									>
+										{tool.acceptExt.map((e) => e.toUpperCase()).join("/")}
+									</span>
+									<span
+										style={{
+											color: "var(--ink-muted)",
+											fontSize: "10px",
+										}}
+									>
+										→
+									</span>
+									<span
+										className="mono"
+										style={{
+											fontSize: "11px",
+											color: "var(--accent)",
+											background: "var(--surface)",
+											borderWidth: "var(--rule-width)",
+											borderStyle: "solid",
+											borderColor: "var(--rule)",
+											padding: "0 var(--space-base)",
+										}}
+									>
+										{tool.outputExt.toUpperCase()}
+									</span>
+								</div>
+							) : tool.kind ? (
 								<span
 									className="mono"
-									style={{
-										fontSize: "11px",
-										color: "var(--accent)",
-										background: "var(--surface)",
-										borderWidth: "var(--rule-width)",
-										borderStyle: "solid",
-										borderColor: "var(--rule)",
-										padding: "0 var(--space-base)",
-									}}
+									style={{ fontSize: "11px", color: "var(--ink-muted)" }}
 								>
-									{tool.acceptExt.map((e) => e.toUpperCase()).join("/")}
+									{tool.kind.toUpperCase()}
 								</span>
-								<span
-									style={{
-										color: "var(--ink-muted)",
-										fontSize: "10px",
-									}}
-								>
-									→
-								</span>
-								<span
-									className="mono"
-									style={{
-										fontSize: "11px",
-										color: "var(--accent)",
-										background: "var(--surface)",
-										borderWidth: "var(--rule-width)",
-										borderStyle: "solid",
-										borderColor: "var(--rule)",
-										padding: "0 var(--space-base)",
-									}}
-								>
-									{tool.outputExt.toUpperCase()}
-								</span>
-							</div>
-						) : tool.kind ? (
-							<span
-								className="mono"
-								style={{ fontSize: "11px", color: "var(--ink-muted)" }}
-							>
-								{tool.kind.toUpperCase()}
-							</span>
-						) : null}
-					</Link>
+							) : null}
+						</Link>
 					);
 				})}
 				{displayedTools.length === 0 ? (

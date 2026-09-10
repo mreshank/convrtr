@@ -80,7 +80,7 @@ export function parseToolTitle(rawTitle: string): {
 		return { primary: rawTitle };
 	}
 	return {
-		primary: match[1].trim(),
+		primary: (match[1] ?? rawTitle).trim(),
 		secondary: match[2],
 	};
 }
