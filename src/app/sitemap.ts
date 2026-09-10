@@ -16,6 +16,7 @@ export const dynamic = "force-static";
  */
 const STATIC_PATHS = [
 	"/",
+	"/convert",
 	"/tools",
 	"/blog",
 	"/groups",

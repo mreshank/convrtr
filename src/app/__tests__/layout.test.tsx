@@ -25,7 +25,9 @@ describe("RootLayout", () => {
 		expect(
 			screen.getByRole("link", { name: "convrtr" }).getAttribute("href"),
 		).toBe("/");
-		expect(screen.getByRole("link", { name: /convert/i })).toBeDefined();
+		expect(
+			screen.getByRole("link", { name: "Start converting" }),
+		).toBeDefined();
 	});
 
 	it("routes every nav destination to a route that exists", () => {
@@ -39,6 +41,7 @@ describe("RootLayout", () => {
 		);
 		const built = new Set([
 			"/",
+			"/convert",
 			"/tools",
 			"/groups",
 			"/collectives",
