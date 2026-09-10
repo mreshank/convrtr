@@ -183,6 +183,11 @@ const CLIENT_COMPONENT_ALLOWLIST = new Set([
 	// panel scoped to normal document flow, open only while its trigger or
 	// panel has hover or focus.
 	"ToolsMegaMenu.tsx",
+	// `GroupGrid` holds which single cell is expanded -- a server component
+	// cannot hold that state. Every other family stays a server component;
+	// this is the one family whose whole purpose is the expand/collapse
+	// interaction the groups index needs.
+	"GroupGrid.tsx",
 ]);
 
 function filesDeclaringUseClient(dir: string): string[] {

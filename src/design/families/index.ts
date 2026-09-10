@@ -6,6 +6,7 @@ export { FeatureGrid } from "./FeatureGrid";
 export { FeatureStrip } from "./FeatureStrip";
 export { FormatStrip } from "./FormatStrip";
 export { FusedHeadline } from "./FusedHeadline";
+export { GroupGrid, type GroupGridItem } from "./GroupGrid";
 export { HeroBand } from "./HeroBand";
 export { type ListingItem, ListingRows } from "./ListingRows";
 export { ProseSection } from "./ProseSection";
