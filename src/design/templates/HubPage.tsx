@@ -1,6 +1,10 @@
 import type { ReactNode } from "react";
 import {
+	BlogGrid,
+	type BlogGridItem,
 	BranchDiagram,
+	CollectiveGrid,
+	type CollectiveGridItem,
 	FusedHeadline,
 	GroupGrid,
 	type GroupGridItem,
@@ -60,6 +64,10 @@ type Props = {
 	 * passes one or the other, never both.
 	 */
 	grid?: { heading?: string; items: GroupGridItem[] }[];
+	/** Interactive blog cards with fuzzy search, tag filters, and sorting. */
+	blogPosts?: BlogGridItem[];
+	/** Curated collectives with interactive search, editorial mission, and tool pipeline. */
+	collectives?: CollectiveGridItem[];
 	children?: ReactNode;
 };
 
@@ -80,6 +88,8 @@ export function HubPage({
 	branch,
 	sections,
 	grid,
+	blogPosts,
+	collectives,
 	children,
 }: Props) {
 	return (
@@ -195,6 +205,10 @@ export function HubPage({
 					<GroupGrid items={section.items} />
 				</div>
 			))}
+
+			{blogPosts ? <BlogGrid posts={blogPosts} /> : null}
+
+			{collectives ? <CollectiveGrid collectives={collectives} /> : null}
 
 			{children}
 		</div>

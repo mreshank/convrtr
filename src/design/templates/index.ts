@@ -6,6 +6,11 @@
  * aspirational.
  */
 
+export type {
+	BlogGridItem,
+	CollectiveGridItem,
+	CollectiveToolItem,
+} from "@/design/families";
 export { ArticlePage } from "./ArticlePage";
 export { ConverterPage } from "./ConverterPage";
 export { EditorialPage } from "./EditorialPage";

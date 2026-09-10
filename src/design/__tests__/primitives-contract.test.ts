@@ -184,10 +184,12 @@ const CLIENT_COMPONENT_ALLOWLIST = new Set([
 	// panel has hover or focus.
 	"ToolsMegaMenu.tsx",
 	// `GroupGrid` holds which single cell is expanded -- a server component
-	// cannot hold that state. Every other family stays a server component;
-	// this is the one family whose whole purpose is the expand/collapse
-	// interaction the groups index needs.
+	// cannot hold that state.
 	"GroupGrid.tsx",
+	// `BlogGrid` holds fuzzy search query, active tag filter, and sort order.
+	"BlogGrid.tsx",
+	// `CollectiveGrid` holds interactive search query state.
+	"CollectiveGrid.tsx",
 ]);
 
 function filesDeclaringUseClient(dir: string): string[] {

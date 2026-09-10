@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { COLLECTIVES } from "@/content/collectives/registry";
-import { HubPage } from "@/design/templates";
+import { getTool } from "@/core/registry";
+import { type CollectiveGridItem, HubPage } from "@/design/templates";
 import { SITE } from "@/lib/site";
 
 export function generateMetadata(): Metadata {
@@ -15,29 +16,40 @@ export function generateMetadata(): Metadata {
 	};
 }
 
-export default function CollectivesIndexPage() {
-	const collectives = COLLECTIVES;
+const COLLECTIVE_GRID_ITEMS: CollectiveGridItem[] = COLLECTIVES.map(
+	(collective) => ({
+		slug: collective.slug,
+		title: collective.title,
+		why: collective.why,
+		hasDemo:
+			collective.slug === "podcast-kit" || collective.slug === "strip-metadata",
+		tools: collective.toolIds.flatMap((id) => {
+			const tool = getTool(id);
+			return tool
+				? [
+						{
+							id: tool.id,
+							name: tool.seo.h1,
+							fromExt: tool.accept.ext[0] ?? tool.output.ext,
+							toExt: tool.output.ext,
+							href: `/${tool.id}`,
+						},
+					]
+				: [];
+		}),
+	}),
+);
 
+export default function CollectivesIndexPage() {
 	return (
 		<HubPage
 			title="Collectives"
 			lede="Curated sets of tools built around a reason, not a file type."
 			count={{
-				value: collectives.length,
-				noun: collectives.length === 1 ? "collective" : "collectives",
+				value: COLLECTIVE_GRID_ITEMS.length,
+				noun: COLLECTIVE_GRID_ITEMS.length === 1 ? "collective" : "collectives",
 			}}
-			sections={[
-				{
-					items: collectives.map((collective) => ({
-						href: `/collectives/${collective.slug}`,
-						title: collective.title,
-						meta: `${collective.toolIds.length} ${
-							collective.toolIds.length === 1 ? "tool" : "tools"
-						}`,
-						description: collective.why,
-					})),
-				},
-			]}
+			collectives={COLLECTIVE_GRID_ITEMS}
 		/>
 	);
 }

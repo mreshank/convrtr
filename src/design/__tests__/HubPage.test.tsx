@@ -81,4 +81,42 @@ describe("HubPage", () => {
 		expect(screen.getByText("BY FORMAT")).toBeDefined();
 		expect(screen.getByRole("button", { name: /PNG/ })).toBeDefined();
 	});
+
+	it("renders BlogGrid when given blogPosts", () => {
+		render(
+			<HubPage
+				title="Blog"
+				blogPosts={[
+					{
+						slug: "post-a",
+						title: "Article A",
+						description: "Description A",
+						publishedAt: "2026-08-20",
+						dateline: "20 August 2026",
+						tags: ["news"],
+					},
+				]}
+			/>,
+		);
+		expect(screen.getByText("Article A")).toBeDefined();
+		expect(screen.getByText("1 ARTICLES IN ARCHIVE")).toBeDefined();
+	});
+
+	it("renders CollectiveGrid when given collectives", () => {
+		render(
+			<HubPage
+				title="Collectives"
+				collectives={[
+					{
+						slug: "kit-a",
+						title: "Podcast Suite",
+						why: "Full workflow for podcasts.",
+						tools: [{ id: "tool-1", name: "Tool One", href: "/tool-1" }],
+					},
+				]}
+			/>,
+		);
+		expect(screen.getByText("Podcast Suite")).toBeDefined();
+		expect(screen.getByText("1 CURATED COLLECTIVES")).toBeDefined();
+	});
 });
