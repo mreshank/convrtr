@@ -109,11 +109,19 @@ export function ToolsMegaMenu({ triggerLabel, triggerHref }: Props) {
 				ref={triggerRef}
 				href={triggerHref}
 				aria-expanded={open}
-				aria-controls={panelId}
+				aria-controls={open ? panelId : undefined}
 				onMouseEnter={() => setOpen(true)}
 				onClick={(event) => {
-					event.preventDefault();
-					setOpen((current) => !current);
+					if (!open) {
+						// First click opens the panel -- this is a reveal, not a
+						// navigation, so keep the user on the page.
+						event.preventDefault();
+						setOpen(true);
+						return;
+					}
+					// Panel is already open: let the click navigate normally.
+					// `close()` just tidies local state as navigation proceeds.
+					close();
 				}}
 				style={{
 					display: "inline-flex",
@@ -165,6 +173,7 @@ export function ToolsMegaMenu({ triggerLabel, triggerHref }: Props) {
 							<li key={group.kind}>
 								<button
 									type="button"
+									aria-expanded={activeKind === group.kind}
 									onMouseEnter={() => setActiveKind(group.kind)}
 									onFocus={() => setActiveKind(group.kind)}
 									style={{

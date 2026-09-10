@@ -94,15 +94,30 @@ describe("ToolsMegaMenu", () => {
 		expect(trigger.getAttribute("aria-expanded")).toBe("true");
 	});
 
-	it("toggles open and closed on click, for pointers that do not hover", () => {
+	it("opens (without navigating) on click of a closed trigger, for pointers that do not hover", () => {
+		render(<ToolsMegaMenu triggerLabel="Tools" triggerHref="/tools" />);
+		const trigger = screen.getByRole("link", { name: "Tools" });
+
+		const notPrevented = fireEvent.click(trigger);
+
+		expect(trigger.getAttribute("aria-expanded")).toBe("true");
+		// fireEvent.click returns false when the event's default was
+		// prevented -- the opening click must not navigate.
+		expect(notPrevented).toBe(false);
+	});
+
+	it("navigates (without re-closing) on click of an already-open trigger", () => {
 		render(<ToolsMegaMenu triggerLabel="Tools" triggerHref="/tools" />);
 		const trigger = screen.getByRole("link", { name: "Tools" });
 
 		fireEvent.click(trigger);
 		expect(trigger.getAttribute("aria-expanded")).toBe("true");
 
-		fireEvent.click(trigger);
-		expect(trigger.getAttribute("aria-expanded")).toBe("false");
+		const notPrevented = fireEvent.click(trigger);
+
+		// The second click, while the panel is already open, must be allowed
+		// to navigate -- its default must NOT be prevented.
+		expect(notPrevented).toBe(true);
 	});
 
 	it("does not lock body scroll or render a full-viewport scrim", () => {
