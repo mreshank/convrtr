@@ -31,6 +31,7 @@ export const metadata: Metadata = {
 // licences) go in the footer's Legal column below instead, per that split's
 // own reasoning.
 const NAV = [
+	{ href: "/convert", label: "Convert" },
 	{ href: "/tools", label: "Tools" },
 	{ href: "/groups", label: "Groups" },
 	{ href: "/collectives", label: "Collectives" },
@@ -40,7 +41,7 @@ const NAV = [
 	{ href: "/privacy", label: "Privacy" },
 ];
 
-const CTA = { href: "/tools", label: "Start converting" };
+const CTA = { href: "/convert", label: "Start converting" };
 
 // The real repo, and its issue tracker as the practical way to reach the
 // maintainer — convrtr has no social accounts or support inbox to link
