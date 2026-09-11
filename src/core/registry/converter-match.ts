@@ -242,6 +242,15 @@ const MIME_MAP: Record<string, string> = {
 	"audio/x-alaw": "alaw",
 	"audio/mulaw": "ulaw",
 	"audio/alaw": "alaw",
+	"application/x-koala-paint": "koa",
+	"application/x-c64-koala": "koa",
+	"image/x-koala": "koa",
+	"application/x-photoshop-color-swatch": "aco",
+	"application/x-adobe-color": "aco",
+	"audio/x-psx-vag": "vag",
+	"audio/x-vag": "vag",
+	"audio/vag": "vag",
+	"application/x-vag": "vag",
 };
 
 /**

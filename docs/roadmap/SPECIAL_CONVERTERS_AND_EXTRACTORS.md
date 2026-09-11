@@ -2034,6 +2034,69 @@
 
 ---
 
+### 88. Commodore 64 KoalaPainter Multicolor Bitmap (`.koa`, `.kla`)
+
+- **Ecosystem & Context:** KoalaPainter was released in 1983 by Koala Technologies for the Commodore 64. It became the de-facto gold standard graphics format for 8-bit C64 pixel art, demoscene competitions (csdb.dk), and game asset design. Standard `.koa` files are direct 10,003-byte memory dumps representing the VIC-II chip's multicolor bitmap mode.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/c64, r/pixelart, r/retrogaming, r/demoscene, r/vintagecomputing.
+  - Queries: *"How to convert C64 .koa to PNG"*, *"Convert KoalaPainter Commodore 64 bitmap to modern image"*, *"C64 Koala multicolor viewer online"*, *"Open .koa file without emulator"*.
+- **Forensic Structure:**
+  - Exact 10,003-byte PRG container:
+    - Bytes 0..1: C64 PRG 2-byte load address (`$6000` = `0x00, 0x60` little-endian).
+    - Bytes 2..8001 (8,000 bytes): VIC-II multicolor bitmap memory ($160 \times 200$ pixels across 1,000 $4 \times 8$ character cells).
+    - Bytes 8002..9001 (1,000 bytes): Screen RAM ($5C00 / $0400). High nibble = Color 01, Low nibble = Color 10 for each cell.
+    - Bytes 9002..10001 (1,000 bytes): Color RAM ($D800). Low nibble = Color 11 for each cell.
+    - Byte 10002 (1 byte): Background color register ($D021). Color 00 (applied globally).
+  - Also handles raw 10,001-byte and 10,002-byte dumps.
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript client-side decoder. Unpacks 40 columns $\times$ 25 rows of character cells, resolves multicolor bit-pairs (`00`, `01`, `10`, `11`) into authentic Commodore 64 16-color palette indices (Pepto or Colodore calibrations), doubles horizontal pixel width to achieve standard $320 \times 200$ square pixel aspect ratio (or $640 \times 400$ 2x integer scale), and outputs 32-bit RGBA PNG.
+- **Fidelity:** `LOSSLESS RASTER` (Bit-exact reproduction of Commodore 64 VIC-II multicolor graphics).
+- **Status:** **Wave 31 Shipped (`image/koa-to-png`)**.
+
+---
+
+### 89. Adobe Photoshop Color Palette (`.aco`)
+
+- **Ecosystem & Context:** Adobe Photoshop Color Swatches (`.aco`) is the binary color palette format used by digital artists, concept illustrators, and UI designers. Distributed across Gumroad, ArtStation, DeviantArt, and design resource repositories, `.aco` files contain rich palettes that web developers and UI designers need in CSS and Tailwind without launching Photoshop.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/Photoshop, r/webdev, r/digitalart, r/TailwindCSS, r/Frontend, r/design.
+  - Queries: *"Convert Photoshop .aco swatches to CSS variables"*, *"How to use .aco in Tailwind"*, *"Photoshop color palette to hex converter"*, *"Extract .aco to JSON tokens"*.
+- **Forensic Structure:**
+  - Version 1 block: 2-byte version (`0x0001`), 2-byte count ($N$), followed by $N \times 10$-byte color specifications (color space ID + 4 $\times$ 16-bit components).
+  - Version 2 block (appended after v1 or standalone): 2-byte version (`0x0002`), 2-byte count ($M$), followed by $M$ records with color specifications, 2-byte reserved, 4-byte name length, and UTF-16BE null-terminated swatch names.
+  - Color models supported: RGB (0), HSB (1), CMYK (2), Lab (7), Grayscale (8).
+- **In-Browser Execution Strategy:**
+  - Dual-version parser in pure TypeScript. Prioritizes Version 2 to preserve artist-defined swatch names (e.g. "Primary Coral", "Deep Ocean"), calculates mathematical color transforms (D65 CIE Lab to sRGB, subtractive CMYK to sRGB, HSB to sRGB), and formats into clean `:root` CSS custom properties, Tailwind CSS configuration objects, or design token JSON.
+- **Fidelity:** `MATHEMATICALLY ACCURATE` (High-precision 16-bit to 8-bit sRGB and hex conversion with original swatch names).
+- **Status:** **Wave 31 Shipped (`document/aco-to-css`)**.
+
+---
+
+### 90. Sony PlayStation 1 & 2 PSX Audio (`.vag`, `.vagp`)
+
+- **Ecosystem & Context:** Sony PlayStation 1 and 2 (`.vag`, `.vagp`) is the universal compressed sound effect, voice acting, and dialogue stream format used across thousands of classic PS1/PS2 games (Final Fantasy VII, Metal Gear Solid, Crash Bandicoot, Castlevania: Symphony of the Night, Resident Evil, Silent Hill). Game modders, retro preservationists, and audio engineers frequently extract `.vag` files from PS1 CD-ROM ISOs and ROM dumps but cannot play them on modern systems.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/psx, r/retrogaming, r/vgm, r/sounddesign, r/emulation, r/romhacking.
+  - Queries: *"How to convert PSX .vag to WAV"*, *"PlayStation VAG audio converter online free"*, *"Convert VAGp sound effects to WAV without software install"*, *"PS1 audio extractor"*.
+- **Forensic Structure:**
+  - 48-byte or 64-byte Header:
+    - Bytes 0..3: Magic ASCII `'VAGp'` (or little-endian `'pGAV'`).
+    - Bytes 4..7: Version (typically `0x00000003` or `0x00000020`).
+    - Bytes 12..15: Data size in bytes (big-endian uint32).
+    - Bytes 16..19: Sample rate in Hz (big-endian uint32, e.g. 11025, 22050, 44100).
+    - Bytes 32..47: Sound name (16-byte null-terminated ASCII string).
+  - Audio Payload:
+    - 16-byte SPU-ADPCM blocks.
+    - Each block contains 1 byte shift/predictor, 1 byte flags (loop markers), and 14 bytes packed with 28 4-bit signed nibbles.
+    - Authentic 5-coefficient 2-pole linear prediction filter: $K_0=[0,0]$, $K_1=[60/64, 0]$, $K_2=[115/64, -52/64]$, $K_3=[98/64, -55/64]$, $K_4=[122/64, -60/64]$.
+- **In-Browser Execution Strategy:**
+  - Parses header, auto-detects 48-byte vs 64-byte header offset, decodes SPU-ADPCM blocks sample-by-sample using authentic integer arithmetic, applies optional audio peak normalization, and synthesizes a standard 44-byte RIFF WAVE header with 16-bit linear PCM audio.
+- **Fidelity:** `LOSSLESS ADPCM EXPANSION` (Exact Sony hardware SPU prediction filter algorithm).
+- **Status:** **Wave 31 Shipped (`audio/vag-to-wav`)**.
+
+
+---
+
 ## Roadmap Waves & Next Steps
 
 1. **Wave 1 (Shipped):**

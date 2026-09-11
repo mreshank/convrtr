@@ -25,6 +25,7 @@ import { silkToWav } from "./tools/audio/silk-to-wav";
 import { trimFlac } from "./tools/audio/trim-flac";
 import { trimWav } from "./tools/audio/trim-wav";
 import { ulawToWav } from "./tools/audio/ulaw-to-wav";
+import { vagToWav } from "./tools/audio/vag-to-wav";
 import { vocToWav } from "./tools/audio/voc-to-wav";
 import { voxToWav } from "./tools/audio/vox-to-wav";
 import { wavToFlac } from "./tools/audio/wav-to-flac";
@@ -34,6 +35,7 @@ import { waveformWAV } from "./tools/audio/wav-waveform";
 import { avifToJpg } from "./tools/avif-to-jpg";
 import { avifToPng } from "./tools/avif-to-png";
 import { compressJpg } from "./tools/compress-jpg";
+import { acoToCss } from "./tools/document/aco-to-css";
 import { actToCss } from "./tools/document/act-to-css";
 import { aseToCss } from "./tools/document/ase-to-css";
 import { assToSrt } from "./tools/document/ass-to-srt";
@@ -86,6 +88,7 @@ import { gbrToPng } from "./tools/image/gbr-to-png";
 import { icnsToPng } from "./tools/image/icns-to-png";
 import { icoToPng } from "./tools/image/ico-to-png";
 import { iffToPng } from "./tools/image/iff-to-png";
+import { koaToPng } from "./tools/image/koa-to-png";
 import { macpaintToPng } from "./tools/image/macpaint-to-png";
 import { pcxToPng } from "./tools/image/pcx-to-png";
 import { ppmToPng } from "./tools/image/ppm-to-png";
@@ -291,6 +294,9 @@ export const TOOLS: Tool[] = [
 	zxToPng,
 	gedcomToCsv,
 	ulawToWav,
+	koaToPng,
+	acoToCss,
+	vagToWav,
 ];
 
 export function getTool(id: string): Tool | undefined {

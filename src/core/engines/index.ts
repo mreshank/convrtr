@@ -1,5 +1,6 @@
 import { eightSvxToWavEngine } from "./8svx";
 import { abrToPngEngine } from "./abr";
+import { acoToCssEngine } from "./aco";
 import { actToCssEngine } from "./act";
 import { adxToWavEngine } from "./adx";
 import { aiffToWavEngine } from "./aiff";
@@ -51,6 +52,7 @@ import { IMAGE_DECODERS, IMAGE_ENCODERS } from "./image/registry";
 import { ircamToWavEngine } from "./ircam";
 import { kmlToGeoJsonEngine } from "./kml";
 import { kmzToGeoJsonEngine } from "./kmz";
+import { koaToPngEngine } from "./koa";
 import { latexToMarkdownEngine } from "./latex";
 import { macpaintToPngEngine } from "./macpaint";
 import { METADATA_ENGINES } from "./metadata";
@@ -92,6 +94,7 @@ import { tgsToJsonEngine } from "./tgs";
 import { timToPngEngine } from "./tim";
 import type { Engine } from "./types";
 import { ulawToWavEngine } from "./ulaw";
+import { vagToWavEngine } from "./vag";
 import { vcfToCsvEngine } from "./vcf";
 import { createVideoConversionEngine } from "./video/convert";
 import { createFrameExtractionEngine } from "./video/frame";
@@ -281,6 +284,9 @@ function buildImageEngines(): Map<string, Engine> {
 	engines.set(gedcomToCsvEngine.id, gedcomToCsvEngine);
 	engines.set(ulawToWavEngine.id, ulawToWavEngine);
 	engines.set(zxToPngEngine.id, zxToPngEngine);
+	engines.set(koaToPngEngine.id, koaToPngEngine);
+	engines.set(acoToCssEngine.id, acoToCssEngine);
+	engines.set(vagToWavEngine.id, vagToWavEngine);
 	{
 		const engine = createAudioLegacyEngine("opus", "mp3");
 		engines.set(engine.id, engine);
@@ -419,6 +425,7 @@ export async function selectEngine(
 }
 
 export { eightSvxToWavEngine } from "./8svx";
+export { acoToCssEngine } from "./aco";
 export { actToCssEngine } from "./act";
 export { aiffToWavEngine } from "./aiff";
 export { asepriteToPngEngine } from "./aseprite";
@@ -443,6 +450,7 @@ export { iffToPngEngine } from "./iff";
 export { ircamToWavEngine } from "./ircam";
 export { kmlToGeoJsonEngine } from "./kml";
 export { kmzToGeoJsonEngine } from "./kmz";
+export { koaToPngEngine } from "./koa";
 export { microDvdToSrtEngine } from "./microdvd";
 export { modToWavEngine } from "./mod";
 export { nistToWavEngine } from "./nist";
@@ -458,6 +466,7 @@ export { svgzToSvgEngine } from "./svgz";
 export { tcxToGeoJsonEngine } from "./tcx";
 export { tgaToPngEngine } from "./tga";
 export { ulawToWavEngine } from "./ulaw";
+export { vagToWavEngine } from "./vag";
 export { vocToWavEngine } from "./voc";
 export { vtfToPngEngine } from "./vtf";
 export { vttToSrtEngine } from "./vtt";
