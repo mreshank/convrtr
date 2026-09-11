@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ToolTable } from "@/app/tools/ToolTable";
 import { toToolRow } from "@/app/tools/toolRow";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { CATEGORIES, type Category, getToolsByCategory } from "@/core/registry";
 import { HubPage } from "@/design/templates";
+import { buildCategoryJsonLd } from "@/lib/jsonld";
 import { SITE } from "@/lib/site";
 
 function isCategory(value: string): value is Category {
@@ -68,15 +70,20 @@ export default async function CategoryPage({
 	const rows = tools.map(toToolRow);
 
 	return (
-		<HubPage
-			title={label(category)}
-			lede={`For converting ${category} files, all running in your browser.`}
-			count={{
-				value: tools.length,
-				noun: tools.length === 1 ? "tool" : "tools",
-			}}
-		>
-			<ToolTable rows={rows} caption={`${label(category)} tools`} />
-		</HubPage>
+		<>
+			<JsonLd
+				schema={buildCategoryJsonLd(category, tools, `${SITE}/${category}`)}
+			/>
+			<HubPage
+				title={label(category)}
+				lede={`For converting ${category} files, all running in your browser.`}
+				count={{
+					value: tools.length,
+					noun: tools.length === 1 ? "tool" : "tools",
+				}}
+			>
+				<ToolTable rows={rows} caption={`${label(category)} tools`} />
+			</HubPage>
+		</>
 	);
 }

@@ -395,8 +395,352 @@ export const COMPARISONS: ComparisonMeta[] = [
 			"document/wad-to-zip",
 		],
 	},
+	{
+		slug: "png-vs-jpg",
+		title: "PNG vs JPG: Transparency, Quality & When to Use Which",
+		description:
+			"Detailed technical comparison between PNG and JPG (JPEG). Understand lossless vs lossy compression, alpha channel transparency, and file size optimization.",
+		formatA: "PNG",
+		formatB: "JPG",
+		category: "image",
+		summary:
+			"PNG is a lossless raster format that preserves crisp edges and 8-bit alpha transparency, making it optimal for graphics and user interfaces. JPG uses lossy discrete cosine transform compression to drastically reduce photographic file sizes at the cost of slight high-frequency compression artifacts.",
+		prosA: [
+			"Lossless compression preserves 100% pixel-perfect clarity",
+			"Full 8-bit alpha channel transparency support",
+			"No compression artifacts around sharp text or vector illustrations",
+			"Ideal for screenshots, logos, and user interface graphics",
+		],
+		prosB: [
+			"Substantially smaller file sizes for photographic imagery",
+			"Universal support across all software, cameras, and devices",
+			"Customizable compression ratios for bandwidth optimization",
+			"Standard format for digital photography and image sensors",
+		],
+		specs: [
+			{
+				feature: "Compression Architecture",
+				formatA: "Lossless Deflate (LZ77 + Huffman)",
+				formatB: "Lossy Discrete Cosine Transform (DCT)",
+			},
+			{
+				feature: "Alpha Transparency",
+				formatA: "Yes (256 levels of alpha)",
+				formatB: "No transparency support",
+			},
+			{
+				feature: "Best For",
+				formatA: "Screenshots, Logos, UI, Line Art",
+				formatB: "Real-world photography, complex textures",
+			},
+			{
+				feature: "Color Depth",
+				formatA: "Up to 48-bit Truecolor + Alpha",
+				formatB: "24-bit RGB (8 bits per channel)",
+			},
+			{
+				feature: "Artifacts",
+				formatA: "Zero visual artifacts",
+				formatB: "Ringing and blocking around sharp edges",
+			},
+		],
+		verdict:
+			"Choose PNG for icons, logos, screenshots, and graphics requiring transparent backgrounds or sharp text. Choose JPG for photographs and complex real-world imagery where smaller file size is essential.",
+		relatedTools: ["image/png-to-jpg", "image/jpg-to-png", "image/png-to-webp"],
+	},
+	{
+		slug: "webp-vs-png",
+		title: "WebP vs PNG: Is WebP Really Better Than PNG for Modern Websites?",
+		description:
+			"Compare WebP and PNG file sizes, transparency handling, browser support, and compression performance for web graphics and illustrations.",
+		formatA: "WebP",
+		formatB: "PNG",
+		category: "image",
+		summary:
+			"WebP was engineered specifically to supersede legacy web image formats. In lossless mode, WebP files are on average 26% smaller than equivalent PNGs while supporting identical alpha channel transparency and broad browser rendering support.",
+		prosA: [
+			"26% smaller file size than PNG while maintaining 100% lossless fidelity",
+			"Supports both lossy and lossless modes with alpha transparency",
+			"Faster website load times and improved Core Web Vitals (LCP)",
+			"Modern web standard supported by all major browsers",
+		],
+		prosB: [
+			"Ubiquitous desktop editor support (Photoshop, older apps, OS previews)",
+			"Bit-for-bit standard for archival asset storage",
+			"Immediate encoding without modern codec dependencies",
+			"Universal printing and publishing pipeline compatibility",
+		],
+		specs: [
+			{
+				feature: "Compression Algorithm",
+				formatA: "VP8L predictive spatial transform",
+				formatB: "Deflate (LZ77 + Huffman filters)",
+			},
+			{
+				feature: "Average Size vs PNG",
+				formatA: "~25-35% smaller",
+				formatB: "Baseline reference",
+			},
+			{
+				feature: "Transparency Support",
+				formatA: "Yes (in both lossy and lossless)",
+				formatB: "Yes (8-bit alpha channel)",
+			},
+			{
+				feature: "Animation Support",
+				formatA: "Yes (Animated WebP)",
+				formatB: "Limited (APNG extension)",
+			},
+			{
+				feature: "Global Browser Support",
+				formatA: "~98% of all browsers",
+				formatB: "100% universal support",
+			},
+		],
+		verdict:
+			"Convert PNG to WebP for modern web deployment to cut page weight and improve site speed. Keep PNG as your master source file in design applications.",
+		relatedTools: [
+			"image/webp-to-png",
+			"image/png-to-webp",
+			"image/webp-to-jpg",
+		],
+	},
+	{
+		slug: "mp4-vs-mkv",
+		title: "MP4 vs MKV: Which Video Container Should You Choose?",
+		description:
+			"Compare MP4 and MKV container formats. Analyze streaming compatibility, multiple audio and subtitle tracks, hardware decoding, and crash recovery.",
+		formatA: "MP4",
+		formatB: "MKV",
+		category: "video",
+		summary:
+			"MP4 is the universal standard for web streaming, social media, and mobile playback. MKV (Matroska) is an extensible, open-standard multimedia container designed for media archival, supporting virtually any video codec, multi-language audio tracks, and styled subtitles.",
+		prosA: [
+			"Universal playback across all browsers, smartphones, TVs, and gaming consoles",
+			"Native HTML5 <video> browser playback without transcoding",
+			"Optimized faststart 'moov atom' streaming over HTTP",
+			"Standard export format for social platforms (YouTube, TikTok, Instagram)",
+		],
+		prosB: [
+			"Supports virtually any audio/video codec (AV1, VP9, DTS-HD, TrueHD, FLAC)",
+			"Multiple selectable subtitle tracks (SSA/ASS styled anime subs, PGS, VTT)",
+			"Crash resilience: interrupted recordings remain playable up to the crash point",
+			"Multiple audio language tracks within a single container",
+		],
+		specs: [
+			{
+				feature: "Container Standard",
+				formatA: "ISO/IEC 14496-14 (MPEG-4 Part 14)",
+				formatB: "Matroska Open Standard (EBML)",
+			},
+			{
+				feature: "Browser Native Playback",
+				formatA: "Universal (H.264/AAC)",
+				formatB: "Requires transcoding or external player",
+			},
+			{
+				feature: "Subtitle Flexibility",
+				formatA: "Basic timed text (TX3G)",
+				formatB: "Full ASS/SSA, PGS, VTT, SRT embedded",
+			},
+			{
+				feature: "Interrupted Recording",
+				formatA: "Header corruption if cut abruptly",
+				formatB: "Segment-based; fully recoverable",
+			},
+			{
+				feature: "Audio Passthrough",
+				formatA: "AAC, MP3, AC3 (limited)",
+				formatB: "Lossless FLAC, DTS-HD Master, TrueHD",
+			},
+		],
+		verdict:
+			"Use MP4 for sharing, web streaming, social media uploads, and broad device playback. Use MKV for movie archiving, multi-language anime/films with styled subtitles, and live screen recordings in OBS.",
+		relatedTools: [
+			"video/mkv-to-mp4",
+			"video/mp4-to-webm",
+			"video/webm-to-mp4",
+		],
+	},
+	{
+		slug: "epub-vs-pdf",
+		title: "EPUB vs PDF: E-Reader Reflowable Text vs Fixed Page Print Fidelity",
+		description:
+			"Should you read or publish in EPUB or PDF? Compare responsive reflowable typography, mobile reading convenience, print fidelity, and device compatibility.",
+		formatA: "EPUB",
+		formatB: "PDF",
+		category: "document",
+		summary:
+			"EPUB is designed for dynamic reading, automatically reflowing text to fit any screen size or font adjustment. PDF locks content to a rigid digital page canvas, ensuring identical typography, diagrams, and print margins regardless of device.",
+		prosA: [
+			"Reflowable text adapts seamlessly to any screen size, orientation, and font size",
+			"Natural reading experience on Kindle, Kobo, iPad, and mobile screens",
+			"Significantly lighter file size than scanned or rendered PDFs",
+			"Built-in accessibility (screen reader text-to-speech, custom contrast and margins)",
+		],
+		prosB: [
+			"100% pixel-perfect fixed layout preserving exact typography, columns, and print margins",
+			"Universal standard for legal documents, academic papers, contracts, and printing",
+			"Robust vector drawings, embedded fonts, and precise page numbering",
+			"Viewable identically on any operating system without layout shifting",
+		],
+		specs: [
+			{
+				feature: "Layout Engine",
+				formatA: "Dynamic Reflowable HTML5/CSS",
+				formatB: "Fixed PostScript Geometry Canvas",
+			},
+			{
+				feature: "Mobile Screen UX",
+				formatA: "Optimal (text wraps automatically)",
+				formatB: "Requires pinch-to-zoom and panning",
+			},
+			{
+				feature: "File Structure",
+				formatA: "Open ZIP package of XHTML/CSS",
+				formatB: "Binary document with embedded object streams",
+			},
+			{
+				feature: "Digital Signatures & Forms",
+				formatA: "Unsupported",
+				formatB: "Industry-standard cryptographic signatures",
+			},
+			{
+				feature: "Target Use",
+				formatA: "Novels, prose, technical ebooks",
+				formatB: "Forms, contracts, research papers, print prep",
+			},
+		],
+		verdict:
+			"Convert PDF to EPUB or text for comfortable reading on mobile devices and e-readers. Use PDF for contracts, print materials, and academic papers with rigid formatting.",
+		relatedTools: [
+			"document/epub-to-markdown",
+			"document/cbz-to-pdf",
+			"document/goodnotes-to-pdf",
+		],
+	},
+	{
+		slug: "m4a-vs-mp3",
+		title: "M4A (AAC) vs MP3: Audio Compression, Sound Quality & Compatibility",
+		description:
+			"Is M4A better quality than MP3? Compare AAC compression efficiency at equivalent bitrates, Apple ecosystem integration, and hardware compatibility.",
+		formatA: "M4A",
+		formatB: "MP3",
+		category: "audio",
+		summary:
+			"M4A (typically encoded with AAC) is the technological successor to MP3, delivering noticeably crisper audio at lower bitrates. MP3 remains the most universally compatible audio format ever created.",
+		prosA: [
+			"Superior audio fidelity to MP3 at identical bitrates (128 kbps AAC rivals 192 kbps MP3)",
+			"Native format for Apple Music, iTunes, YouTube, and modern streaming platforms",
+			"Supports multi-channel 5.1 and 7.1 surround sound audio",
+			"Efficient psychoacoustic modeling prevents high-frequency smearing",
+		],
+		prosB: [
+			"100% universal hardware and software compatibility across decades of devices",
+			"Supported on every car stereo, MP3 player, legacy Hi-Fi system, and game engine",
+			"Simple, rock-solid ID3v1/ID3v2 tagging standard",
+			"Zero licensing royalties on modern decoders",
+		],
+		specs: [
+			{
+				feature: "Default Codec",
+				formatA: "Advanced Audio Coding (AAC) or ALAC",
+				formatB: "MPEG-1 Audio Layer III",
+			},
+			{
+				feature: "Compression Efficiency",
+				formatA: "Transparent audio at ~160-256 kbps",
+				formatB: "Requires 320 kbps for near-transparency",
+			},
+			{
+				feature: "Surround Channels",
+				formatA: "Up to 48 independent channels",
+				formatB: "Stereo (2 channels) and Joint Stereo",
+			},
+			{
+				feature: "Maximum Sample Rate",
+				formatA: "Up to 96 kHz",
+				formatB: "Up to 48 kHz",
+			},
+			{
+				feature: "Container Architecture",
+				formatA: "MPEG-4 Part 14 Container (.m4a)",
+				formatB: "Raw Elementary Bitstream",
+			},
+		],
+		verdict:
+			"Use M4A (AAC) for recording voice notes, Apple devices, and modern music collections to save disk space with higher clarity. Convert M4A to MP3 when broad compatibility with car stereos or legacy media players is required.",
+		relatedTools: ["audio/mp4-to-m4a", "audio/wav-to-mp3", "audio/opus-to-mp3"],
+	},
+	{
+		slug: "vtt-vs-srt",
+		title: "WebVTT vs SRT: HTML5 Web Subtitles vs Classic Video Text",
+		description:
+			"Detailed comparison between WebVTT (.vtt) and SubRip (.srt). Compare CSS styling, positioning, HTML5 <track> browser support, and video player compatibility.",
+		formatA: "WebVTT",
+		formatB: "SRT",
+		category: "document",
+		summary:
+			"WebVTT is the W3C web standard subtitle format built specifically for HTML5 video with native CSS styling and viewport cue positioning. SRT is the classic plain-text subtitle format supported universally by desktop video players and editing suites.",
+		prosA: [
+			"Native W3C subtitle standard for HTML5 <video> <track> elements",
+			"Supports CSS styling (colors, fonts, text shadows, background boxes)",
+			"Precise screen positioning, line alignment, and vertical writing cues",
+			"Supports voice identification tags (<v Roger>), timestamps, and karaoke cues",
+		],
+		prosB: [
+			"The most widely supported subtitle format in video history",
+			"Compatible with VLC, MPV, Plex, YouTube, and all desktop media players",
+			"Dead-simple human-readable plain text structure (counter, timecode, text)",
+			"Extremely easy to edit manually in any text editor",
+		],
+		specs: [
+			{
+				feature: "Timecode Syntax",
+				formatA: "00:00:00.000 (period delimiter)",
+				formatB: "00:00:00,000 (comma delimiter)",
+			},
+			{
+				feature: "Header Requirement",
+				formatA: "Mandatory 'WEBVTT' first line",
+				formatB: "No header (starts directly with index 1)",
+			},
+			{
+				feature: "CSS Styling Support",
+				formatA: "Native via ::cue CSS selector",
+				formatB: "Basic HTML tags only (<i>, <b>, <font>)",
+			},
+			{
+				feature: "Positioning Cues",
+				formatA: "line:, position:, size:, align: tags",
+				formatB: "Center-bottom screen default only",
+			},
+			{
+				feature: "HTML5 Browser Support",
+				formatA: "Native in all web browsers",
+				formatB: "Requires browser conversion to WebVTT",
+			},
+		],
+		verdict:
+			"Use WebVTT for web video players, online streaming platforms, and styled captioning. Convert SRT to WebVTT for immediate playback in HTML5 video elements.",
+		relatedTools: [
+			"document/srt-to-vtt",
+			"document/vtt-to-srt",
+			"document/ass-to-srt",
+		],
+	},
 ];
 
 export function getComparison(slug: string): ComparisonMeta | undefined {
 	return COMPARISONS.find((c) => c.slug === slug);
+}
+
+export function getComparisonsByFormat(format: string): ComparisonMeta[] {
+	const f = format.toLowerCase();
+	return COMPARISONS.filter(
+		(c) =>
+			c.formatA.toLowerCase() === f ||
+			c.formatB.toLowerCase() === f ||
+			c.slug.includes(f),
+	);
 }

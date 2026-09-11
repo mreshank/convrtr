@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ToolTable } from "@/app/tools/ToolTable";
 import { toToolRow } from "@/app/tools/toolRow";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { deriveTaskGroups } from "@/core/registry/groups";
 import { HubPage } from "@/design/templates";
+import { buildTaskGroupJsonLd } from "@/lib/jsonld";
 import { SITE } from "@/lib/site";
 
 function label(kind: string): string {
@@ -59,15 +61,24 @@ export default async function TaskGroupPage({
 	const rows = group.tools.map(toToolRow);
 
 	return (
-		<HubPage
-			title={`${label(kind)} tools`}
-			lede={`Every tool that can ${kind} a file, all running in your browser.`}
-			count={{
-				value: rows.length,
-				noun: rows.length === 1 ? "tool" : "tools",
-			}}
-		>
-			<ToolTable rows={rows} caption={`${label(kind)} tools`} />
-		</HubPage>
+		<>
+			<JsonLd
+				schema={buildTaskGroupJsonLd(
+					kind,
+					group.tools,
+					`${SITE}/groups/task/${kind}`,
+				)}
+			/>
+			<HubPage
+				title={`${label(kind)} tools`}
+				lede={`Every tool that can ${kind} a file, all running in your browser.`}
+				count={{
+					value: rows.length,
+					noun: rows.length === 1 ? "tool" : "tools",
+				}}
+			>
+				<ToolTable rows={rows} caption={`${label(kind)} tools`} />
+			</HubPage>
+		</>
 	);
 }

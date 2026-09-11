@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { COMPARISONS, getComparison } from "../registry";
+import {
+	COMPARISONS,
+	getComparison,
+	getComparisonsByFormat,
+} from "../registry";
 
 describe("compare registry", () => {
 	it("contains unique slugs", () => {
@@ -24,5 +28,16 @@ describe("compare registry", () => {
 			expect(c.specs.length).toBeGreaterThanOrEqual(4);
 			expect(c.relatedTools.length).toBeGreaterThanOrEqual(1);
 		}
+	});
+
+	it("retrieves comparisons by format using getComparisonsByFormat", () => {
+		const webpComps = getComparisonsByFormat("webp");
+		expect(webpComps.length).toBeGreaterThanOrEqual(2);
+		expect(webpComps.some((c) => c.slug === "webp-vs-avif")).toBe(true);
+		expect(webpComps.some((c) => c.slug === "webp-vs-png")).toBe(true);
+
+		const flacComps = getComparisonsByFormat("flac");
+		expect(flacComps.length).toBeGreaterThanOrEqual(1);
+		expect(flacComps[0]?.slug).toBe("flac-vs-wav");
 	});
 });

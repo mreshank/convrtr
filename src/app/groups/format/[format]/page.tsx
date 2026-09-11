@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ToolTable } from "@/app/tools/ToolTable";
 import { toToolRow } from "@/app/tools/toolRow";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { deriveFormatGroups } from "@/core/registry/groups";
 import { conversionBranches } from "@/core/registry/stats";
 import { HubPage } from "@/design/templates";
+import { buildFormatGroupJsonLd } from "@/lib/jsonld";
 import { SITE } from "@/lib/site";
 
 /**
@@ -65,16 +67,25 @@ export default async function FormatGroupPage({
 	const branches = conversionBranches(format);
 
 	return (
-		<HubPage
-			title={`${format.toUpperCase()} tools`}
-			lede={`Every conversion that accepts or produces ${format.toUpperCase()}, all running in your browser.`}
-			count={{
-				value: rows.length,
-				noun: rows.length === 1 ? "tool" : "tools",
-			}}
-			branch={{ from: format, to: branches }}
-		>
-			<ToolTable rows={rows} caption={`${format.toUpperCase()} tools`} />
-		</HubPage>
+		<>
+			<JsonLd
+				schema={buildFormatGroupJsonLd(
+					format,
+					group.tools,
+					`${SITE}/groups/format/${format}`,
+				)}
+			/>
+			<HubPage
+				title={`${format.toUpperCase()} tools`}
+				lede={`Every conversion that accepts or produces ${format.toUpperCase()}, all running in your browser.`}
+				count={{
+					value: rows.length,
+					noun: rows.length === 1 ? "tool" : "tools",
+				}}
+				branch={{ from: format, to: branches }}
+			>
+				<ToolTable rows={rows} caption={`${format.toUpperCase()} tools`} />
+			</HubPage>
+		</>
 	);
 }

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { getLicenceReport, type LicenceEntry } from "@/content/legal/licences";
 import { licences } from "@/content/pages/licences";
 import { LegalPage } from "@/design/templates";
+import { buildWebPageJsonLd } from "@/lib/jsonld";
 import { SITE } from "@/lib/site";
 
 export function generateMetadata(): Metadata {
@@ -45,27 +47,40 @@ export default function LicencesPage() {
 	const { entries, incomplete } = getLicenceReport();
 
 	return (
-		<LegalPage title={licences.title} revised={licences.updated}>
-			<div className="flex flex-col gap-6">
-				<p>
-					{licences.introBefore} <code>package.json</code> {licences.introAfter}
-				</p>
-				{incomplete.length > 0 ? (
-					<div data-incomplete className="flex flex-col gap-2">
-						<h2 className="meta">Incomplete</h2>
-						<ul className="flex flex-col gap-1">
-							{incomplete.map((line) => (
-								<li key={line}>{line}</li>
-							))}
-						</ul>
-					</div>
-				) : null}
-				<ul className="flex flex-col gap-4">
-					{entries.map((entry) => (
-						<LicenceRow key={entry.dependency} entry={entry} />
-					))}
-				</ul>
-			</div>
-		</LegalPage>
+		<>
+			<JsonLd
+				schema={buildWebPageJsonLd({
+					title: "Licences — convrtr",
+					description:
+						"Third-party licences for the conversion engines convrtr ships, derived from package.json and the vendored WebAssembly builds.",
+					url: `${SITE}/legal/licences`,
+					breadcrumbs: [
+						{ name: "Licences", url: `${SITE}/legal/licences` },
+					],
+				})}
+			/>
+			<LegalPage title={licences.title} revised={licences.updated}>
+				<div className="flex flex-col gap-6">
+					<p>
+						{licences.introBefore} <code>package.json</code> {licences.introAfter}
+					</p>
+					{incomplete.length > 0 ? (
+						<div data-incomplete className="flex flex-col gap-2">
+							<h2 className="meta">Incomplete</h2>
+							<ul className="flex flex-col gap-1">
+								{incomplete.map((line) => (
+									<li key={line}>{line}</li>
+								))}
+							</ul>
+						</div>
+					) : null}
+					<ul className="flex flex-col gap-4">
+						{entries.map((entry) => (
+							<LicenceRow key={entry.dependency} entry={entry} />
+						))}
+					</ul>
+				</div>
+			</LegalPage>
+		</>
 	);
 }

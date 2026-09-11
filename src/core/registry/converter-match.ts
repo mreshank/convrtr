@@ -222,6 +222,16 @@ const MIME_MAP: Record<string, string> = {
 	"audio/x-dsp": "dsp",
 	"audio/dsp": "dsp",
 	"application/x-dsp": "dsp",
+	"image/x-macpaint": "mac",
+	"image/macpaint": "mac",
+	"image/x-pntg": "mac",
+	"application/x-macpaint": "mac",
+	"application/x-latex": "tex",
+	"text/x-latex": "tex",
+	"text/x-tex": "tex",
+	"application/x-tex": "tex",
+	"audio/vox": "vox",
+	"audio/x-vox": "vox",
 };
 
 /**

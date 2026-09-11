@@ -5,6 +5,7 @@ import { UserMenu } from "@/components/auth/UserMenu";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import { RouteAwareFooter, SiteHeader } from "@/design/primitives";
 import { DifferenceCursor } from "@/design/primitives/DifferenceCursor";
+import { SITE } from "@/lib/site";
 import "./globals.css";
 
 const inter = Inter({
@@ -22,8 +23,52 @@ const geistMono = Geist_Mono({
 const TAGLINE = "Convert anything in your browser. Nothing is uploaded.";
 
 export const metadata: Metadata = {
-	title: "convrtr",
+	metadataBase: new URL(SITE),
+	title: {
+		default: "convrtr — Private, In-Browser File Converter",
+		template: "%s — convrtr",
+	},
 	description: TAGLINE,
+	applicationName: "convrtr",
+	authors: [{ name: "convrtr", url: SITE }],
+	creator: "convrtr",
+	publisher: "convrtr",
+	alternates: {
+		canonical: SITE,
+	},
+	openGraph: {
+		type: "website",
+		locale: "en_US",
+		url: SITE,
+		siteName: "convrtr",
+		title: "convrtr — Private, In-Browser File Converter",
+		description: TAGLINE,
+		images: [
+			{
+				url: "/icon.svg",
+				width: 512,
+				height: 512,
+				alt: "convrtr logo",
+			},
+		],
+	},
+	twitter: {
+		card: "summary",
+		title: "convrtr — Private, In-Browser File Converter",
+		description: TAGLINE,
+		images: ["/icon.svg"],
+	},
+	robots: {
+		index: true,
+		follow: true,
+		googleBot: {
+			index: true,
+			follow: true,
+			"max-video-preview": -1,
+			"max-image-preview": "large",
+			"max-snippet": -1,
+		},
+	},
 };
 
 // Only routes with a page.tsx belong here — a header link to an unbuilt

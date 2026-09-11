@@ -49,6 +49,9 @@
 | `.tim` | PlayStation 1 Texture & Sprite | Retro Gaming / 3D | 4/8-bit CLUT & 15/24-bit direct color with STP alpha to PNG | `SOLVED` | **SHIPPED** |
 | `.rtf` | Rich Text Format Document | Office / Productivity | RTF control word lexer & Unicode decoder to semantic Markdown | `SOLVED` | **SHIPPED** |
 | `.dsp` | Nintendo GameCube / Wii DSP Audio | Retro Gaming / Audio | 4-bit DSP ADPCM with 16 prediction coefficients to 16-bit WAV | `SOLVED` | **SHIPPED** |
+| `.mac` / `.pntg` | Apple Macintosh MacPaint 1-Bit Graphics | Retro / Art | Atkinson PackBits RLE 576x576 1-bit bitmap to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
+| `.tex` / `.latex` | LaTeX Scientific Document | Academic / Docs | LaTeX document macro parser with math equation preservation to Markdown | `SOLVED` | **SHIPPED** |
+| `.vox` | Dialogic OKI ADPCM Telephony Audio | Audio / Telephony | 4-bit Dialogic OKI ADPCM telephony speech stream to 16-bit linear PCM WAV | `SOLVED` | **SHIPPED** |
 
 
 ---
@@ -1897,6 +1900,76 @@
 
 ---
 
+### 82. Apple Macintosh MacPaint 1-Bit Graphics (`.mac`, `.pntg`, `.macp`)
+
+- **Ecosystem & Context:** MacPaint was written by Bill Atkinson in 1984 for the original 128K Apple Macintosh and defined early desktop computer graphics. Saved as a fixed 576×576 pixel monochrome canvas (72 DPI, exactly 8×8 inches at Mac display resolution), MacPaint used Atkinson's byte-oriented PackBits run-length encoding (RLE) algorithm to compress scanlines. Vintage digital art, early computer iconography, historical Mac archives, and hypercard assets are preserved in MacPaint format, but modern operating systems, browsers, and image editing suites cannot open `.mac` or `.pntg` files natively.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/VintageApple, r/retrocomputing, r/pixelart, r/digitalart, r/mac, r/apple.
+  - Queries: *"How to open .pntg or .mac files on modern Mac/Windows"*, *"Convert 1984 MacPaint files to PNG"*, *"View Bill Atkinson MacPaint artwork in browser"*, *"Extract MacPaint PackBits to transparent PNG"*.
+- **Forensic Byte Layout:**
+  - **Optional 512-byte MacBinary / MacPaint Header:**
+    - Version number (uint32 big-endian, typically `2` for MacPaint version 2).
+    - 38 patterns (8 bytes each = 304 bytes of brush/texture patterns).
+    - 204 bytes of reserved/padding zeros.
+    - If header is absent (pure stream), data starts directly with PackBits RLE scanlines.
+  - **Compressed Image Data:**
+    - Exactly 720 scanlines of PackBits RLE compressed data.
+    - Each uncompressed scanline is 72 bytes (576 pixels $\times$ 1 bit/pixel = 72 bytes = 576 bits).
+    - Atkinson PackBits Algorithm:
+      - Read flag byte $B \in [0, 255]$:
+        - If $B \in [0, 127]$: Literal run: copy next $B + 1$ bytes verbatim.
+        - If $B \in [128, 255]$ (or signed $-128..-1$): Repeat run: repeat next byte $257 - B$ (or $1 - \text{signed } B$) times.
+        - If $B = -128$ (`0x80`): No-op / padding (skip).
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript binary decoder. Detects MacBinary 128-byte or MacPaint 512-byte headers vs headerless raw PackBits streams, decompresses PackBits byte-by-byte into a 576×720 or 576×576 1-bit pixel bitmap, unpacks bits MSB-first into 32-bit RGBA pixels, supports transparent background mapping and monochrome color inversion, and encodes into a standard lossless PNG.
+- **Fidelity:** `LOSSLESS` (Pixel-exact reproduction of 1984 Macintosh monochrome art).
+- **Status:** **Wave 29 Shipped (`image/macpaint-to-png`)**.
+
+---
+
+### 83. LaTeX Scientific Document (`.tex`, `.latex`, `.ltx`)
+
+- **Ecosystem & Context:** LaTeX is the premier typesetting system for mathematics, physics, computer science, quantitative finance, and scientific academia. Researchers and technical authors store manuscripts, lecture notes, arXiv submissions, and thesis chapters in `.tex` format. With modern note-taking apps (Obsidian, Notion, Logseq), documentation sites (Docusaurus, VitePress, Hugo), and LLM knowledge workflows adopting GitHub Flavored Markdown with MathJax/KaTeX math blocks, there is immense demand for a fast, private, client-side LaTeX-to-Markdown converter that preserves mathematical equations ($...$ and $$...$$), structural headings, lists, tables, and frontmatter without requiring a 4GB TeX Live installation.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/LaTeX, r/ObsidianMD, r/Notion, r/academia, r/markdown, r/MachineLearning.
+  - Queries: *"Convert LaTeX .tex to Markdown with preserved math formulas"*, *"Import arXiv LaTeX paper into Obsidian without Pandoc"*, *"LaTeX to clean Markdown converter online private"*, *"Migrate PhD thesis .tex notes into Notion"*.
+- **Forensic Structure:**
+  - Preamble: `\documentclass{...}`, `\title{...}`, `\author{...}`, `\date{...}`.
+  - Math environments: `$...$`, `$$...$$`, `\(...\)`, `\[...\]`, `\begin{equation}`, `\begin{align}`, `\begin{gather}`.
+  - Sectioning: `\section`, `\subsection`, `\subsubsection`, `\paragraph`.
+  - Lists: `\begin{itemize}`, `\begin{enumerate}`.
+  - Verbatim: `\begin{verbatim}`, `\begin{lstlisting}`.
+  - Formatting & typography: `\textbf`, `\textit`, `\emph`, `\texttt`, `\href`, `\url`, `\cite`, `\ref`, typography substitutions (`` / '' to quotes, em/en-dashes, escaped symbols).
+- **In-Browser Execution Strategy:**
+  - Pure client-side parsing pipeline in TypeScript. Strips TeX comments while respecting escaped `\%`, extracts title/author/date metadata into YAML frontmatter, isolates document body between `\begin{document}` and `\end{document}`, protects all inline and display math equations and verbatim blocks using keyed collision-free placeholders, translates structural macros into Markdown equivalents, restores protected equations intact for seamless KaTeX/MathJax rendering, and outputs clean GitHub Flavored Markdown.
+- **Fidelity:** `HIGH-FIDELITY SEMANTIC MARKDOWN` (Mathematical equations preserved intact; structural hierarchy, lists, links, and styling mapped cleanly).
+- **Status:** **Wave 29 Shipped (`document/latex-to-markdown`)**.
+
+---
+
+### 84. Dialogic OKI ADPCM Telephony Audio (`.vox`)
+
+- **Ecosystem & Context:** The VOX audio format is a raw, headerless 4-bit Adaptive Differential Pulse Code Modulation (ADPCM) standard developed by Dialogic (later Intel Dialogic) using the OKI MSM5205 ADPCM compression algorithm. For over three decades, VOX has been the foundational audio format for computer telephony integration (CTI), interactive voice response (IVR) phone systems, PBX voice mail systems, Asterisk telephony servers, telecommunication call recording archives, and classic PC games. Because VOX files lack standard RIFF or AIFF headers, modern audio players, mobile operating systems, and digital audio workstations (DAWs) cannot open or play VOX audio.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/asterisk, r/telecom, r/sysadmin, r/VoIP, r/audioengineering, r/retrogaming.
+  - Queries: *"Convert .vox to WAV free online"*, *"Play Dialogic VOX audio recording on Windows 11"*, *"How to listen to old voicemail .vox files without software install"*, *"Batch convert 8000 Hz VOX to 16-bit WAV"*.
+- **Forensic Byte Layout:**
+  - Raw headerless bitstream with no magic bytes or file length fields.
+  - Each byte contains two 4-bit ADPCM nibbles (high nibble first, low nibble second).
+  - Uses the 49-entry OKI ADPCM step size table:
+    $$S \in [16, 17, 19, 21, 23, 25, 28, 31, \dots, 1411, 1552]$$
+  - Uses the 16-entry step index adjustment table:
+    $$I \in [-1, -1, -1, -1, 2, 4, 6, 8, -1, -1, -1, -1, 2, 4, 6, 8]$$
+  - Sample calculation:
+    $$\Delta = \text{step} \gg 3 + \sum_{k=0}^{2} (\text{nibble}_k \times (\text{step} \gg (2 - k)))$$
+    Accumulated 12-bit signed sample clamped to $[-2048, 2047]$, scaled to 16-bit signed PCM by $x \ll 4$.
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript ADPCM decompressor. Parses high and low nibbles sequentially, updates 49-step index state, decodes 12-bit samples to 16-bit linear PCM, allows user selection of telephony sample rate (8000 Hz standard, 6000 Hz legacy, 11025 Hz wideband, 16000 Hz HD IVR), and writes a complete 44-byte standard RIFF WAVE file playable in any modern media player.
+- **Fidelity:** `LOSSLESS PCM` (Exact algorithmic mathematical decompression of OKI / Dialogic ADPCM bitstream into 16-bit linear PCM).
+- **Status:** **Wave 29 Shipped (`audio/vox-to-wav`)**.
+
+---
+
 ## Roadmap Waves & Next Steps
 
 1. **Wave 1 (Shipped):**
@@ -2009,9 +2082,13 @@
     - Tool 79: `image/tim-to-png` (Sony PlayStation 1 PSX `.tim` texture & sprite format to lossless 32-bit RGBA PNG)
     - Tool 80: `document/rtf-to-markdown` (Microsoft Rich Text Format `.rtf` document to clean semantic Markdown)
     - Tool 81: `audio/dsp-to-wav` (Nintendo GameCube & Wii DSP ADPCM audio `.dsp` to 16-bit linear PCM WAV)
-29. **Wave 29 (Active Research & Next Builds):**
-    - Candidate 1: `document/cbr-to-zip` (Comic Book RAR `.cbr` comic archive extractor to ZIP)
-    - Candidate 2: `audio/qcp-to-wav` (Qualcomm PureVoice `.qcp` QCELP / EVRC mobile cellular voice recording to WAV)
-    - Candidate 3: `document/latex-to-markdown` (LaTeX `.tex` document equations, sections, and formatting to GitHub Flavored Markdown)
+29. **Wave 29 (Shipped):**
+    - Tool 82: `image/macpaint-to-png` (Apple Macintosh MacPaint 1-bit `.mac` / `.pntg` PackBits RLE graphics to 32-bit PNG)
+    - Tool 83: `document/latex-to-markdown` (LaTeX `.tex` document equations, sections, and formatting to GitHub Flavored Markdown)
+    - Tool 84: `audio/vox-to-wav` (Dialogic / OKI ADPCM 4-bit telephony voice audio `.vox` to 16-bit linear PCM WAV)
+30. **Wave 30 (Active Research & Next Builds):**
+    - Candidate 1: `audio/qcp-to-wav` (Qualcomm PureVoice `.qcp` QCELP / EVRC mobile cellular voice recording to WAV)
+    - Candidate 2: `document/cbr-to-zip` (Comic Book RAR `.cbr` comic archive extractor to ZIP / CBZ)
+    - Candidate 3: `audio/amr-to-wav` (Adaptive Multi-Rate `.amr` narrowband 3GPP mobile telephony speech to WAV)
 
 

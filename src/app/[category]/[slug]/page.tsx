@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { RelatedReading } from "@/components/content/RelatedReading";
+import { ToolAppendix } from "@/components/content/ToolAppendix";
 import { BLOG_POSTS, getPostsByTool } from "@/content/blog/registry";
+import { getComparisonsByFormat } from "@/content/compare/registry";
 import { getTool, TOOLS } from "@/core/registry";
 import { ConverterPage } from "@/design/templates";
 import { buildToolJsonLd } from "@/lib/jsonld";
@@ -36,6 +37,11 @@ export async function generateMetadata({
 	};
 }
 
+function getRelatedComparisons(from: string, to: string) {
+	const all = [...getComparisonsByFormat(from), ...getComparisonsByFormat(to)];
+	return all.filter((c, i, arr) => arr.findIndex((x) => x.slug === c.slug) === i);
+}
+
 export default async function ToolPage({
 	params,
 }: {
@@ -48,8 +54,9 @@ export default async function ToolPage({
 	const toolPosts = getPostsByTool(tool.id);
 	const relatedPosts =
 		toolPosts.length > 0 ? toolPosts : BLOG_POSTS.slice(0, 3);
-	const fromExt = (tool.accept.ext[0] ?? tool.output.ext).toUpperCase();
-	const toExt = tool.output.ext.toUpperCase();
+	const rawFrom = tool.accept.ext[0] ?? tool.output.ext;
+	const rawTo = tool.output.ext;
+	const comparisons = getRelatedComparisons(rawFrom, rawTo).slice(0, 3);
 
 	return (
 		<>
@@ -60,23 +67,21 @@ export default async function ToolPage({
 					__html: JSON.stringify(buildToolJsonLd(tool, `${SITE}/${tool.id}`)),
 				}}
 			/>
-			{/*
-			 * `title` is `tool.seo.h1` — the page's one real headline. ToolClient
-			 * used to render this same text in its own <h1>; that line is gone
-			 * (see ToolClient.tsx) so the page has exactly one <h1>, which is
-			 * what the 42 Playwright specs that resolve it by name expect. The
-			 * format pair is folded into the eyebrow instead of competing for
-			 * the headline slot: it labels the conversion, it doesn't name the
-			 * page.
-			 */}
 			<ConverterPage
-				eyebrow={`${label(tool.category)} · ${fromExt} → ${toExt}`}
+				eyebrow={`${label(tool.category)} · ${rawFrom.toUpperCase()} → ${rawTo.toUpperCase()}`}
 				title={tool.seo.h1}
 				lede={tool.seo.intent}
-				related={<RelatedReading posts={relatedPosts} />}
+				related={
+					<ToolAppendix
+						faq={tool.seo.faq}
+						comparisons={comparisons}
+						posts={relatedPosts}
+					/>
+				}
 			>
 				<ToolClient toolId={tool.id} />
 			</ConverterPage>
 		</>
 	);
 }
+

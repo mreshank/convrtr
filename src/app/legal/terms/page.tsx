@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { terms } from "@/content/pages/terms";
 import { LegalPage } from "@/design/templates";
+import { buildWebPageJsonLd } from "@/lib/jsonld";
 import { SITE } from "@/lib/site";
 
 export function generateMetadata(): Metadata {
@@ -16,10 +18,20 @@ export function generateMetadata(): Metadata {
 
 export default function TermsPage() {
 	return (
-		<LegalPage
-			title={terms.title}
-			revised={terms.updated}
-			sections={terms.sections}
-		/>
+		<>
+			<JsonLd
+				schema={buildWebPageJsonLd({
+					title: "Terms — convrtr",
+					description: "The terms of service for convrtr.",
+					url: `${SITE}/legal/terms`,
+					breadcrumbs: [{ name: "Terms of Service", url: `${SITE}/legal/terms` }],
+				})}
+			/>
+			<LegalPage
+				title={terms.title}
+				revised={terms.updated}
+				sections={terms.sections}
+			/>
+		</>
 	);
 }

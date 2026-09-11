@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { ToolSearch } from "@/components/instrument/ToolSearch";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { TOOLS } from "@/core/registry";
 import { HubPage } from "@/design/templates";
+import { buildToolsIndexJsonLd } from "@/lib/jsonld";
 import { SITE } from "@/lib/site";
 import { toToolRow } from "./toolRow";
 
@@ -26,15 +28,18 @@ export default function ToolsIndexPage() {
 	const rows = TOOLS.map(toToolRow);
 
 	return (
-		<HubPage
-			title="All tools"
-			lede="Every conversion runs in your browser — nothing is uploaded."
-			count={{
-				value: rows.length,
-				noun: rows.length === 1 ? "conversion" : "conversions",
-			}}
-		>
-			<ToolSearch rows={rows} />
-		</HubPage>
+		<>
+			<JsonLd schema={buildToolsIndexJsonLd(TOOLS, `${SITE}/tools`)} />
+			<HubPage
+				title="All tools"
+				lede="Every conversion runs in your browser — nothing is uploaded."
+				count={{
+					value: rows.length,
+					noun: rows.length === 1 ? "conversion" : "conversions",
+				}}
+			>
+				<ToolSearch rows={rows} />
+			</HubPage>
+		</>
 	);
 }

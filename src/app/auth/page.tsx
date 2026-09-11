@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { AuthClient } from "@/components/auth/AuthClient";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { ConverterPage } from "@/design/templates";
+import { buildWebPageJsonLd } from "@/lib/jsonld";
 import { SITE } from "@/lib/site";
 
 export function generateMetadata(): Metadata {
@@ -21,12 +23,23 @@ export function generateMetadata(): Metadata {
 
 export default function AuthPage() {
 	return (
-		<ConverterPage
-			eyebrow="AUTHENTICATION // OPTIONAL WORKSPACE SESSION"
-			title="Sign In or Create Account"
-			lede="Sign in with Google Quick One Tap or Email to synchronize your conversion audit history across devices, save custom quality presets, and run high-volume batches."
-		>
-			<AuthClient />
-		</ConverterPage>
+		<>
+			<JsonLd
+				schema={buildWebPageJsonLd({
+					title: "Account & Authentication — convrtr",
+					description:
+						"Optional account sign-in with Google or Email. Unlock 30-day cross-device conversion history, saved presets, and high-concurrency batch processing.",
+					url: `${SITE}/auth`,
+					breadcrumbs: [{ name: "Account", url: `${SITE}/auth` }],
+				})}
+			/>
+			<ConverterPage
+				eyebrow="AUTHENTICATION // OPTIONAL WORKSPACE SESSION"
+				title="Sign In or Create Account"
+				lede="Sign in with Google Quick One Tap or Email to synchronize your conversion audit history across devices, save custom quality presets, and run high-volume batches."
+			>
+				<AuthClient />
+			</ConverterPage>
+		</>
 	);
 }

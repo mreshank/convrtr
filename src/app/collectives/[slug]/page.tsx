@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { COLLECTIVES, getCollective } from "@/content/collectives/registry";
 import { getTool, type QualityPreset } from "@/core/registry";
 import { ShowcasePage, type ShowcaseTool } from "@/design/templates";
+import { buildCollectiveDetailJsonLd } from "@/lib/jsonld";
 import { SITE } from "@/lib/site";
 
 /**
@@ -93,15 +95,24 @@ export default async function CollectivePage({
 	}));
 
 	return (
-		<ShowcasePage
-			title={collective.title}
-			reason={collective.why}
-			count={{
-				value: tools.length,
-				noun: tools.length === 1 ? "tool" : "tools",
-			}}
-			showcase={showcase}
-			demo={DEMOS[collective.slug]}
-		/>
+		<>
+			<JsonLd
+				schema={buildCollectiveDetailJsonLd(
+					collective,
+					tools,
+					`${SITE}/collectives/${collective.slug}`,
+				)}
+			/>
+			<ShowcasePage
+				title={collective.title}
+				reason={collective.why}
+				count={{
+					value: tools.length,
+					noun: tools.length === 1 ? "tool" : "tools",
+				}}
+				showcase={showcase}
+				demo={DEMOS[collective.slug]}
+			/>
+		</>
 	);
 }

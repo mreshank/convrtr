@@ -50,6 +50,8 @@ import { IMAGE_DECODERS, IMAGE_ENCODERS } from "./image/registry";
 import { ircamToWavEngine } from "./ircam";
 import { kmlToGeoJsonEngine } from "./kml";
 import { kmzToGeoJsonEngine } from "./kmz";
+import { latexToMarkdownEngine } from "./latex";
+import { macpaintToPngEngine } from "./macpaint";
 import { METADATA_ENGINES } from "./metadata";
 import { mhtmlToHtmlEngine } from "./mhtml";
 import { microDvdToSrtEngine } from "./microdvd";
@@ -96,6 +98,7 @@ import { createLegacyConversionEngine } from "./video/legacy";
 import { createVideoTrimEngine } from "./video/trim";
 import { vntToTxtEngine } from "./vnt";
 import { vocToWavEngine } from "./voc";
+import { voxToWavEngine } from "./vox";
 import { vtfToPngEngine } from "./vtf";
 import { vttToSrtEngine } from "./vtt";
 import { wadToZipEngine } from "./wad";
@@ -269,6 +272,9 @@ function buildImageEngines(): Map<string, Engine> {
 	engines.set(timToPngEngine.id, timToPngEngine);
 	engines.set(rtfToMarkdownEngine.id, rtfToMarkdownEngine);
 	engines.set(dspToWavEngine.id, dspToWavEngine);
+	engines.set(macpaintToPngEngine.id, macpaintToPngEngine);
+	engines.set(latexToMarkdownEngine.id, latexToMarkdownEngine);
+	engines.set(voxToWavEngine.id, voxToWavEngine);
 	{
 		const engine = createAudioLegacyEngine("opus", "mp3");
 		engines.set(engine.id, engine);

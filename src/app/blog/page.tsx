@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { BLOG_POSTS } from "@/content/blog/registry";
 import { type BlogGridItem, HubPage } from "@/design/templates";
+import { buildBlogIndexJsonLd } from "@/lib/jsonld";
 import { SITE } from "@/lib/site";
 
 export function generateMetadata(): Metadata {
@@ -52,14 +54,17 @@ const BLOG_GRID_ITEMS: BlogGridItem[] = BLOG_POSTS.map((post) => ({
 
 export default function BlogIndexPage() {
 	return (
-		<HubPage
-			title="Blog"
-			lede="Deep dives on the file formats and special converters convrtr supports."
-			count={{
-				value: BLOG_GRID_ITEMS.length,
-				noun: BLOG_GRID_ITEMS.length === 1 ? "post" : "posts",
-			}}
-			blogPosts={BLOG_GRID_ITEMS}
-		/>
+		<>
+			<JsonLd schema={buildBlogIndexJsonLd(BLOG_POSTS, `${SITE}/blog`)} />
+			<HubPage
+				title="Blog"
+				lede="Deep dives on the file formats and special converters convrtr supports."
+				count={{
+					value: BLOG_GRID_ITEMS.length,
+					noun: BLOG_GRID_ITEMS.length === 1 ? "post" : "posts",
+				}}
+				blogPosts={BLOG_GRID_ITEMS}
+			/>
+		</>
 	);
 }

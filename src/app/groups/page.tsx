@@ -8,7 +8,9 @@ import {
 	type TaskGroup,
 	type TypeGroup,
 } from "@/core/registry/groups";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { HubPage } from "@/design/templates";
+import { buildGroupsIndexJsonLd } from "@/lib/jsonld";
 import { SITE } from "@/lib/site";
 
 function label(text: string): string {
@@ -92,18 +94,21 @@ export default function GroupsIndexPage() {
 	const taskGroups = deriveTaskGroups();
 
 	return (
-		<HubPage
-			title="Browse by type, format, or task"
-			lede="Every conversion, grouped three ways: by file type, by format, and by what it does."
-			count={{
-				value: typeGroups.length + formatGroups.length + taskGroups.length,
-				noun: "groups",
-			}}
-			grid={[
-				{ heading: "BY TYPE", items: typeGroups.map(toTypeItem) },
-				{ heading: "BY FORMAT", items: formatGroups.map(toFormatItem) },
-				{ heading: "BY TASK", items: taskGroups.map(toTaskItem) },
-			]}
-		/>
+		<>
+			<JsonLd schema={buildGroupsIndexJsonLd(`${SITE}/groups`)} />
+			<HubPage
+				title="Browse by type, format, or task"
+				lede="Every conversion, grouped three ways: by file type, by format, and by what it does."
+				count={{
+					value: typeGroups.length + formatGroups.length + taskGroups.length,
+					noun: "groups",
+				}}
+				grid={[
+					{ heading: "BY TYPE", items: typeGroups.map(toTypeItem) },
+					{ heading: "BY FORMAT", items: formatGroups.map(toFormatItem) },
+					{ heading: "BY TASK", items: taskGroups.map(toTaskItem) },
+				]}
+			/>
+		</>
 	);
 }

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { COLLECTIVES } from "@/content/collectives/registry";
 import { getTool } from "@/core/registry";
 import { type CollectiveGridItem, HubPage } from "@/design/templates";
+import { buildCollectivesIndexJsonLd } from "@/lib/jsonld";
 import { SITE } from "@/lib/site";
 
 export function generateMetadata(): Metadata {
@@ -42,14 +44,22 @@ const COLLECTIVE_GRID_ITEMS: CollectiveGridItem[] = COLLECTIVES.map(
 
 export default function CollectivesIndexPage() {
 	return (
-		<HubPage
-			title="Collectives"
-			lede="Curated sets of tools built around a reason, not a file type."
-			count={{
-				value: COLLECTIVE_GRID_ITEMS.length,
-				noun: COLLECTIVE_GRID_ITEMS.length === 1 ? "collective" : "collectives",
-			}}
-			collectives={COLLECTIVE_GRID_ITEMS}
-		/>
+		<>
+			<JsonLd
+				schema={buildCollectivesIndexJsonLd(
+					COLLECTIVES,
+					`${SITE}/collectives`,
+				)}
+			/>
+			<HubPage
+				title="Collectives"
+				lede="Curated sets of tools built around a reason, not a file type."
+				count={{
+					value: COLLECTIVE_GRID_ITEMS.length,
+					noun: COLLECTIVE_GRID_ITEMS.length === 1 ? "collective" : "collectives",
+				}}
+				collectives={COLLECTIVE_GRID_ITEMS}
+			/>
+		</>
 	);
 }

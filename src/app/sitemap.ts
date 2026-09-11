@@ -11,61 +11,157 @@ import { SITE } from "@/lib/site";
 // refuses to export one unless it is explicitly marked static.
 export const dynamic = "force-static";
 
-/**
- * Routes with no registry behind them: one `page.tsx` each, so there is
- * nothing to derive and no risk of drifting from what actually built.
- */
-const STATIC_PATHS = [
-	"/",
-	"/convert",
-	"/tools",
-	"/blog",
-	"/groups",
-	"/collectives",
-	"/about",
-	"/how-it-works",
-	"/privacy",
-	"/auth",
-	"/history",
-	"/compare",
-	"/legal/terms",
-	"/legal/privacy-policy",
-	"/legal/licences",
-];
-
-/**
- * Spec §7.5: derived from the same registries the routes themselves are
- * generated from, so a route that exists is listed here and a route that
- * doesn't cannot be -- the two are read from one source, not kept in sync
- * by hand. `TOOLS`, `BLOG_POSTS`, `COLLECTIVES` and the two `derive*Groups`
- * functions are exactly what `generateStaticParams` in each dynamic route
- * calls; a tool, post, collective or group registered anywhere else in this
- * plan appears here automatically, with no edit to this file.
- *
- * `/[category]`'s own path set is the one exception with no registry
- * function to call directly -- it's every category at least one tool
- * declares, the same set `getToolsByCategory(category).length > 0` filters
- * `generateStaticParams` down to there. A `Set` over `TOOLS` reproduces
- * that filter exactly: a category with zero tools can never appear in it.
- */
-function toolPaths(): string[] {
-	const categories = new Set(TOOLS.map((tool) => tool.category));
-	return [
-		...[...categories].map((category) => `/${category}`),
-		...TOOLS.map((tool) => `/${tool.id}`),
-	];
-}
-
 export default function sitemap(): MetadataRoute.Sitemap {
-	const paths = [
-		...STATIC_PATHS,
-		...toolPaths(),
-		...BLOG_POSTS.map((post) => `/blog/${post.slug}`),
-		...COLLECTIVES.map((collective) => `/collectives/${collective.slug}`),
-		...COMPARISONS.map((comparison) => `/compare/${comparison.slug}`),
-		...deriveFormatGroups().map((group) => `/groups/format/${group.format}`),
-		...deriveTaskGroups().map((group) => `/groups/task/${group.kind}`),
+	const now = new Date();
+	const categories = [...new Set(TOOLS.map((tool) => tool.category))];
+
+	const entries: MetadataRoute.Sitemap = [
+		// Primary entry points
+		{
+			url: `${SITE}/`,
+			lastModified: now,
+			changeFrequency: "daily",
+			priority: 1.0,
+		},
+		{
+			url: `${SITE}/convert`,
+			lastModified: now,
+			changeFrequency: "weekly",
+			priority: 0.95,
+		},
+		{
+			url: `${SITE}/tools`,
+			lastModified: now,
+			changeFrequency: "daily",
+			priority: 0.85,
+		},
+		{
+			url: `${SITE}/groups`,
+			lastModified: now,
+			changeFrequency: "weekly",
+			priority: 0.8,
+		},
+		{
+			url: `${SITE}/collectives`,
+			lastModified: now,
+			changeFrequency: "weekly",
+			priority: 0.8,
+		},
+		{
+			url: `${SITE}/compare`,
+			lastModified: now,
+			changeFrequency: "weekly",
+			priority: 0.8,
+		},
+		{
+			url: `${SITE}/blog`,
+			lastModified: now,
+			changeFrequency: "weekly",
+			priority: 0.8,
+		},
+		{
+			url: `${SITE}/about`,
+			lastModified: now,
+			changeFrequency: "monthly",
+			priority: 0.5,
+		},
+		{
+			url: `${SITE}/how-it-works`,
+			lastModified: now,
+			changeFrequency: "monthly",
+			priority: 0.5,
+		},
+		{
+			url: `${SITE}/privacy`,
+			lastModified: now,
+			changeFrequency: "monthly",
+			priority: 0.5,
+		},
+		{
+			url: `${SITE}/auth`,
+			lastModified: now,
+			changeFrequency: "monthly",
+			priority: 0.4,
+		},
+		{
+			url: `${SITE}/history`,
+			lastModified: now,
+			changeFrequency: "monthly",
+			priority: 0.4,
+		},
+		{
+			url: `${SITE}/legal/terms`,
+			lastModified: now,
+			changeFrequency: "monthly",
+			priority: 0.3,
+		},
+		{
+			url: `${SITE}/legal/privacy-policy`,
+			lastModified: now,
+			changeFrequency: "monthly",
+			priority: 0.3,
+		},
+		{
+			url: `${SITE}/legal/licences`,
+			lastModified: now,
+			changeFrequency: "monthly",
+			priority: 0.3,
+		},
+
+		// Category hubs
+		...categories.map((category) => ({
+			url: `${SITE}/${category}`,
+			lastModified: now,
+			changeFrequency: "weekly" as const,
+			priority: 0.85,
+		})),
+
+		// Tool pages
+		...TOOLS.map((tool) => ({
+			url: `${SITE}/${tool.id}`,
+			lastModified: now,
+			changeFrequency: "weekly" as const,
+			priority: 0.9,
+		})),
+
+		// Blog posts
+		...BLOG_POSTS.map((post) => ({
+			url: `${SITE}/blog/${post.slug}`,
+			lastModified: new Date(post.publishedAt),
+			changeFrequency: "monthly" as const,
+			priority: 0.7,
+		})),
+
+		// Collectives
+		...COLLECTIVES.map((collective) => ({
+			url: `${SITE}/collectives/${collective.slug}`,
+			lastModified: now,
+			changeFrequency: "weekly" as const,
+			priority: 0.8,
+		})),
+
+		// Comparisons
+		...COMPARISONS.map((comparison) => ({
+			url: `${SITE}/compare/${comparison.slug}`,
+			lastModified: now,
+			changeFrequency: "monthly" as const,
+			priority: 0.8,
+		})),
+
+		// Groups: Format & Task
+		...deriveFormatGroups().map((group) => ({
+			url: `${SITE}/groups/format/${group.format}`,
+			lastModified: now,
+			changeFrequency: "weekly" as const,
+			priority: 0.75,
+		})),
+		...deriveTaskGroups().map((group) => ({
+			url: `${SITE}/groups/task/${group.kind}`,
+			lastModified: now,
+			changeFrequency: "weekly" as const,
+			priority: 0.75,
+		})),
 	];
 
-	return paths.map((path) => ({ url: `${SITE}${path}` }));
+	return entries;
 }

@@ -25,6 +25,7 @@ import { silkToWav } from "./tools/audio/silk-to-wav";
 import { trimFlac } from "./tools/audio/trim-flac";
 import { trimWav } from "./tools/audio/trim-wav";
 import { vocToWav } from "./tools/audio/voc-to-wav";
+import { voxToWav } from "./tools/audio/vox-to-wav";
 import { wavToFlac } from "./tools/audio/wav-to-flac";
 import { wavToMp3 } from "./tools/audio/wav-to-mp3";
 import { wavToOpus } from "./tools/audio/wav-to-opus";
@@ -47,6 +48,7 @@ import { goodnotesToPdf } from "./tools/document/goodnotes-to-pdf";
 import { gpxToGeoJson } from "./tools/document/gpx-to-geojson";
 import { kmlToGeoJson } from "./tools/document/kml-to-geojson";
 import { kmzToGeoJson } from "./tools/document/kmz-to-geojson";
+import { latexToMarkdown } from "./tools/document/latex-to-markdown";
 import { mhtmlToHtml } from "./tools/document/mhtml-to-html";
 import { msgToEml } from "./tools/document/msg-to-eml";
 import { osmToGeoJson } from "./tools/document/osm-to-geojson";
@@ -82,6 +84,7 @@ import { gbrToPng } from "./tools/image/gbr-to-png";
 import { icnsToPng } from "./tools/image/icns-to-png";
 import { icoToPng } from "./tools/image/ico-to-png";
 import { iffToPng } from "./tools/image/iff-to-png";
+import { macpaintToPng } from "./tools/image/macpaint-to-png";
 import { pcxToPng } from "./tools/image/pcx-to-png";
 import { ppmToPng } from "./tools/image/ppm-to-png";
 import { procreateToPng } from "./tools/image/procreate-to-png";
@@ -279,6 +282,9 @@ export const TOOLS: Tool[] = [
 	timToPng,
 	rtfToMarkdown,
 	dspToWav,
+	macpaintToPng,
+	latexToMarkdown,
+	voxToWav,
 ];
 
 export function getTool(id: string): Tool | undefined {

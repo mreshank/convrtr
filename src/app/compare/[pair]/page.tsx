@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ComparisonView } from "@/components/compare/ComparisonView";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { COMPARISONS, getComparison } from "@/content/compare/registry";
 import { ConverterPage } from "@/design/templates";
 import { buildComparisonJsonLd } from "@/lib/jsonld";
@@ -41,18 +42,13 @@ export default async function ComparisonDetailPage({
 	if (!comparison) notFound();
 
 	const jsonLd = buildComparisonJsonLd(
-		comparison.title,
-		comparison.description,
+		comparison,
 		`${SITE}/compare/${comparison.slug}`,
 	);
 
 	return (
 		<>
-			<script
-				type="application/ld+json"
-				// biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD requires raw script injection
-				dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-			/>
+			<JsonLd schema={jsonLd} />
 			<ConverterPage
 				eyebrow={`FORMAT ANALYSIS // ${comparison.category.toUpperCase()}`}
 				title={comparison.title}
