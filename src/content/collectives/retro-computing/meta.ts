@@ -9,7 +9,12 @@ export const meta: CollectiveMeta = {
 		"image/iff-to-png",
 		"image/tim-to-png",
 		"image/pcx-to-png",
+		"image/zx-to-png",
+		"image/koa-to-png",
+		"image/degas-to-png",
 		"audio/8svx-to-wav",
 		"audio/mod-to-wav",
+		"audio/vag-to-wav",
+		"audio/aud-to-wav",
 	],
 };

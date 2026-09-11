@@ -1,0 +1,66 @@
+In the golden age of real-time strategy (RTS) gaming, few sound effects and voice lines are as indelible as "Unit ready," "Affirmative," and "Construction complete" from Westwood Studios' legendary titles: *Command & Conquer* (1995), *Command & Conquer: Red Alert* (1996), and *Dune 2000* (1998).
+
+To compress hundreds of distinct unit responses, explosion sounds, and Frank Klepacki's driving industrial rock soundtracks onto 650 MB CD-ROMs, Westwood audio engineers designed their own compact audio container: the `.aud` file.
+
+Because modern media players, DAWs, and game engines cannot decode Westwood's ADPCM chunk streams natively, game modders, audio archivists, and retro enthusiasts need a reliable way to convert `.aud` files to standard 16-bit linear PCM WAV.
+
+This guide explores the structure of the 12-byte Westwood AUD header, the mechanics of WS-ADPCM and IMA-ADPCM, and how to convert `.aud` files directly in your browser with [convrtr's Westwood AUD to WAV converter](/audio/aud-to-wav).
+
+## Anatomy of the 12-Byte Westwood AUD Header
+
+Every Westwood `.aud` audio file begins with a compact 12-byte binary header:
+
+```
+Offset  Length  Type     Description
+-------------------------------------------------------------
+0x00    2       uint16   Sample Rate (e.g. 22050, 11025, 44100 Hz)
+0x02    4       uint32   Compressed Data Size (bytes)
+0x06    4       uint32   Uncompressed PCM Data Size (bytes)
+0x0A    1       uint8    Flags (bit 0: stereo, bit 1: 16-bit)
+0x0B    1       uint8    Compression Type (0 = PCM, 1 = WS-ADPCM, 2 = IMA)
+```
+
+Key fields include:
+- **Sample Rate**: The playback frequency, most commonly 22,050 Hz for unit speech and sound effects in C&C and Red Alert.
+- **Flags**:
+  - `(flags & 0x01) != 0`: Indicates stereo (2 channels) vs mono (1 channel).
+  - `(flags & 0x02) != 0`: Indicates 16-bit audio vs 8-bit audio.
+- **Compression Type**:
+  - `0`: Uncompressed raw PCM samples.
+  - `1`: Westwood's custom ADPCM (WS-ADPCM / ws-snd1).
+  - `2`: Standard IMA-ADPCM (DVI ADPCM).
+
+## Chunk-Based Stream Architecture
+
+Following the 12-byte header, Westwood AUD files are structured as a series of contiguous chunk blocks:
+
+- **Chunk Compressed Size (2 bytes)**: Number of bytes in this compressed audio block.
+- **Chunk Decompressed Size (2 bytes)**: Expected uncompressed byte length of this block.
+- **Audio Payload**: The compressed or raw bytes for this block.
+
+This chunked design allowed 1990s game engines to stream audio from slow CD-ROM drives directly into small sound card ring buffers with minimal RAM overhead.
+
+## Decoding WS-ADPCM and IMA-ADPCM
+
+Both Westwood WS-ADPCM and IMA-ADPCM compress audio to 4 bits per sample (a 4:1 compression ratio compared to 16-bit linear PCM):
+
+- Each byte in the compressed chunk contains two 4-bit nibbles:
+  - Low nibble: `byte & 0x0F`
+  - High nibble: `(byte >> 4) & 0x0F`
+- For each nibble, the decoder references step size and index adjustment tables to predict the delta change:
+  - If the sign bit (bit 3) is set, the delta is subtracted from the current sample accumulator.
+  - Otherwise, the delta is added to the accumulator.
+  - The accumulator is clamped to the 16-bit range ($-32768 \dots 32767$).
+  - The step index is updated for the next sample based on the magnitude of the current nibble.
+
+Wrapping the decoded samples into a standard 44-byte RIFF WAVE header yields clean, universally playable 16-bit linear PCM audio.
+
+## 100% In-Browser Audio Extraction
+
+Extracting audio from nostalgic games shouldn't require installing legacy DOS utilities or suspicious executable binaries.
+
+[convrtr's Westwood AUD to WAV tool](/audio/aud-to-wav) decodes everything client-side:
+- Supports 8-bit and 16-bit WS-ADPCM, IMA-ADPCM, and raw uncompressed AUD streams.
+- Handles both chunked and flat Westwood stream variants.
+- Preserves native sample rate or resamples cleanly to 44.1 kHz CD audio.
+- Operates 100% locally with zero server uploads, keeping your retro gaming assets private.

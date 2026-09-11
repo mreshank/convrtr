@@ -1,0 +1,70 @@
+Introduced by Atari Corporation in 1985, the Atari ST was a personal computer powerhouse powered by the Motorola 68000 16/32-bit CPU. With built-in MIDI ports, high-resolution graphics, and a colorful graphical user interface (GEM), the ST became the machine of choice for musicians, graphic designers, and demoscene coders throughout the late 1980s and early 1990s.
+
+Among the early creative tools released for the Atari ST, Tom Hudson's *DEGAS* (Design & Entertainment Graphic Arts System), published in 1985 by Batteries Included and updated to *DEGAS Elite* in 1986, became the dominant digital painting suite.
+
+Vintage Atari ST artwork created in DEGAS was saved in `.pi1`, `.pi2`, `.pi3` (uncompressed) or `.pc1`, `.pc2`, `.pc3` (compressed) files. This guide details how the ST's video memory and bitplane shifter work and how to decode DEGAS files into lossless 32-bit RGBA PNGs using [convrtr's Atari ST DEGAS to PNG converter](/image/degas-to-png).
+
+## Resolution Modes and File Extensions
+
+The Atari ST supported three hardware display modes, each directly mirrored by DEGAS file extensions:
+
+| Mode | Resolution | Colors | Bitplanes | Uncompressed Ext | Compressed Ext |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Low Resolution** | 320 × 200 | 16 | 4 | `.pi1` | `.pc1` |
+| **Medium Resolution** | 640 × 200 | 4 | 2 | `.pi2` | `.pc2` |
+| **High Resolution** | 640 × 400 | 2 (Monochrome) | 1 | `.pi3` | `.pc3` |
+
+In all modes, the total video memory (VRAM) occupied exactly 32,000 bytes. Uncompressed DEGAS files consist of a 34-byte header followed by the 32,000-byte VRAM dump, yielding an exact file size of **32,034 bytes**.
+
+## Anatomy of the 34-Byte Header
+
+The first 34 bytes of any DEGAS file contain crucial metadata:
+- **Resolution Word (2 bytes)**:
+  - `0`: Low Resolution
+  - `1`: Medium Resolution
+  - `2`: High Resolution
+  - For DEGAS Elite files, the highest bit (bit 15) is set if color animation cycles or extended features were recorded.
+- **Hardware Palette (32 bytes)**:
+  - 16 16-bit big-endian words representing the 16 hardware color registers.
+  - The Atari ST uses a 9-bit RGB palette: 3 bits for Red, 3 bits for Green, and 3 bits for Blue.
+  - Bits 8–10: Red intensity (0 to 7).
+  - Bits 4–6: Green intensity (0 to 7).
+  - Bits 0–2: Blue intensity (0 to 7).
+
+To map these 3-bit channels (values 0–7) to modern 8-bit color channels (0–255), each value is scaled:
+`channel8 = Math.round((channel3 / 7) * 255)`
+
+## Interleaved Bitplane Mechanics
+
+Unlike modern framebuffers where each pixel's color is stored contiguously (e.g. 32-bit RGBA or 24-bit RGB), the Atari ST hardware utilized *interleaved bitplanes*:
+
+In Low Resolution (320 × 200, 16 colors):
+- There are 4 bitplanes, requiring 160 bytes per scanline (`(320 * 4) / 8 = 160`).
+- Every group of 16 horizontal pixels is packed into 4 sequential 16-bit words (8 bytes).
+- To decode pixel $p$ (from 0 to 15, left to right):
+  - Bit from Word 0 forms bit 0.
+  - Bit from Word 1 forms bit 1.
+  - Bit from Word 2 forms bit 2.
+  - Bit from Word 3 forms bit 3.
+  - The resulting 4-bit number ($0 \dots 15$) serves as an index into the 16-color hardware palette.
+
+In Medium Resolution (640 × 200, 4 colors):
+- 2 bitplanes are interleaved. Because original Atari monitors displayed this mode at a 640 × 400 physical raster, scanlines must be doubled vertically to maintain the correct native aspect ratio.
+
+## PackBits RLE Compression in DEGAS Elite
+
+DEGAS Elite introduced run-length compression (`.pc1`, `.pc2`, `.pc3`) based on the Apple Macintosh PackBits algorithm:
+- Read control byte $b$:
+  - If $b < 128$: Copy the next $b + 1$ literal bytes.
+  - If $b > 128$: Repeat the next byte $257 - b$ times.
+  - If $b = 128$: No operation (skip).
+
+Decompressing until 32,000 bytes are restored reconstructs the exact original video memory buffer.
+
+## In-Browser Privacy and Integrity
+
+With [convrtr's DEGAS to PNG tool](/image/degas-to-png), you can drag and drop your vintage Atari ST files directly into your browser:
+- Decodes both uncompressed `.pi1`/`.pi2`/`.pi3` and compressed `.pc1`/`.pc2`/`.pc3` archives.
+- Preserves authentic 9-bit color values and line-doubling.
+- Offers 2x nearest-neighbor upscaling for crisp reproduction on high-DPI monitors.
+- Operates 100% locally with zero server uploads or tracking.

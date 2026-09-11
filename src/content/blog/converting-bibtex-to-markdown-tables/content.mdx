@@ -1,0 +1,68 @@
+BibTeX, introduced by Oren Patashnik and Leslie Lamport in 1985 for LaTeX, has been the backbone of academic and scientific bibliography management for more than four decades. From computer science and physics preprints on arXiv to journal papers in biology and mathematics, researchers organize their citations using `.bib` files.
+
+However, as researchers increasingly migrate their research notebooks, personal wikis, digital gardens, and documentation to modern Markdown-based knowledge bases (such as Obsidian, Notion, GitHub READMEs, and static site generators), working with raw BibTeX markup presents substantial friction.
+
+This guide explores the structure of BibTeX files, the challenges of parsing LaTeX accent escapes, and how to convert `.bib` databases into clean GitHub Flavored Markdown tables and reading lists using [convrtr's BibTeX to Markdown converter](/document/bibtex-to-markdown).
+
+## Anatomy of a BibTeX File
+
+A BibTeX file consists of an array of citation blocks. Each entry begins with an `@` symbol followed by the document type, a curly brace or parenthesis, and a unique citation key:
+
+```bibtex
+@article{vaswani2017attention,
+  author    = {Ashish Vaswani and Noam Shazeer and Niki Parmar and Jakob Uszkoreit},
+  title     = {Attention Is All You Need},
+  journal   = {Advances in Neural Information Processing Systems},
+  volume    = {30},
+  year      = {2017},
+  pages     = {5998--6008},
+  doi       = {10.48550/arXiv.1706.03762}
+}
+```
+
+Key structural elements include:
+1. **Entry Type**: `@article`, `@book`, `@inproceedings`, `@techreport`, `@misc`, `@phdthesis`, etc.
+2. **Citation Key**: The identifier referenced in text via `\cite{citationKey}`.
+3. **Fields**: Key-value pairs enclosed in curly braces (`{...}`) or double quotes (`"..."`), separated by commas.
+
+## The Challenge of LaTeX Accent Macros
+
+BibTeX was developed long before UTF-8 Unicode encoding became the international standard. To represent non-ASCII European characters, authors relied on TeX macro notation:
+
+- `{\"u}` or `\"u` &rarr; **ü**
+- `{\'e}` or `\'e` &rarr; **é**
+- `{\`a}` or `\`a` &rarr; **à**
+- `{\~n}` or `\~n` &rarr; **ñ**
+- `{\^o}` or `\^o` &rarr; **ô**
+- `{\c{c}}` or `\c{c}` &rarr; **ç**
+- `{\aa}` &rarr; **å**
+- `{\o}` &rarr; **ø**
+- `{\ae}` &rarr; **æ**
+- `{\ss}` &rarr; **ß**
+
+Furthermore, TeX uses multi-hyphen runs to represent punctuation: `--` denotes an en-dash (–), typically used in page ranges like `5998–6008`, while `---` denotes an em-dash (—).
+
+A robust BibTeX parser must accurately normalize these legacy escapes into clean UTF-8 text so author names and titles render correctly across modern web platforms and Markdown viewers.
+
+## Markdown Table vs Reading List Layouts
+
+Depending on your workflow, different Markdown representations offer distinct advantages:
+
+### 1. GitHub Flavored Markdown Table
+For research papers, grant proposals, and project READMEs, a concise tabular overview allows readers to scan citations at a glance:
+
+| Key | Title | Authors | Year | Venue | DOI / Link |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| `vaswani2017attention` | **Attention Is All You Need** | A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit | 2017 | Adv. Neural Inf. Process. Syst. | [10.48550/arXiv.1706.03762](https://doi.org/10.48550/arXiv.1706.03762) |
+
+### 2. Formatted Reading List
+For personal wikis, course syllabi, and Obsidian notes, an itemized reading list with optional abstracts and hyperlinked titles provides a richer reading experience.
+
+## Zero-Server, 100% Client-Side Conversion
+
+Many online citation tools require uploading `.bib` libraries to remote web servers or third-party cloud APIs. For researchers handling unpublished manuscripts, embargoed preprints, or proprietary literature reviews, privacy is paramount.
+
+[convrtr's BibTeX to Markdown tool](/document/bibtex-to-markdown) processes your bibliography entirely inside your browser using pure TypeScript:
+- Zero telemetry, zero cloud storage, zero tracking.
+- Decodes hundreds of TeX and LaTeX accent combinations instantly.
+- Exports to GFM Markdown tables, numbered reading lists, or structured JSON.

@@ -28,6 +28,9 @@ const POST_SLUGS = [
 	"converting-c64-koala-koa-to-png",
 	"converting-adobe-photoshop-aco-palette-to-css",
 	"converting-playstation-vag-audio-to-wav",
+	"converting-bibtex-to-markdown-tables",
+	"converting-atari-st-degas-to-png",
+	"converting-westwood-aud-audio-to-wav",
 ];
 
 describe("blog registry conformance", () => {

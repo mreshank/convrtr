@@ -251,6 +251,14 @@ const MIME_MAP: Record<string, string> = {
 	"audio/x-vag": "vag",
 	"audio/vag": "vag",
 	"application/x-vag": "vag",
+	"text/x-bibtex": "bib",
+	"application/x-bibtex": "bib",
+	"image/x-degas": "pi1",
+	"application/x-degas": "pi1",
+	"audio/x-westwood-aud": "aud",
+	"audio/x-aud": "aud",
+	"audio/aud": "aud",
+	"application/x-aud": "aud",
 };
 
 /**

@@ -1145,6 +1145,313 @@ export const COMPARISONS: ComparisonMeta[] = [
 			"audio/wav-to-flac",
 		],
 	},
+	{
+		slug: "vag-vs-wav",
+		title: "VAG vs WAV: Sony PlayStation PSX ADPCM vs Uncompressed PCM Audio",
+		description:
+			"Compare Sony PlayStation VAG/VAGp ADPCM audio with standard RIFF WAV. Learn about 4-bit SPU hardware compression, loop flags, sample rates, and DAW compatibility.",
+		formatA: "VAG",
+		formatB: "WAV",
+		category: "audio",
+		summary:
+			"Sony VAG is the proprietary 4-bit ADPCM audio format used by the Sony PlayStation 1 and PlayStation 2 Sound Processing Unit (SPU). It compresses 16-bit linear audio samples down to 4 bits with hardware loop markers. Linear PCM WAV is the universal uncompressed RIFF container compatible with modern DAWs, audio editors, and web browsers.",
+		prosA: [
+			"Compact 4:1 hardware compression ratio fits within tight 512KB PSX SPU sound RAM",
+			"Integrated 16-byte block headers with hardware loop start and end flags",
+			"Zero CPU decompression overhead due to dedicated Sony SPU hardware decoding",
+			"Native audio asset format for PS1/PS2 game development and emulation",
+		],
+		prosB: [
+			"Universal native playback across all desktop DAWs, mobile players, and web browsers",
+			"Full uncompressed 16-bit or 24-bit linear PCM fidelity with zero compression artifacts",
+			"Complete multi-channel stereo and surround sound container support",
+			"Compatible with modern audio production, mixing, mastering, and editing tools",
+		],
+		specs: [
+			{
+				feature: "Compression Type",
+				formatA: "Lossy 4-bit ADPCM",
+				formatB: "Uncompressed Linear PCM",
+			},
+			{
+				feature: "Bit Depth",
+				formatA: "4-bit (expanded to 16-bit)",
+				formatB: "16-bit or 24-bit",
+			},
+			{
+				feature: "Block Size",
+				formatA: "16 bytes (28 audio samples)",
+				formatB: "Continuous PCM frame stream",
+			},
+			{
+				feature: "Loop Markers",
+				formatA: "Built-in SPU hardware loop flags",
+				formatB: "Optional smpl chunk in RIFF",
+			},
+			{
+				feature: "Playback Compatibility",
+				formatA: "PlayStation hardware & specialized emulators",
+				formatB: "Universal HTML5 and OS support",
+			},
+		],
+		verdict:
+			"VAG is an iconic retro gaming format optimized for Sony's vintage SPU sound chips. Convert VAG files to standard RIFF WAV to listen to, sample, remix, or preserve classic PlayStation game sound effects and soundtracks.",
+		relatedTools: [
+			"audio/vag-to-wav",
+			"audio/wav-to-mp3",
+			"audio/wav-to-flac",
+		],
+	},
+	{
+		slug: "aco-vs-css",
+		title: "ACO vs CSS: Adobe Photoshop Color Swatches vs Web Design Tokens",
+		description:
+			"Compare Adobe Photoshop binary ACO color palettes with modern CSS custom property variables and design tokens. Understand color spaces, naming, and frontend integration.",
+		formatA: "ACO",
+		formatB: "CSS",
+		category: "document",
+		summary:
+			"Adobe Color Swatch (.aco) is a proprietary binary palette format used in Photoshop and Creative Cloud to store named colors across sRGB, HSB, CMYK, and Lab color spaces. CSS Custom Properties (:root variables) and Tailwind tokens are modern web standards that allow dynamic theme styling, live dark-mode toggling, and instant UI implementation in frontend applications.",
+		prosA: [
+			"Native support for print and digital color spaces including CMYK, Lab, and Grayscale",
+			"Binary encapsulation preserves exact Photoshop swatch names and sequence",
+			"Instant import into Adobe Photoshop, Illustrator, and digital painting suites",
+			"Industry standard for creative brand guidelines in Adobe agency ecosystems",
+		],
+		prosB: [
+			"Native browser support without external plugins, parsers, or preprocessors",
+			"Dynamic runtime theming with live JavaScript DOM mutation and dark-mode media queries",
+			"Human-readable plain text format trackable in Git version control",
+			"Directly exportable as Tailwind CSS theme tokens or CSS root variables",
+		],
+		specs: [
+			{
+				feature: "Format Architecture",
+				formatA: "Proprietary Big-Endian Binary",
+				formatB: "W3C Standards Plain Text",
+			},
+			{
+				feature: "Color Space Support",
+				formatA: "RGB, HSB, CMYK, Lab, Grayscale",
+				formatB: "sRGB, Display P3, OKLCH, HSL, Hex",
+			},
+			{
+				feature: "Web Browser Rendering",
+				formatA: "Unsupported (requires binary parsing)",
+				formatB: "Universal native browser execution",
+			},
+			{
+				feature: "Version Control (Git)",
+				formatA: "Opaque binary diffs",
+				formatB: "Line-by-line clear text diffs",
+			},
+		],
+		verdict:
+			"Use ACO when exporting or exchanging color swatches inside Photoshop or Illustrator. Convert ACO swatches to CSS variables or Tailwind configs to instantly bring brand palettes to web frontends and UI component libraries.",
+		relatedTools: ["document/aco-to-css"],
+	},
+	{
+		slug: "koa-vs-png",
+		title: "KOA vs PNG: Commodore 64 Multi-Color Bitmaps vs Modern 32-Bit Web Graphics",
+		description:
+			"Compare Commodore 64 KoalaPainter (.koa) graphics with 32-bit RGBA PNG. Learn about VIC-II multi-color constraints, color clash, 16-color palettes, and lossless web images.",
+		formatA: "KOA",
+		formatB: "PNG",
+		category: "image",
+		summary:
+			"Commodore 64 KoalaPainter (.koa) is the standard 10,003-byte multi-color bitmap format created for the Commodore 64 VIC-II graphics chip in 1984. It stores 160x200 double-width pixels with strict 4-color-per-8x8-cell hardware restrictions. PNG is the modern W3C lossless image standard supporting 32-bit truecolor RGBA and universal cross-platform rendering.",
+		prosA: [
+			"Authentic representation of vintage 1984 Commodore 64 VIC-II hardware memory layout",
+			"Fixed 10,003-byte footprint matches C64 64KB RAM architecture exactly",
+			"Preserves original 16-color C64 CRT phosphor palette characteristics",
+			"Native format for C64 emulators, vintage hardware disks, and demoscene compos",
+		],
+		prosB: [
+			"Universal rendering across all modern web browsers, operating systems, and image viewers",
+			"Full 24-bit RGB truecolor plus 8-bit alpha transparency channel",
+			"Deflate/zlib lossless compression reduces file sizes while maintaining pixel perfection",
+			"Scales crisply to high-DPI retina displays with nearest-neighbor integer scaling",
+		],
+		specs: [
+			{
+				feature: "Native Resolution",
+				formatA: "160x200 (aspect-corrected to 320x200)",
+				formatB: "Arbitrary resolution",
+			},
+			{
+				feature: "Color Capacity",
+				formatA: "16 fixed colors (4 colors max per 8x8 block)",
+				formatB: "16.7 million truecolors (24-bit + alpha)",
+			},
+			{
+				feature: "Memory / File Structure",
+				formatA: "Fixed 10,003-byte raw VRAM memory dump",
+				formatB: "Chunked container with Deflate compression",
+			},
+			{
+				feature: "Browser Support",
+				formatA: "Requires dedicated JavaScript decoder",
+				formatB: "Universal native browser support",
+			},
+		],
+		verdict:
+			"KOA is the foundational artwork format for the legendary Commodore 64 demoscene. Convert KOA files to PNG to showcase 8-bit retro art on modern social platforms, web portfolios, and digital displays.",
+		relatedTools: ["image/koa-to-png", "image/png-to-webp"],
+	},
+	{
+		slug: "bibtex-vs-markdown",
+		title:
+			"BibTeX vs Markdown: Academic Citations vs Readable Plain Text Reference Lists",
+		description:
+			"Compare LaTeX BibTeX (.bib) academic citation files with clean Markdown tables and reading lists. Explore bibliography structures, author formats, and Obsidian/Notion integration.",
+		formatA: "BibTeX",
+		formatB: "Markdown",
+		category: "document",
+		summary:
+			"BibTeX is the industry standard bibliography format for LaTeX academic papers, storing structured citation records with curly-brace field tags. Markdown is the ubiquitous human-readable markup language used for notes, web pages, and documentation in Obsidian, Notion, GitHub, and static site generators.",
+		prosA: [
+			"Native integration with LaTeX citation engines (biblatex, natbib, biber)",
+			"Exhaustive field metadata including DOI, ISSN, volume, series, and abstract",
+			"Standard export format for Google Scholar, Zotero, Mendeley, and arXiv",
+			"Strictly structured semantic key-value architecture for programmatic bibliography compilation",
+		],
+		prosB: [
+			"Human-readable formatting renders directly in GitHub, Obsidian, Notion, and static sites",
+			"Zero compilation overhead: instant rendering without TeX engines or external toolchains",
+			"Easily readable on mobile devices and simple text editors",
+			"Seamless conversion to HTML, PDF, and interactive web documentation",
+		],
+		specs: [
+			{
+				feature: "Primary Ecosystem",
+				formatA: "LaTeX & TeX Typesetting",
+				formatB: "Web, PKM (Obsidian/Notion), Documentation",
+			},
+			{
+				feature: "Syntax Structure",
+				formatA: "Entry blocks (@article{...}) with key-value pairs",
+				formatB: "Lightweight text markup with tables & links",
+			},
+			{
+				feature: "Renderer Dependency",
+				formatA: "Requires LaTeX compiler or dedicated parser",
+				formatB: "Universal native rendering in all modern editors",
+			},
+			{
+				feature: "Machine Readability",
+				formatA: "High (structured bibliographic database)",
+				formatB: "Moderate (typographic formatting)",
+			},
+		],
+		verdict:
+			"Use BibTeX when writing formal academic papers in LaTeX or managing citation databases with Zotero. Convert BibTeX to Markdown to publish reading lists, bibliographies, and literature reviews on websites, GitHub repositories, or Obsidian knowledge graphs.",
+		relatedTools: [
+			"document/bibtex-to-markdown",
+			"document/latex-to-markdown",
+		],
+	},
+	{
+		slug: "degas-vs-png",
+		title:
+			"DEGAS vs PNG: Atari ST Bitplane Graphics vs Modern 32-Bit Web Images",
+		description:
+			"Compare vintage Atari ST DEGAS (.pi1, .pi2, .pi3, .pc1) graphics with modern lossless PNG images. Learn about 16-color interleaved bitplanes, 9-bit RGB palettes, and lossless compression.",
+		formatA: "DEGAS",
+		formatB: "PNG",
+		category: "image",
+		summary:
+			"DEGAS is the classic graphics format created by Tom Hudson for the Atari ST computer line in 1985. It stores 32,000-byte raw video memory dumps across 3 hardware resolutions with 9-bit RGB palettes. PNG is the modern W3C lossless image standard offering universal cross-platform rendering and 32-bit truecolor RGBA fidelity.",
+		prosA: [
+			"Authentic 1985 Atari ST hardware VRAM representation with zero transcoding overhead",
+			"Directly loadable in vintage Atari ST software, emulators, and demoscene viewers",
+			"Faithfully preserves original 9-bit RGB CRT monitor color palette values",
+			"Fixed 32,034-byte uncompressed footprint matches ST memory boundaries exactly",
+		],
+		prosB: [
+			"Universal native rendering across all modern web browsers, operating systems, and image viewers",
+			"Full 24-bit RGB truecolor plus 8-bit alpha transparency channel",
+			"Lossless Deflate compression dramatically reduces storage footprint without quality degradation",
+			"Supports high-DPI retina display scaling without blur using integer nearest-neighbor sampling",
+		],
+		specs: [
+			{
+				feature: "Native Resolution",
+				formatA: "320x200 (Low), 640x200 (Med), 640x400 (High)",
+				formatB: "Arbitrary resolution",
+			},
+			{
+				feature: "Color Capacity",
+				formatA: "16 colors from 512 (9-bit RGB)",
+				formatB: "16.7 million truecolors (24-bit RGB + alpha)",
+			},
+			{
+				feature: "Architecture",
+				formatA: "Interleaved 4/2/1 bitplane memory dumps",
+				formatB: "Chunked raster with Deflate zlib compression",
+			},
+			{
+				feature: "Modern Browser Support",
+				formatA: "Unsupported natively (requires decoder)",
+				formatB: "Universal native support (HTML5 <img> tag)",
+			},
+		],
+		verdict:
+			"DEGAS is a legendary digital art format from the golden age of Atari ST pixel art. Convert DEGAS files (.pi1, .pi2, .pi3, .pc1) to PNG to preserve and showcase 16-bit retro artwork on modern websites, art archives, and social media.",
+		relatedTools: ["image/degas-to-png", "image/png-to-webp"],
+	},
+	{
+		slug: "aud-vs-wav",
+		title:
+			"AUD vs WAV: Westwood Studios Game Audio vs Uncompressed Linear PCM",
+		description:
+			"Compare Westwood Studios AUD sound files from Command & Conquer and Red Alert with standard RIFF WAV. Understand WS-ADPCM compression, sample rates, and DAW playback.",
+		formatA: "AUD",
+		formatB: "WAV",
+		category: "audio",
+		summary:
+			"Westwood Studios AUD is the proprietary compressed sound and voice container developed for Command & Conquer, Red Alert, and Dune 2000 in the 1990s. It packages 4-bit WS-ADPCM and IMA-ADPCM voice streams into chunks. WAV is the universal uncompressed RIFF container that delivers lossless linear PCM playback across all modern DAWs, audio editors, and web browsers.",
+		prosA: [
+			"Compact 4:1 ADPCM compression designed for 1990s CD-ROM throughput limitations",
+			"Chunked architecture allowed real-time streaming alongside DOS CD gameplay",
+			"Iconic sonic heritage containing legendary video game voice acting and unit lines",
+			"Native asset container for Command & Conquer engine modding and reverse engineering",
+		],
+		prosB: [
+			"Universal native playback across all modern operating systems, DAWs, and browsers",
+			"Uncompressed 16-bit or 24-bit linear PCM fidelity with zero decoding artifacts",
+			"Full compatibility with audio workstations (Ableton, FL Studio, Logic, Audacity)",
+			"Preserves standard RIFF container chunks with flexible channel and sample rate definitions",
+		],
+		specs: [
+			{
+				feature: "Compression Algorithm",
+				formatA: "Westwood WS-ADPCM / IMA-ADPCM",
+				formatB: "Uncompressed Linear PCM",
+			},
+			{
+				feature: "Bit Depth",
+				formatA: "4-bit ADPCM (expands to 16-bit)",
+				formatB: "16-bit or 24-bit PCM",
+			},
+			{
+				feature: "Typical Sample Rate",
+				formatA: "22,050 Hz or 11,025 Hz",
+				formatB: "Any (44.1 kHz, 48 kHz, etc.)",
+			},
+			{
+				feature: "DAW & Browser Playback",
+				formatA: "Unsupported natively (requires converter)",
+				formatB: "Universal native playback",
+			},
+		],
+		verdict:
+			"AUD is a nostalgic video game audio format from the golden era of PC real-time strategy gaming. Convert Westwood AUD files to standard RIFF WAV to listen to, sample, remix, or preserve iconic C&C and Red Alert sound effects on modern systems.",
+		relatedTools: [
+			"audio/aud-to-wav",
+			"audio/wav-to-mp3",
+			"audio/wav-to-flac",
+		],
+	},
 ];
 
 export function getComparison(slug: string): ComparisonMeta | undefined {

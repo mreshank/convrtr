@@ -1,11 +1,14 @@
 import { meta as appleMacpaintRetroGraphicsDecoding } from "./apple-macpaint-retro-graphics-decoding/meta";
 import { meta as convertWhatsappWechatSilkToWavMp3 } from "./convert-whatsapp-wechat-silk-to-wav-mp3/meta";
 import { meta as convertingAdobePhotoshopAcoPaletteToCss } from "./converting-adobe-photoshop-aco-palette-to-css/meta";
+import { meta as convertingAtariStDegasToPng } from "./converting-atari-st-degas-to-png/meta";
+import { meta as convertingBibtexToMarkdownTables } from "./converting-bibtex-to-markdown-tables/meta";
 import { meta as convertingC64KoalaKoaToPng } from "./converting-c64-koala-koa-to-png/meta";
 import { meta as convertingGedcomFamilyTreeToCsv } from "./converting-gedcom-family-tree-to-csv/meta";
 import { meta as convertingGoodnotesToPdfWithoutApp } from "./converting-goodnotes-to-pdf-without-app/meta";
 import { meta as convertingPlaystationVagAudioToWav } from "./converting-playstation-vag-audio-to-wav/meta";
 import { meta as convertingTelephonyUlawAlawToWav } from "./converting-telephony-ulaw-alaw-to-wav/meta";
+import { meta as convertingWestwoodAudAudioToWav } from "./converting-westwood-aud-audio-to-wav/meta";
 import { meta as decodingZxSpectrumScrMemoryDumps } from "./decoding-zx-spectrum-scr-memory-dumps/meta";
 import { meta as extractingChmHelpFilesModernSystems } from "./extracting-chm-help-files-modern-systems/meta";
 import { meta as extractingGodotPckPackagesBrowser } from "./extracting-godot-pck-packages-browser/meta";
@@ -48,6 +51,9 @@ export const BLOG_POSTS: BlogPostMeta[] = [
 	convertingC64KoalaKoaToPng,
 	convertingAdobePhotoshopAcoPaletteToCss,
 	convertingPlaystationVagAudioToWav,
+	convertingBibtexToMarkdownTables,
+	convertingAtariStDegasToPng,
+	convertingWestwoodAudAudioToWav,
 ];
 
 export function getPost(

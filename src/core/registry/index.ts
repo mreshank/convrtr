@@ -2,6 +2,7 @@ import { eightSvxToWav } from "./tools/audio/8svx-to-wav";
 import { adxToWav } from "./tools/audio/adx-to-wav";
 import { aiffToWav } from "./tools/audio/aiff-to-wav";
 import { auToWav } from "./tools/audio/au-to-wav";
+import { audToWav } from "./tools/audio/aud-to-wav";
 import { cafToWav } from "./tools/audio/caf-to-wav";
 import { dsfToWav } from "./tools/audio/dsf-to-wav";
 import { dspToWav } from "./tools/audio/dsp-to-wav";
@@ -39,6 +40,7 @@ import { acoToCss } from "./tools/document/aco-to-css";
 import { actToCss } from "./tools/document/act-to-css";
 import { aseToCss } from "./tools/document/ase-to-css";
 import { assToSrt } from "./tools/document/ass-to-srt";
+import { bibtexToMarkdown } from "./tools/document/bibtex-to-markdown";
 import { bspToZip } from "./tools/document/bsp-to-zip";
 import { cbzToPdf } from "./tools/document/cbz-to-pdf";
 import { chmToZip } from "./tools/document/chm-to-zip";
@@ -83,6 +85,7 @@ import { cdrToPng } from "./tools/image/cdr-to-png";
 import { clipToPng } from "./tools/image/clip-to-png";
 import { curToPng } from "./tools/image/cur-to-png";
 import { ddsToPng } from "./tools/image/dds-to-png";
+import { degasToPng } from "./tools/image/degas-to-png";
 import { fitsToPng } from "./tools/image/fits-to-png";
 import { gbrToPng } from "./tools/image/gbr-to-png";
 import { icnsToPng } from "./tools/image/icns-to-png";
@@ -297,6 +300,9 @@ export const TOOLS: Tool[] = [
 	koaToPng,
 	acoToCss,
 	vagToWav,
+	bibtexToMarkdown,
+	degasToPng,
+	audToWav,
 ];
 
 export function getTool(id: string): Tool | undefined {

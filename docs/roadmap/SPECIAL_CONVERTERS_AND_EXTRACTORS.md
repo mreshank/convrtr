@@ -55,6 +55,15 @@
 | `.scr` | Sinclair ZX Spectrum Screen | Retro / 8-Bit Art | Non-linear interlaced 6,912-byte VRAM & attribute decoder to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
 | `.ged` / `.gedcom` | GEDCOM Genealogy Data | Genealogy / Data | Hierarchical family tree parser with cross-referenced relations to RFC 4180 CSV | `SOLVED` | **SHIPPED** |
 | `.ulaw` / `.alaw` | G.711 mu-law & A-law Telephony Audio | Audio / Telecom | 8-bit G.711 logarithmic companding lookup table to 16-bit linear PCM WAV | `SOLVED` | **SHIPPED** |
+| `.koa` / `.kla` | Commodore 64 KoalaPainter Bitmap | Retro / 8-Bit Art | 10,003-byte multicolor VRAM & Color RAM dump to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
+| `.aco` | Adobe Photoshop Color Swatch | Design / Palettes | v1/v2 binary color swatch parser with CMYK/Lab/RGB decoding to CSS & Tailwind | `SOLVED` | **SHIPPED** |
+| `.vag` / `.vagp` | Sony PlayStation SPU-ADPCM Audio | Retro Gaming / Audio | 4-bit SPU ADPCM 16-byte block decoding with 5-coefficient filter to 16-bit WAV | `SOLVED` | **SHIPPED** |
+| `.bib` / `.bibtex` | BibTeX Academic Citations | Academic / Docs | LaTeX citation macro parser & field extractor to GFM Markdown & JSON | `SOLVED` | **SHIPPED** |
+| `.pi1` / `.pc1` | Atari ST DEGAS & DEGAS Elite Graphics | Retro / 16-Bit Art | Motorola 68000 4-bitplane & 9-bit hardware palette decoder to PNG | `SOLVED` | **SHIPPED** |
+| `.aud` | Westwood Studios RTS Game Audio | Retro Gaming / Audio | 4-bit WS-ADPCM / IMA-ADPCM chunk stream decoder to 16-bit linear PCM WAV | `SOLVED` | **SHIPPED** |
+| `.bib` / `.bibtex` | BibTeX Academic Citations | Academic / PKM | Citation database parser with LaTeX accent macro translation to Markdown | `SOLVED` | **SHIPPED** |
+| `.pi1` / `.pi2` / `.pi3` / `.pc1` | Atari ST DEGAS & DEGAS Elite Graphics | Retro / 16-Bit Art | Interleaved bitplane & 9-bit RGB palette decoder with PackBits RLE to PNG | `SOLVED` | **SHIPPED** |
+| `.aud` | Westwood Studios RTS Audio | Retro Gaming / Audio | WS-ADPCM / IMA-ADPCM chunked game audio decoder to 16-bit linear PCM WAV | `SOLVED` | **SHIPPED** |
 
 
 ---
@@ -2094,6 +2103,43 @@
 - **Fidelity:** `LOSSLESS ADPCM EXPANSION` (Exact Sony hardware SPU prediction filter algorithm).
 - **Status:** **Wave 31 Shipped (`audio/vag-to-wav`)**.
 
+---
+
+### 91. BibTeX Academic Citations (.bib, .bibtex)
+- **Ecosystem & Context:** BibTeX is the standard bibliographic management system created for LaTeX documents, exported universally by Google Scholar, Zotero, Mendeley, and arXiv.
+- **Forensic Format Architecture:**
+  - Plain-text ASCII/UTF-8 database with entry headers (`@article{key,`, `@book{key,`, `@inproceedings{key,`, etc.).
+  - Bracket/brace-delimited key-value attribute fields (`title = {...}`, `author = {...}`, `journal = {...}`, `year = {...}`).
+  - LaTeX accent macros and special entities (`{\"a}`, `\'{e}`, `\c{c}`, `\aa`, `\&`, `---`).
+- **In-Browser Execution Strategy:**
+  - Tokenizes entry structures with pure TypeScript parser, translates LaTeX accents into clean UTF-8 Unicode glyphs, and formats output as GitHub Flavored Markdown tables, numbered reading lists with abstracts, or structured JSON.
+- **Fidelity:** `LOSSLESS CITATION PARSING`.
+- **Status:** **Wave 32 Shipped (`document/bibtex-to-markdown`)**.
+
+---
+
+### 92. Atari ST DEGAS & DEGAS Elite Graphics (.pi1, .pi2, .pi3, .pc1, .pc2, .pc3)
+- **Ecosystem & Context:** DEGAS (Design & Entertainment Graphic Arts System), created by Tom Hudson and published by Batteries Included in 1985 (and updated to DEGAS Elite in 1986), was the premiere graphics software for the Atari ST computer family.
+- **Forensic Format Architecture:**
+  - 34-Byte Header: 2-byte resolution word (`0` = Low 320x200 16 colors, `1` = Med 640x200 4 colors, `2` = High 640x400 monochrome), followed by 16 x 2-byte words for the Atari ST 9-bit RGB palette (`0000 0RRR 0GGG 0BBB`).
+  - Bitplane Screen RAM: Exactly 32,000 bytes representing interleaved bitplanes (4 planes for low res, 2 for med res, 1 for high res).
+  - DEGAS Elite Compression: PackBits-style byte-run RLE compression over the bitplane payload.
+- **In-Browser Execution Strategy:**
+  - Decodes 9-bit RGB palette to 32-bit RGBA, unpacks bitplanes into planar pixel indexes, reconstructs 2:1 aspect ratio doubling for medium res, and renders a lossless PNG.
+- **Fidelity:** `LOSSLESS BITPLANE RECONSTRUCTION`.
+- **Status:** **Wave 32 Shipped (`image/degas-to-png`)**.
+
+---
+
+### 93. Westwood Studios RTS Game Audio (.aud)
+- **Ecosystem & Context:** Proprietary audio format developed by Westwood Studios for Command & Conquer (Tiberian Dawn), Red Alert, Dune II, and Dune 2000.
+- **Forensic Format Architecture:**
+  - 12-Byte Header: Sample rate (uint16 LE), uncompressed size (uint32 LE), compressed size (uint32 LE), flags (uint8, e.g. 16-bit/mono), compression type (uint8: `1` = Westwood WS-ADPCM, `99` = IMA-ADPCM).
+  - Audio Chunks: 4-byte chunk headers with compressed size and uncompressed size, followed by 4-bit ADPCM data nibbles.
+- **In-Browser Execution Strategy:**
+  - Unpacks chunk streams, maintains 16-bit ADPCM step indices and predictors, scales samples to 16-bit linear PCM, and wraps with a standard RIFF/WAVE header.
+- **Fidelity:** `LOSSLESS ADPCM RECONSTRUCTION`.
+- **Status:** **Wave 32 Shipped (`audio/aud-to-wav`)**.
 
 ---
 
@@ -2221,10 +2267,11 @@
     - Tool 88: `image/koa-to-png` (Commodore 64 KoalaPainter `.koa` 10,003-byte multicolor bitmap to 32-bit RGBA PNG)
     - Tool 89: `document/aco-to-css` (Adobe Photoshop Color Palette `.aco` v1/v2 binary swatches to CSS variables & Tailwind config)
     - Tool 90: `audio/vag-to-wav` (Sony PlayStation 1 & 2 PSX `.vag` / `.vagp` ADPCM audio to 16-bit linear PCM WAV)
-32. **Wave 32 (Active Research & Next Builds):**
-    - Candidate 1: `document/bibtex-to-markdown` (BibTeX `.bib` bibliography references to clean Markdown tables & JSON)
-    - Candidate 2: `image/degas-to-png` (Atari ST DEGAS Elite `.pi1`, `.pi2`, `.pi3` pictures to 32-bit RGBA PNG)
-    - Candidate 3: `audio/xm-to-wav` (FastTracker II `.xm` extended module tracker music to 16-bit stereo WAV)
-
-
-
+32. **Wave 32 (Shipped):**
+    - Tool 91: `document/bibtex-to-markdown` (BibTeX `.bib` academic bibliography citations to clean Markdown tables & reading lists)
+    - Tool 92: `image/degas-to-png` (Atari ST DEGAS & DEGAS Elite `.pi1`–`.pi3`, `.pc1`–`.pc3` pictures to 32-bit RGBA PNG)
+    - Tool 93: `audio/aud-to-wav` (Westwood Studios RTS Game Audio `.aud` Command & Conquer / Red Alert WS-ADPCM to linear PCM WAV)
+33. **Wave 33 (Active Research & Next Builds):**
+    - Candidate 1: `audio/xm-to-wav` (FastTracker II `.xm` extended module tracker music to 16-bit stereo WAV)
+    - Candidate 2: `image/cgm-to-svg` (Computer Graphics Metafile `.cgm` ISO vector graphics to clean SVG)
+    - Candidate 3: `document/org-to-markdown` (Emacs Org Mode `.org` agenda and documentation to GitHub Flavored Markdown)

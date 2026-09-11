@@ -10,5 +10,6 @@ export const meta: CollectiveMeta = {
 		"document/webarchive-to-html",
 		"document/msg-to-eml",
 		"document/goodnotes-to-pdf",
+		"document/bibtex-to-markdown",
 	],
 };

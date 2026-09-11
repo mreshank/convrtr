@@ -12,5 +12,8 @@ export const meta: CollectiveMeta = {
 		"image/vtf-to-png",
 		"image/aseprite-to-png",
 		"document/wad-to-zip",
+		"audio/vag-to-wav",
+		"audio/aud-to-wav",
+		"document/aco-to-css",
 	],
 };
