@@ -1,6 +1,16 @@
+import { abrToPngEngine } from "./abr";
+import { actToCssEngine } from "./act";
+import { adxToWavEngine } from "./adx";
+import { aiffToWavEngine } from "./aiff";
+import { aniToPngEngine } from "./ani";
+import { aseToCssEngine } from "./ase";
+import { asepriteToPngEngine } from "./aseprite";
+import { assToSrtEngine } from "./ass";
+import { auToWavEngine } from "./au";
 import { createCoverExtractEngine } from "./audio/cover";
 import { createAudioExtractionEngine } from "./audio/extract";
 import { createFlacDecodeEngine, createFlacEncodeEngine } from "./audio/flac";
+import { createAudioLegacyEngine } from "./audio/legacy";
 import { createMp3EncodeEngine } from "./audio/mp3";
 import {
 	createFlacNormaliseEngine,
@@ -9,23 +19,81 @@ import {
 import { createOpusEncodeEngine } from "./audio/opus";
 import { createFlacTrimEngine, createWavTrimEngine } from "./audio/trim";
 import { createWaveformEngine } from "./audio/waveform";
+import { bspToZipEngine } from "./bsp";
+import { cdrToPngEngine } from "./cdr";
+import { chmToZipEngine } from "./chm";
+import { clipToPngEngine } from "./clip";
+import { cueToJsonEngine } from "./cue";
+import { curToPngEngine } from "./cur";
+import { ddsToPngEngine } from "./dds";
+import { dsfToWavEngine } from "./dsf";
+import { dxfToSvgEngine } from "./dxf";
+import { fitToCsvEngine } from "./fit";
+import { fitsToPngEngine } from "./fits";
+import { gbrToPngEngine } from "./gbr";
+import { gmlToGeoJsonEngine } from "./gml";
+import { pckToZipEngine } from "./godot";
+import { goodnotesToPdfEngine } from "./goodnotes";
+import { gpxToGeoJsonEngine } from "./gpx";
+import { icnsToPngEngine } from "./icns";
+import { iffToPngEngine } from "./iff";
 import { createImagePipelineEngine } from "./image";
 import { faviconPackEngine } from "./image/packs/favicon";
 import { gifFramesEngine } from "./image/packs/gif-frames";
 import { IMAGE_DECODERS, IMAGE_ENCODERS } from "./image/registry";
+import { ircamToWavEngine } from "./ircam";
+import { kmlToGeoJsonEngine } from "./kml";
+import { kmzToGeoJsonEngine } from "./kmz";
 import { METADATA_ENGINES } from "./metadata";
+import { mhtmlToHtmlEngine } from "./mhtml";
+import { microDvdToSrtEngine } from "./microdvd";
 import { mlwToMp4Engine } from "./mlw";
+import { modToWavEngine } from "./mod";
+import { msgToEmlEngine } from "./msg";
+import { nistToWavEngine } from "./nist";
+import { osmToGeoJsonEngine } from "./osm";
+import { pakToZipEngine } from "./pak";
+import { pcxToPngEngine } from "./pcx";
 import { imageToPdfEngine } from "./pdf/image-to-pdf";
 import { createPdfMergeEngine } from "./pdf/merge";
 import { createPdfRotateEngine } from "./pdf/rotate";
 import { createPdfSplitEngine } from "./pdf/split";
+import { procreateToMp4Engine, procreateToPngEngine } from "./procreate";
+import { rasToPngEngine } from "./ras";
+import { rpaToZipEngine } from "./renpy";
+import {
+	rpgmvmToM4aEngine,
+	rpgmvoToOggEngine,
+	rpgmvpToPngEngine,
+} from "./rpgmaker";
+import { smiToSrtEngine } from "./sami";
+import { scormToZipEngine } from "./scorm";
+import { sgiToPngEngine } from "./sgi";
+import { silkToWavEngine } from "./silk";
+import { sf2ToWavEngine } from "./soundfont";
+import { studio3ToSvgEngine } from "./studio";
 import { svgOptimiseEngine } from "./svg/optimise";
+import { tcxToGeoJsonEngine } from "./tcx";
+import { tgaToPngEngine } from "./tga";
+import { tgsToJsonEngine } from "./tgs";
 import type { Engine } from "./types";
+import { vcfToCsvEngine } from "./vcf";
 import { createVideoConversionEngine } from "./video/convert";
 import { createFrameExtractionEngine } from "./video/frame";
 import { createGifEngine } from "./video/gif";
 import { createLegacyConversionEngine } from "./video/legacy";
 import { createVideoTrimEngine } from "./video/trim";
+import { vntToTxtEngine } from "./vnt";
+import { vocToWavEngine } from "./voc";
+import { vtfToPngEngine } from "./vtf";
+import { wadToZipEngine } from "./wad";
+import { pkgToMp4Engine } from "./wallpaper";
+import { webArchiveToHtmlEngine } from "./webarchive";
+import { wmfToSvgEngine } from "./wmf";
+import { xbmToPngEngine } from "./xbm";
+import { xmindToMarkdownEngine } from "./xmind";
+import { xpmToPngEngine } from "./xpm";
+import { xwdToPngEngine } from "./xwd";
 
 export * from "./image";
 export * from "./types";
@@ -111,6 +179,76 @@ function buildImageEngines(): Map<string, Engine> {
 	// Format-specific extractors: byte-offset parsing plus Web Crypto, no
 	// decode/encode pipeline at all.
 	engines.set(mlwToMp4Engine.id, mlwToMp4Engine);
+	engines.set(procreateToMp4Engine.id, procreateToMp4Engine);
+	engines.set(procreateToPngEngine.id, procreateToPngEngine);
+	engines.set(rpgmvpToPngEngine.id, rpgmvpToPngEngine);
+	engines.set(rpgmvoToOggEngine.id, rpgmvoToOggEngine);
+	engines.set(rpgmvmToM4aEngine.id, rpgmvmToM4aEngine);
+	engines.set(tgsToJsonEngine.id, tgsToJsonEngine);
+	engines.set(xmindToMarkdownEngine.id, xmindToMarkdownEngine);
+	engines.set(clipToPngEngine.id, clipToPngEngine);
+	engines.set(pkgToMp4Engine.id, pkgToMp4Engine);
+	engines.set(sf2ToWavEngine.id, sf2ToWavEngine);
+	engines.set(goodnotesToPdfEngine.id, goodnotesToPdfEngine);
+	engines.set(studio3ToSvgEngine.id, studio3ToSvgEngine);
+	engines.set(pckToZipEngine.id, pckToZipEngine);
+	engines.set(rpaToZipEngine.id, rpaToZipEngine);
+	engines.set(msgToEmlEngine.id, msgToEmlEngine);
+	engines.set(adxToWavEngine.id, adxToWavEngine);
+	engines.set(scormToZipEngine.id, scormToZipEngine);
+	engines.set(icnsToPngEngine.id, icnsToPngEngine);
+	engines.set(mhtmlToHtmlEngine.id, mhtmlToHtmlEngine);
+	engines.set(vcfToCsvEngine.id, vcfToCsvEngine);
+	engines.set(ddsToPngEngine.id, ddsToPngEngine);
+	engines.set(wadToZipEngine.id, wadToZipEngine);
+	engines.set(pakToZipEngine.id, pakToZipEngine);
+	engines.set(abrToPngEngine.id, abrToPngEngine);
+	engines.set(aniToPngEngine.id, aniToPngEngine);
+	engines.set(curToPngEngine.id, curToPngEngine);
+	engines.set(aseToCssEngine.id, aseToCssEngine);
+	engines.set(fitToCsvEngine.id, fitToCsvEngine);
+	engines.set(webArchiveToHtmlEngine.id, webArchiveToHtmlEngine);
+	engines.set(vntToTxtEngine.id, vntToTxtEngine);
+	engines.set(smiToSrtEngine.id, smiToSrtEngine);
+	engines.set(gbrToPngEngine.id, gbrToPngEngine);
+	engines.set(cdrToPngEngine.id, cdrToPngEngine);
+	engines.set(tgaToPngEngine.id, tgaToPngEngine);
+	engines.set(bspToZipEngine.id, bspToZipEngine);
+	engines.set(microDvdToSrtEngine.id, microDvdToSrtEngine);
+	engines.set(assToSrtEngine.id, assToSrtEngine);
+	engines.set(chmToZipEngine.id, chmToZipEngine);
+	engines.set(silkToWavEngine.id, silkToWavEngine);
+	engines.set(actToCssEngine.id, actToCssEngine);
+	engines.set(pcxToPngEngine.id, pcxToPngEngine);
+	engines.set(vtfToPngEngine.id, vtfToPngEngine);
+	engines.set(asepriteToPngEngine.id, asepriteToPngEngine);
+	engines.set(iffToPngEngine.id, iffToPngEngine);
+	engines.set(cueToJsonEngine.id, cueToJsonEngine);
+	engines.set(dxfToSvgEngine.id, dxfToSvgEngine);
+	engines.set(xbmToPngEngine.id, xbmToPngEngine);
+	engines.set(vocToWavEngine.id, vocToWavEngine);
+	engines.set(wmfToSvgEngine.id, wmfToSvgEngine);
+	engines.set(gpxToGeoJsonEngine.id, gpxToGeoJsonEngine);
+	engines.set(auToWavEngine.id, auToWavEngine);
+	engines.set(xpmToPngEngine.id, xpmToPngEngine);
+	engines.set(kmlToGeoJsonEngine.id, kmlToGeoJsonEngine);
+	engines.set(aiffToWavEngine.id, aiffToWavEngine);
+	engines.set(rasToPngEngine.id, rasToPngEngine);
+	engines.set(tcxToGeoJsonEngine.id, tcxToGeoJsonEngine);
+	engines.set(ircamToWavEngine.id, ircamToWavEngine);
+	engines.set(sgiToPngEngine.id, sgiToPngEngine);
+	engines.set(kmzToGeoJsonEngine.id, kmzToGeoJsonEngine);
+	engines.set(nistToWavEngine.id, nistToWavEngine);
+	engines.set(xwdToPngEngine.id, xwdToPngEngine);
+	engines.set(osmToGeoJsonEngine.id, osmToGeoJsonEngine);
+	engines.set(dsfToWavEngine.id, dsfToWavEngine);
+	engines.set(fitsToPngEngine.id, fitsToPngEngine);
+	engines.set(gmlToGeoJsonEngine.id, gmlToGeoJsonEngine);
+	engines.set(modToWavEngine.id, modToWavEngine);
+	{
+		const engine = createAudioLegacyEngine("opus", "mp3");
+		engines.set(engine.id, engine);
+	}
 
 	// Container conversions. mediabunny copies encoded samples wherever the
 	// target can carry them and only re-encodes when it cannot, so mkv->mp4 and
@@ -185,7 +323,7 @@ function buildImageEngines(): Map<string, Engine> {
 	// The ffmpeg.wasm tier, for containers no browser API can read. Registered
 	// like any other engine, but its 31MB core is fetched only after the user
 	// agrees — see `heavyDownloadMb` on the tools that use it.
-	for (const from of ["avi", "flv", "wmv"] as const) {
+	for (const from of ["avi", "flv", "wmv", "dav", "h264"] as const) {
 		const engine = createLegacyConversionEngine(from, "mp4");
 		engines.set(engine.id, engine);
 	}
@@ -243,3 +381,40 @@ export async function selectEngine(
 	}
 	return undefined;
 }
+
+export { actToCssEngine } from "./act";
+export { aiffToWavEngine } from "./aiff";
+export { asepriteToPngEngine } from "./aseprite";
+export { assToSrtEngine } from "./ass";
+export { auToWavEngine } from "./au";
+export { bspToZipEngine } from "./bsp";
+export { cdrToPngEngine } from "./cdr";
+export { chmToZipEngine } from "./chm";
+export { cueToJsonEngine } from "./cue";
+export { dsfToWavEngine } from "./dsf";
+export { dxfToSvgEngine } from "./dxf";
+export { fitsToPngEngine } from "./fits";
+export { gbrToPngEngine } from "./gbr";
+export { gmlToGeoJsonEngine } from "./gml";
+export { gpxToGeoJsonEngine } from "./gpx";
+export { iffToPngEngine } from "./iff";
+export { ircamToWavEngine } from "./ircam";
+export { kmlToGeoJsonEngine } from "./kml";
+export { kmzToGeoJsonEngine } from "./kmz";
+export { microDvdToSrtEngine } from "./microdvd";
+export { modToWavEngine } from "./mod";
+export { nistToWavEngine } from "./nist";
+export { osmToGeoJsonEngine } from "./osm";
+export { pcxToPngEngine } from "./pcx";
+export { rasToPngEngine } from "./ras";
+export { smiToSrtEngine } from "./sami";
+export { sgiToPngEngine } from "./sgi";
+export { silkToWavEngine } from "./silk";
+export { tcxToGeoJsonEngine } from "./tcx";
+export { tgaToPngEngine } from "./tga";
+export { vocToWavEngine } from "./voc";
+export { vtfToPngEngine } from "./vtf";
+export { wmfToSvgEngine } from "./wmf";
+export { xbmToPngEngine } from "./xbm";
+export { xpmToPngEngine } from "./xpm";
+export { xwdToPngEngine } from "./xwd";

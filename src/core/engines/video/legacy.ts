@@ -52,7 +52,14 @@ function coreUrls() {
 	};
 }
 
-export type LegacyContainer = "avi" | "flv" | "wmv" | "mpg" | "m4v";
+export type LegacyContainer =
+	| "avi"
+	| "flv"
+	| "wmv"
+	| "mpg"
+	| "m4v"
+	| "dav"
+	| "h264";
 
 export function createLegacyConversionEngine(
 	from: LegacyContainer,
