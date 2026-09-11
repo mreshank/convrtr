@@ -126,3 +126,5 @@ export async function saveOutputStream(
 export function canStreamToDisk(): boolean {
 	return typeof (window as PickerWindow).showSaveFilePicker === "function";
 }
+
+export * from "./staging";

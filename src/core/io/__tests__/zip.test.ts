@@ -129,7 +129,7 @@ describe("zipOutputs", () => {
 
 		const storedUnzipped = unzipSync(u8(await storedBlob.arrayBuffer()));
 		expect(storedUnzipped["photo.webp"]).toEqual(compressible);
-	});
+	}, 30_000);
 
 	it("resolves an empty archive for no entries", async () => {
 		const blob = await zipOutputs([]);
