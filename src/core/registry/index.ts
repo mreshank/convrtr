@@ -1,3 +1,4 @@
+import { eightSvxToWav } from "./tools/audio/8svx-to-wav";
 import { adxToWav } from "./tools/audio/adx-to-wav";
 import { aiffToWav } from "./tools/audio/aiff-to-wav";
 import { auToWav } from "./tools/audio/au-to-wav";
@@ -38,6 +39,7 @@ import { cbzToPdf } from "./tools/document/cbz-to-pdf";
 import { chmToZip } from "./tools/document/chm-to-zip";
 import { cueToJson } from "./tools/document/cue-to-json";
 import { dxfToSvg } from "./tools/document/dxf-to-svg";
+import { epubToMarkdown } from "./tools/document/epub-to-markdown";
 import { fitToCsv } from "./tools/document/fit-to-csv";
 import { gmlToGeoJson } from "./tools/document/gml-to-geojson";
 import { goodnotesToPdf } from "./tools/document/goodnotes-to-pdf";
@@ -76,6 +78,7 @@ import { ddsToPng } from "./tools/image/dds-to-png";
 import { fitsToPng } from "./tools/image/fits-to-png";
 import { gbrToPng } from "./tools/image/gbr-to-png";
 import { icnsToPng } from "./tools/image/icns-to-png";
+import { icoToPng } from "./tools/image/ico-to-png";
 import { iffToPng } from "./tools/image/iff-to-png";
 import { pcxToPng } from "./tools/image/pcx-to-png";
 import { ppmToPng } from "./tools/image/ppm-to-png";
@@ -267,6 +270,9 @@ export const TOOLS: Tool[] = [
 	ppmToPng,
 	cbzToPdf,
 	srtToVtt,
+	icoToPng,
+	epubToMarkdown,
+	eightSvxToWav,
 ];
 
 export function getTool(id: string): Tool | undefined {

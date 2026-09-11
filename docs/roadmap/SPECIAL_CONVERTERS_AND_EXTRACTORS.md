@@ -40,6 +40,12 @@
 | `.dds` | DirectDraw Surface Game Texture | Game Modding / 3D | DXT1/3/5 & BC5 block decompressor to PNG | `SOLVED` | **SHIPPED** |
 | `.wad` | id Tech / Doom Engine Archive | Game Modding | IWAD/PWAD lump directory with DMX sound to WAV converter | `SOLVED` | **SHIPPED** |
 | `.pak` | Quake / GoldSrc (Half-Life) Archive | Game Modding | PACK directory offset table with path extraction to ZIP | `SOLVED` | **SHIPPED** |
+| `.ppm` / `.pgm` / `.pbm` | Netpbm Portable Anymap Suite | Graphics / Vision | ASCII & Binary P1-P7 raster array to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
+| `.cbz` | Comic Book ZIP Archive | Comics / Manga | PKZIP container with sequential natural-sorted scans to PDF | `SOLVED` | **SHIPPED** |
+| `.srt` | SubRip Subtitle Format | Video / Captions | SubRip millisecond cues to W3C-compliant WebVTT | `SOLVED` | **SHIPPED** |
+| `.ico` | Windows Icon & Favicon | UI / Web Icons | Multi-frame directory with PNG/DIB & 1-bit alpha mask to PNG | `SOLVED` | **SHIPPED** |
+| `.epub` | Electronic Publication E-Book | Publishing / PKM | ZIP package with OPF metadata and spine to semantic Markdown | `SOLVED` | **SHIPPED** |
+| `.8svx` / `.iff` | Commodore Amiga IFF Audio | Retro / Chiptune | EA IFF 85 FORM with 8-bit PCM & Fibonacci delta to RIFF WAV | `SOLVED` | **SHIPPED** |
 
 ---
 
@@ -1737,6 +1743,90 @@
 
 ---
 
+### 76. Microsoft Windows Icon & Favicon (`.ico`)
+
+- **Ecosystem & Context:** ICO is the native icon file format for Microsoft Windows and the legacy web favicon standard. An ICO file functions as a multi-resolution container housing one or more icon frames at varying dimensions (16x16, 24x24, 32x32, 48x48, 64x64, 128x128, 256x256) and color depths (1-bit monochrome, 4-bit/8-bit indexed palette, 24-bit RGB, 32-bit RGBA BMP/DIB, or embedded raw PNG compressed streams). Modern web design workflows, app stores, vector editors, and operating systems require standard, unencapsulated 32-bit RGBA PNG files.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/webdev, r/frontend, r/graphic_design, r/Windows10, r/web_design, r/icon_design.
+  - Queries: *"Convert ICO to PNG high resolution"*, *"Extract favicon.ico to transparent PNG"*, *"Convert multi-size ICO to PNG online"*, *"Batch extract Windows .ico files without server upload"*.
+- **Forensic Byte Layout:**
+  - **6-byte ICONDIR Header (Little-Endian):**
+    - `0..1`: Reserved (`0x00 0x00`).
+    - `2..3`: Resource Type (`1` for ICO, `2` for CUR cursor).
+    - `4..5`: Image Count ($N$ entries in directory).
+  - **16-byte ICONDIRENTRY Directory per Image:**
+    - `0`: Width (uint8, `0` represents 256px).
+    - `1`: Height (uint8, `0` represents 256px).
+    - `2`: Color count (uint8, `0` if $\ge 256$ colors).
+    - `3`: Reserved (`0`).
+    - `4..5`: Color planes (uint16).
+    - `6..7`: Bits per pixel (uint16, e.g. 1, 4, 8, 24, 32).
+    - `8..11`: Bytes in resource (uint32).
+    - `12..15`: Image data offset in file (uint32).
+  - **Image Payloads:**
+    - **PNG Stream:** Starts with PNG signature `89 50 4E 47 0D 0A 1A 0A`.
+    - **Windows DIB (Device Independent Bitmap):** Starts with `BITMAPINFOHEADER` (40 bytes), followed by optional color table, bottom-up XOR color bitmap raster, and 1-bit AND transparency mask bitmap raster.
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript binary decoder. Reads directory entries, scores and ranks frames based on resolution, color depth, and user preference (`preferredSize`), extracts raw embedded PNG streams directly without re-encoding loss, or unpacks bottom-up DIB rasters (handling 1, 4, 8-bit paletted, 24-bit BGR, and 32-bit BGRA) while applying the 1-bit AND mask to synthesize true 8-bit alpha channels, and encodes into lossless 32-bit RGBA PNG.
+- **Fidelity:** `LOSSLESS` (Bit-exact frame extraction or pixel-perfect DIB mask reconstruction).
+- **Status:** **Wave 27 Shipped (`image/ico-to-png`)**.
+
+---
+
+### 77. EPUB Electronic Publication E-Book (`.epub`)
+
+- **Ecosystem & Context:** EPUB is the official open standard e-book format maintained by the W3C (formerly IDPF). Built upon XML, XHTML, CSS, and package manifests bundled inside an unencrypted ZIP container, EPUB powers millions of commercial and public domain titles across Apple Books, Kobo, and Google Play Books. In recent years, Personal Knowledge Management (PKM) tools (Obsidian, Notion, Logseq, Roam Research) and technical writers have created huge demand for converting EPUB chapters directly into clean, formatted Markdown (`.md`) with YAML frontmatter for note-taking and knowledge graph ingestion.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/ObsidianMD, r/ereader, r/markdown, r/Notion, r/Calibre, r/PKMS, r/writing.
+  - Queries: *"Convert EPUB to Markdown with frontmatter"*, *"Batch convert e-books to Obsidian notes"*, *"Extract chapters from EPUB to markdown online free"*, *"Read EPUB notes in Logseq"*.
+- **Forensic Structure:**
+  - Standard PKZIP archive structure.
+  - `mimetype`: Uncompressed file containing `application/epub+zip`.
+  - `META-INF/container.xml`: XML descriptor pointing to OPF package root file via `full-path` attribute.
+  - `.opf` Package Document: Contains `<metadata>` (Dublin Core `dc:title`, `dc:creator`, `dc:language`, `dc:description`, `dc:date`, `dc:publisher`), `<manifest>` (mapping item IDs to file paths and MIME types), and `<spine>` (defining exact reading order via `<itemref idref="...">`).
+  - XHTML Content Documents: Sequential chapters, appendices, and front matter containing formatted markup.
+- **In-Browser Execution Strategy:**
+  - Zero-server archive decompression using pure-JS `fflate`. Locates and parses `container.xml`, extracts metadata and spine reading order from the OPF package, converts XHTML tags (`<h1>`-`<h6>`, `<p>`, `<strong>`, `<em>`, `<a>`, `<ul>`/`<ol>`, `<blockquote>`, `<pre><code>`) into semantic Markdown using word-boundary bounded regex transformations, decodes HTML entities, generates clean YAML frontmatter metadata, and sequentially stitches chapters with clean horizontal dividers into a single publication-ready Markdown file.
+- **Fidelity:** `HIGH-FIDELITY SEMANTIC MARKDOWN` (Preserves complete structural hierarchy, headings, links, formatting, and book metadata).
+- **Status:** **Wave 27 Shipped (`document/epub-to-markdown`)**.
+
+---
+
+### 78. Commodore Amiga IFF 8SVX Audio (`.8svx`, `.iff`)
+
+- **Ecosystem & Context:** 8SVX (8-Bit Sampled Voice) is the pioneering digital audio interchange format created in 1985 by Electronic Arts and Commodore-Amiga under the EA IFF 85 standard. It served as the primary digital audio format for the Commodore Amiga personal computer, tracker music software (ProTracker, SoundTracker, OctaMED), and hundreds of iconic 1980s and 1990s retro games (Lemmings, Shadow of the Beast, Worms, Sensible Soccer, Speedball 2). Modern audio editing workstations (DAWs), mobile devices, and browsers cannot open or play 8SVX files, particularly those employing Amiga's proprietary Fibonacci-delta waveform compression.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/amiga, r/retrocomputing, r/chiptunes, r/synthesizers, r/audioengineering, r/demoscene.
+  - Queries: *"Convert Amiga .8svx audio to WAV"*, *"Play IFF 8SVX samples in Ableton / FL Studio"*, *"Fibonacci delta decompression in browser"*, *"Extract retro Amiga sound effects to WAV"*.
+- **Forensic Byte Layout:**
+  - **EA IFF 85 FORM Container:**
+    - `0..3`: Container ID `'FORM'` (`0x46 0x4F 0x52 0x4D`).
+    - `4..7`: Total form length (uint32 big-endian).
+    - `8..11`: Subtype `'8SVX'` (`0x38 0x53 0x56 0x58`).
+  - **Chunk Headers (8 bytes each, big-endian):**
+    - `0..3`: Chunk 4-character ID.
+    - `4..7`: Chunk size (uint32 big-endian, padded to even 2-byte boundary).
+  - **Mandatory 'VHDR' Chunk (Voice8Header, 20 bytes):**
+    - `oneShotHiSamples` (uint32), `repeatHiSamples` (uint32), `samplesPerHiCycle` (uint32).
+    - `samplesPerSec` (uint16 sample rate in Hz).
+    - `ctOctave` (uint8 octave count).
+    - `sCompression` (uint8: `0` = uncompressed linear 8-bit PCM, `1` = 4-bit Fibonacci-delta compression).
+    - `volume` (uint32 fixed-point amplitude).
+  - **Optional Metadata Chunks:**
+    - `'NAME'`: Sample name (ASCII).
+    - `'AUTH'`: Author / composer (ASCII).
+    - `'ANNO'`: Annotation remarks (ASCII).
+  - **Mandatory 'BODY' Chunk:**
+    - Raw 8-bit signed sample stream (range -128..127) or packed 4-bit nibble Fibonacci delta stream.
+- **In-Browser Execution Strategy:**
+  - Pure client-side binary parser and decompressor in TypeScript. Traverses IFF chunks, decodes `'VHDR'` configuration, handles linear 8-bit signed PCM, and implements the authentic Amiga 16-step Fibonacci delta lookup table algorithm:
+    $$\Delta = [-34, -21, -13, -8, -5, -3, -2, -1, 0, 1, 2, 3, 5, 8, 13, 21]$$
+    Accumulates 8-bit sample amplitudes with saturation clamping (-128..127), scales samples to standard 16-bit linear PCM ($x \times 256$), and synthesizes a clean 44-byte RIFF WAVE file playable across all modern OSes and browsers.
+- **Fidelity:** `LOSSLESS PCM` (Bit-exact sample reconstruction from Amiga linear PCM and Fibonacci delta bitstreams).
+- **Status:** **Wave 27 Shipped (`audio/8svx-to-wav`)**.
+
+---
+
 ## Roadmap Waves & Next Steps
 
 1. **Wave 1 (Shipped):**
@@ -1841,8 +1931,12 @@
     - Tool 73: `image/ppm-to-png` (Netpbm PPM, PGM, PBM, and PNM raster conversion engine to PNG)
     - Tool 74: `document/cbz-to-pdf` (Comic Book ZIP archive `.cbz` reader and sequential page binder to PDF)
     - Tool 75: `document/srt-to-vtt` (SubRip `.srt` subtitles to W3C-standard HTML5 WebVTT `.vtt`)
-27. **Wave 27 (Active Research & Next Builds):**
-    - Candidate 1: `audio/amr-to-wav` (Adaptive Multi-Rate `.amr` mobile voice notes and legacy MMS audio to WAV)
-    - Candidate 2: `document/cbr-to-zip` (Comic Book RAR `.cbr` comic archive extractor to ZIP)
-    - Candidate 3: `image/exr-to-png` (OpenEXR `.exr` Industrial Light & Magic high-dynamic-range VFX raster to tone-mapped PNG)
+27. **Wave 27 (Shipped):**
+    - Tool 76: `image/ico-to-png` (Microsoft Windows Icon and favicon `.ico` multi-resolution frame decoder to PNG)
+    - Tool 77: `document/epub-to-markdown` (EPUB electronic publication book unpacker and semantic Markdown converter)
+    - Tool 78: `audio/8svx-to-wav` (Commodore Amiga IFF 8SVX 8-bit & Fibonacci-delta audio decoder to RIFF WAV)
+28. **Wave 28 (Active Research & Next Builds):**
+    - Candidate 1: `document/rtf-to-markdown` (Rich Text Format `.rtf` legacy document decoder to clean Markdown)
+    - Candidate 2: `audio/qcp-to-wav` (Qualcomm PureVoice `.qcp` QCELP / EVRC mobile cellular voice recording to WAV)
+    - Candidate 3: `document/latex-to-markdown` (LaTeX `.tex` document equations, sections, and formatting to GitHub Flavored Markdown)
 

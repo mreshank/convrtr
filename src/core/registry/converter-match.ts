@@ -206,6 +206,12 @@ const MIME_MAP: Record<string, string> = {
 	"application/vnd.comicbook+zip": "cbz",
 	"application/x-cbz": "cbz",
 	"application/x-subrip": "srt",
+	"image/x-icon": "ico",
+	"image/vnd.microsoft.icon": "ico",
+	"application/epub+zip": "epub",
+	"application/x-epub": "epub",
+	"audio/x-8svx": "8svx",
+	"audio/8svx": "8svx",
 };
 
 /**

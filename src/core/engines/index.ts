@@ -1,3 +1,4 @@
+import { eightSvxToWavEngine } from "./8svx";
 import { abrToPngEngine } from "./abr";
 import { actToCssEngine } from "./act";
 import { adxToWavEngine } from "./adx";
@@ -30,6 +31,7 @@ import { curToPngEngine } from "./cur";
 import { ddsToPngEngine } from "./dds";
 import { dsfToWavEngine } from "./dsf";
 import { dxfToSvgEngine } from "./dxf";
+import { epubToMarkdownEngine } from "./epub";
 import { fitToCsvEngine } from "./fit";
 import { fitsToPngEngine } from "./fits";
 import { gbrToPngEngine } from "./gbr";
@@ -38,6 +40,7 @@ import { pckToZipEngine } from "./godot";
 import { goodnotesToPdfEngine } from "./goodnotes";
 import { gpxToGeoJsonEngine } from "./gpx";
 import { icnsToPngEngine } from "./icns";
+import { icoToPngEngine } from "./ico";
 import { iffToPngEngine } from "./iff";
 import { createImagePipelineEngine } from "./image";
 import { faviconPackEngine } from "./image/packs/favicon";
@@ -257,6 +260,9 @@ function buildImageEngines(): Map<string, Engine> {
 	engines.set(ppmToPngEngine.id, ppmToPngEngine);
 	engines.set(cbzToPdfEngine.id, cbzToPdfEngine);
 	engines.set(srtToVttEngine.id, srtToVttEngine);
+	engines.set(icoToPngEngine.id, icoToPngEngine);
+	engines.set(epubToMarkdownEngine.id, epubToMarkdownEngine);
+	engines.set(eightSvxToWavEngine.id, eightSvxToWavEngine);
 	{
 		const engine = createAudioLegacyEngine("opus", "mp3");
 		engines.set(engine.id, engine);
@@ -394,6 +400,7 @@ export async function selectEngine(
 	return undefined;
 }
 
+export { eightSvxToWavEngine } from "./8svx";
 export { actToCssEngine } from "./act";
 export { aiffToWavEngine } from "./aiff";
 export { asepriteToPngEngine } from "./aseprite";
@@ -407,10 +414,12 @@ export { chmToZipEngine } from "./chm";
 export { cueToJsonEngine } from "./cue";
 export { dsfToWavEngine } from "./dsf";
 export { dxfToSvgEngine } from "./dxf";
+export { epubToMarkdownEngine } from "./epub";
 export { fitsToPngEngine } from "./fits";
 export { gbrToPngEngine } from "./gbr";
 export { gmlToGeoJsonEngine } from "./gml";
 export { gpxToGeoJsonEngine } from "./gpx";
+export { icoToPngEngine } from "./ico";
 export { iffToPngEngine } from "./iff";
 export { ircamToWavEngine } from "./ircam";
 export { kmlToGeoJsonEngine } from "./kml";
