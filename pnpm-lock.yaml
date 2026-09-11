@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  silk-wasm:
+    hash: 448357a6caf677210a551a92d4d7984eb25977212ad486da5bf6213a6933a55f
+    path: patches/silk-wasm.patch
+
 importers:
 
   .:
@@ -80,6 +85,9 @@ importers:
       react-dom:
         specifier: 19.2.8
         version: 19.2.8(react@19.2.8)
+      silk-wasm:
+        specifier: ^3.7.1
+        version: 3.7.1(patch_hash=448357a6caf677210a551a92d4d7984eb25977212ad486da5bf6213a6933a55f)
       svgo:
         specifier: ^4.1.0
         version: 4.1.0
@@ -1535,6 +1543,10 @@ packages:
 
   siginfo@2.0.0:
     resolution: {integrity: sha512-ybx0WO1/8bSBLEWXZvEd7gMW3Sn3JFlW3TvX1nREbDLRNQNaeNN8WK0meBwPdAaOI7TtRRRJn/Es1zhrrCHu7g==}
+
+  silk-wasm@3.7.1:
+    resolution: {integrity: sha512-mXPwLRtZxrYV3TZx41jMAeKc80wvmyrcXIcs8HctFxK15Ahz2OJQENYhNgEPeCEOdI6Mbx1NxQsqxzwc3DKerw==}
+    engines: {node: '>=16.11.0'}
 
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
@@ -3232,6 +3244,8 @@ snapshots:
     optional: true
 
   siginfo@2.0.0: {}
+
+  silk-wasm@3.7.1(patch_hash=448357a6caf677210a551a92d4d7984eb25977212ad486da5bf6213a6933a55f): {}
 
   source-map-js@1.2.1: {}
 
