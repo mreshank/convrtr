@@ -1533,6 +1533,68 @@
 
 ---
 
+### 67. Flexible Image Transport System (`.fits`, `.fit`, `.fts`)
+
+- **Ecosystem & Context:** FITS (Flexible Image Transport System) is the standard digital astronomical file format endorsed by the International Astronomical Union (IAU) and NASA. Used across astronomical observatories, space telescopes (Hubble Space Telescope, James Webb Space Telescope / JWST), planetary missions, and amateur astrophotography software (PixInsight, DeepSkyStacker, AstroPixelProcessor, Siril), it packages high-dynamic-range CCD/CMOS sensor captures, spectra, and multi-dimensional datacubes alongside 2880-byte metadata header blocks.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/astrophotography, r/telescopes, r/astronomy, r/space, r/webdev, r/nasa.
+  - Queries: *"How to view FITS file on Mac without NASA software"*, *"Convert .fits to PNG online fast"*, *"Convert JWST / Hubble .fits image to high-res PNG in browser"*, *"Batch convert astrophotography FITS to PNG without PixInsight"*.
+- **Forensic Byte Layout:**
+  - **Header Structure (2880-byte blocks of 80-byte ASCII card images):**
+    - Key cards: `SIMPLE  = T`, `BITPIX  = [8, 16, 32, 64, -32, -64]`, `NAXIS   = [1..N]`, `NAXIS1`, `NAXIS2`, `NAXIS3`, `BSCALE`, `BZERO`, `END`.
+    - Astronomical metadata: `OBJECT`, `TELESCOP`, `INSTRUME`, `DATE-OBS`, `EXPTIME`, `FILTER`.
+  - **Data Matrix:**
+    - High-dynamic-range big-endian raw binary data (unsigned 8-bit, signed 16/32/64-bit integer, single/double precision IEEE 754 float).
+    - Coordinate origin: (1,1) is bottom-left (inverted vertically compared to standard display raster rasterization).
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript binary decoder and auto-stretcher. Parses 2880-byte card images, extracts physical values using `BZERO + BSCALE * raw`, samples pixel distributions for percentile contrast auto-stretching (or asinh/log astronomical stretching) to reveal faint deep-sky nebulae and stellar details, corrects astronomical vertical scanline orientation, and synthesizes 32-bit RGBA PNG client-side.
+- **Fidelity:** `ASTRONOMICAL AUTO-STRETCH` (Contrast-optimized percentile mapping with physical scaling).
+- **Status:** **Wave 24 Shipped (`image/fits-to-png`)**.
+
+---
+
+### 68. Geography Markup Language (`.gml`)
+
+- **Ecosystem & Context:** GML (Geography Markup Language) is the OGC and ISO (ISO 19136:2007) XML grammar for expressing spatial features. It is the mandated standard for European Union INSPIRE spatial data infrastructure, UK Ordnance Survey OS MasterMap, US Geological Survey (USGS) hydrography data, and international cadastral agencies. Modern web map libraries (Leaflet, Mapbox GL JS, OpenLayers) and front-end developers cannot render GML without complex server-side GIS pipelines like GDAL/OGR.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/gis, r/MapPorn, r/webdev, r/QGIS, r/geography, r/openstreetmap.
+  - Queries: *"Convert GML to GeoJSON online"*, *"Open Ordnance Survey .gml file in Leaflet / Mapbox"*, *"Convert INSPIRE GML to GeoJSON without Python or ogr2ogr"*, *"Convert GML polygons with holes to GeoJSON"*.
+- **Forensic Structure:**
+  - XML document conforming to GML 2.x (`<gml:coordinates>`) or GML 3.x (`<gml:pos>`, `<gml:posList>`).
+  - Spatial primitives: Point, LineString, Polygon (exterior boundaries and interior cutout holes), MultiPoint, MultiLineString, and MultiPolygon.
+  - Feature containers: `<gml:featureMember>`, `<gml:featureMembers>`, `<wfs:member>`.
+  - Coordinate reference system: `srsName="EPSG:4326"` or URNs.
+- **In-Browser Execution Strategy:**
+  - High-performance DOM-free XML streaming parser. Extracts geometry coordinates, groups polygon boundaries and hole rings, parses sibling XML property fields into clean JSON attributes (with namespace prefix stripping), auto-detects EPSG:4326 Lat/Lon axis ordering, and synthesizes standard RFC 7946 GeoJSON FeatureCollections in browser memory.
+- **Fidelity:** `LOSSLESS` (Full topological coordinate preservation and attribute mapping).
+- **Status:** **Wave 24 Shipped (`document/gml-to-geojson`)**.
+
+---
+
+### 69. Amiga ProTracker / SoundTracker Audio Module (`.mod`)
+
+- **Ecosystem & Context:** The `.mod` format is the grandfather of all digital tracker music. Originated by Karsten Obarski in 1987 on the Commodore Amiga for Ultimate SoundTracker and standardized by ProTracker and NoiseTracker, it dominated the 1990s demoscene, Amiga games, and tracker communities (The Mod Archive). It embeds 8-bit PCM audio samples, pattern order tables, and 64-row note events targeting the Amiga's hardware Paula sound chip.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/amiga, r/chiptunes, r/demoscene, r/vintagecomputing, r/retrocomputing, r/audiophile.
+  - Queries: *"Convert .mod to WAV in browser"*, *"Play old Amiga ProTracker music on iPhone / modern PC"*, *"Convert ProTracker M.K. to WAV without installing OpenMPT or XMPlay"*, *"Amiga Paula chip sound emulator in browser"*.
+- **Forensic Byte Layout:**
+  - **1084-byte Song Header:**
+    - 0..19: Song title (ASCII).
+    - 20..949: 31 instrument sample headers (22-byte name, length in words, finetune, volume 0..64, loop offset & length).
+    - 950..951: Song length (1..128) and restart position.
+    - 952..1079: Pattern order table.
+    - 1080..1083: Format signature (`M.K.`, `M!K!`, `FLT4`, `4CHN`, etc.).
+  - **Pattern Data (starts at 1084):**
+    - 64 rows per pattern, 4 channels per row, 4 bytes per note (sample number, 12-bit Amiga period, effect code, effect parameter).
+  - **Sample PCM:**
+    - Sequence of 8-bit signed PCM audio buffers (-128..127).
+- **In-Browser Execution Strategy:**
+  - Accurate software emulation of the Amiga Paula sound chip running in pure TypeScript. Calculates period-to-frequency pitches using the Amiga PAL clock (3,546,895 Hz), executes hardware playback effects (Arpeggio, Portamento, Volume, BPM/Speed tempo ticks), loops sample waveforms, applies natural stereo channel spatialization, and synthesizes 16-bit 44.1 kHz stereo PCM into a universal RIFF WAV audio file.
+- **Fidelity:** `AUTHENTIC AMIGA SYNTHESIS` (Accurate period pitch conversion, Paula clock frequency scaling, and sample loop recreation).
+- **Status:** **Wave 24 Shipped (`audio/mod-to-wav`)**.
+
+---
+
 ## Roadmap Waves & Next Steps
 
 1. **Wave 1 (Shipped):**
@@ -1625,7 +1687,12 @@
     - Tool 64: `image/xwd-to-png` (X Window System Window Dump `.xwd` format decoder to PNG)
     - Tool 65: `document/osm-to-geojson` (OpenStreetMap XML `.osm` map extract to standard RFC 7946 GeoJSON)
     - Tool 66: `audio/dsf-to-wav` (Sony Direct Stream Digital `.dsf` 1-bit high-resolution SACD audio decoder to 16-bit PCM WAV)
-24. **Wave 24 (Active Research & Next Builds):**
-    - Candidate 1: `image/fits-to-png` (Flexible Image Transport System `.fits`, `.fit`, `.fts` NASA/astronomy science image format)
-    - Candidate 2: `audio/mod-to-wav` (ProTracker / Amiga SoundTracker `.mod` 4-channel retro tracker module music to WAV)
-    - Candidate 3: `document/vtt-to-srt` / `document/sub-to-vtt` or `audio/amr-to-wav` (Adaptive Multi-Rate `.amr` mobile voice notes to WAV)
+24. **Wave 24 (Shipped):**
+    - Tool 67: `image/fits-to-png` (Flexible Image Transport System `.fits`, `.fit`, `.fts` NASA/astronomy science image format to PNG)
+    - Tool 68: `document/gml-to-geojson` (Geography Markup Language `.gml` OGC/INSPIRE XML to RFC 7946 GeoJSON)
+    - Tool 69: `audio/mod-to-wav` (Commodore Amiga ProTracker / SoundTracker `.mod` 4-channel module music to 16-bit stereo WAV)
+25. **Wave 25 (Active Research & Next Builds):**
+    - Candidate 1: `document/vtt-to-srt` (WebVTT subtitle format to SubRip SRT converter)
+    - Candidate 2: `audio/amr-to-wav` (Adaptive Multi-Rate `.amr` 3G/MMS voice notes to WAV)
+    - Candidate 3: `image/svgz-to-svg` (Gzip-compressed SVG `.svgz` to uncompressed SVG)
+
