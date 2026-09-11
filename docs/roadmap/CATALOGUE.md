@@ -7,6 +7,8 @@ its fidelity class, and an honest feasibility verdict for in-browser execution.
 **This document is the source of truth for scope.** The registry in code mirrors it.
 No tool ships that is not listed here; nothing listed here is silently dropped.
 
+> **Special & Niche Extractors**: For proprietary, obfuscated, and long-tail format extractors (Procreate, RPG Maker, Telegram TGS, Dahua DAV, Ren'Py RPA, etc.), see the [Special Converters & Extractors Master Source of Truth](./SPECIAL_CONVERTERS_AND_EXTRACTORS.md).
+
 ---
 
 ## Legend
