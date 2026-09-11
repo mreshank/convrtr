@@ -212,6 +212,16 @@ const MIME_MAP: Record<string, string> = {
 	"application/x-epub": "epub",
 	"audio/x-8svx": "8svx",
 	"audio/8svx": "8svx",
+	"image/x-tim": "tim",
+	"image/tim": "tim",
+	"application/x-tim": "tim",
+	"application/rtf": "rtf",
+	"text/rtf": "rtf",
+	"text/richtext": "rtf",
+	"application/x-rtf": "rtf",
+	"audio/x-dsp": "dsp",
+	"audio/dsp": "dsp",
+	"application/x-dsp": "dsp",
 };
 
 /**

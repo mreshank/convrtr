@@ -46,6 +46,10 @@
 | `.ico` | Windows Icon & Favicon | UI / Web Icons | Multi-frame directory with PNG/DIB & 1-bit alpha mask to PNG | `SOLVED` | **SHIPPED** |
 | `.epub` | Electronic Publication E-Book | Publishing / PKM | ZIP package with OPF metadata and spine to semantic Markdown | `SOLVED` | **SHIPPED** |
 | `.8svx` / `.iff` | Commodore Amiga IFF Audio | Retro / Chiptune | EA IFF 85 FORM with 8-bit PCM & Fibonacci delta to RIFF WAV | `SOLVED` | **SHIPPED** |
+| `.tim` | PlayStation 1 Texture & Sprite | Retro Gaming / 3D | 4/8-bit CLUT & 15/24-bit direct color with STP alpha to PNG | `SOLVED` | **SHIPPED** |
+| `.rtf` | Rich Text Format Document | Office / Productivity | RTF control word lexer & Unicode decoder to semantic Markdown | `SOLVED` | **SHIPPED** |
+| `.dsp` | Nintendo GameCube / Wii DSP Audio | Retro Gaming / Audio | 4-bit DSP ADPCM with 16 prediction coefficients to 16-bit WAV | `SOLVED` | **SHIPPED** |
+
 
 ---
 
@@ -1827,6 +1831,72 @@
 
 ---
 
+### 79. Sony PlayStation 1 TIM Texture & Sprite Image (`.tim`)
+
+- **Ecosystem & Context:** The TIM format is Sony's proprietary raster graphics container for the PlayStation 1 (PSX). Engineered specifically for the original PlayStation GPU framebuffer, it encodes 4-bit (16-color) or 8-bit (256-color) indexed palettes (CLUT) or 15-bit (RGB555) and 24-bit (RGB888) direct color textures. It powers texture maps, character portraits, font glyphs, and UI elements across hundreds of legendary PS1 games (Final Fantasy VII, Metal Gear Solid, Resident Evil, Gran Turismo, Silent Hill, Tekken, Crash Bandicoot). Modern image viewers and 3D modeling tools cannot open TIM files natively.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/psx, r/emulation, r/modding, r/gamedev, r/retrogaming, romhacking.net.
+  - Queries: *"Convert PS1 TIM to PNG online"*, *"Extract textures from PlayStation .tim file"*, *"View PSX TIM sprites in browser"*, *"PlayStation TIM converter with transparency"*.
+- **Forensic Byte Layout:**
+  - **4-byte Magic ID:** `0x10 0x00 0x00 0x00` (Version 0 TIM).
+  - **4-byte Flag (uint32 LE):**
+    - Bits 0..2 (PMODE): `0` = 4-bit CLUT, `1` = 8-bit CLUT, `2` = 15-bit Direct RGB555, `3` = 24-bit Direct RGB888, `4` = Mixed.
+    - Bit 3 (CF): `1` = CLUT present, `0` = No CLUT.
+  - **CLUT Block (if present):**
+    - Length (uint32 LE, total bytes in CLUT chunk including header).
+    - VRAM Framebuffer X, Y, Width (colors per palette), Height (number of palettes).
+    - $W \times H$ 16-bit RGB555 color words: Bit 15 STP (Semi-Transparency Processing), Bits 10..14 Blue, Bits 5..9 Green, Bits 0..4 Red.
+  - **Image Data Block:**
+    - Length (uint32 LE, total bytes in image chunk including header).
+    - VRAM Framebuffer X, Y, Width (in 16-bit words), Height (in scanlines).
+    - Raw pixel nibbles (4-bit), bytes (8-bit), or words (15-bit/24-bit).
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript binary parser. Interprets CLUT palettes, maps 5-bit RGB to 8-bit color, applies PlayStation GPU STP transparency logic (black with STP=0 is transparent), unpacks packed 4-bit nibbles and 8-bit indices, and compiles a lossless 32-bit RGBA PNG.
+- **Fidelity:** `LOSSLESS` (Exact pixel-accurate reproduction of PlayStation GPU textures).
+- **Status:** **Wave 28 Shipped (`image/tim-to-png`)**.
+
+---
+
+### 80. Microsoft Rich Text Format Document (`.rtf`)
+
+- **Ecosystem & Context:** RTF is Microsoft's legacy cross-platform document interchange standard. With Microsoft officially deprecating and removing WordPad from Windows 11 (24H2), millions of users, researchers, legal professionals, and software developers find themselves with legacy `.rtf` notes and documents that need migration into modern plain-text formats like Markdown for personal knowledge management (Obsidian, Notion, Logseq).
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/windows, r/mac, r/ObsidianMD, r/sysadmin, r/Notion, r/productivity.
+  - Queries: *"Convert RTF to Markdown free online"*, *"Batch convert old WordPad .rtf notes to Markdown"*, *"Open RTF without WordPad on Windows 11"*, *"RTF to clean markdown with headings and lists"*.
+- **Forensic Structure:**
+  - 7-bit ASCII control word syntax with group nesting `{ ... }`.
+  - Document headers: `\rtf1`, `\fonttbl`, `\colortbl`, `\info`.
+  - Inline styling: `\b` (bold), `\i` (italic), `\strike` (strikethrough), `\fsN` (font size), `\par` (paragraph break), `\bullet` (list item).
+  - Unicode character escapes: `\uN?` (where $N$ is 16-bit codepoint).
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript lexer and state stack. Tracks active groups, skips non-content destination groups, decodes Unicode codepoints and special punctuation (`\emdash`, `\ldblquote`, `\bullet`), transforms inline styling into Markdown formatting, extracts document metadata into YAML frontmatter, and normalizes spacing.
+- **Fidelity:** `HIGH-FIDELITY SEMANTIC MARKDOWN` (Preserves structural headings, emphasis, lists, and metadata).
+- **Status:** **Wave 28 Shipped (`document/rtf-to-markdown`)**.
+
+---
+
+### 81. Nintendo GameCube & Wii DSP ADPCM Audio (`.dsp`)
+
+- **Ecosystem & Context:** DSP is the primary compressed audio container format utilized across Nintendo GameCube and Wii titles (Super Smash Bros Melee, Mario Kart Double Dash, The Legend of Zelda: Twilight Princess, Metroid Prime, Super Mario Sunshine). It encodes 4-bit ADPCM audio with custom 16-bit linear prediction filter coefficients tailored to Nintendo's hardware DSP. Modern media players and DAWs cannot natively play DSP files.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/Gamecube, r/DolphinEmulator, r/smashbros, r/WiiHacks, r/audioengineering, r/sounddesign.
+  - Queries: *"Convert GameCube .dsp to WAV"*, *"Play Super Smash Bros Melee .dsp audio in browser"*, *"Extract Wii sound effects to WAV"*, *"Nintendo DSP ADPCM decoder online"*.
+- **Forensic Byte Layout:**
+  - **96-byte Big-Endian Header:**
+    - Total samples (uint32 BE), sample rate (uint32 BE, typically 32000 or 44100 Hz), loop flag (uint16 BE).
+    - 16 signed 16-bit predictor coefficients (`coef[0..15]`, 8 prediction pairs).
+    - Initial history samples (`hist1`, `hist2`).
+  - **Audio Data Frames (starts at byte offset 96):**
+    - 8-byte frames (16 nibbles per frame).
+    - Byte 0: Predictor index (high nibble $P \in [0, 7]$) and scale factor (low nibble $S \in [0, 15]$).
+    - Bytes 1-7: 14 signed 4-bit delta sample nibbles (range -8..7).
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript audio parser and DSP decompressor. Parses big-endian coefficients, applies Nintendo's 2-pole linear prediction filter, decodes 4-bit ADPCM nibbles across 8-byte frames, accumulates and clamps 16-bit audio samples, and wraps the output in a clean 44-byte standard RIFF WAVE container for universal playback.
+  - Fidelity: `LOSSLESS PCM` (Sample-exact reconstruction of Nintendo DSP ADPCM waveforms).
+  - Status: **Wave 28 Shipped (`audio/dsp-to-wav`)**.
+
+---
+
 ## Roadmap Waves & Next Steps
 
 1. **Wave 1 (Shipped):**
@@ -1935,8 +2005,13 @@
     - Tool 76: `image/ico-to-png` (Microsoft Windows Icon and favicon `.ico` multi-resolution frame decoder to PNG)
     - Tool 77: `document/epub-to-markdown` (EPUB electronic publication book unpacker and semantic Markdown converter)
     - Tool 78: `audio/8svx-to-wav` (Commodore Amiga IFF 8SVX 8-bit & Fibonacci-delta audio decoder to RIFF WAV)
-28. **Wave 28 (Active Research & Next Builds):**
-    - Candidate 1: `document/rtf-to-markdown` (Rich Text Format `.rtf` legacy document decoder to clean Markdown)
+28. **Wave 28 (Shipped):**
+    - Tool 79: `image/tim-to-png` (Sony PlayStation 1 PSX `.tim` texture & sprite format to lossless 32-bit RGBA PNG)
+    - Tool 80: `document/rtf-to-markdown` (Microsoft Rich Text Format `.rtf` document to clean semantic Markdown)
+    - Tool 81: `audio/dsp-to-wav` (Nintendo GameCube & Wii DSP ADPCM audio `.dsp` to 16-bit linear PCM WAV)
+29. **Wave 29 (Active Research & Next Builds):**
+    - Candidate 1: `document/cbr-to-zip` (Comic Book RAR `.cbr` comic archive extractor to ZIP)
     - Candidate 2: `audio/qcp-to-wav` (Qualcomm PureVoice `.qcp` QCELP / EVRC mobile cellular voice recording to WAV)
     - Candidate 3: `document/latex-to-markdown` (LaTeX `.tex` document equations, sections, and formatting to GitHub Flavored Markdown)
+
 

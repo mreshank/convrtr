@@ -30,6 +30,7 @@ import { cueToJsonEngine } from "./cue";
 import { curToPngEngine } from "./cur";
 import { ddsToPngEngine } from "./dds";
 import { dsfToWavEngine } from "./dsf";
+import { dspToWavEngine } from "./dsp";
 import { dxfToSvgEngine } from "./dxf";
 import { epubToMarkdownEngine } from "./epub";
 import { fitToCsvEngine } from "./fit";
@@ -72,6 +73,7 @@ import {
 	rpgmvoToOggEngine,
 	rpgmvpToPngEngine,
 } from "./rpgmaker";
+import { rtfToMarkdownEngine } from "./rtf";
 import { smiToSrtEngine } from "./sami";
 import { scormToZipEngine } from "./scorm";
 import { sgiToPngEngine } from "./sgi";
@@ -84,6 +86,7 @@ import { svgzToSvgEngine } from "./svgz";
 import { tcxToGeoJsonEngine } from "./tcx";
 import { tgaToPngEngine } from "./tga";
 import { tgsToJsonEngine } from "./tgs";
+import { timToPngEngine } from "./tim";
 import type { Engine } from "./types";
 import { vcfToCsvEngine } from "./vcf";
 import { createVideoConversionEngine } from "./video/convert";
@@ -263,6 +266,9 @@ function buildImageEngines(): Map<string, Engine> {
 	engines.set(icoToPngEngine.id, icoToPngEngine);
 	engines.set(epubToMarkdownEngine.id, epubToMarkdownEngine);
 	engines.set(eightSvxToWavEngine.id, eightSvxToWavEngine);
+	engines.set(timToPngEngine.id, timToPngEngine);
+	engines.set(rtfToMarkdownEngine.id, rtfToMarkdownEngine);
+	engines.set(dspToWavEngine.id, dspToWavEngine);
 	{
 		const engine = createAudioLegacyEngine("opus", "mp3");
 		engines.set(engine.id, engine);

@@ -4,6 +4,7 @@ import { aiffToWav } from "./tools/audio/aiff-to-wav";
 import { auToWav } from "./tools/audio/au-to-wav";
 import { cafToWav } from "./tools/audio/caf-to-wav";
 import { dsfToWav } from "./tools/audio/dsf-to-wav";
+import { dspToWav } from "./tools/audio/dsp-to-wav";
 import { coverArtFLAC } from "./tools/audio/flac-cover-art";
 import { flacToWav } from "./tools/audio/flac-to-wav";
 import { waveformFLAC } from "./tools/audio/flac-waveform";
@@ -52,6 +53,7 @@ import { osmToGeoJson } from "./tools/document/osm-to-geojson";
 import { pakToZip } from "./tools/document/pak-to-zip";
 import { pckToZip } from "./tools/document/pck-to-zip";
 import { rpaToZip } from "./tools/document/rpa-to-zip";
+import { rtfToMarkdown } from "./tools/document/rtf-to-markdown";
 import { scormToZip } from "./tools/document/scorm-to-zip";
 import { smiToSrt } from "./tools/document/smi-to-srt";
 import { srtToVtt } from "./tools/document/srt-to-vtt";
@@ -90,6 +92,7 @@ import { studio3ToSvg } from "./tools/image/studio3-to-svg";
 import { svgzToSvg } from "./tools/image/svgz-to-svg";
 import { tgaToPng } from "./tools/image/tga-to-png";
 import { tgsToJson } from "./tools/image/tgs-to-json";
+import { timToPng } from "./tools/image/tim-to-png";
 import { vtfToPng } from "./tools/image/vtf-to-png";
 import { wmfToSvg } from "./tools/image/wmf-to-svg";
 import { xbmToPng } from "./tools/image/xbm-to-png";
@@ -273,6 +276,9 @@ export const TOOLS: Tool[] = [
 	icoToPng,
 	epubToMarkdown,
 	eightSvxToWav,
+	timToPng,
+	rtfToMarkdown,
+	dspToWav,
 ];
 
 export function getTool(id: string): Tool | undefined {
