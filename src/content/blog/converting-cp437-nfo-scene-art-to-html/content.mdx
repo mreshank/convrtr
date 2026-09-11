@@ -1,0 +1,33 @@
+If you have ever downloaded vintage software, indie game demos, or demoscene productions and opened an `.nfo` or `FILE_ID.DIZ` file in macOS TextEdit or modern Windows Notepad, you were likely greeted by incomprehensible character gibberish: random accented letters, mismatched symbols, and broken formatting.
+
+Yet in the 1980s and 1990s BBS era, that same file was a stunning, hand-crafted piece of typography and block-art geometry: release group logos, borders, system requirements, and credits rendered with surgical precision.
+
+This guide explains the historical origins of `.nfo` files, why modern text editors break them, and how [convrtr's NFO to HTML converter](/document/nfo-to-html) translates raw IBM Code Page 437 bytes into beautiful, responsive dark-mode HTML terminals and clean UTF-8 text.
+
+## Why Do .NFO Files Break on Modern Systems?
+
+The root cause is an **encoding mismatch**:
+1. **IBM Code Page 437 (CP437)**: In 1981, IBM designed CP437 for the original IBM PC ROM BIOS. It extended standard 7-bit ASCII with a rich set of 8-bit glyphs (`0x80 - 0xFF`), including:
+   - Single and double box-drawing characters (`┌`, `┐`, `└`, `┘`, `─`, `│`, `╔`, `╗`, `╚`, `╝`, `═`, `║`).
+   - Solid, half, and shaded block elements (`█`, `▀`, `▄`, `▌`, `▐`, `░`, `▒`, `▓`).
+   - Mathematical operators and Greek symbols (`α`, `ß`, `Σ`, `Ω`, `√`, `²`).
+2. **Modern UTF-8 and Windows-1252**: Modern operating systems assume incoming text files are UTF-8 or Windows-1252. In UTF-8, an isolated byte like `0xDB` (CP437 full block `█`) is an illegal byte sequence, causing text editors to either strip it or substitute an error glyph. In Windows-1252, byte `0xDB` maps to `Û` (Latin Capital Letter U with Circumflex), turning a solid logo border into an unreadable mess.
+
+## Anatomy of the CP437 Character Set
+
+The most prominent CP437 block characters used in ASCII and ANSI art reside between `0xB0` and `0xDF`:
+
+| Range | Visual Element | Purpose in Scene Art |
+| :--- | :--- | :--- |
+| `0xB0 - 0xB2` | `░`, `▒`, `▓` | Light, medium, and dark stipple shading for gradients |
+| `0xB3 - 0xDA` | `│`, `─`, `┌`, `┐`, `└`, `┘` | Single-line geometric frames and metadata table dividers |
+| `0xBA - 0xCE` | `║`, `═`, `╔`, `╗`, `╚`, `╝` | Double-line heavy borders for hero group banners |
+| `0xDB - 0xDF` | `█`, `▄`, `▌`, `▐`, `▀` | Half and full solid blocks used to sculpt stylized 3D letterforms |
+
+## Decoding in the Browser with Zero Server Leakage
+
+[convrtr's in-browser NFO converter](/document/nfo-to-html) resolves this issue completely in client memory:
+- **Direct Byte Mapping**: Reads the raw 8-bit byte array and maps each character code `0x00..0xFF` to its exact Unicode code point according to the official IBM PC CP437 standard.
+- **XSS Sanitization**: Automatically escapes HTML entities (`&`, `<`, `>`, `"`) to guarantee secure rendering.
+- **CRT & Dark Mode Styling**: Wraps the decoded Unicode text in a monospaced `<pre>` container styled with choice of dark themes (Charcoal Dark, Matrix Green, Amber Phosphor, or Clean Paper).
+- **Clean UTF-8 Plain Text**: Offers direct export to `.txt` with preserved Unicode block geometry that opens perfectly in VS Code, Obsidian, and modern text editors.

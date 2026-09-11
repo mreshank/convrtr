@@ -63,19 +63,68 @@ describe("BlogGrid", () => {
 		expect(screen.queryByText("How MLW Encryption Works")).toBeNull();
 	});
 
-	it("filters articles by tag pill click", () => {
+	it("filters articles by searchable multiselect tag selection", () => {
 		render(<BlogGrid posts={SAMPLE_POSTS} />);
-		const tagBtn = screen.getByRole("button", { name: /#ENCRYPTION/ });
-		fireEvent.click(tagBtn);
+
+		// Open tag multiselect dropdown
+		const tagsDropdownBtn = screen.getByRole("button", { name: /all tags/i });
+		fireEvent.click(tagsDropdownBtn);
+
+		// Search inside the tag dropdown
+		const tagSearchInput = screen.getByPlaceholderText("Search tags…");
+		fireEvent.change(tagSearchInput, { target: { value: "enc" } });
+
+		// Option for #ENCRYPTION should be visible
+		const encryptionOption = screen.getByRole("option", {
+			name: /#ENCRYPTION/,
+		});
+		fireEvent.click(encryptionOption);
 
 		expect(screen.getByText("SHOWING 1 OF 3 ARTICLES")).toBeDefined();
 		expect(screen.getByText("How MLW Encryption Works")).toBeDefined();
 		expect(screen.queryByText("Audio Loudness Standards")).toBeNull();
 
-		// Click ALL to reset
-		const allBtn = screen.getByRole("button", { name: /ALL/ });
-		fireEvent.click(allBtn);
+		// Active tag chip should appear
+		expect(screen.getByText("ACTIVE TAGS:")).toBeDefined();
+
+		// Clear tag search and select another tag to test multi-selection
+		fireEvent.change(tagSearchInput, { target: { value: "" } });
+		const lufsOption = screen.getByRole("option", { name: /#LUFS/ });
+		fireEvent.click(lufsOption);
+
+		// Now both posts should be shown (multiselect union)
+		expect(screen.getByText("SHOWING 2 OF 3 ARTICLES")).toBeDefined();
+		expect(screen.getByText("How MLW Encryption Works")).toBeDefined();
+		expect(screen.getByText("Audio Loudness Standards")).toBeDefined();
+		expect(screen.queryByText("Recovering Course Videos")).toBeNull();
+
+		// Click remove on one active tag chip
+		const removeEncryptionBtn = screen.getByRole("button", {
+			name: "Remove tag encryption",
+		});
+		fireEvent.click(removeEncryptionBtn);
+
+		expect(screen.getByText("SHOWING 1 OF 3 ARTICLES")).toBeDefined();
+		expect(screen.getByText("Audio Loudness Standards")).toBeDefined();
+		expect(screen.queryByText("How MLW Encryption Works")).toBeNull();
+
+		// Clear all tags
+		const clearBtn = screen.getByRole("button", { name: "Clear all tags" });
+		fireEvent.click(clearBtn);
 		expect(screen.getByText("3 ARTICLES IN ARCHIVE")).toBeDefined();
+	});
+
+	it("toggles tags when clicking tag pills on post cards", () => {
+		render(<BlogGrid posts={SAMPLE_POSTS} />);
+		// Click #mlw on first card
+		const mlwCardBtns = screen.getAllByRole("button", { name: "#mlw" });
+		fireEvent.click(mlwCardBtns[0]);
+
+		// Posts 1 and 2 both have tag mlw
+		expect(screen.getByText("SHOWING 2 OF 3 ARTICLES")).toBeDefined();
+		expect(screen.getByText("How MLW Encryption Works")).toBeDefined();
+		expect(screen.getByText("Recovering Course Videos")).toBeDefined();
+		expect(screen.queryByText("Audio Loudness Standards")).toBeNull();
 	});
 
 	it("shows empty state when no article matches and allows filter reset", () => {

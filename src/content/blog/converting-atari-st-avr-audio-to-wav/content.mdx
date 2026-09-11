@@ -1,0 +1,43 @@
+Throughout the late 1980s and 1990s, the Atari ST was revered as the digital audio workstation of choice across recording studios worldwide. Thanks to built-in 5-pin DIN MIDI in/out ports, precise hardware timing from the Motorola 68000 processor, and software pioneers like Steinberg (Cubase) and C-Lab (Notator), the Atari ST and later Falcon030 shaped the sound of early electronic, techno, and industrial music.
+
+To support digital sound sampling, hard-disk recording, and sample playback on the ST, British developer Audio Visual Research designed the **AVR** (`.avr`) digital audio container.
+
+Vintage sample CDs, Atari demoscene releases, and sound banks frequently contain `.avr` instrument files. This guide details how the 128-byte AVR header is constructed, how sample signedness and bit depths are stored, and how to convert `.avr` files directly into universal 16-bit linear PCM WAVs in your browser using [convrtr's Atari ST AVR to WAV converter](/audio/avr-to-wav).
+
+## Forensic Structure of the 128-Byte 2VRH Header
+
+Unlike raw headerless sample dumps, AVR files begin with a fixed 128-byte metadata header. All multi-byte numeric fields are encoded in **Motorola big-endian** byte order:
+
+| Offset (Bytes) | Field Name | Data Type | Description |
+| :--- | :--- | :--- | :--- |
+| `0x00 - 0x03` | Magic Bytes | 4 ASCII chars | Always `"2VRH"` (`0x32 0x56 0x52 0x48`) |
+| `0x04 - 0x0B` | Sample Name | 8 ASCII chars | Null-padded sample title |
+| `0x0C - 0x0D` | Channel Mode | 16-bit uint | `0x0000` = Mono, `0xFFFF` = Stereo |
+| `0x0E - 0x0F` | Resolution | 16-bit uint | `8` = 8-bit, `16` = 16-bit |
+| `0x10 - 0x11` | Format | 16-bit uint | `0x0000` = Unsigned, `0xFFFF` = Signed |
+| `0x12 - 0x13` | Loop Mode | 16-bit uint | `0x0000` = No loop, `0xFFFF` = Loop |
+| `0x14 - 0x15` | MIDI Note | 16-bit uint | MIDI root key (`0x0000` = Not set) |
+| `0x16 - 0x19` | Sample Rate | 32-bit uint | Sampling frequency in Hz (e.g., 22050, 44100) |
+| `0x1A - 0x1D` | Sample Count | 32-bit uint | Total number of sample frames in payload |
+| `0x1E - 0x21` | Loop Start | 32-bit uint | Loop start frame offset |
+| `0x22 - 0x25` | Loop End | 32-bit uint | Loop end frame offset |
+| `0x26 - 0x27` | Reserved | 2 bytes | Reserved padding |
+| `0x28 - 0x7F` | User Comment | 88 ASCII chars | Null-padded descriptive notes or copyright |
+| `0x80 onwards`| Audio Payload | Raw byte stream | 8-bit or 16-bit big-endian PCM sample frames |
+
+## Resolving Signed vs Unsigned Sample Values
+
+A unique aspect of vintage digital audio formats is signedness flexibility:
+- **8-bit Unsigned**: Bytes range from `0` to `255`, where `128` represents digital zero. To convert to standard 16-bit signed PCM:
+  $$\text{Sample}_{16} = (\text{Byte} - 128) \times 256$$
+- **8-bit Signed**: Bytes range from `-128` to `+127`, where `0` is digital zero:
+  $$\text{Sample}_{16} = \text{Byte} \times 256$$
+- **16-bit Big-Endian**: Read as 16-bit big-endian integers, clamped to the $[-32768, 32767]$ range, and written as little-endian words into the target RIFF WAV container.
+
+## Decoding AVR in Modern Browsers
+
+Because modern operating systems and web browsers lack native AVR decoders, [convrtr](/audio/avr-to-wav) performs zero-server client-side conversion:
+1. Validates the `"2VRH"` magic header.
+2. Extracts sample rate, channel count, and sample dimensions.
+3. Normalizes 8-bit and 16-bit big-endian samples into signed 16-bit little-endian PCM frames.
+4. Wraps decoded audio in a compliant 44-byte RIFF/WAVE header ready for immediate in-browser playback or export into Ableton Live, Logic Pro, and Audacity.
