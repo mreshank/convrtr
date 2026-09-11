@@ -13,8 +13,8 @@ G.711 samples human speech at 8,000 Hz (8 kHz). However, rather than encoding li
 ### μ-law vs A-law Companding
 
 There are two primary variants of G.711:
-1. **μ-law (PCMU / Mu-Law)**: Primarily used in North America (USA, Canada) and Japan. It uses a logarithmic curve defined by parameter $\mu = 255$, offering slightly better dynamic range for quiet speech.
-2. **A-law (PCMA)**: Used throughout Europe and the rest of the world. It employs a piece-wise linear approximation of logarithmic companding ($A = 87.6$).
+1. **μ-law (PCMU / Mu-Law)**: Primarily used in North America (USA, Canada) and Japan. It uses a logarithmic curve defined by parameter μ = 255, offering slightly better dynamic range for quiet speech.
+2. **A-law (PCMA)**: Used throughout Europe and the rest of the world. It employs a piece-wise linear approximation of logarithmic companding (A = 87.6).
 
 Both algorithms achieve approximately 12 to 14 bits of perceptual dynamic range within an 8-bit byte by allocating finer quantization steps to quiet sounds (where the human ear is sensitive to distortion) and coarser steps to loud sounds.
 

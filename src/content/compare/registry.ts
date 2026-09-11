@@ -1089,7 +1089,8 @@ export const COMPARISONS: ComparisonMeta[] = [
 	},
 	{
 		slug: "ulaw-vs-wav",
-		title: "G.711 (μ-law/A-law) vs Linear PCM WAV: Telephony Voice vs Studio Audio",
+		title:
+			"G.711 (μ-law/A-law) vs Linear PCM WAV: Telephony Voice vs Studio Audio",
 		description:
 			"Compare 8-bit companded ITU-T G.711 telephony audio against uncompressed 16-bit linear PCM WAV. Bitrate, dynamic range, and browser playback analyzed.",
 		formatA: "G.711",
@@ -1138,7 +1139,11 @@ export const COMPARISONS: ComparisonMeta[] = [
 		],
 		verdict:
 			"G.711 is optimal for real-time voice telephony and PBX call center logging. Convert G.711 raw bitstreams to WAV for instant in-browser listening, transcription, or legal audio review.",
-		relatedTools: ["audio/ulaw-to-wav", "audio/wav-to-mp3", "audio/wav-to-flac"],
+		relatedTools: [
+			"audio/ulaw-to-wav",
+			"audio/wav-to-mp3",
+			"audio/wav-to-flac",
+		],
 	},
 ];
 

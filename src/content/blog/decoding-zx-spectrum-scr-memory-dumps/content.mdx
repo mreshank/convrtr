@@ -6,14 +6,14 @@ This article explores the inner workings of the ZX Spectrum's non-linear screen 
 
 ## The 6,912-Byte Display Layout
 
-A standard ZX Spectrum screen resolution is 256 pixels horizontally by 192 pixels vertically. In standard 1-bit monochrome graphics, 256 × 192 bits equals 49,152 bits, or exactly 6,144 bytes ($6 \text{ KB}$).
+A standard ZX Spectrum screen resolution is 256 pixels horizontally by 192 pixels vertically. In standard 1-bit monochrome graphics, 256 × 192 bits equals 49,152 bits, or exactly 6,144 bytes (6 KB).
 
 Every `.scr` file is structured into two consecutive memory regions:
 1. **Pixel Bitmap Buffer (6,144 bytes)**: Starting at base video RAM address `0x4000`, this area contains the raw monochrome 1-bit pixel on/off states.
 2. **Color Attribute Buffer (768 bytes)**: Starting at address `0x5800`, this area assigns foreground and background colors to 8×8 pixel character blocks.
 
 Total file size:
-$$6,144 + 768 = 6,912 \text{ bytes}$$
+`6,144 + 768 = 6,912 bytes`
 
 ## Non-Linear Interlaced Video Addressing
 
@@ -27,7 +27,7 @@ Address = 0x4000 | (third << 11) | (scanline_in_char << 8) | (char_row << 5) | c
 
 ## Attribute Clash and the Color Byte
 
-To save memory, colors are not assigned per pixel. Instead, each 8×8 block of pixels shares a single **Attribute Byte** from the 768-byte color buffer ($32 \text{ columns} \times 24 \text{ rows}$).
+To save memory, colors are not assigned per pixel. Instead, each 8×8 block of pixels shares a single **Attribute Byte** from the 768-byte color buffer (32 columns × 24 rows).
 
 Each attribute byte is packed with 4 distinct flags:
 - **Bits 0–2 (INK)**: Foreground color index (0 to 7: Black, Blue, Red, Magenta, Green, Cyan, Yellow, White).
