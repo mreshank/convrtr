@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { RelatedReading } from "@/components/content/RelatedReading";
-import { getPostsByTool } from "@/content/blog/registry";
+import { BLOG_POSTS, getPostsByTool } from "@/content/blog/registry";
 import { getTool, TOOLS } from "@/core/registry";
 import { ConverterPage } from "@/design/templates";
 import { buildToolJsonLd } from "@/lib/jsonld";
@@ -45,7 +45,9 @@ export default async function ToolPage({
 	const tool = getTool(`${category}/${slug}`);
 	if (!tool) notFound();
 
-	const relatedPosts = getPostsByTool(tool.id);
+	const toolPosts = getPostsByTool(tool.id);
+	const relatedPosts =
+		toolPosts.length > 0 ? toolPosts : BLOG_POSTS.slice(0, 3);
 	const fromExt = (tool.accept.ext[0] ?? tool.output.ext).toUpperCase();
 	const toExt = tool.output.ext.toUpperCase();
 

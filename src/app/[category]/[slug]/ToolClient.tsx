@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
 	type BatchRowState,
 	BatchTable,
@@ -14,9 +16,12 @@ import { OptionsPanel } from "@/components/instrument/OptionsPanel";
 import { ProgressBar } from "@/components/instrument/ProgressBar";
 import {
 	canStreamToDisk,
+	createOutputFile,
 	outputFilename,
 	readFile,
+	type StagedConversion,
 	saveOutput,
+	stageFilesForConversion,
 } from "@/core/io";
 import { preflight } from "@/core/io/preflight";
 import { pickSaveFile, SAVE_CANCELLED } from "@/core/io/sink";
@@ -38,6 +43,11 @@ import {
 	type QualityState,
 } from "@/core/quality";
 import { getTool } from "@/core/registry";
+import {
+	getAvailableTargetFormatsForFile,
+	type TargetOption,
+} from "@/core/registry/converter-match";
+import { ArrowUpRight } from "@/design/primitives/ArrowUpRight";
 import { formatBytes, formatDelta } from "@/lib/format";
 
 /**
@@ -78,8 +88,13 @@ function describePath(path: ConversionPath): string {
 }
 
 export function ToolClient({ toolId }: { toolId: string }) {
+	const router = useRouter();
 	const tool = getTool(toolId);
 	if (!tool) throw new Error(`Unknown tool ${toolId}`);
+
+	const fromExt = (tool.accept.ext[0] ?? tool.output.ext).toUpperCase();
+	const toExt = tool.output.ext.toUpperCase();
+	const masterHref = `/convert?from=${encodeURIComponent(fromExt.toLowerCase())}&to=${encodeURIComponent(toExt.toLowerCase())}`;
 
 	// `items` is the source of truth for what's loaded, single file or many.
 	// `file` below derives the single-file case from it so the rest of the
@@ -716,6 +731,93 @@ export function ToolClient({ toolId }: { toolId: string }) {
 		await saveOutput(bytes, `${tool.slug}.zip`, "application/zip");
 	};
 
+	const outputExt = (outputType?.ext ?? tool.output.ext).toLowerCase();
+	const availableNextTargets = useMemo(() => {
+		if (!result || !outputExt) return [];
+		return getAvailableTargetFormatsForFile(outputExt);
+	}, [result, outputExt]);
+
+	const availableBatchNextTargets = useMemo(() => {
+		if (!tool.output.ext) return [];
+		return getAvailableTargetFormatsForFile(tool.output.ext.toLowerCase());
+	}, [tool.output.ext]);
+
+	const continueSingleConversion = (targetExt?: string) => {
+		if (!result || !file) return;
+		const ext = outputType?.ext ?? tool.output.ext;
+		const mime = outputType?.mime ?? tool.output.mime;
+		const filename = outputFilename(file.name, ext);
+		const outputFile = createOutputFile(result.bytes, filename, mime);
+
+		stageFilesForConversion([
+			{
+				file: outputFile,
+				targetExt,
+				parentName: file.name,
+				step: 2,
+			},
+		]);
+		const targetQuery = targetExt
+			? `&to=${encodeURIComponent(targetExt.toLowerCase())}`
+			: "";
+		router.push(
+			`/convert?from=${encodeURIComponent(ext.toLowerCase())}${targetQuery}`,
+		);
+	};
+
+	const continueBatchRow = (id: string, targetExt?: string) => {
+		const output = batchOutputsRef.current.get(id);
+		if (!output) return;
+		const outputFile = createOutputFile(
+			output.output,
+			output.outputName,
+			tool.output.mime,
+		);
+		const row = batchRows.find((r) => r.id === id);
+		stageFilesForConversion([
+			{
+				file: outputFile,
+				targetExt,
+				parentName: row?.name,
+				step: 2,
+			},
+		]);
+		const targetQuery = targetExt
+			? `&to=${encodeURIComponent(targetExt.toLowerCase())}`
+			: "";
+		router.push(
+			`/convert?from=${encodeURIComponent(tool.output.ext.toLowerCase())}${targetQuery}`,
+		);
+	};
+
+	const continueAllBatch = (targetExt?: string) => {
+		const staged: StagedConversion[] = [];
+		for (const row of batchRows) {
+			if (row.status !== "done") continue;
+			const output = batchOutputsRef.current.get(row.id);
+			if (!output) continue;
+			const outputFile = createOutputFile(
+				output.output,
+				output.outputName,
+				tool.output.mime,
+			);
+			staged.push({
+				file: outputFile,
+				targetExt,
+				parentName: row.name,
+				step: 2,
+			});
+		}
+		if (staged.length === 0) return;
+		stageFilesForConversion(staged);
+		const targetQuery = targetExt
+			? `&to=${encodeURIComponent(targetExt.toLowerCase())}`
+			: "";
+		router.push(
+			`/convert?from=${encodeURIComponent(tool.output.ext.toLowerCase())}${targetQuery}`,
+		);
+	};
+
 	const batchDoneCount = batchSettledCount;
 	const batchAggregateRatio =
 		batchRows.length > 0 ? batchDoneCount / batchRows.length : 0;
@@ -763,7 +865,42 @@ export function ToolClient({ toolId }: { toolId: string }) {
 			 * `p-[calc(var(--space-base)*4)]` rather than a bare literal or a
 			 * new token.
 			 */}
-			<div className="flex items-start justify-end">
+			<div className="flex flex-wrap items-center justify-between gap-3">
+				<Link
+					href={masterHref}
+					data-testid="open-master-converter-btn"
+					className="group inline-flex items-center gap-2 border px-3 py-1.5 mono text-[11px] transition-all hover:border-[var(--accent)] hover:bg-[var(--surface)]"
+					style={{
+						borderColor: "var(--rule)",
+						borderRadius: "var(--radius)",
+						background: "var(--ground)",
+						color: "var(--ink)",
+						textDecoration: "none",
+					}}
+					title={`Open Master Converter with ${fromExt} → ${toExt} preset`}
+				>
+					<span
+						className="h-1.5 w-1.5 rounded-full"
+						style={{ background: "var(--accent)" }}
+					/>
+					<span className="tracking-[0.04em]">OPEN IN MASTER CONVERTER</span>
+					<span
+						className="border px-1.5 py-0.5 text-[10px]"
+						style={{
+							borderColor: "var(--rule-strong)",
+							borderRadius: "var(--radius)",
+							color: "var(--accent)",
+							background: "var(--surface)",
+						}}
+					>
+						{fromExt} → {toExt}
+					</span>
+					<ArrowUpRight
+						size={12}
+						className="opacity-70 transition-transform duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:opacity-100"
+					/>
+				</Link>
+
 				<FidelityScore
 					score={fidelityScore(tool, quality)}
 					label={describeFidelity(tool, quality)}
@@ -772,11 +909,45 @@ export function ToolClient({ toolId }: { toolId: string }) {
 			</div>
 
 			{items.length === 0 && (
-				<DropField
-					accept={tool.accept}
-					formats={tool.accept.ext.map((ext) => ext.toUpperCase())}
-					onFiles={handleFiles}
-				/>
+				<div className="flex flex-col gap-3">
+					<DropField
+						accept={tool.accept}
+						formats={tool.accept.ext.map((ext) => ext.toUpperCase())}
+						onFiles={handleFiles}
+					/>
+					<div
+						className="flex flex-wrap items-center justify-between gap-3 border border-dashed px-4 py-3"
+						style={{
+							borderColor: "var(--rule)",
+							borderRadius: "var(--radius)",
+							background: "var(--surface)",
+						}}
+					>
+						<div className="flex items-center gap-2">
+							<span
+								className="mono text-[10px] tracking-[0.06em]"
+								style={{ color: "var(--accent)" }}
+							>
+								[ BATCH & MULTI-FILE STUDIO ]
+							</span>
+							<span
+								className="text-[12px]"
+								style={{ color: "var(--ink-muted)" }}
+							>
+								Want to batch convert multiple {fromExt} files to {toExt}{" "}
+								simultaneously or mix formats?
+							</span>
+						</div>
+						<Link
+							href={masterHref}
+							className="mono inline-flex items-center gap-1.5 text-[11px] underline underline-offset-4 transition-colors hover:text-[var(--accent)]"
+							style={{ color: "var(--ink)" }}
+						>
+							<span>Open this config in Master Studio</span>
+							<ArrowUpRight size={12} />
+						</Link>
+					</div>
+				</div>
 			)}
 
 			{file && (
@@ -851,23 +1022,79 @@ export function ToolClient({ toolId }: { toolId: string }) {
 					)}
 
 					{!converting && result && (
-						<div className="flex items-center justify-between">
-							<span data-testid="result" className="mono text-[12px]">
-								{formatBytes(file.size)} {"→"} {formatBytes(result.size)}{" "}
-								{formatDelta(file.size, result.size)}
-								{result.path ? ` · ${describePath(result.path)}` : ""}
-							</span>
-							<button
-								type="button"
-								onClick={save}
-								className="mono border px-4 py-2 text-[12px]"
-								style={{
-									color: "var(--ink)",
-									borderColor: "var(--ink)",
-								}}
-							>
-								SAVE
-							</button>
+						<div className="flex flex-col gap-3">
+							<div className="flex items-center justify-between">
+								<span data-testid="result" className="mono text-[12px]">
+									{formatBytes(file.size)} {"→"} {formatBytes(result.size)}{" "}
+									{formatDelta(file.size, result.size)}
+									{result.path ? ` · ${describePath(result.path)}` : ""}
+								</span>
+								<div className="flex items-center gap-2">
+									<button
+										type="button"
+										data-testid="continue-conversion-btn"
+										onClick={() => continueSingleConversion()}
+										aria-label="Continue converting output file"
+										className="mono border px-3 py-2 text-[12px] font-medium transition-all hover:bg-[var(--accent)] hover:text-[var(--ground)]"
+										style={{
+											color: "var(--accent)",
+											borderColor: "var(--accent)",
+											borderRadius: "var(--radius)",
+											background: "transparent",
+											cursor: "pointer",
+										}}
+									>
+										CONTINUE CONVERTING →
+									</button>
+									<button
+										type="button"
+										onClick={save}
+										className="mono border px-4 py-2 text-[12px]"
+										style={{
+											color: "var(--ink)",
+											borderColor: "var(--ink)",
+											borderRadius: "var(--radius)",
+											cursor: "pointer",
+										}}
+									>
+										SAVE
+									</button>
+								</div>
+							</div>
+
+							{availableNextTargets.length > 0 && (
+								<div
+									data-testid="direct-target-pills"
+									className="flex flex-wrap items-center justify-end gap-1.5 pt-2 border-t border-dashed"
+									style={{ borderColor: "var(--rule)" }}
+								>
+									<span
+										className="mono text-[10px]"
+										style={{ color: "var(--ink-muted)" }}
+									>
+										CONTINUE AS:
+									</span>
+									{availableNextTargets.slice(0, 4).map((opt: TargetOption) => (
+										<button
+											key={opt.ext}
+											type="button"
+											data-testid={`continue-as-${opt.ext}`}
+											onClick={() => continueSingleConversion(opt.ext)}
+											aria-label={`Continue conversion to ${opt.label}`}
+											className="mono border px-2 py-0.5 text-[10px] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
+											style={{
+												color: "var(--ink)",
+												borderColor: "var(--rule-strong)",
+												borderRadius: "var(--radius)",
+												background: "var(--surface)",
+												cursor: "pointer",
+											}}
+										>
+											→ {opt.label}
+										</button>
+									))}
+								</div>
+							)}
 						</div>
 					)}
 
@@ -1023,18 +1250,72 @@ export function ToolClient({ toolId }: { toolId: string }) {
 					)}
 
 					{!converting && result && (
-						<div className="flex items-center justify-between">
-							<span data-testid="result" className="mono text-[12px]">
-								{items.length} {"→"} 1 {"·"} {formatBytes(result.size)}
-							</span>
-							<button
-								type="button"
-								onClick={saveCombined}
-								className="mono border px-4 py-2 text-[12px]"
-								style={{ color: "var(--ink)", borderColor: "var(--ink)" }}
-							>
-								SAVE
-							</button>
+						<div className="flex flex-col gap-3">
+							<div className="flex items-center justify-between">
+								<span data-testid="result" className="mono text-[12px]">
+									{items.length} {"→"} 1 {"·"} {formatBytes(result.size)}
+								</span>
+								<div className="flex items-center gap-2">
+									<button
+										type="button"
+										data-testid="continue-conversion-btn"
+										onClick={() => continueSingleConversion()}
+										aria-label="Continue converting output file"
+										className="mono border px-3 py-2 text-[12px] font-medium transition-all hover:bg-[var(--accent)] hover:text-[var(--ground)]"
+										style={{
+											color: "var(--accent)",
+											borderColor: "var(--accent)",
+											borderRadius: "var(--radius)",
+											background: "transparent",
+											cursor: "pointer",
+										}}
+									>
+										CONTINUE CONVERTING →
+									</button>
+									<button
+										type="button"
+										onClick={saveCombined}
+										className="mono border px-4 py-2 text-[12px]"
+										style={{ color: "var(--ink)", borderColor: "var(--ink)" }}
+									>
+										SAVE
+									</button>
+								</div>
+							</div>
+
+							{availableNextTargets.length > 0 && (
+								<div
+									data-testid="combine-direct-target-pills"
+									className="flex flex-wrap items-center justify-end gap-1.5 pt-2 border-t border-dashed"
+									style={{ borderColor: "var(--rule)" }}
+								>
+									<span
+										className="mono text-[10px]"
+										style={{ color: "var(--ink-muted)" }}
+									>
+										CONTINUE AS:
+									</span>
+									{availableNextTargets.slice(0, 4).map((opt: TargetOption) => (
+										<button
+											key={opt.ext}
+											type="button"
+											data-testid={`combine-continue-as-${opt.ext}`}
+											onClick={() => continueSingleConversion(opt.ext)}
+											aria-label={`Continue conversion to ${opt.label}`}
+											className="mono border px-2 py-0.5 text-[10px] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
+											style={{
+												color: "var(--ink)",
+												borderColor: "var(--rule-strong)",
+												borderRadius: "var(--radius)",
+												background: "var(--surface)",
+												cursor: "pointer",
+											}}
+										>
+											→ {opt.label}
+										</button>
+									))}
+								</div>
+							)}
 						</div>
 					)}
 
@@ -1091,6 +1372,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 						rows={batchRows}
 						fidelity={batchFidelity}
 						onSaveRow={saveRow}
+						onContinueRow={continueBatchRow}
 						inputFormat={tool.accept.ext[0]?.toUpperCase()}
 					/>
 
@@ -1117,19 +1399,56 @@ export function ToolClient({ toolId }: { toolId: string }) {
 					)}
 
 					{!batchConverting && (
-						<div className="flex items-center justify-end gap-3">
+						<div className="flex flex-wrap items-center justify-end gap-3">
 							{batchHasSaveable && (
-								<button
-									type="button"
-									onClick={saveAllZip}
-									className="mono border px-4 py-2 text-[12px]"
-									style={{
-										color: "var(--ink)",
-										borderColor: "var(--ink)",
-									}}
-								>
-									SAVE ALL (ZIP)
-								</button>
+								<>
+									<button
+										type="button"
+										data-testid="batch-continue-btn"
+										onClick={() => continueAllBatch()}
+										className="mono border px-4 py-2 text-[12px] font-medium transition-all hover:bg-[var(--accent)] hover:text-[var(--ground)]"
+										style={{
+											color: "var(--accent)",
+											borderColor: "var(--accent)",
+											borderRadius: "var(--radius)",
+											background: "transparent",
+											cursor: "pointer",
+										}}
+									>
+										CONTINUE WITH OUTPUTS →
+									</button>
+									{availableBatchNextTargets
+										.slice(0, 3)
+										.map((opt: TargetOption) => (
+											<button
+												key={opt.ext}
+												type="button"
+												data-testid={`batch-continue-as-${opt.ext}`}
+												onClick={() => continueAllBatch(opt.ext)}
+												className="mono border px-3 py-2 text-[11px] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
+												style={{
+													color: "var(--ink)",
+													borderColor: "var(--rule-strong)",
+													borderRadius: "var(--radius)",
+													background: "var(--surface)",
+													cursor: "pointer",
+												}}
+											>
+												→ {opt.label}
+											</button>
+										))}
+									<button
+										type="button"
+										onClick={saveAllZip}
+										className="mono border px-4 py-2 text-[12px]"
+										style={{
+											color: "var(--ink)",
+											borderColor: "var(--ink)",
+										}}
+									>
+										SAVE ALL (ZIP)
+									</button>
+								</>
 							)}
 							<button
 								type="button"

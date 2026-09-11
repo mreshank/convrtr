@@ -72,6 +72,8 @@ type Props = {
 	/** Called with a row's id when its SAVE action is activated. Only
 	 * reachable for `status: "done"` rows — see the disabled state below. */
 	onSaveRow: (id: string) => void;
+	/** Called with a row's id when its CONTINUE action is activated. */
+	onContinueRow?: (id: string, targetExt?: string) => void;
 	/** Forwarded to each row's `ErrorPanel` so `UNSUPPORTED_INPUT` copy can
 	 * name the format, matching the single-file error experience. */
 	inputFormat?: string;
@@ -118,7 +120,13 @@ const cellStyle = {
  * never replaces or dims the rows around it, so one bad file in a batch of
  * fifty reads as exactly that.
  */
-export function BatchTable({ rows, fidelity, onSaveRow, inputFormat }: Props) {
+export function BatchTable({
+	rows,
+	fidelity,
+	onSaveRow,
+	onContinueRow,
+	inputFormat,
+}: Props) {
 	return (
 		<table
 			data-testid="batch-table"
@@ -237,20 +245,40 @@ export function BatchTable({ rows, fidelity, onSaveRow, inputFormat }: Props) {
 							</td>
 							<td className="border-b px-2 py-2 text-right" style={cellStyle}>
 								{row.status === "done" && row.outputSize !== undefined && (
-									<button
-										type="button"
-										onClick={() => onSaveRow(row.id)}
-										aria-label={`Save ${row.name}`}
-										className="mono border px-2 py-1 text-[11px]"
-										style={{
-											color: "var(--ink)",
-											borderColor: "var(--ink)",
-											borderRadius: "var(--radius)",
-											background: "transparent",
-										}}
-									>
-										SAVE
-									</button>
+									<div className="flex items-center justify-end gap-1.5">
+										{onContinueRow && (
+											<button
+												type="button"
+												onClick={() => onContinueRow(row.id)}
+												aria-label={`Continue conversion for ${row.name}`}
+												className="mono border px-2 py-1 text-[11px] font-medium"
+												style={{
+													color: "var(--accent)",
+													borderColor: "var(--accent)",
+													borderRadius: "var(--radius)",
+													background: "transparent",
+													cursor: "pointer",
+												}}
+											>
+												CONTINUE →
+											</button>
+										)}
+										<button
+											type="button"
+											onClick={() => onSaveRow(row.id)}
+											aria-label={`Save ${row.name}`}
+											className="mono border px-2 py-1 text-[11px]"
+											style={{
+												color: "var(--ink)",
+												borderColor: "var(--ink)",
+												borderRadius: "var(--radius)",
+												background: "transparent",
+												cursor: "pointer",
+											}}
+										>
+											SAVE
+										</button>
+									</div>
 								)}
 							</td>
 						</tr>

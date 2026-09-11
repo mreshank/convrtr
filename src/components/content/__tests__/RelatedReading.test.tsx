@@ -26,4 +26,29 @@ describe("RelatedReading", () => {
 		const { container } = render(<RelatedReading posts={[]} />);
 		expect(container.firstChild).toBeNull();
 	});
+
+	it("renders descriptions, tags, and reading time metadata", () => {
+		const richPosts: BlogPostMeta[] = [
+			{
+				slug: "deep-dive",
+				title: "Deep Dive into WebP",
+				description:
+					"How lossless and lossy WebP compression algorithms work internally.",
+				publishedAt: "2026-03-15",
+				relatedTools: ["image/png-to-webp"],
+				tags: ["webp", "compression"],
+				bodyFormat: "mdx",
+			},
+		];
+		render(<RelatedReading posts={richPosts} />);
+		expect(
+			screen.getByText(
+				"How lossless and lossy WebP compression algorithms work internally.",
+			),
+		).toBeDefined();
+		expect(screen.getByText("#webp")).toBeDefined();
+		expect(screen.getByText("#compression")).toBeDefined();
+		expect(screen.getByText(/MIN READ/i)).toBeDefined();
+		expect(screen.getByText(/Mar 15, 2026/i)).toBeDefined();
+	});
 });

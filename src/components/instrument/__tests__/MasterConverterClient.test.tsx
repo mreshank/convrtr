@@ -190,7 +190,9 @@ describe("MasterConverterClient", () => {
 		});
 		expect(saveBtns).toHaveLength(2);
 
-		const zipBtn = screen.getByRole("button", { name: "DOWNLOAD ALL (ZIP)" });
+		const zipBtn = screen.getByRole("button", {
+			name: /DOWNLOAD ALL \(ZIP\)/i,
+		});
 		expect(zipBtn).toBeDefined();
 
 		fireEvent.click(zipBtn);
@@ -293,5 +295,230 @@ describe("MasterConverterClient", () => {
 
 		// With all items pruned, dropzone should reappear
 		expect(screen.getByTestId("drop-field")).toBeDefined();
+	});
+
+	it("renders configured instant preset banner when initialFrom and initialTo are provided", () => {
+		render(<MasterConverterClient initialFrom="png" initialTo="webp" />);
+		const banner = screen.getByTestId("configured-preset-banner");
+		expect(banner).toBeDefined();
+		expect(banner.textContent).toContain("INSTANT STUDIO CONFIGURATION");
+		expect(banner.textContent).toContain("PNG");
+		expect(banner.textContent).toContain("WEBP");
+		expect(
+			screen.getByText("INSTANT DEFAULT:", { exact: false }),
+		).toBeDefined();
+	});
+
+	it("automatically defaults targetExt to preset target for matching dropped files", () => {
+		render(<MasterConverterClient initialFrom="png" initialTo="webp" />);
+		const dropField = screen.getByTestId("drop-field");
+
+		const files = [
+			new File(["test content"], "photo.png", { type: "image/png" }),
+		];
+
+		fireEvent.drop(dropField, {
+			dataTransfer: { files },
+		});
+
+		const rows = screen.getAllByTestId("converter-item-row");
+		expect(rows).toHaveLength(1);
+		// The target select should have "webp" selected
+		const targetSelect = screen.getByRole("combobox", {
+			name: /target format for photo\.png/i,
+		}) as HTMLSelectElement;
+		expect(targetSelect.value).toBe("webp");
+		expect(screen.getByTestId("controls-preset-pill")).toBeDefined();
+	});
+
+	it("allows reversing and resetting the configured preset", () => {
+		render(<MasterConverterClient initialFrom="png" initialTo="webp" />);
+		const banner = screen.getByTestId("configured-preset-banner");
+		expect(banner).toBeDefined();
+
+		// Click REVERSE
+		const reverseBtn = screen.getByRole("button", { name: /REVERSE/i });
+		fireEvent.click(reverseBtn);
+		expect(banner.textContent).toContain("WEBP");
+		expect(banner.textContent).toContain("PNG");
+
+		// Click RESET TO UNIVERSAL
+		const resetBtn = screen.getByRole("button", {
+			name: /RESET TO UNIVERSAL/i,
+		});
+		fireEvent.click(resetBtn);
+		expect(screen.queryByTestId("configured-preset-banner")).toBeNull();
+	});
+
+	it("automatically ingests staged files on mount", async () => {
+		const { stageFilesForConversion } = await import("@/core/io");
+		stageFilesForConversion([
+			new File(["test-staged"], "staged-video.mp4", { type: "video/mp4" }),
+		]);
+
+		render(<MasterConverterClient />);
+		const rows = screen.getAllByTestId("converter-item-row");
+		expect(rows).toHaveLength(1);
+		expect(screen.getByText("staged-video.mp4")).toBeDefined();
+	});
+
+	it("allows continuing a completed row output for another conversion", async () => {
+		render(<MasterConverterClient />);
+		const dropField = screen.getByTestId("drop-field");
+
+		const files = [
+			new File(["content"], "clip.mlw", { type: "application/octet-stream" }),
+		];
+
+		fireEvent.drop(dropField, {
+			dataTransfer: { files },
+		});
+
+		// Trigger conversion
+		const convertBtn = screen.getByRole("button", {
+			name: /CONVERT 1 FILE/i,
+		});
+		fireEvent.click(convertBtn);
+
+		// Wait for conversion to finish and render CONTINUE button
+		const continueBtn = await screen.findByTestId("row-continue-btn");
+		expect(continueBtn).toBeDefined();
+
+		// Click CONTINUE →
+		fireEvent.click(continueBtn);
+
+		// A new row for the MP4 output should be added!
+		const rows = screen.getAllByTestId("converter-item-row");
+		expect(rows).toHaveLength(2);
+		expect(screen.getByText("clip.mp4")).toBeDefined();
+		expect(
+			screen.getByText(/Loaded "clip.mp4" for next conversion/i),
+		).toBeDefined();
+	});
+
+	it("allows continuing multiple completed outputs via bulk CONTINUE WITH OUTPUTS", async () => {
+		render(<MasterConverterClient />);
+		const dropField = screen.getByTestId("drop-field");
+
+		const files = [
+			new File(["a"], "clip-1.mlw", { type: "application/octet-stream" }),
+			new File(["b"], "clip-2.mlw", { type: "application/octet-stream" }),
+		];
+
+		fireEvent.drop(dropField, {
+			dataTransfer: { files },
+		});
+
+		// Trigger conversion
+		const convertBtn = screen.getByRole("button", {
+			name: /CONVERT 2 FILES/i,
+		});
+		fireEvent.click(convertBtn);
+
+		// Wait for conversion to finish and bulk button to appear
+		const bulkContinueBtn = await screen.findByTestId("continue-outputs-btn");
+		expect(bulkContinueBtn).toBeDefined();
+		expect(bulkContinueBtn.textContent).toContain(
+			"CONTINUE WITH OUTPUTS (2) →",
+		);
+
+		// Click CONTINUE WITH OUTPUTS
+		fireEvent.click(bulkContinueBtn);
+
+		// 2 new rows for the MP4 outputs should now be present (total 4)
+		const rows = screen.getAllByTestId("converter-item-row");
+		expect(rows).toHaveLength(4);
+		expect(screen.getByText("clip-1.mp4")).toBeDefined();
+		expect(screen.getByText("clip-2.mp4")).toBeDefined();
+		expect(
+			screen.getByText(/Loaded 2 output files for next conversion/i),
+		).toBeDefined();
+	});
+
+	it("renders transformation lineage badges and pipeline telemetry when items are continued", async () => {
+		render(<MasterConverterClient />);
+		const dropField = screen.getByTestId("drop-field");
+
+		const files = [
+			new File(["mlw-bytes"], "source.mlw", {
+				type: "application/octet-stream",
+			}),
+		];
+
+		fireEvent.drop(dropField, {
+			dataTransfer: { files },
+		});
+
+		// Trigger conversion
+		const convertBtn = screen.getByRole("button", {
+			name: /CONVERT 1 FILE/i,
+		});
+		fireEvent.click(convertBtn);
+
+		// Wait for row continue button
+		const continueBtn = await screen.findByTestId("row-continue-btn");
+		fireEvent.click(continueBtn);
+
+		// The new item should have a lineage badge showing STEP 2 · FROM source.mlw
+		expect(screen.getByText(/STEP 2 · FROM source\.mlw/i)).toBeDefined();
+
+		// Pipeline telemetry badge should be visible in the table toolbar
+		const telemetry = screen.getByTestId("pipeline-telemetry-badge");
+		expect(telemetry.textContent).toContain("PIPELINE: 1 CHAINED");
+		expect(telemetry.textContent).toContain("DEPTH: 2 STEPS");
+	});
+
+	it("allows continuing directly to a specific target format via 1-click pills", async () => {
+		render(<MasterConverterClient />);
+		const dropField = screen.getByTestId("drop-field");
+
+		const files = [
+			new File(["mlw-bytes"], "clip.mlw", {
+				type: "application/octet-stream",
+			}),
+		];
+
+		fireEvent.drop(dropField, {
+			dataTransfer: { files },
+		});
+
+		// Convert MLW -> MP4
+		const convertBtn = screen.getByRole("button", {
+			name: /CONVERT 1 FILE/i,
+		});
+		fireEvent.click(convertBtn);
+
+		// Wait for completion and check quick format targets
+		await screen.findByTestId("row-continue-btn");
+		const quickTargetBtn = screen.queryByTestId("row-continue-target-webm");
+		if (quickTargetBtn) {
+			fireEvent.click(quickTargetBtn);
+			expect(
+				screen.getByText(/Loaded "clip.mp4" targeting → WEBM/i),
+			).toBeDefined();
+		}
+	});
+
+	it("supports keyboard shortcuts: Cmd+Enter to start conversion", async () => {
+		render(<MasterConverterClient />);
+		const dropField = screen.getByTestId("drop-field");
+
+		const files = [new File(["png-bytes"], "icon.png", { type: "image/png" })];
+
+		fireEvent.drop(dropField, {
+			dataTransfer: { files },
+		});
+
+		// Trigger Cmd+Enter
+		fireEvent.keyDown(window, {
+			key: "Enter",
+			metaKey: true,
+		});
+
+		// Wait for completion: Save button appears
+		const saveBtn = await screen.findByRole("button", {
+			name: /Save icon\.png/i,
+		});
+		expect(saveBtn).toBeDefined();
 	});
 });

@@ -1,5 +1,6 @@
 type Props = {
 	size?: number;
+	className?: string;
 };
 
 /**
@@ -11,7 +12,7 @@ type Props = {
  *
  * Decorative: the item's own link already names its destination.
  */
-export function ArrowUpRight({ size = 24 }: Props) {
+export function ArrowUpRight({ size = 24, className }: Props) {
 	return (
 		<svg
 			data-arrow
@@ -20,6 +21,7 @@ export function ArrowUpRight({ size = 24 }: Props) {
 			viewBox="0 0 24 24"
 			fill="none"
 			aria-hidden="true"
+			className={className}
 		>
 			<path
 				d="M7 17 L17 7 M17 7 H8 M17 7 V16"

@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { parseToolTitle } from "@/lib/format";
 import { ArrowUpRight } from "@/design/primitives/ArrowUpRight";
+import { parseToolTitle } from "@/lib/format";
 
 export type ListingItem = {
 	href: string;

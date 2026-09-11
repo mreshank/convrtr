@@ -3,7 +3,14 @@
 import { Fragment, useEffect, useId, useMemo, useRef, useState } from "react";
 import { ErrorPanel } from "@/components/instrument/ErrorPanel";
 import { HeavyDownloadGate } from "@/components/instrument/HeavyDownloadGate";
-import { outputFilename, readFile, saveOutput } from "@/core/io";
+import {
+	consumeStagedFiles,
+	createOutputFile,
+	outputFilename,
+	readFile,
+	type StagedConversion,
+	saveOutput,
+} from "@/core/io";
 import { preflight } from "@/core/io/preflight";
 import { type ZipEntry, zipOutputs } from "@/core/io/zip";
 import { JobError, runJob } from "@/core/pipeline/client";
@@ -47,6 +54,7 @@ export type MasterItem = {
 	outputSize?: number;
 	outputName?: string;
 	error?: { code: ErrorCode; message: string };
+	lineage?: { parentName: string; step: number };
 };
 
 const ALL_ACCEPTS = {
@@ -407,12 +415,33 @@ const cellStyle = {
 	borderColor: "var(--rule)",
 } as const;
 
-export function MasterConverterClient() {
+export type ConfiguredPreset = {
+	from: string;
+	to: string;
+};
+
+export function MasterConverterClient({
+	initialFrom,
+	initialTo,
+}: {
+	initialFrom?: string;
+	initialTo?: string;
+} = {}) {
 	const fileInputId = useId();
 	const addMoreInputId = useId();
 	const secondaryDropInputId = useId();
 	const [items, setItems] = useState<MasterItem[]>([]);
-	const [globalTarget, setGlobalTarget] = useState<string>("");
+	const [configuredPreset, setConfiguredPreset] =
+		useState<ConfiguredPreset | null>(() => {
+			const f = (initialFrom ?? "").trim().toUpperCase();
+			const t = (initialTo ?? "").trim().toUpperCase();
+			if (f && t) return { from: f, to: t };
+			return null;
+		});
+	const [globalTarget, setGlobalTarget] = useState<string>(() => {
+		if (initialTo) return initialTo.trim().toLowerCase();
+		return "";
+	});
 	const [qualityPreset, setQualityPreset] = useState<QualityPreset>("balanced");
 	const [isConverting, setIsConverting] = useState(false);
 	const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -443,9 +472,77 @@ export function MasterConverterClient() {
 	// Copy report state
 	const [copiedReport, setCopiedReport] = useState(false);
 
+	// Chained conversion notice banner
+	const [chainedNotice, setChainedNotice] = useState<string | null>(null);
+
 	const controllerRef = useRef<AbortController | null>(null);
 	const startedAtRef = useRef<number>(0);
 	const addMoreInputRef = useRef<HTMLInputElement>(null);
+
+	// Read URL query parameters on mount
+	useEffect(() => {
+		if (typeof window !== "undefined") {
+			const sp = new URLSearchParams(window.location.search);
+			const f = (sp.get("from") ?? "").trim().toUpperCase();
+			const t = (sp.get("to") ?? "").trim().toUpperCase();
+			if (f && t) {
+				setConfiguredPreset({ from: f, to: t });
+				setGlobalTarget(t.toLowerCase());
+			} else if (t) {
+				setGlobalTarget(t.toLowerCase());
+			}
+		}
+	}, []);
+
+	const canReverse = useMemo(() => {
+		if (!configuredPreset) return false;
+		const rev = findToolForConversion(
+			configuredPreset.to,
+			configuredPreset.from,
+		);
+		return !!rev;
+	}, [configuredPreset]);
+
+	const handleSwapPreset = () => {
+		if (!configuredPreset) return;
+		const swapped = { from: configuredPreset.to, to: configuredPreset.from };
+		setConfiguredPreset(swapped);
+		setGlobalTarget(swapped.to.toLowerCase());
+		if (typeof window !== "undefined") {
+			const url = new URL(window.location.href);
+			url.searchParams.set("from", swapped.from.toLowerCase());
+			url.searchParams.set("to", swapped.to.toLowerCase());
+			window.history.replaceState({}, "", url.toString());
+		}
+		setItems((prev) =>
+			prev.map((item) => {
+				if (item.status === "idle" && item.ext.toUpperCase() === swapped.from) {
+					const tool = findToolForConversion(
+						item.ext,
+						swapped.to.toLowerCase(),
+					);
+					return {
+						...item,
+						targetExt: swapped.to.toLowerCase(),
+						toolId: tool?.id,
+						tool,
+					};
+				}
+				return item;
+			}),
+		);
+	};
+
+	const handleResetPreset = () => {
+		setConfiguredPreset(null);
+		setGlobalTarget("");
+		if (typeof window !== "undefined") {
+			const url = new URL(window.location.href);
+			url.searchParams.delete("from");
+			url.searchParams.delete("to");
+			window.history.replaceState({}, "", url.pathname);
+		}
+	};
 
 	// Track elapsed time during conversion
 	useEffect(() => {
@@ -457,12 +554,15 @@ export function MasterConverterClient() {
 	}, [isConverting]);
 
 	// Ingest dropped or picked files
-	const handleFiles = (newFiles: File[]) => {
+	const handleFiles = (newFiles: (File | StagedConversion)[]) => {
 		if (newFiles.length === 0) return;
 
-		const largest = newFiles.reduce(
+		const files = newFiles.map((item) =>
+			item instanceof File ? item : item.file,
+		);
+		const largest = files.reduce(
 			(worst, candidate) => (candidate.size > worst.size ? candidate : worst),
-			newFiles[0] ?? new File([], ""),
+			files[0] ?? new File([], ""),
 		);
 		const verdict = preflight(largest.size);
 		if (!verdict.ok) {
@@ -475,13 +575,30 @@ export function MasterConverterClient() {
 
 		setTopError(null);
 
-		const createdItems: MasterItem[] = newFiles.map((file, index) => {
+		const createdItems: MasterItem[] = newFiles.map((item, index) => {
+			const file = item instanceof File ? item : item.file;
+			const stagedTarget = !(item instanceof File) ? item.targetExt : undefined;
+			const parentName = !(item instanceof File) ? item.parentName : undefined;
+			const step = !(item instanceof File) ? item.step : undefined;
 			const ext = detectFileExtension(file);
 			const availableTargets = getAvailableTargetFormatsForFile(file);
 
-			// Choose default target: use globalTarget if compatible, else first available
+			// Choose default target: use stagedTarget if valid, else preset if file matches, else globalTarget, else first available
 			let defaultTarget = "";
 			if (
+				stagedTarget &&
+				availableTargets.some((t) => t.ext === stagedTarget)
+			) {
+				defaultTarget = stagedTarget;
+			} else if (
+				configuredPreset &&
+				ext.toUpperCase() === configuredPreset.from &&
+				availableTargets.some(
+					(t) => t.ext.toUpperCase() === configuredPreset.to,
+				)
+			) {
+				defaultTarget = configuredPreset.to.toLowerCase();
+			} else if (
 				globalTarget &&
 				availableTargets.some((t) => t.ext === globalTarget)
 			) {
@@ -505,6 +622,7 @@ export function MasterConverterClient() {
 				status: "idle",
 				ratio: 0,
 				phase: "",
+				lineage: parentName ? { parentName, step: step ?? 2 } : undefined,
 			};
 		});
 
@@ -513,12 +631,21 @@ export function MasterConverterClient() {
 			// If all newly added files share a common target and no global target is set, initialize it
 			const common = getCommonTargetFormats(merged.map((m) => m.file));
 			if (!globalTarget && common.length > 0) {
-				const chosen = common[0];
+				const chosen = configuredPreset?.to.toLowerCase() ?? common[0];
 				if (chosen) setGlobalTarget(chosen);
 			}
 			return merged;
 		});
 	};
+
+	// Ingest any staged files waiting from another converter session
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Ingest staged files once on mount
+	useEffect(() => {
+		const staged = consumeStagedFiles();
+		if (staged.length > 0) {
+			handleFiles(staged);
+		}
+	}, []);
 
 	const selectedItems = items.filter((item) => item.selected);
 	const selectedCount = selectedItems.length;
@@ -655,6 +782,79 @@ export function MasterConverterClient() {
 		const zipBlob = await zipOutputs(entries);
 		const arrayBuffer = await zipBlob.arrayBuffer();
 		await saveOutput(arrayBuffer, "convrtr-converted.zip", "application/zip");
+	};
+
+	// Continue a single completed item's output into the queue for next conversion
+	const handleContinueRow = (item: MasterItem, targetExt?: string) => {
+		if (!item.output) return;
+		const ext = item.tool?.output.ext ?? item.targetExt;
+		const filename = item.outputName ?? outputFilename(item.file.name, ext);
+		const mime = item.tool?.output.mime ?? "application/octet-stream";
+		const nextFile = createOutputFile(item.output, filename, mime);
+
+		// Unselect the finished item so only the new item will be queued
+		setItems((prev) =>
+			prev.map((m) => (m.id === item.id ? { ...m, selected: false } : m)),
+		);
+
+		const step = (item.lineage?.step ?? 1) + 1;
+		handleFiles([
+			{
+				file: nextFile,
+				targetExt,
+				parentName: item.file.name,
+				step,
+			},
+		]);
+		setChainedNotice(
+			targetExt
+				? `Loaded "${filename}" targeting → ${targetExt.toUpperCase()} (Step ${step}).`
+				: `Loaded "${filename}" for next conversion (Step ${step}).`,
+		);
+	};
+
+	// Continue selected (or all) completed outputs into the queue
+	const handleContinueOutputs = (
+		targetItems?: MasterItem[],
+		targetExt?: string,
+	) => {
+		const done = items.filter((item) => item.status === "done" && item.output);
+		const selectedDone = items.filter(
+			(item) => item.selected && item.status === "done" && item.output,
+		);
+		const toContinue =
+			targetItems ?? (selectedDone.length > 0 ? selectedDone : done);
+		if (toContinue.length === 0) return;
+
+		const nextStaged: StagedConversion[] = [];
+		const continueIds = new Set(toContinue.map((m) => m.id));
+
+		for (const item of toContinue) {
+			if (!item.output) continue;
+			const ext = item.tool?.output.ext ?? item.targetExt;
+			const filename = item.outputName ?? outputFilename(item.file.name, ext);
+			const mime = item.tool?.output.mime ?? "application/octet-stream";
+			const nextFile = createOutputFile(item.output, filename, mime);
+			const step = (item.lineage?.step ?? 1) + 1;
+			nextStaged.push({
+				file: nextFile,
+				targetExt,
+				parentName: item.file.name,
+				step,
+			});
+		}
+
+		if (nextStaged.length === 0) return;
+
+		// Unselect continued items
+		setItems((prev) =>
+			prev.map((m) => (continueIds.has(m.id) ? { ...m, selected: false } : m)),
+		);
+
+		handleFiles(nextStaged);
+		setChainedNotice(
+			`Loaded ${nextStaged.length} output file${nextStaged.length === 1 ? "" : "s"} for next conversion.`,
+		);
 	};
 
 	// Initiate conversion
@@ -869,6 +1069,56 @@ export function MasterConverterClient() {
 	const readyCount = items.filter(
 		(item) => item.status === "idle" || item.status === "queued",
 	).length;
+	const doneItems = items.filter(
+		(item) => item.status === "done" && item.output,
+	);
+	const selectedDoneItems = items.filter(
+		(item) => item.selected && item.status === "done" && item.output,
+	);
+
+	const chainedItems = items.filter((item) => item.lineage !== undefined);
+	const chainedCount = chainedItems.length;
+	const maxChainStep = items.reduce(
+		(max, item) => Math.max(max, item.lineage?.step ?? 1),
+		1,
+	);
+
+	// Keyboard shortcuts: Cmd+Enter (Convert), Shift+Cmd+C (Continue Outputs), Shift+Cmd+S (Download ZIP)
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Handlers are invoked via keyboard shortcut based on isConverting/selectedCount/doneCount
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			const target = e.target as HTMLElement | null;
+			if (
+				target &&
+				(target.tagName === "INPUT" ||
+					target.tagName === "TEXTAREA" ||
+					target.tagName === "SELECT")
+			) {
+				return;
+			}
+
+			const isMod = e.metaKey || e.ctrlKey;
+			if (isMod && !e.shiftKey && e.key === "Enter") {
+				e.preventDefault();
+				if (!isConverting && selectedCount > 0) {
+					void startConversion();
+				}
+			} else if (isMod && e.shiftKey && (e.key === "C" || e.key === "c")) {
+				e.preventDefault();
+				if (doneCount > 0) {
+					handleContinueOutputs();
+				}
+			} else if (isMod && e.shiftKey && (e.key === "S" || e.key === "s")) {
+				e.preventDefault();
+				if (doneCount > 0) {
+					void handleDownloadAllZip();
+				}
+			}
+		};
+
+		window.addEventListener("keydown", handleKeyDown);
+		return () => window.removeEventListener("keydown", handleKeyDown);
+	}, [isConverting, selectedCount, doneCount]);
 
 	// Compute overall conversion progress percentage across active batch
 	const activeConvertingItems = items.filter(
@@ -1024,6 +1274,108 @@ export function MasterConverterClient() {
 			{/* Top Error Alert */}
 			{topError && <ErrorPanel code={topError.code} detail={topError.detail} />}
 
+			{/* Configured Instant Preset Banner */}
+			{configuredPreset && (
+				<section
+					data-testid="configured-preset-banner"
+					className="relative flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border p-4 transition-all"
+					style={{
+						borderColor: "var(--accent)",
+						borderRadius: "var(--radius)",
+						background: "var(--surface)",
+					}}
+				>
+					<div className="flex items-center gap-3">
+						<div className="relative flex h-3 w-3 shrink-0 items-center justify-center">
+							<span
+								className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-75"
+								style={{ background: "var(--accent)" }}
+							/>
+							<span
+								className="relative inline-flex h-2 w-2 rounded-full"
+								style={{ background: "var(--accent)" }}
+							/>
+						</div>
+
+						<div className="flex flex-col gap-1">
+							<div className="flex flex-wrap items-center gap-2">
+								<span
+									className="mono text-[10px] tracking-[0.08em]"
+									style={{ color: "var(--accent)" }}
+								>
+									[ INSTANT STUDIO CONFIGURATION ]
+								</span>
+								<div
+									className="mono inline-flex items-center gap-1.5 px-2 py-0.5 text-[12px] font-semibold"
+									style={{
+										background: "var(--ground)",
+										border: "1px solid var(--rule-strong)",
+										borderRadius: "var(--radius)",
+										color: "var(--ink)",
+									}}
+								>
+									<span>{configuredPreset.from}</span>
+									<span style={{ color: "var(--accent)" }}>➔</span>
+									<span>{configuredPreset.to}</span>
+								</div>
+							</div>
+							<p
+								className="text-[12px] m-0"
+								style={{ color: "var(--ink-muted)" }}
+							>
+								Preset active from individual converter. Dropped files matching{" "}
+								<strong className="text-[var(--ink)] font-semibold">
+									{configuredPreset.from}
+								</strong>{" "}
+								will automatically default to{" "}
+								<strong className="text-[var(--accent)] font-semibold">
+									{configuredPreset.to}
+								</strong>
+								.
+							</p>
+						</div>
+					</div>
+
+					<div className="flex items-center gap-2 self-end md:self-center shrink-0">
+						{canReverse && (
+							<button
+								type="button"
+								onClick={handleSwapPreset}
+								className="mono inline-flex items-center gap-1.5 border px-2.5 py-1 text-[11px] transition-colors hover:border-[var(--ink)]"
+								style={{
+									borderColor: "var(--rule)",
+									borderRadius: "var(--radius)",
+									background: "var(--ground)",
+									color: "var(--ink)",
+									cursor: "pointer",
+								}}
+								title={`Swap conversion to ${configuredPreset.to} → ${configuredPreset.from}`}
+							>
+								<span>⇄</span>
+								<span>
+									REVERSE ({configuredPreset.to} → {configuredPreset.from})
+								</span>
+							</button>
+						)}
+						<button
+							type="button"
+							onClick={handleResetPreset}
+							className="mono inline-flex items-center gap-1 border px-2.5 py-1 text-[11px] transition-colors hover:border-[var(--ink)]"
+							style={{
+								borderColor: "var(--rule)",
+								borderRadius: "var(--radius)",
+								background: "transparent",
+								color: "var(--ink-muted)",
+								cursor: "pointer",
+							}}
+						>
+							<span>✕</span>
+							<span>RESET TO UNIVERSAL</span>
+						</button>
+					</div>
+				</section>
+			)}
+
 			{/* Heavy Download Gate */}
 			{showHeavyGate && heavyTool && (
 				<HeavyDownloadGate
@@ -1104,11 +1456,30 @@ export function MasterConverterClient() {
 						[ UNIVERSAL MULTI-FORMAT PROCESSING ENGINE ]
 					</span>
 
+					{configuredPreset && (
+						<div
+							className="mono inline-flex items-center gap-2 px-3 py-1 text-[11px] border"
+							style={{
+								borderColor: "var(--accent)",
+								borderRadius: "var(--radius)",
+								background: "var(--surface)",
+								color: "var(--accent)",
+							}}
+						>
+							<span>● INSTANT DEFAULT:</span>
+							<span className="font-bold text-[var(--ink)]">
+								{configuredPreset.from} → {configuredPreset.to}
+							</span>
+						</div>
+					)}
+
 					<span className="text-[14px] font-medium tracking-[0.06em]">
 						DROP FILES HERE TO CONVERT
 					</span>
 					<span className="text-[13px]" style={{ color: "var(--ink-muted)" }}>
-						Drop multiple files of any type, or click to browse
+						{configuredPreset
+							? `Drop your ${configuredPreset.from} files to convert instantly to ${configuredPreset.to}, or drop any files to batch convert`
+							: "Drop multiple files of any type, or click to browse"}
 					</span>
 
 					{/* Supported Category Chips */}
@@ -1335,6 +1706,64 @@ export function MasterConverterClient() {
 						</div>
 					)}
 
+					{/* Chained continuation notice banner */}
+					{chainedNotice && (
+						<div
+							className="flex flex-wrap items-center justify-between gap-3 border px-4 py-3"
+							style={{
+								borderColor: "var(--accent)",
+								borderRadius: "var(--radius)",
+								background: "var(--surface)",
+							}}
+						>
+							<div className="flex items-center gap-2">
+								<span
+									className="mono text-[12px] font-medium"
+									style={{ color: "var(--accent)" }}
+								>
+									✓ CONTINUATION READY
+								</span>
+								<span
+									className="mono text-[12px]"
+									style={{ color: "var(--ink-muted)" }}
+								>
+									· {chainedNotice}
+								</span>
+							</div>
+
+							<div className="flex items-center gap-2">
+								{doneCount > 0 && (
+									<button
+										type="button"
+										onClick={pruneCompleted}
+										className="mono border px-2.5 py-0.5 text-[11px]"
+										style={{
+											borderColor: "var(--rule-strong)",
+											borderRadius: "var(--radius-pill)",
+											background: "var(--ground)",
+											color: "var(--ink)",
+											cursor: "pointer",
+										}}
+									>
+										PRUNE COMPLETED ({doneCount})
+									</button>
+								)}
+								<button
+									type="button"
+									onClick={() => setChainedNotice(null)}
+									className="mono px-1.5 py-0.5 text-[11px]"
+									style={{
+										color: "var(--ink-muted)",
+										background: "transparent",
+										cursor: "pointer",
+									}}
+								>
+									✕
+								</button>
+							</div>
+						</div>
+					)}
+
 					{/* Total Savings Callout Banner when finished */}
 					{!isConverting && doneCount > 0 && (
 						<div
@@ -1481,6 +1910,30 @@ export function MasterConverterClient() {
 									{doneCount > 0 && (
 										<button
 											type="button"
+											onClick={() => {
+												setItems((prev) =>
+													prev.map((item) => ({
+														...item,
+														selected: item.status === "done",
+													})),
+												);
+											}}
+											className="mono border px-2 py-0.5 text-[11px]"
+											style={{
+												borderColor: "var(--rule)",
+												borderRadius: "var(--radius)",
+												color: "var(--ink)",
+												background: "transparent",
+												cursor: "pointer",
+											}}
+											title="Select only completed files"
+										>
+											DONE ({doneCount})
+										</button>
+									)}
+									{doneCount > 0 && (
+										<button
+											type="button"
 											onClick={pruneCompleted}
 											className="mono border px-2 py-0.5 text-[11px]"
 											style={{
@@ -1492,6 +1945,32 @@ export function MasterConverterClient() {
 											}}
 										>
 											PRUNE COMPLETED
+										</button>
+									)}
+									{doneCount > 0 && (
+										<button
+											type="button"
+											onClick={() => handleContinueOutputs()}
+											className="mono border px-2.5 py-0.5 text-[11px] font-medium transition-all hover:bg-[var(--accent)] hover:text-[var(--ground)] inline-flex items-center gap-1"
+											style={{
+												borderColor: "var(--accent)",
+												borderRadius: "var(--radius)",
+												color: "var(--accent)",
+												background: "transparent",
+												cursor: "pointer",
+											}}
+											title="Stage completed outputs for another conversion (Shift+Cmd+C)"
+										>
+											<span>
+												CONTINUE WITH OUTPUTS (
+												{selectedDoneItems.length > 0
+													? selectedDoneItems.length
+													: doneItems.length}
+												) →
+											</span>
+											<span className="opacity-75 text-[9px] tracking-wider font-sans">
+												⇧⌘C
+											</span>
 										</button>
 									)}
 								</div>
@@ -1546,6 +2025,20 @@ export function MasterConverterClient() {
 									>
 										CONVERT SELECTED TO:
 									</label>
+									{configuredPreset && (
+										<span
+											data-testid="controls-preset-pill"
+											className="mono border px-2 py-0.5 text-[10px]"
+											style={{
+												borderColor: "var(--accent)",
+												borderRadius: "var(--radius)",
+												color: "var(--accent)",
+												background: "var(--ground)",
+											}}
+										>
+											PRESET: {configuredPreset.from} → {configuredPreset.to}
+										</span>
+									)}
 									<select
 										id="global-target-select"
 										value={globalTarget}
@@ -1773,8 +2266,24 @@ export function MasterConverterClient() {
 								)}
 							</div>
 
-							{/* Search Input */}
+							{/* Search Input & Pipeline Telemetry */}
 							<div className="flex items-center gap-2">
+								{chainedCount > 0 && (
+									<span
+										data-testid="pipeline-telemetry-badge"
+										className="mono border px-2 py-0.5 text-[10px] tracking-[0.04em]"
+										title="Chained transformation workflow active"
+										style={{
+											borderColor: "var(--accent)",
+											borderRadius: "var(--radius)",
+											color: "var(--accent)",
+											background: "var(--surface)",
+										}}
+									>
+										PIPELINE: {chainedCount} CHAINED · DEPTH: {maxChainStep}{" "}
+										{maxChainStep === 1 ? "STEP" : "STEPS"}
+									</span>
+								)}
 								<input
 									type="search"
 									placeholder="Filter files..."
@@ -2013,6 +2522,22 @@ export function MasterConverterClient() {
 														>
 															{item.ext ? item.ext.toUpperCase() : "UNKNOWN"}
 														</span>
+														{item.lineage && (
+															<span
+																data-testid={`lineage-badge-${item.id}`}
+																className="mono border px-1.5 py-0.5 text-[9px] tracking-[0.03em] whitespace-nowrap"
+																title={`Chained from ${item.lineage.parentName}`}
+																style={{
+																	borderColor: "var(--accent)",
+																	borderRadius: "var(--radius)",
+																	color: "var(--accent)",
+																	background: "var(--surface)",
+																}}
+															>
+																STEP {item.lineage.step} · FROM{" "}
+																{item.lineage.parentName}
+															</span>
+														)}
 													</div>
 												</td>
 
@@ -2188,6 +2713,56 @@ export function MasterConverterClient() {
 																	VIEW
 																</button>
 															)}
+															{item.output &&
+																getAvailableTargetFormatsForFile(
+																	item.tool?.output.ext ?? item.targetExt,
+																).length > 0 && (
+																	<div className="inline-flex items-center gap-1">
+																		<button
+																			type="button"
+																			data-testid="row-continue-btn"
+																			onClick={() => handleContinueRow(item)}
+																			aria-label={`Continue conversion for ${item.file.name}`}
+																			title={`Continue conversion from ${(item.tool?.output.ext ?? item.targetExt).toUpperCase()} output`}
+																			className="mono border px-2 py-0.5 text-[11px] font-medium transition-all hover:bg-[var(--accent)] hover:text-[var(--ground)]"
+																			style={{
+																				color: "var(--accent)",
+																				borderColor: "var(--accent)",
+																				borderRadius: "var(--radius)",
+																				background: "transparent",
+																				cursor: "pointer",
+																			}}
+																		>
+																			CONTINUE →
+																		</button>
+																		{getAvailableTargetFormatsForFile(
+																			item.tool?.output.ext ?? item.targetExt,
+																		)
+																			.slice(0, 2)
+																			.map((opt) => (
+																				<button
+																					key={opt.ext}
+																					type="button"
+																					data-testid={`row-continue-target-${opt.ext}`}
+																					onClick={() =>
+																						handleContinueRow(item, opt.ext)
+																					}
+																					aria-label={`Continue conversion to ${opt.label}`}
+																					title={`Continue directly to ${opt.label}`}
+																					className="mono border px-1.5 py-0.5 text-[10px] opacity-80 hover:opacity-100 hover:border-[var(--accent)] hover:text-[var(--accent)]"
+																					style={{
+																						borderColor: "var(--rule-strong)",
+																						borderRadius: "var(--radius)",
+																						color: "var(--ink)",
+																						background: "var(--surface)",
+																						cursor: "pointer",
+																					}}
+																				>
+																					→ {opt.label}
+																				</button>
+																			))}
+																	</div>
+																)}
 															<button
 																type="button"
 																onClick={() => handleSaveRow(item)}
@@ -2387,7 +2962,7 @@ export function MasterConverterClient() {
 										<button
 											type="button"
 											onClick={handleDownloadAllZip}
-											className="mono border px-4 py-2 text-[12px] font-medium"
+											className="mono border px-4 py-2 text-[12px] font-medium inline-flex items-center gap-1.5"
 											style={{
 												color: "var(--ground)",
 												background: "var(--ink)",
@@ -2396,7 +2971,38 @@ export function MasterConverterClient() {
 												cursor: "pointer",
 											}}
 										>
-											DOWNLOAD ALL (ZIP)
+											<span>DOWNLOAD ALL (ZIP)</span>
+											<span className="opacity-70 text-[10px] tracking-wider font-sans">
+												⇧⌘S
+											</span>
+										</button>
+									)}
+
+									{doneCount > 0 && (
+										<button
+											type="button"
+											data-testid="continue-outputs-btn"
+											onClick={() => handleContinueOutputs()}
+											className="mono border px-4 py-2 text-[12px] font-medium transition-all hover:bg-[var(--accent)] hover:text-[var(--ground)] inline-flex items-center gap-1.5"
+											style={{
+												color: "var(--accent)",
+												borderColor: "var(--accent)",
+												borderRadius: "var(--radius-pill)",
+												background: "transparent",
+												cursor: "pointer",
+											}}
+											title="Continue conversion with output files (Shift+Cmd+C)"
+										>
+											<span>
+												CONTINUE WITH OUTPUTS (
+												{selectedDoneItems.length > 0
+													? selectedDoneItems.length
+													: doneItems.length}
+												) →
+											</span>
+											<span className="opacity-75 text-[10px] tracking-wider font-sans">
+												⇧⌘C
+											</span>
 										</button>
 									)}
 
@@ -2404,7 +3010,7 @@ export function MasterConverterClient() {
 										type="button"
 										disabled={selectedCount === 0}
 										onClick={startConversion}
-										className="mono border px-6 py-2 text-[13px] font-medium transition-opacity"
+										className="mono border px-6 py-2 text-[13px] font-medium transition-opacity inline-flex items-center gap-2"
 										style={{
 											color: "var(--ground)",
 											background: "var(--ink)",
@@ -2414,8 +3020,13 @@ export function MasterConverterClient() {
 											cursor: selectedCount === 0 ? "not-allowed" : "pointer",
 										}}
 									>
-										CONVERT {selectedCount > 0 ? `${selectedCount} ` : ""}
-										{selectedCount === 1 ? "FILE" : "FILES"}
+										<span>
+											CONVERT {selectedCount > 0 ? `${selectedCount} ` : ""}
+											{selectedCount === 1 ? "FILE" : "FILES"}
+										</span>
+										<span className="opacity-70 text-[10px] tracking-wider font-sans">
+											⌘↵
+										</span>
 									</button>
 								</>
 							)}

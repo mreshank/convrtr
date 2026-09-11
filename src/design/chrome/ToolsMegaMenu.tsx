@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { parseToolTitle } from "@/lib/format";
 import { deriveTaskGroups, type Kind } from "@/core/registry/groups";
+import { parseToolTitle } from "@/lib/format";
 
 type Props = {
 	triggerLabel: string;
