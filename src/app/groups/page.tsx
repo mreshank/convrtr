@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { CATEGORIES, type Category, type Tool } from "@/core/registry";
 import {
 	deriveFormatGroups,
@@ -8,7 +9,6 @@ import {
 	type TaskGroup,
 	type TypeGroup,
 } from "@/core/registry/groups";
-import { JsonLd } from "@/components/seo/JsonLd";
 import { HubPage } from "@/design/templates";
 import { buildGroupsIndexJsonLd } from "@/lib/jsonld";
 import { SITE } from "@/lib/site";

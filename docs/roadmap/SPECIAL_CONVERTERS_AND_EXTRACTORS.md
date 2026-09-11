@@ -52,6 +52,9 @@
 | `.mac` / `.pntg` | Apple Macintosh MacPaint 1-Bit Graphics | Retro / Art | Atkinson PackBits RLE 576x576 1-bit bitmap to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
 | `.tex` / `.latex` | LaTeX Scientific Document | Academic / Docs | LaTeX document macro parser with math equation preservation to Markdown | `SOLVED` | **SHIPPED** |
 | `.vox` | Dialogic OKI ADPCM Telephony Audio | Audio / Telephony | 4-bit Dialogic OKI ADPCM telephony speech stream to 16-bit linear PCM WAV | `SOLVED` | **SHIPPED** |
+| `.scr` | Sinclair ZX Spectrum Screen | Retro / 8-Bit Art | Non-linear interlaced 6,912-byte VRAM & attribute decoder to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
+| `.ged` / `.gedcom` | GEDCOM Genealogy Data | Genealogy / Data | Hierarchical family tree parser with cross-referenced relations to RFC 4180 CSV | `SOLVED` | **SHIPPED** |
+| `.ulaw` / `.alaw` | G.711 mu-law & A-law Telephony Audio | Audio / Telecom | 8-bit G.711 logarithmic companding lookup table to 16-bit linear PCM WAV | `SOLVED` | **SHIPPED** |
 
 
 ---
@@ -1970,6 +1973,67 @@
 
 ---
 
+### 85. Sinclair ZX Spectrum Screen (`.scr`)
+
+- **Ecosystem & Context:** The Sinclair ZX Spectrum (1982) by Sir Clive Sinclair is the beloved 8-bit microcomputer that launched the British video game industry. Software loading screens, demoscene illustrations, and retro game artwork are preserved in the `.scr` screen dump format. Because ZX Spectrum video memory uses a bizarre non-linear interlaced address layout designed for 1980s Z80 CRT hardware, standard modern image viewers and web browsers cannot display `.scr` files.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/zxspectrum, r/retrogaming, r/pixelart, r/retrocomputing, r/chiptunes, World of Spectrum.
+  - Queries: *"Convert ZX Spectrum .scr to PNG online"*, *"View Sinclair .scr loading screen in browser"*, *"Extract retro 8-bit ZX Spectrum pixel art"*, *"ZX Spectrum attribute clash decoder"*.
+- **Forensic Byte Layout:**
+  - **Exact 6,912 bytes total (or 7,040 bytes with 128-byte tape emulator header):**
+  - **6,144 bytes of monochrome bitmap pixels ($256 \times 192$):**
+    - Divided into 3 vertical thirds of 64 scanlines each.
+    - Non-linear address formula:
+      $$\text{offset} = (T \times 2048) + (P \times 256) + (R \times 32) + C$$
+      where $T = y \gg 6$ (third 0..2), $R = (y \gg 3) \& 7$ (character row 0..7), $P = y \& 7$ (line in character 0..7), and $C = x \gg 3$ (character column 0..31).
+  - **768 bytes of color attributes (starts at byte offset 6144):**
+    - One attribute byte per $8 \times 8$ pixel character cell ($32 \times 24 = 768$ cells).
+    - Bit 7: Flash flag (hardware color alternation).
+    - Bit 6: Brightness flag ($0 = \text{normal}, 1 = \text{bright}$).
+    - Bits 3..5: Paper background color ($0..7$).
+    - Bits 0..2: Ink foreground color ($0..7$).
+  - **16-color Sinclair Palette:**
+    - 0: Black, 1: Blue, 2: Red, 3: Magenta, 4: Green, 5: Cyan, 6: Yellow, 7: White (in normal and bright variations).
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript binary decoder. Unscrambles the non-linear interlaced screen memory, reads 8x8 character cell attribute bytes, maps foreground and background bits to the authentic 16-color Sinclair palette, supports 1x native and 2x/3x integer pixel scaling, and compiles a lossless 32-bit RGBA PNG.
+- **Fidelity:** `LOSSLESS` (Pixel-perfect reproduction of original 1982 Sinclair ZX Spectrum VRAM graphics).
+- **Status:** **Wave 30 Shipped (`image/zx-to-png`)**.
+
+---
+
+### 86. GEDCOM Genealogy Data (`.ged`, `.gedcom`)
+
+- **Ecosystem & Context:** GEDCOM (GEnealogical Data COMmunication) is the universal open standard created by The Church of Jesus Christ of Latter-day Saints for exchanging family trees and ancestral records across software platforms (Ancestry.com, FamilySearch, MyHeritage, Gramps, RootsMagic, MacFamilyTree). Millions of people have exported `.ged` files but lack desktop genealogy software or do not wish to pay monthly subscription fees to view and analyze their family history.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/Genealogy, r/ancestry, r/FamilySearch, r/excel, r/dataisbeautiful, r/ObsidianMD.
+  - Queries: *"Convert GEDCOM .ged to Excel spreadsheet"*, *"Open .ged file in Google Sheets"*, *"Extract family tree ancestors to CSV free online"*, *"Convert Ancestry export to CSV without software"*.
+- **Forensic Structure:**
+  - Hierarchical line-based ASCII / UTF-8 structure with level numbers ($0, 1, 2, \dots$), cross-reference pointers (`@I1@`, `@F1@`), and tags (`INDI`, `NAME`, `BIRT`, `DEAT`, `FAM`, `HUSB`, `WIFE`, `CHIL`, `MARR`).
+- **In-Browser Execution Strategy:**
+  - Pure client-side streaming parser in TypeScript. Parses hierarchical tags, constructs relational graphs of individuals and family units, cross-references parent and spouse IDs to resolve father, mother, and spouse names, formats dates and places, escapes commas and quotes, and prepends a UTF-8 Byte Order Mark (`\uFEFF`) for immediate double-click opening in Microsoft Excel, Google Sheets, and Numbers.
+- **Fidelity:** `LOSSLESS CSV EXPORT` (Extracts complete individual vital dates, places, occupations, and family relationships).
+- **Status:** **Wave 30 Shipped (`document/gedcom-to-csv`)**.
+
+---
+
+### 87. Raw G.711 mu-law & A-law Telephony Audio (`.ulaw`, `.alw`, `.ulw`, `.alaw`, `.raw`)
+
+- **Ecosystem & Context:** ITU-T Recommendation G.711 is the foundational international standard for digital pulse code modulation of voice frequencies on telephone networks, ISDN circuits, Cisco CallManager, Asterisk, PBX voicemail, and call center recordings. Standard `.ulaw` (North America/Japan) and `.alaw` (Europe/International) files are raw, headerless 8-bit non-linear audio streams at 8,000 Hz. Because they lack standard RIFF or AIFF containers, media players, smartphones, and DAWs cannot identify or play them.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/asterisk, r/telecom, r/sysadmin, r/VoIP, r/audioengineering, r/Cisco.
+  - Queries: *"Convert .ulaw to WAV online free"*, *"How to play Asterisk .alaw call recording"*, *"Convert 8000 Hz u-law to WAV without software install"*, *"Private in-browser raw audio converter for customer calls"*.
+- **Forensic Byte Layout:**
+  - Raw headerless bitstream: 1 byte per sample (8,000 samples per second = 64 kbps).
+  - G.711 logarithmic companding formula:
+    - $\mu$-law: $y = \frac{\ln(1 + \mu |x|)}{\ln(1 + \mu)} \cdot \text{sgn}(x)$ where $\mu = 255$.
+    - A-law: $y = \frac{A |x|}{1 + \ln(A)} \cdot \text{sgn}(x)$ for $|x| \le 1/A$ and $\frac{1 + \ln(A |x|)}{1 + \ln(A)} \cdot \text{sgn}(x)$ for $1/A \le |x| \le 1$ where $A = 87.6$.
+- **In-Browser Execution Strategy:**
+  - Precomputes two 256-entry lookup tables (`MULAW_TO_PCM16` and `ALAW_TO_PCM16`) mapping 8-bit logarithmic bytes to 16-bit linear signed integers. Expands samples in memory at bus speed (>100 MB/s), synthesizes a standard 44-byte RIFF WAVE header, and outputs universal 16-bit linear PCM WAV with 100% confidentiality.
+- **Fidelity:** `LOSSLESS PCM` (Exact mathematical ITU-T expansion from logarithmic G.711 to 16-bit linear PCM).
+- **Status:** **Wave 30 Shipped (`audio/ulaw-to-wav`)**.
+
+---
+
 ## Roadmap Waves & Next Steps
 
 1. **Wave 1 (Shipped):**
@@ -2086,9 +2150,14 @@
     - Tool 82: `image/macpaint-to-png` (Apple Macintosh MacPaint 1-bit `.mac` / `.pntg` PackBits RLE graphics to 32-bit PNG)
     - Tool 83: `document/latex-to-markdown` (LaTeX `.tex` document equations, sections, and formatting to GitHub Flavored Markdown)
     - Tool 84: `audio/vox-to-wav` (Dialogic / OKI ADPCM 4-bit telephony voice audio `.vox` to 16-bit linear PCM WAV)
-30. **Wave 30 (Active Research & Next Builds):**
-    - Candidate 1: `audio/qcp-to-wav` (Qualcomm PureVoice `.qcp` QCELP / EVRC mobile cellular voice recording to WAV)
-    - Candidate 2: `document/cbr-to-zip` (Comic Book RAR `.cbr` comic archive extractor to ZIP / CBZ)
-    - Candidate 3: `audio/amr-to-wav` (Adaptive Multi-Rate `.amr` narrowband 3GPP mobile telephony speech to WAV)
+30. **Wave 30 (Shipped):**
+    - Tool 85: `image/zx-to-png` (Sinclair ZX Spectrum `.scr` 6,912-byte display memory to 32-bit RGBA PNG)
+    - Tool 86: `document/gedcom-to-csv` (GEDCOM genealogy `.ged` family tree records and relationships to RFC 4180 CSV)
+    - Tool 87: `audio/ulaw-to-wav` (ITU-T G.711 mu-law & A-law `.ulaw`/`.alaw` telephony audio to 16-bit linear PCM WAV)
+31. **Wave 31 (Active Research & Next Builds):**
+    - Candidate 1: `document/aco-to-css` (Adobe Photoshop Color Palette `.aco` v1/v2 binary swatches to CSS variables & Tailwind config)
+    - Candidate 2: `image/koa-to-png` (Commodore 64 KoalaPainter `.koa` 10,003-byte multicolor bitmap to 32-bit RGBA PNG)
+    - Candidate 3: `document/bibtex-to-markdown` (BibTeX `.bib` bibliography references to clean Markdown tables & JSON)
+
 
 

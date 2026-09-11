@@ -45,7 +45,7 @@ export const metadata: Metadata = {
 		description: TAGLINE,
 		images: [
 			{
-				url: "/icon.svg",
+				url: "/icons/icon-512.png",
 				width: 512,
 				height: 512,
 				alt: "convrtr logo",
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
 		card: "summary",
 		title: "convrtr — Private, In-Browser File Converter",
 		description: TAGLINE,
-		images: ["/icon.svg"],
+		images: ["/icons/icon-512.png"],
 	},
 	robots: {
 		index: true,

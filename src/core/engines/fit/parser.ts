@@ -4,6 +4,8 @@
  * and temperature, producing clean RFC 4180 CSV and GPX 1.1 XML without server uploads.
  */
 
+import { SITE } from "@/lib/site";
+
 export interface FitRecord {
 	timestamp?: string;
 	latitude?: number;
@@ -453,7 +455,7 @@ export function parseFit(fileBytes: Uint8Array): FitParseResult {
 
 	const gpxString = [
 		`<?xml version="1.0" encoding="UTF-8"?>`,
-		`<gpx version="1.1" creator="convrtr (https://convrtr.io)" xmlns="http://www.topografix.com/GPX/1/1" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1">`,
+		`<gpx version="1.1" creator="convrtr (${SITE})" xmlns="http://www.topografix.com/GPX/1/1" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1">`,
 		`  <metadata>`,
 		`    <name>${session.sport ? session.sport.toUpperCase() : "Activity"} Tracking</name>`,
 		session.startTime ? `    <time>${session.startTime}</time>` : "",

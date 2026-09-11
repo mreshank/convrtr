@@ -1,0 +1,50 @@
+Released in 1982 by Sinclair Research in the United Kingdom, the ZX Spectrum 16K/48K became one of the most influential home computers in video game history. Legendary titles like *Manic Miner*, *Knight Lore*, and *Chuckie Egg* defined a generation of bedroom coders.
+
+To squeeze a full color display onto a machine with only 16 kilobytes of RAM, Sir Clive Sinclair's engineers designed an iconic, highly unconventional video memory architecture. Today, emulators, demoscene artists, and retro archivists store exact memory dumps of these screens in 6,912-byte `.scr` files.
+
+This article explores the inner workings of the ZX Spectrum's non-linear screen buffer, the physics behind "attribute clash", and how you can convert `.scr` files into crisp, modern PNG graphics using [convrtr's ZX Spectrum to PNG converter](/image/zx-to-png).
+
+## The 6,912-Byte Display Layout
+
+A standard ZX Spectrum screen resolution is 256 pixels horizontally by 192 pixels vertically. In standard 1-bit monochrome graphics, 256 × 192 bits equals 49,152 bits, or exactly 6,144 bytes ($6 \text{ KB}$).
+
+Every `.scr` file is structured into two consecutive memory regions:
+1. **Pixel Bitmap Buffer (6,144 bytes)**: Starting at base video RAM address `0x4000`, this area contains the raw monochrome 1-bit pixel on/off states.
+2. **Color Attribute Buffer (768 bytes)**: Starting at address `0x5800`, this area assigns foreground and background colors to 8×8 pixel character blocks.
+
+Total file size:
+$$6,144 + 768 = 6,912 \text{ bytes}$$
+
+## Non-Linear Interlaced Video Addressing
+
+Unlike modern computer graphics where scanlines are stored consecutively in memory (line 0, line 1, line 2...), the ZX Spectrum ULA (Uncommitted Logic Array) video chip was wired to simplify hardware binary counters rather than human readability.
+
+The 192 scanlines are partitioned into three vertical thirds (each 64 lines tall). Within each third, lines jump by 8 scanlines across 8 character rows. Decoders must compute the line offset with bit manipulation:
+
+```
+Address = 0x4000 | (third << 11) | (scanline_in_char << 8) | (char_row << 5) | char_col
+```
+
+## Attribute Clash and the Color Byte
+
+To save memory, colors are not assigned per pixel. Instead, each 8×8 block of pixels shares a single **Attribute Byte** from the 768-byte color buffer ($32 \text{ columns} \times 24 \text{ rows}$).
+
+Each attribute byte is packed with 4 distinct flags:
+- **Bits 0–2 (INK)**: Foreground color index (0 to 7: Black, Blue, Red, Magenta, Green, Cyan, Yellow, White).
+- **Bits 3–5 (PAPER)**: Background color index (0 to 7).
+- **Bit 6 (BRIGHT)**: High-intensity luminance boost (increases RGB brightness from standard 84% to 100%).
+- **Bit 7 (FLASH)**: Alternates INK and PAPER colors periodically on real CRT hardware.
+
+This hardware constraint is what created "attribute clash": when a game character walked past a colored wall or background element, the colors would abruptly bleed together within that 8×8 block.
+
+## Converting .SCR to High-Resolution PNG
+
+Modern screens feature 4K and Retina resolutions where a 256×192 image appears minuscule. Furthermore, many modern viewers blur pixel art if scaled with bilinear filtering.
+
+[convrtr's ZX Spectrum to PNG converter](/image/zx-to-png) handles this natively in your browser:
+- **Accurate Palette Reproduction**: Emulates authentic Sinclair ULA normal and bright RGB color levels.
+- **Nearest-Neighbor Scaling**: Provides lossless 1x, 2x, 4x, and 8x integer scaling options to render crisp, razor-sharp retro pixel art on modern displays.
+- **Invert Options**: Flip foreground and background polarity for unique visual aesthetics.
+- **Zero Server Uploads**: Converts in milliseconds entirely on your local machine using fast WebAssembly and HTML5 Canvas pipelines.
+
+Revive your classic 8-bit memories and export pixel-perfect retro artwork in seconds.

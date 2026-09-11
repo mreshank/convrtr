@@ -1,0 +1,59 @@
+GEDCOM (GEnealogical Data COMmunication) has been the universal interchange standard for family trees and ancestry research since the mid-1980s. When you export your lineage from platforms like Ancestry.com, MyHeritage, FamilySearch, or desktop software like Gramps and RootsMagic, the result is almost always a `.ged` file.
+
+While GEDCOM is exceptional for exchanging genealogical data between specialized family history programs, it is practically unreadable in standard spreadsheet software like Microsoft Excel, Google Sheets, or Apple Numbers.
+
+This guide explains how GEDCOM files structure lineage data, how individual and family records link together, and how you can convert `.ged` trees to clean CSV spreadsheets directly in your browser using [convrtr's GEDCOM to CSV converter](/document/gedcom-to-csv).
+
+## How GEDCOM Represents Lineage Data
+
+A GEDCOM file is an indented plain-text file structured into numbered hierarchical levels. Each line begins with a level digit, an optional record identifier tag, a tag name, and optional value arguments:
+
+```gedcom
+0 @I101@ INDI
+1 NAME John /Doe/
+2 GIVN John
+2 SURN Doe
+1 SEX M
+1 BIRT
+2 DATE 14 JUL 1892
+2 PLAC Boston, Suffolk, Massachusetts, USA
+1 DEAT
+2 DATE 03 NOV 1968
+2 PLAC Seattle, King, Washington, USA
+1 FAMS @F201@
+0 @F201@ FAM
+1 HUSB @I101@
+1 WIFE @I102@
+1 CHIL @I103@
+```
+
+In this structure:
+- **`0 @I101@ INDI`** declares an individual entity record with a unique identifier.
+- **`1 NAME`** and its secondary tags decompose the individual's given and surname.
+- **`1 BIRT`** and **`1 DEAT`** encapsulate event lifespans, birthplaces, and death locations.
+- **`1 FAMS`** links the individual to a family record where they are a spouse or parent.
+- **`0 @F201@ FAM`** defines the marriage relationship, husband, wife, and children.
+
+Because family links rely on pointer references (`@I...` and `@F...`), viewing a raw `.ged` file in Notepad or trying to import it directly into a standard tabular database yields disjointed ID strings rather than intuitive family charts.
+
+## Why Spreadsheet Conversion Unlocks Genealogical Insights
+
+Translating nested genealogical graphs into a flat, well-structured RFC 4180 CSV unlocks several powerful workflows:
+
+1. **Sorting and Filtering Lifespans**: Sort ancestors chronologically by birth year or filter by country of origin to identify migration patterns.
+2. **Missing Record Audits**: Quick filtering in Excel reveals which ancestors lack birth dates, death locations, or maiden names.
+3. **Statistical Analysis**: Calculate average lifespans, family size distributions, and generational birth spans.
+4. **Data Merging and Research Sharing**: Share clean tabular rosters with relatives who do not have specialized genealogy software installed.
+
+## Preserving Family Privacy
+
+Genealogical trees contain deeply sensitive personal details: full names of living relatives, birth dates, maternal maiden names, adoption notations, and intimate familial connections.
+
+Many online file conversion websites upload your files to remote cloud servers, where they can be cached, indexed, or stored indefinitely. 
+
+[convrtr's GEDCOM to CSV converter](/document/gedcom-to-csv) runs completely in your web browser:
+- **Zero Server Uploads**: The entire GEDCOM tokenizer, cross-reference indexer, and CSV generator execute locally via JavaScript.
+- **UTF-8 with BOM Encoding**: Output CSV files include the UTF-8 Byte Order Mark (`\uFEFF`), ensuring Excel displays special international characters and diacritics correctly without encoding corruption.
+- **Instant Processing**: Even trees with tens of thousands of individuals parse and export in seconds.
+
+Transform your ancestry trees into actionable spreadsheets today without sacrificing family privacy.

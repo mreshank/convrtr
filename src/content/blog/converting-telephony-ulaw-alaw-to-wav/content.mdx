@@ -1,0 +1,41 @@
+If you work with PBX phone systems, VoIP servers (such as Asterisk, FreePBX, or 3CX), call center compliance archives, or legacy IVR voice prompts, you have almost certainly encountered `.ulaw`, `.alaw`, or `.pcm` audio files.
+
+When you double-click these files on a modern Windows, Mac, iOS, or Android device, the operating system usually throws an error: *"Unsupported file format"*. Standard media players cannot open them because raw G.711 files lack container headers (such as RIFF chunks or sample rate declarations).
+
+This guide covers the engineering behind ITU-T G.711 companding, why telephony systems store headerless audio, and how to convert raw G.711 bitstreams to playable 16-bit linear PCM WAV files in your browser using [convrtr's G.711 to WAV converter](/audio/ulaw-to-wav).
+
+## What is ITU-T G.711?
+
+Standardized in 1972 by the International Telecommunication Union, G.711 is the foundational codec of the digital telephone network (PSTN) and Integrated Services Digital Network (ISDN).
+
+G.711 samples human speech at 8,000 Hz (8 kHz). However, rather than encoding linear 16-bit amplitude values (which would demand 128 kbps of bandwidth per channel), G.711 employs **companding** (compressing and expanding) to quantize speech into 8-bit bytes, cutting bandwidth to exactly 64 kbps.
+
+### μ-law vs A-law Companding
+
+There are two primary variants of G.711:
+1. **μ-law (PCMU / Mu-Law)**: Primarily used in North America (USA, Canada) and Japan. It uses a logarithmic curve defined by parameter $\mu = 255$, offering slightly better dynamic range for quiet speech.
+2. **A-law (PCMA)**: Used throughout Europe and the rest of the world. It employs a piece-wise linear approximation of logarithmic companding ($A = 87.6$).
+
+Both algorithms achieve approximately 12 to 14 bits of perceptual dynamic range within an 8-bit byte by allocating finer quantization steps to quiet sounds (where the human ear is sensitive to distortion) and coarser steps to loud sounds.
+
+## The Headerless Challenge
+
+When audio is packaged in a WAV container, it includes a 44-byte RIFF header detailing:
+- Number of channels (mono/stereo)
+- Sampling rate (e.g., 8,000 Hz, 44,100 Hz)
+- Bits per sample (e.g., 8-bit, 16-bit)
+- Byte rate and block alignment
+
+In contrast, raw `.ulaw` and `.alaw` files contain **zero header bytes**—only continuous streams of 8-bit sample bytes. Without an explicit header, standard media players have no way of knowing whether the file represents 8 kHz voice telephony, 44.1 kHz music, stereo, or mono.
+
+## Converting G.711 to Standard WAV
+
+To make these recordings audible on consumer devices, each 8-bit companded byte must be mathematically decompanded into a 16-bit signed integer (-32,768 to 32,767) and wrapped in a valid RIFF/WAVE header.
+
+[convrtr's G.711 to WAV converter](/audio/ulaw-to-wav) performs this process seamlessly in your browser:
+1. **Direct Byte Decompanding**: Uses lookup tables and bit-shift expansion for instant, zero-latency sample decoding.
+2. **Custom Sample Rate Support**: Defaults to the standard 8,000 Hz telephony rate while offering options for 16,000 Hz, 11,025 Hz, or custom rates.
+3. **Codec Selection**: Effortlessly switches between μ-law and A-law decoding tables.
+4. **Header Construction**: Assembles a byte-perfect 16-bit mono RIFF WAV header with exact block alignments.
+
+Because the conversion runs 100% locally in WebAssembly and JavaScript, confidential customer calls, legal depositions, and private voicemail archives remain strictly confidential on your machine.

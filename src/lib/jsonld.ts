@@ -5,14 +5,12 @@ import type { Tool } from "@/core/registry";
 import { SITE } from "@/lib/site";
 
 function getOrigin(url: string): string {
-	if (!url || !url.startsWith("http")) return SITE;
+	if (!url?.startsWith("http")) return SITE;
 	const parts = url.split("/");
 	return `${parts[0]}//${parts[2]}`;
 }
 
-export function buildBreadcrumbJsonLd(
-	items: { name: string; url?: string }[],
-) {
+export function buildBreadcrumbJsonLd(items: { name: string; url?: string }[]) {
 	return {
 		"@type": "BreadcrumbList",
 		itemListElement: items.map((item, index) => ({
@@ -171,8 +169,7 @@ export function buildCategoryJsonLd(
 	url: string,
 ) {
 	const origin = getOrigin(url);
-	const categoryLabel =
-		category.charAt(0).toUpperCase() + category.slice(1);
+	const categoryLabel = category.charAt(0).toUpperCase() + category.slice(1);
 
 	return {
 		"@context": "https://schema.org",
@@ -394,11 +391,7 @@ export function buildFormatGroupJsonLd(
 	};
 }
 
-export function buildTaskGroupJsonLd(
-	kind: string,
-	tools: Tool[],
-	url: string,
-) {
+export function buildTaskGroupJsonLd(kind: string, tools: Tool[], url: string) {
 	const origin = getOrigin(url);
 	const kindLabel = kind.charAt(0).toUpperCase() + kind.slice(1);
 	const name = `${kindLabel} Tools`;
@@ -609,9 +602,7 @@ export function buildComparisonJsonLd(
 ) {
 	const isMeta = typeof comparisonOrTitle !== "string";
 	const title = isMeta ? comparisonOrTitle.title : comparisonOrTitle;
-	const description = isMeta
-		? comparisonOrTitle.description
-		: descriptionOrUrl;
+	const description = isMeta ? comparisonOrTitle.description : descriptionOrUrl;
 	const url = isMeta ? descriptionOrUrl : (maybeUrl ?? "");
 	const origin = getOrigin(url);
 

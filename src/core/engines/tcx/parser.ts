@@ -1,3 +1,4 @@
+import { SITE } from "@/lib/site";
 import type {
 	GeoJsonFeature,
 	GeoJsonFeatureCollection,
@@ -494,7 +495,7 @@ export function convertTcxToGeoJson(
 	const featureCollection: GeoJsonFeatureCollection = {
 		type: "FeatureCollection",
 		properties: {
-			generator: "convrtr (https://convrtr.org)",
+			generator: `convrtr (${SITE})`,
 			sport: primarySport,
 			totalFeatures: features.length,
 			totalDistanceMeters:

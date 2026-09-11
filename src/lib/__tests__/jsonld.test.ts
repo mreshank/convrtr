@@ -70,9 +70,7 @@ describe("buildHomeJsonLd", () => {
 	});
 
 	it("emits Organization with logo and github link", () => {
-		const org = jsonLd["@graph"].find(
-			(n) => n["@type"] === "Organization",
-		) as {
+		const org = jsonLd["@graph"].find((n) => n["@type"] === "Organization") as {
 			name: string;
 			logo?: { url: string };
 			sameAs?: string[];
@@ -133,7 +131,11 @@ describe("buildToolJsonLd", () => {
 });
 
 describe("buildCategoryJsonLd", () => {
-	const graph = buildCategoryJsonLd("image", [pngToWebp], "https://convrtr.mreshank.com/image");
+	const graph = buildCategoryJsonLd(
+		"image",
+		[pngToWebp],
+		"https://convrtr.mreshank.com/image",
+	);
 
 	it("emits a CollectionPage with ItemList and BreadcrumbList", () => {
 		const collection = graph["@graph"].find(
@@ -152,12 +154,19 @@ describe("buildCategoryJsonLd", () => {
 });
 
 describe("buildToolsIndexJsonLd", () => {
-	const graph = buildToolsIndexJsonLd([pngToWebp], "https://convrtr.mreshank.com/tools");
+	const graph = buildToolsIndexJsonLd(
+		[pngToWebp],
+		"https://convrtr.mreshank.com/tools",
+	);
 
 	it("emits CollectionPage with ItemList and BreadcrumbList", () => {
-		const collection = graph["@graph"].find((n) => n["@type"] === "CollectionPage");
+		const collection = graph["@graph"].find(
+			(n) => n["@type"] === "CollectionPage",
+		);
 		expect(collection).toBeDefined();
-		const crumbs = graph["@graph"].find((n) => n["@type"] === "BreadcrumbList") as {
+		const crumbs = graph["@graph"].find(
+			(n) => n["@type"] === "BreadcrumbList",
+		) as {
 			itemListElement: unknown[];
 		};
 		expect(crumbs.itemListElement).toHaveLength(2);
@@ -165,12 +174,16 @@ describe("buildToolsIndexJsonLd", () => {
 });
 
 describe("buildConvertStudioJsonLd", () => {
-	const graph = buildConvertStudioJsonLd("https://convrtr.mreshank.com/convert");
+	const graph = buildConvertStudioJsonLd(
+		"https://convrtr.mreshank.com/convert",
+	);
 
 	it("emits WebApplication and BreadcrumbList", () => {
 		const app = graph["@graph"].find((n) => n["@type"] === "WebApplication");
 		expect(app).toBeDefined();
-		const crumbs = graph["@graph"].find((n) => n["@type"] === "BreadcrumbList") as {
+		const crumbs = graph["@graph"].find(
+			(n) => n["@type"] === "BreadcrumbList",
+		) as {
 			itemListElement: unknown[];
 		};
 		expect(crumbs.itemListElement).toHaveLength(2);
@@ -181,7 +194,9 @@ describe("buildGroupsIndexJsonLd", () => {
 	const graph = buildGroupsIndexJsonLd("https://convrtr.mreshank.com/groups");
 
 	it("emits CollectionPage and BreadcrumbList", () => {
-		const crumbs = graph["@graph"].find((n) => n["@type"] === "BreadcrumbList") as {
+		const crumbs = graph["@graph"].find(
+			(n) => n["@type"] === "BreadcrumbList",
+		) as {
 			itemListElement: unknown[];
 		};
 		expect(crumbs.itemListElement).toHaveLength(2);
@@ -190,8 +205,14 @@ describe("buildGroupsIndexJsonLd", () => {
 
 describe("buildFormatGroupJsonLd & buildTaskGroupJsonLd", () => {
 	it("emits 3-level breadcrumbs for format groups", () => {
-		const graph = buildFormatGroupJsonLd("png", [pngToWebp], "https://convrtr.mreshank.com/groups/format/png");
-		const crumbs = graph["@graph"].find((n) => n["@type"] === "BreadcrumbList") as {
+		const graph = buildFormatGroupJsonLd(
+			"png",
+			[pngToWebp],
+			"https://convrtr.mreshank.com/groups/format/png",
+		);
+		const crumbs = graph["@graph"].find(
+			(n) => n["@type"] === "BreadcrumbList",
+		) as {
 			itemListElement: { name: string }[];
 		};
 		expect(crumbs.itemListElement).toHaveLength(3);
@@ -200,8 +221,14 @@ describe("buildFormatGroupJsonLd & buildTaskGroupJsonLd", () => {
 	});
 
 	it("emits 3-level breadcrumbs for task groups", () => {
-		const graph = buildTaskGroupJsonLd("convert", [pngToWebp], "https://convrtr.mreshank.com/groups/task/convert");
-		const crumbs = graph["@graph"].find((n) => n["@type"] === "BreadcrumbList") as {
+		const graph = buildTaskGroupJsonLd(
+			"convert",
+			[pngToWebp],
+			"https://convrtr.mreshank.com/groups/task/convert",
+		);
+		const crumbs = graph["@graph"].find(
+			(n) => n["@type"] === "BreadcrumbList",
+		) as {
 			itemListElement: { name: string }[];
 		};
 		expect(crumbs.itemListElement).toHaveLength(3);
@@ -209,7 +236,6 @@ describe("buildFormatGroupJsonLd & buildTaskGroupJsonLd", () => {
 		expect(crumbs.itemListElement[2]?.name).toBe("Convert Tools");
 	});
 });
-
 
 describe("buildCollectivesIndexJsonLd & buildCollectiveDetailJsonLd", () => {
 	const sampleCollective: CollectiveMeta = {
@@ -220,8 +246,13 @@ describe("buildCollectivesIndexJsonLd & buildCollectiveDetailJsonLd", () => {
 	};
 
 	it("emits collectives index structured data", () => {
-		const graph = buildCollectivesIndexJsonLd([sampleCollective], "https://convrtr.mreshank.com/collectives");
-		const crumbs = graph["@graph"].find((n) => n["@type"] === "BreadcrumbList") as {
+		const graph = buildCollectivesIndexJsonLd(
+			[sampleCollective],
+			"https://convrtr.mreshank.com/collectives",
+		);
+		const crumbs = graph["@graph"].find(
+			(n) => n["@type"] === "BreadcrumbList",
+		) as {
 			itemListElement: unknown[];
 		};
 		expect(crumbs.itemListElement).toHaveLength(2);
@@ -233,7 +264,9 @@ describe("buildCollectivesIndexJsonLd & buildCollectiveDetailJsonLd", () => {
 			[],
 			"https://convrtr.mreshank.com/collectives/podcast-kit",
 		);
-		const crumbs = graph["@graph"].find((n) => n["@type"] === "BreadcrumbList") as {
+		const crumbs = graph["@graph"].find(
+			(n) => n["@type"] === "BreadcrumbList",
+		) as {
 			itemListElement: { name: string }[];
 		};
 		expect(crumbs.itemListElement).toHaveLength(3);
@@ -258,8 +291,13 @@ describe("buildCompareIndexJsonLd & buildComparisonJsonLd", () => {
 	};
 
 	it("emits compare index structured data", () => {
-		const graph = buildCompareIndexJsonLd([sampleComparison], "https://convrtr.mreshank.com/compare");
-		const crumbs = graph["@graph"].find((n) => n["@type"] === "BreadcrumbList") as {
+		const graph = buildCompareIndexJsonLd(
+			[sampleComparison],
+			"https://convrtr.mreshank.com/compare",
+		);
+		const crumbs = graph["@graph"].find(
+			(n) => n["@type"] === "BreadcrumbList",
+		) as {
 			itemListElement: unknown[];
 		};
 		expect(crumbs.itemListElement).toHaveLength(2);
@@ -270,13 +308,17 @@ describe("buildCompareIndexJsonLd & buildComparisonJsonLd", () => {
 			sampleComparison,
 			"https://convrtr.mreshank.com/compare/webp-vs-avif",
 		);
-		const article = graph["@graph"].find((n) => n["@type"] === "TechArticle") as {
+		const article = graph["@graph"].find(
+			(n) => n["@type"] === "TechArticle",
+		) as {
 			headline: string;
 		};
 		expect(article).toBeDefined();
 		expect(article.headline).toBe("WebP vs AVIF");
 
-		const crumbs = graph["@graph"].find((n) => n["@type"] === "BreadcrumbList") as {
+		const crumbs = graph["@graph"].find(
+			(n) => n["@type"] === "BreadcrumbList",
+		) as {
 			itemListElement: { name: string }[];
 		};
 		expect(crumbs.itemListElement).toHaveLength(3);
@@ -297,10 +339,15 @@ describe("buildBlogIndexJsonLd & buildBlogPostingJsonLd", () => {
 	};
 
 	it("emits Blog with posts and breadcrumbs for blog index", () => {
-		const graph = buildBlogIndexJsonLd([post], "https://convrtr.mreshank.com/blog");
+		const graph = buildBlogIndexJsonLd(
+			[post],
+			"https://convrtr.mreshank.com/blog",
+		);
 		const blog = graph["@graph"].find((n) => n["@type"] === "Blog");
 		expect(blog).toBeDefined();
-		const crumbs = graph["@graph"].find((n) => n["@type"] === "BreadcrumbList") as {
+		const crumbs = graph["@graph"].find(
+			(n) => n["@type"] === "BreadcrumbList",
+		) as {
 			itemListElement: unknown[];
 		};
 		expect(crumbs.itemListElement).toHaveLength(2);
@@ -311,7 +358,9 @@ describe("buildBlogIndexJsonLd & buildBlogPostingJsonLd", () => {
 			post,
 			"https://convrtr.mreshank.com/blog/example-post",
 		);
-		const jsonLd = graph["@graph"].find((n) => n["@type"] === "BlogPosting") as {
+		const jsonLd = graph["@graph"].find(
+			(n) => n["@type"] === "BlogPosting",
+		) as {
 			headline: string;
 			description: string;
 			datePublished: string;
@@ -327,7 +376,9 @@ describe("buildBlogIndexJsonLd & buildBlogPostingJsonLd", () => {
 		expect(jsonLd.author.name).toBe("convrtr");
 		expect(jsonLd.publisher.name).toBe("convrtr");
 
-		const crumbs = graph["@graph"].find((n) => n["@type"] === "BreadcrumbList") as {
+		const crumbs = graph["@graph"].find(
+			(n) => n["@type"] === "BreadcrumbList",
+		) as {
 			itemListElement: { name: string }[];
 		};
 		expect(crumbs.itemListElement).toHaveLength(3);
@@ -342,14 +393,18 @@ describe("buildWebPageJsonLd", () => {
 			title: "About — convrtr",
 			description: "About page description",
 			url: "https://convrtr.mreshank.com/about",
-			breadcrumbs: [{ name: "About", url: "https://convrtr.mreshank.com/about" }],
+			breadcrumbs: [
+				{ name: "About", url: "https://convrtr.mreshank.com/about" },
+			],
 			type: "AboutPage",
 		});
 
 		const page = graph["@graph"].find((n) => n["@type"] === "AboutPage");
 		expect(page).toBeDefined();
 
-		const crumbs = graph["@graph"].find((n) => n["@type"] === "BreadcrumbList") as {
+		const crumbs = graph["@graph"].find(
+			(n) => n["@type"] === "BreadcrumbList",
+		) as {
 			itemListElement: { name: string }[];
 		};
 		expect(crumbs.itemListElement).toHaveLength(2);
@@ -357,4 +412,3 @@ describe("buildWebPageJsonLd", () => {
 		expect(crumbs.itemListElement[1]?.name).toBe("About");
 	});
 });
-

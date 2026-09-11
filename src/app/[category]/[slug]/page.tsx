@@ -39,7 +39,9 @@ export async function generateMetadata({
 
 function getRelatedComparisons(from: string, to: string) {
 	const all = [...getComparisonsByFormat(from), ...getComparisonsByFormat(to)];
-	return all.filter((c, i, arr) => arr.findIndex((x) => x.slug === c.slug) === i);
+	return all.filter(
+		(c, i, arr) => arr.findIndex((x) => x.slug === c.slug) === i,
+	);
 }
 
 export default async function ToolPage({
@@ -84,4 +86,3 @@ export default async function ToolPage({
 		</>
 	);
 }
-

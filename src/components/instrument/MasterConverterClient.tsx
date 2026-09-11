@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useId, useMemo, useRef, useState } from "react";
 import { ErrorPanel } from "@/components/instrument/ErrorPanel";
 import { HeavyDownloadGate } from "@/components/instrument/HeavyDownloadGate";
+import { addHistoryRecord } from "@/core/history/store";
 import {
 	consumeStagedFiles,
 	createOutputFile,
@@ -988,6 +989,7 @@ export function MasterConverterClient({
 					? { ...preset.params }
 					: { ...qualityState.params };
 
+				const startTime = Date.now();
 				const output = await runJob(
 					{
 						id: item.id,
@@ -1009,6 +1011,18 @@ export function MasterConverterClient({
 					controller.signal,
 				);
 
+				const outName = outputFilename(item.file.name, tool.output.ext);
+				addHistoryRecord({
+					toolId: tool.id,
+					category: tool.category,
+					inputName: item.file.name,
+					inputSize: item.file.size,
+					outputName: outName,
+					outputSize: output.byteLength,
+					durationMs: Date.now() - startTime,
+					status: "success",
+				});
+
 				setItems((prev) =>
 					prev.map((m) =>
 						m.id === item.id
@@ -1019,7 +1033,7 @@ export function MasterConverterClient({
 									phase: "DONE",
 									output,
 									outputSize: output.byteLength,
-									outputName: outputFilename(m.file.name, tool.output.ext),
+									outputName: outName,
 								}
 							: m,
 					),

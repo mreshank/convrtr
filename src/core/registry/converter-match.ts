@@ -232,6 +232,16 @@ const MIME_MAP: Record<string, string> = {
 	"application/x-tex": "tex",
 	"audio/vox": "vox",
 	"audio/x-vox": "vox",
+	"application/x-spectrum-screen": "scr",
+	"application/x-zx-screen": "scr",
+	"image/x-spectrum": "scr",
+	"text/x-gedcom": "ged",
+	"application/x-gedcom": "ged",
+	"text/gedcom": "ged",
+	"audio/x-mulaw": "ulaw",
+	"audio/x-alaw": "alaw",
+	"audio/mulaw": "ulaw",
+	"audio/alaw": "alaw",
 };
 
 /**

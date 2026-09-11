@@ -24,7 +24,9 @@ export default function TermsPage() {
 					title: "Terms — convrtr",
 					description: "The terms of service for convrtr.",
 					url: `${SITE}/legal/terms`,
-					breadcrumbs: [{ name: "Terms of Service", url: `${SITE}/legal/terms` }],
+					breadcrumbs: [
+						{ name: "Terms of Service", url: `${SITE}/legal/terms` },
+					],
 				})}
 			/>
 			<LegalPage

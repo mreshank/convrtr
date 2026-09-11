@@ -155,6 +155,8 @@ export function exportHistoryAsCsv(records: ConversionHistoryRecord[]): string {
 /**
  * Exports history records as formatted JSON string.
  */
-export function exportHistoryAsJson(records: ConversionHistoryRecord[]): string {
+export function exportHistoryAsJson(
+	records: ConversionHistoryRecord[],
+): string {
 	return JSON.stringify(records, null, 2);
 }

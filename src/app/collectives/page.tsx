@@ -46,17 +46,15 @@ export default function CollectivesIndexPage() {
 	return (
 		<>
 			<JsonLd
-				schema={buildCollectivesIndexJsonLd(
-					COLLECTIVES,
-					`${SITE}/collectives`,
-				)}
+				schema={buildCollectivesIndexJsonLd(COLLECTIVES, `${SITE}/collectives`)}
 			/>
 			<HubPage
 				title="Collectives"
 				lede="Curated sets of tools built around a reason, not a file type."
 				count={{
 					value: COLLECTIVE_GRID_ITEMS.length,
-					noun: COLLECTIVE_GRID_ITEMS.length === 1 ? "collective" : "collectives",
+					noun:
+						COLLECTIVE_GRID_ITEMS.length === 1 ? "collective" : "collectives",
 				}}
 				collectives={COLLECTIVE_GRID_ITEMS}
 			/>

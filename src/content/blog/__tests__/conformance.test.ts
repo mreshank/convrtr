@@ -22,6 +22,9 @@ const POST_SLUGS = [
 	"extracting-chm-help-files-modern-systems",
 	"apple-macpaint-retro-graphics-decoding",
 	"extracting-godot-pck-packages-browser",
+	"converting-gedcom-family-tree-to-csv",
+	"converting-telephony-ulaw-alaw-to-wav",
+	"decoding-zx-spectrum-scr-memory-dumps",
 ];
 
 describe("blog registry conformance", () => {

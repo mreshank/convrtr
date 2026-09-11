@@ -6,12 +6,12 @@ import { SITE } from "@/lib/site";
 // refuses to export one unless it is explicitly marked static.
 export const dynamic = "force-static";
 
-// The product has no accounts and no private routes -- there is nothing
-// here to disallow. Every route a crawler can reach is one `sitemap.ts`
-// already lists, derived from the same registries.
+// The product runs 100% client-side with no server accounts. Every public route
+// a crawler should reach is listed in sitemap.ts. Local conversion history (/history)
+// contains private client-side audit logs and is disallowed to conserve crawl budget.
 export default function robots(): MetadataRoute.Robots {
 	return {
-		rules: { userAgent: "*", allow: "/" },
+		rules: { userAgent: "*", allow: "/", disallow: ["/history"] },
 		sitemap: `${SITE}/sitemap.xml`,
 	};
 }

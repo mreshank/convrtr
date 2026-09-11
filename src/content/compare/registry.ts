@@ -1034,6 +1034,112 @@ export const COMPARISONS: ComparisonMeta[] = [
 			"document/vtt-to-srt",
 		],
 	},
+	{
+		slug: "gedcom-vs-csv",
+		title: "GEDCOM vs CSV: Relational Family Trees vs Tabular Spreadsheets",
+		description:
+			"Compare hierarchical GEDCOM genealogy tree archives (.ged) against tabular CSV spreadsheets. Analyze relationship modeling, portability, and Excel analysis.",
+		formatA: "GEDCOM",
+		formatB: "CSV",
+		category: "document",
+		summary:
+			"GEDCOM (.ged) is the universal genealogy data interchange format, linking individuals and family events via pointer keys across arbitrary generations. CSV flattens hierarchical graphs into tabular rows and columns for rapid analysis in Excel, Google Sheets, or SQL databases.",
+		prosA: [
+			"Preserves complex multi-generational family trees and marriage networks",
+			"Native import/export format for Ancestry, MyHeritage, FamilySearch, and Gramps",
+			"Standardized event models for births, christenings, marriages, and burials",
+			"Supported by every major desktop genealogy application",
+		],
+		prosB: [
+			"Opens instantly in Microsoft Excel, Google Sheets, LibreOffice, and Pandas",
+			"Effortless sorting, filtering, deduplication, and statistical queries",
+			"Human-readable, universal comma-delimited RFC 4180 format",
+			"Zero dependency on specialized genealogical software",
+		],
+		specs: [
+			{
+				feature: "Data Model",
+				formatA: "Relational Entity Graph (INDI, FAM pointers)",
+				formatB: "Flat Tabular Matrix (Rows & Columns)",
+			},
+			{
+				feature: "Excel Compatibility",
+				formatA: "None (unformatted raw text blocks)",
+				formatB: "Native immediate spreadsheet rendering",
+			},
+			{
+				feature: "Genealogy Portability",
+				formatA: "Universal ancestry standard",
+				formatB: "Custom column mapping required",
+			},
+			{
+				feature: "File Syntax",
+				formatA: "Indented tagged line levels (0-2)",
+				formatB: "RFC 4180 Delimited Text (UTF-8)",
+			},
+			{
+				feature: "Complex Relationships",
+				formatA: "Direct child/parent/spouse linking",
+				formatB: "Requires denormalized columns",
+			},
+		],
+		verdict:
+			"Keep your master family tree in GEDCOM format for software interoperability and genealogical research. Convert to CSV whenever conducting demographic audits, creating ancestry rosters, or analyzing historical lifespans in Excel.",
+		relatedTools: ["document/gedcom-to-csv"],
+	},
+	{
+		slug: "ulaw-vs-wav",
+		title: "G.711 (μ-law/A-law) vs Linear PCM WAV: Telephony Voice vs Studio Audio",
+		description:
+			"Compare 8-bit companded ITU-T G.711 telephony audio against uncompressed 16-bit linear PCM WAV. Bitrate, dynamic range, and browser playback analyzed.",
+		formatA: "G.711",
+		formatB: "WAV",
+		category: "audio",
+		summary:
+			"ITU-T G.711 is the international standard for voice telephony, compressing speech into 8-bit logarithmic samples at 64 kbps without headers. Linear PCM WAV is the universal uncompressed RIFF container delivering 16-bit or 24-bit audio across all media players and browsers.",
+		prosA: [
+			"Compact 64 kbps bitstream optimized for digital telephone networks (PSTN/VoIP)",
+			"Logarithmic companding yields 12-14 bits of perceived dynamic range in 8 bits",
+			"Minimal network latency with zero frame buffering overhead",
+			"Standard for PBX call recordings, Asterisk, and IVR voice systems",
+		],
+		prosB: [
+			"Standard RIFF container opens natively in all browsers and media players",
+			"Linear 16-bit or 24-bit PCM fidelity with zero quantization noise",
+			"Standard format for sound design, podcasts, and digital editing",
+			"Carries complete channel, sample rate, and bit depth header specifications",
+		],
+		specs: [
+			{
+				feature: "Quantization Algorithm",
+				formatA: "Logarithmic Companding (μ-law / A-law)",
+				formatB: "Linear Pulse-Code Modulation (LPCM)",
+			},
+			{
+				feature: "Bit Depth",
+				formatA: "8-bit per sample",
+				formatB: "16-bit or 24-bit per sample",
+			},
+			{
+				feature: "Bitrate at 8kHz",
+				formatA: "64 kbps",
+				formatB: "128 kbps (mono 16-bit)",
+			},
+			{
+				feature: "Container Header",
+				formatA: "Headerless raw bitstream",
+				formatB: "44-byte RIFF/WAVE header",
+			},
+			{
+				feature: "Browser Playback",
+				formatA: "Unsupported natively by HTML5 <audio>",
+				formatB: "Universal native playback",
+			},
+		],
+		verdict:
+			"G.711 is optimal for real-time voice telephony and PBX call center logging. Convert G.711 raw bitstreams to WAV for instant in-browser listening, transcription, or legal audio review.",
+		relatedTools: ["audio/ulaw-to-wav", "audio/wav-to-mp3", "audio/wav-to-flac"],
+	},
 ];
 
 export function getComparison(slug: string): ComparisonMeta | undefined {

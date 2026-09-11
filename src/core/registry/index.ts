@@ -24,6 +24,7 @@ import { sf2ToWav } from "./tools/audio/sf2-to-wav";
 import { silkToWav } from "./tools/audio/silk-to-wav";
 import { trimFlac } from "./tools/audio/trim-flac";
 import { trimWav } from "./tools/audio/trim-wav";
+import { ulawToWav } from "./tools/audio/ulaw-to-wav";
 import { vocToWav } from "./tools/audio/voc-to-wav";
 import { voxToWav } from "./tools/audio/vox-to-wav";
 import { wavToFlac } from "./tools/audio/wav-to-flac";
@@ -43,6 +44,7 @@ import { cueToJson } from "./tools/document/cue-to-json";
 import { dxfToSvg } from "./tools/document/dxf-to-svg";
 import { epubToMarkdown } from "./tools/document/epub-to-markdown";
 import { fitToCsv } from "./tools/document/fit-to-csv";
+import { gedcomToCsv } from "./tools/document/gedcom-to-csv";
 import { gmlToGeoJson } from "./tools/document/gml-to-geojson";
 import { goodnotesToPdf } from "./tools/document/goodnotes-to-pdf";
 import { gpxToGeoJson } from "./tools/document/gpx-to-geojson";
@@ -101,6 +103,7 @@ import { wmfToSvg } from "./tools/image/wmf-to-svg";
 import { xbmToPng } from "./tools/image/xbm-to-png";
 import { xpmToPng } from "./tools/image/xpm-to-png";
 import { xwdToPng } from "./tools/image/xwd-to-png";
+import { zxToPng } from "./tools/image/zx-to-png";
 import { jpgToAvif } from "./tools/jpg-to-avif";
 import { jpgToJxl } from "./tools/jpg-to-jxl";
 import { jpgToPdf } from "./tools/jpg-to-pdf";
@@ -285,6 +288,9 @@ export const TOOLS: Tool[] = [
 	macpaintToPng,
 	latexToMarkdown,
 	voxToWav,
+	zxToPng,
+	gedcomToCsv,
+	ulawToWav,
 ];
 
 export function getTool(id: string): Tool | undefined {

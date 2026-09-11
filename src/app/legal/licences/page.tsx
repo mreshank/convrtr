@@ -54,15 +54,14 @@ export default function LicencesPage() {
 					description:
 						"Third-party licences for the conversion engines convrtr ships, derived from package.json and the vendored WebAssembly builds.",
 					url: `${SITE}/legal/licences`,
-					breadcrumbs: [
-						{ name: "Licences", url: `${SITE}/legal/licences` },
-					],
+					breadcrumbs: [{ name: "Licences", url: `${SITE}/legal/licences` }],
 				})}
 			/>
 			<LegalPage title={licences.title} revised={licences.updated}>
 				<div className="flex flex-col gap-6">
 					<p>
-						{licences.introBefore} <code>package.json</code> {licences.introAfter}
+						{licences.introBefore} <code>package.json</code>{" "}
+						{licences.introAfter}
 					</p>
 					{incomplete.length > 0 ? (
 						<div data-incomplete className="flex flex-col gap-2">

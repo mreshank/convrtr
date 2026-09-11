@@ -10,7 +10,9 @@ describe("JsonLd", () => {
 			name: "convrtr",
 		};
 		const { container } = render(<JsonLd schema={data} />);
-		const script = container.querySelector('script[type="application/ld+json"]');
+		const script = container.querySelector(
+			'script[type="application/ld+json"]',
+		);
 		expect(script).not.toBeNull();
 		expect(script?.textContent).toBe(JSON.stringify(data));
 	});
