@@ -1595,6 +1595,84 @@
 
 ---
 
+### 70. WebVTT Caption & Subtitle Track (`.vtt`)
+
+- **Ecosystem & Context:** WebVTT (Web Video Text Tracks) is the W3C standard format for HTML5 video subtitles, captions, and chapter navigation (`<track kind="subtitles">`). Ubiquitous across streaming video services (YouTube, Vimeo, Netflix, HLS/DASH pipelines), web video players (Video.js, Plyr), and modern browsers. However, major professional NLE video editing suites (Adobe Premiere Pro, DaVinci Resolve, Final Cut Pro), offline media players (VLC, MPC-HC), and hardware TVs/players strictly mandate SubRip `.srt`.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/editors, r/premiere, r/davinciresolve, r/VideoEditing, r/webdev, r/vlc.
+  - Queries: *"Convert WebVTT to SRT online fast without upload"*, *"How to import .vtt captions into Premiere Pro or DaVinci Resolve"*, *"Remove cue settings and style tags from VTT to clean SRT"*, *"Convert YouTube/Vimeo VTT to SRT in browser"*.
+- **Forensic Structure:**
+  - Starts with mandatory `WEBVTT` signature, followed by optional header commentary, `NOTE` blocks, or `STYLE` blocks.
+  - Cue blocks consist of:
+    - Optional identifier/name line.
+    - Timing line with format `[HH:]MM:SS.mmm --> [HH:]MM:SS.mmm` and optional CSS positioning settings (e.g. `position:50% line:0 align:center`).
+    - Multi-line subtitle payload containing HTML formatting tags (`<b>`, `<i>`, `<u>`, `<v Voice>`, `<c.color>`, ruby tags, timestamp tags).
+  - WebVTT vs SRT Differences:
+    - WebVTT uses periods for millisecond delimiters (`.` vs `,` in SRT).
+    - WebVTT allows omitting the hours component (`MM:SS.mmm` vs mandatory `00:MM:SS,mmm` in SRT).
+    - WebVTT includes cue positioning attributes and `<v Voice>` tags which break standard SRT parsers.
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript streaming subtitle parser and normalizer. Validates `WEBVTT` signature, skips non-cue blocks (`NOTE`, `STYLE`), parses millisecond timestamps with automatic two-digit hour expansion, strips positioning attributes, converts voice tags into standard speaker prefixes (e.g., `<v Bob>Hi` -> `Bob: Hi`), strips unsupported HTML styling, preserves standard `<i>`/`<b>`/`<u>` tags, generates 1-based sequential cue numbers, and serializes clean RFC-compliant SubRip SRT with comma millisecond separators.
+- **Fidelity:** `LOSSLESS TIMING & CLEAN SUBTITLES` (Exact millisecond precision, sequential cue indexing, and clean SRT formatting).
+- **Status:** **Wave 25 Shipped (`document/vtt-to-srt`)**.
+
+---
+
+### 71. Gzip Compressed Scalable Vector Graphics (`.svgz`)
+
+- **Ecosystem & Context:** SVGZ is the RFC 1952 gzip-compressed container for Scalable Vector Graphics (SVG). Standardized by the W3C to dramatically reduce network transfer sizes for complex vector illustrations, technical drawings, CAD floor plans, and GIS map charts (Inkscape, Illustrator, CorelDRAW). However, when opening local files or uploading assets into design tools (Figma, Canva, Sketch, Affinity Designer) and web components that do not perform automated decompression, `.svgz` files cannot be previewed, edited, or embedded.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/graphic_design, r/Inkscape, r/AdobeIllustrator, r/webdev, r/FigmaDesign.
+  - Queries: *"How to open .svgz file in Figma or Illustrator"*, *"Convert SVGZ to SVG online free"*, *"Batch decompress .svgz to .svg without terminal"*, *"SVGZ to normal SVG converter no upload"*.
+- **Forensic Byte Layout:**
+  - **RFC 1952 Gzip Container:**
+    - 0..1: Magic `0x1F 0x8B`.
+    - 2: Compression method (8 = deflate).
+    - 3: Header flags (FTEXT, FHCRC, FEXTRA, FNAME, FCOMMENT).
+    - 4..7: MTIME timestamp (32-bit uint little-endian).
+    - 8: Extra flags (2 = max compression, 4 = fastest).
+    - 9: OS type (0 = FAT, 3 = Unix, 7 = Macintosh, 255 = unknown).
+    - Variable-length optional header fields (extra subfields, zero-terminated original filename, commentary).
+    - Deflate compressed data blocks.
+    - 8-byte trailer: 32-bit CRC-32 checksum and 32-bit uncompressed size modulo $2^{32}$.
+  - **Decompressed Payload:**
+    - UTF-8 XML document with root `<svg ...>` namespace.
+- **In-Browser Execution Strategy:**
+  - Client-side decompression engine executing entirely in browser memory. Verifies Gzip magic numbers, handles optional gzip header fields (skipping original filenames and comments), decompresses the raw deflate bitstream using `fflate`, validates that the decompressed payload is valid SVG XML, and serializes clean, uncompressed UTF-8 `.svg` markup ready for instant editing or web publishing.
+- **Fidelity:** `LOSSLESS` (Bit-for-bit decompressed XML document with zero vector precision loss).
+- **Status:** **Wave 25 Shipped (`image/svgz-to-svg`)**.
+
+---
+
+### 72. Apple Core Audio Format (`.caf`)
+
+- **Ecosystem & Context:** CAF (Core Audio Format) is Apple's high-capacity 64-bit audio container format introduced in Mac OS X 10.4 and iOS. Engineered by Apple to overcome the legacy 4GB file size limit of 32-bit RIFF WAV and AIFF files, it is the primary recording format for Apple Logic Pro, GarageBand, Final Cut Pro, iPhone Voice Memos, and iOS Core Audio frameworks. CAF allows continuous recording for years without file size limits. However, outside Apple's ecosystem (Windows, Android, Linux, ChromeOS, and standard web browsers), `.caf` audio files cannot be played or edited natively without conversion.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/apple, r/Logic_Studio, r/audioengineering, r/iOS, r/GarageBand, r/podcasting.
+  - Queries: *"Convert Apple CAF audio to WAV online"*, *"How to play .caf voice memo on Windows / Android"*, *"Logic Pro CAF loops to WAV converter"*, *"Convert 64-bit CAF to standard 16/24-bit WAV without iTunes or QuickTime"*.
+- **Forensic Byte Layout:**
+  - **File Header (8 bytes):**
+    - 0..3: Magic `'caff'` (`0x63 0x61 0x66 0x66`).
+    - 4..5: File version (uint16, typically 1).
+    - 6..7: File flags (uint16, 0).
+  - **Chunk Header (12 bytes each, big-endian):**
+    - 0..3: Chunk type (ASCII 4-character code).
+    - 4..11: Chunk size (int64 big-endian). A size of `-1` indicates that the chunk extends to the end of the file.
+  - **Mandatory 'desc' Chunk (Audio Description, 32 bytes payload):**
+    - Sample rate: 64-bit float IEEE 754 (e.g. 44100.0, 48000.0).
+    - Format ID: 4-byte char code (e.g. `'lpcm'`).
+    - Format flags: uint32 (bit 0 = isFloat, bit 1 = isLittleEndian).
+    - Bytes per packet, frames per packet, channels per frame, bits per channel.
+  - **'data' Chunk (Audio Data):**
+    - 0..3: Edit count (uint32).
+    - 4..N: Interleaved linear PCM audio data packets.
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript binary audio parser and transcoder. Decodes 64-bit CAF chunk headers, handles `-1` indefinite length chunks, reads IEEE 754 floating-point sample rates, parses 16-bit, 24-bit, and 32-bit integer PCM as well as 32-bit IEEE float PCM (both big-endian and little-endian), normalizes audio into standard 16-bit or 24-bit linear PCM, and wraps it into a standard RIFF WAVE container for universal playback across all operating systems and devices.
+- **Fidelity:** `LOSSLESS PCM` (Exact sample unpacking without transcoding compression).
+- **Status:** **Wave 25 Shipped (`audio/caf-to-wav`)**.
+
+---
+
 ## Roadmap Waves & Next Steps
 
 1. **Wave 1 (Shipped):**
@@ -1691,8 +1769,12 @@
     - Tool 67: `image/fits-to-png` (Flexible Image Transport System `.fits`, `.fit`, `.fts` NASA/astronomy science image format to PNG)
     - Tool 68: `document/gml-to-geojson` (Geography Markup Language `.gml` OGC/INSPIRE XML to RFC 7946 GeoJSON)
     - Tool 69: `audio/mod-to-wav` (Commodore Amiga ProTracker / SoundTracker `.mod` 4-channel module music to 16-bit stereo WAV)
-25. **Wave 25 (Active Research & Next Builds):**
-    - Candidate 1: `document/vtt-to-srt` (WebVTT subtitle format to SubRip SRT converter)
-    - Candidate 2: `audio/amr-to-wav` (Adaptive Multi-Rate `.amr` 3G/MMS voice notes to WAV)
-    - Candidate 3: `image/svgz-to-svg` (Gzip-compressed SVG `.svgz` to uncompressed SVG)
+25. **Wave 25 (Shipped):**
+    - Tool 70: `document/vtt-to-srt` (WebVTT subtitle format to SubRip SRT converter)
+    - Tool 71: `image/svgz-to-svg` (Gzip-compressed SVG `.svgz` to uncompressed SVG)
+    - Tool 72: `audio/caf-to-wav` (Apple Core Audio Format `.caf` 64-bit audio to standard RIFF WAV)
+26. **Wave 26 (Active Research & Next Builds):**
+    - Candidate 1: `audio/amr-to-wav` (Adaptive Multi-Rate `.amr` mobile voice notes and legacy MMS audio to WAV)
+    - Candidate 2: `document/cbr-to-zip` (Comic Book RAR `.cbr` comic archive extractor to ZIP)
+    - Candidate 3: `image/exr-to-png` (OpenEXR `.exr` Industrial Light & Magic high-dynamic-range VFX raster to tone-mapped PNG)
 

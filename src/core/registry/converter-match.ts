@@ -194,6 +194,11 @@ const MIME_MAP: Record<string, string> = {
 	"audio/x-mod": "mod",
 	"audio/mod": "mod",
 	"audio/x-protracker": "mod",
+	"text/vtt": "vtt",
+	"text/x-vtt": "vtt",
+	"image/svg+xml-compressed": "svgz",
+	"audio/x-caf": "caf",
+	"audio/caf": "caf",
 };
 
 /**

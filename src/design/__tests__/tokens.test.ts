@@ -84,6 +84,9 @@ const LITERAL_HEX_ALLOWED = new Set([
 	// not become a token, because a token would change with the design and
 	// silently alter the mask's opacity.
 	join("src", "design", "primitives", "MediaFrame.tsx"),
+	// Clerk's Appearance theme object is passed to third-party SDK props
+	// that require concrete hex strings matching the design system.
+	join("src", "components", "auth", "clerk-theme.ts"),
 ]);
 
 /**

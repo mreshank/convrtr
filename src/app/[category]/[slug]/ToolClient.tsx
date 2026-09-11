@@ -14,6 +14,7 @@ import { FileReadout } from "@/components/instrument/FileReadout";
 import { HeavyDownloadGate } from "@/components/instrument/HeavyDownloadGate";
 import { OptionsPanel } from "@/components/instrument/OptionsPanel";
 import { ProgressBar } from "@/components/instrument/ProgressBar";
+import { addHistoryRecord } from "@/core/history/store";
 import {
 	canStreamToDisk,
 	createOutputFile,
@@ -390,6 +391,19 @@ export function ToolClient({ toolId }: { toolId: string }) {
 					controller.signal,
 				);
 				setStreamed({ bytes, path: observed ?? undefined });
+				addHistoryRecord({
+					toolId: tool.id,
+					category: tool.category,
+					inputName: file.name,
+					inputSize: file.size,
+					outputName: outputFilename(
+						file.name,
+						outputType?.ext ?? tool.output.ext,
+					),
+					outputSize: bytes,
+					durationMs: Date.now() - (startedAtRef.current || Date.now()),
+					status: "success",
+				});
 				return;
 			}
 
@@ -420,6 +434,19 @@ export function ToolClient({ toolId }: { toolId: string }) {
 				bytes: output,
 				size: output.byteLength,
 				path: observed ?? undefined,
+			});
+			addHistoryRecord({
+				toolId: tool.id,
+				category: tool.category,
+				inputName: file.name,
+				inputSize: file.size,
+				outputName: outputFilename(
+					file.name,
+					outputType?.ext ?? tool.output.ext,
+				),
+				outputSize: output.byteLength,
+				durationMs: Date.now() - (startedAtRef.current || Date.now()),
+				status: "success",
 			});
 		} catch (caught) {
 			const cancelled =
@@ -484,6 +511,16 @@ export function ToolClient({ toolId }: { toolId: string }) {
 				controller.signal,
 			);
 			setResult({ bytes: output, size: output.byteLength });
+			addHistoryRecord({
+				toolId: tool.id,
+				category: tool.category,
+				inputName: `${items.length} files combined`,
+				inputSize: items.reduce((sum, item) => sum + item.file.size, 0),
+				outputName: `${tool.slug}.${tool.output.ext}`,
+				outputSize: output.byteLength,
+				durationMs: Date.now() - (startedAtRef.current || Date.now()),
+				status: "success",
+			});
 		} catch (caught) {
 			const cancelled =
 				caught instanceof DOMException && caught.name === "AbortError";
@@ -667,6 +704,17 @@ export function ToolClient({ toolId }: { toolId: string }) {
 				batchOutputsRef.current.set(outcome.id, {
 					output: outcome.output,
 					outputName: outcome.outputName,
+				});
+				const item = items.find((candidate) => candidate.id === outcome.id);
+				addHistoryRecord({
+					toolId: tool.id,
+					category: tool.category,
+					inputName: item?.file.name ?? outcome.outputName,
+					inputSize: item?.file.size ?? 0,
+					outputName: outcome.outputName,
+					outputSize: outcome.outputSize,
+					durationMs: Date.now() - (batchStartedAtRef.current || Date.now()),
+					status: "success",
 				});
 			}
 		}

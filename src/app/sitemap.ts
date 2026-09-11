@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { BLOG_POSTS } from "@/content/blog/registry";
 import { COLLECTIVES } from "@/content/collectives/registry";
+import { COMPARISONS } from "@/content/compare/registry";
 import { TOOLS } from "@/core/registry";
 import { deriveFormatGroups, deriveTaskGroups } from "@/core/registry/groups";
 import { SITE } from "@/lib/site";
@@ -24,6 +25,9 @@ const STATIC_PATHS = [
 	"/about",
 	"/how-it-works",
 	"/privacy",
+	"/auth",
+	"/history",
+	"/compare",
 	"/legal/terms",
 	"/legal/privacy-policy",
 	"/legal/licences",
@@ -58,6 +62,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 		...toolPaths(),
 		...BLOG_POSTS.map((post) => `/blog/${post.slug}`),
 		...COLLECTIVES.map((collective) => `/collectives/${collective.slug}`),
+		...COMPARISONS.map((comparison) => `/compare/${comparison.slug}`),
 		...deriveFormatGroups().map((group) => `/groups/format/${group.format}`),
 		...deriveTaskGroups().map((group) => `/groups/task/${group.kind}`),
 	];

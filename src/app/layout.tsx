@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Inter } from "next/font/google";
+import { AuthProvider } from "@/components/auth/AuthProvider";
+import { UserMenu } from "@/components/auth/UserMenu";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import { RouteAwareFooter, SiteHeader } from "@/design/primitives";
 import { DifferenceCursor } from "@/design/primitives/DifferenceCursor";
@@ -35,6 +37,7 @@ const NAV = [
 	{ href: "/tools", label: "Tools" },
 	{ href: "/groups", label: "Groups" },
 	{ href: "/collectives", label: "Collectives" },
+	{ href: "/compare", label: "Compare" },
 	{ href: "/blog", label: "Blog" },
 	{ href: "/about", label: "About" },
 	{ href: "/how-it-works", label: "How it works" },
@@ -62,6 +65,7 @@ const CONTACT = [
 const EXPLORE = [
 	{ href: "/groups", label: "Groups" },
 	{ href: "/collectives", label: "Collectives" },
+	{ href: "/compare", label: "Compare" },
 ];
 
 // The formal documents, grouped separately from the header's visitor-facing
@@ -82,18 +86,20 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 			className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
 		>
 			<body className="min-h-full flex flex-col">
-				<ServiceWorkerRegistration />
-				<DifferenceCursor />
-				<SiteHeader links={NAV} cta={CTA} />
-				<main className="flex-1">{children}</main>
-				<RouteAwareFooter
-					bio={TAGLINE}
-					socials={SOCIALS}
-					contact={CONTACT}
-					explore={EXPLORE}
-					legal={LEGAL}
-					credit={`© ${new Date().getFullYear()} convrtr`}
-				/>
+				<AuthProvider>
+					<ServiceWorkerRegistration />
+					<DifferenceCursor />
+					<SiteHeader links={NAV} cta={CTA} authSlot={<UserMenu />} />
+					<main className="flex-1">{children}</main>
+					<RouteAwareFooter
+						bio={TAGLINE}
+						socials={SOCIALS}
+						contact={CONTACT}
+						explore={EXPLORE}
+						legal={LEGAL}
+						credit={`© ${new Date().getFullYear()} convrtr`}
+					/>
+				</AuthProvider>
 			</body>
 		</html>
 	);

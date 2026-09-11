@@ -1,0 +1,42 @@
+For over fifteen years, converting a file on the internet followed an identical, privacy-invasive architectural pattern:
+
+1. You visit a website and click "Upload".
+2. Your private PDF, audio recording, photo, or spreadsheet travels over the internet to an unknown server.
+3. The remote server queues your job, spawns a container or backend process (e.g. `ffmpeg`, `imagemagick`, `pandoc`), and writes the converted file to remote disk storage.
+4. You wait in a queue, download the converted file back to your machine, and hope the operator honors their "files deleted after 2 hours" privacy promise.
+
+In 2026, this entire model has become obsolete.
+
+With modern browser capabilities — specifically **WebAssembly (WASM)**, **Web Workers**, and the **Origin Private File System (OPFS)** — file conversion can execute entirely on your own device.
+
+## The Three Hidden Costs of Cloud Converters
+
+### 1. The Privacy and Data Breach Liability
+When you upload a file to a cloud converter, you surrender custody of your data. For confidential legal contracts, personal medical scans, proprietary financial spreadsheets, or family photos, transmitting data to an unverified third-party cloud is an unacceptable compliance risk under GDPR, HIPAA, and CCPA. Even trustworthy providers face rogue employees, misconfigured Amazon S3 buckets, and government subpoenas.
+
+### 2. Network Latency & Bandwidth Waste
+Uploading a 200 MB audio file over a home or mobile connection can easily take 60 seconds, followed by another 60 seconds to download the converted result. That is two full round-trips across the public internet. On a modern device with an Apple M-series or Intel/AMD multi-core processor, converting that same file locally in WebAssembly takes under 2 seconds. The network was the bottleneck all along.
+
+### 3. Queue Delays and Monetization Gates
+Because cloud converters must pay for cloud compute and egress bandwidth for every single gigabyte uploaded, they are forced to throttle free users, impose 10-file daily limits, cap maximum upload sizes, and prompt for $19/month subscriptions.
+
+## The In-Browser Local-First Architecture
+
+convrtr operates on a fundamentally different premise: **zero server runtime, zero uploads, zero storage**.
+
+```
+[ Your Device ]
+     │
+     ├── 1. File loaded via HTML5 Drag & Drop (In-Memory or OPFS Stream)
+     ├── 2. Background Web Worker spawned with WebAssembly runtime
+     ├── 3. Native C/C++/Rust codecs execute directly on your CPU
+     └── 4. Converted Blob saved directly to your Downloads folder
+```
+
+### High-Performance WebAssembly Sandboxing
+By compiling battle-tested open-source libraries (FFmpeg, libflac, libjpeg, oxipng, svgo, pdf-lib, libheif) into WebAssembly, browser engines run low-level compiled code at near-native execution speed. Furthermore, WASM runs inside the browser's strict memory sandbox: it cannot access your filesystem, camera, or network without explicit user interaction.
+
+### Zero Cost, Infinite Scalability
+Because the computing workload occurs on the client's device, convrtr incurs zero server compute costs and zero bandwidth egress fees. This is why we can offer high-concurrency batch conversions completely free of charge, with no arbitrary file quotas and no forced email sign-ups.
+
+Your files remain where they belong: securely on your device.

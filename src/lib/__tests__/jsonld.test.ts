@@ -30,6 +30,13 @@ describe("buildToolJsonLd", () => {
 		const howTo = graph["@graph"].find((n) => n["@type"] === "HowTo");
 		expect(howTo?.name).toBe(pngToWebp.seo.h1);
 	});
+
+	it("emits a BreadcrumbList node with 3 levels", () => {
+		const crumbs = graph["@graph"].find(
+			(n) => n["@type"] === "BreadcrumbList",
+		) as { itemListElement: unknown[] } | undefined;
+		expect(crumbs?.itemListElement.length).toBe(3);
+	});
 });
 
 describe("buildBlogPostingJsonLd", () => {

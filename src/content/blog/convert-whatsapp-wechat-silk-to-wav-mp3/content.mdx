@@ -1,0 +1,45 @@
+If you have ever attempted to back up voice messages from WeChat, WhatsApp, or Skype, you may have encountered files ending in `.silk` or raw audio blobs that refuse to play in Windows Media Player, QuickTime, or VLC.
+
+These files are encoded in SILK, an audio compression format developed by Skype Limited in 2009. While SILK later became the foundation for the speech layer in the standardized IETF Opus codec (RFC 6716), messaging applications continue to store raw standalone SILK bitstreams.
+
+This article breaks down the binary format of SILK audio files and explains how we decode them directly to playable PCM WAV audio inside the browser.
+
+## The SILK Header Signature
+
+Raw SILK audio files begin with a specific magic byte sequence identifying the stream:
+
+1. **Standard SILK**: Starts with the ASCII string `#!SILK_V3` followed by a newline:
+   ```hex
+   23 21 53 49 4C 4B 5F 56 33 0A  (#!SILK_V3\n)
+   ```
+2. **WeChat Variant**: WeChat prepends a single byte `0x02` before the magic string:
+   ```hex
+   02 23 21 53 49 4C 4B 5F 56 33  (\x02#!SILK_V3)
+   ```
+
+If the first 10 bytes match either of these signatures, the file is a valid SILK voice recording.
+
+## Packet-Based Linear Predictive Coding
+
+SILK does not store audio as raw PCM waveform samples or Fourier transform coefficients (like MP3 or AAC). Instead, it uses **Linear Predictive Coding (LPC)**, a mathematical model designed specifically for human vocal tract acoustics:
+
+- The encoder analyzes short frames of speech (typically 20 milliseconds).
+- It models the vocal tract as an all-pole linear acoustic filter.
+- It transmits filter reflection coefficients and a small pitch prediction residual excitation signal.
+- The resulting stream requires as little as 6 kbps to 20 kbps of bandwidth while preserving vocal intelligibility.
+
+In the bitstream, each audio frame is preceded by a 2-byte little-endian length integer indicating the number of compressed payload bytes in that frame. The decoder reads the length header, feeds the frame into the LPC synthesis filter, and yields 16-bit linear PCM audio samples.
+
+## Why Converting SILK Usually Required Native Binaries
+
+Because SILK is an older proprietary C library (`libSKP_SILK_SDK`), users previously had to download compiled command-line binaries or compile C source code with GCC to convert voice notes to WAV.
+
+In convrtr, the official reference SILK C decoding engine has been compiled directly into **WebAssembly (WASM)**.
+
+When you load a `.silk` file into [the SILK to WAV converter](/audio/silk-to-wav):
+1. The parser identifies the magic header and strips any WeChat `0x02` container padding.
+2. The payload is passed into the WebAssembly runtime buffer.
+3. The WASM decoder reconstructs 24kHz or 16kHz 16-bit PCM audio samples.
+4. The output is wrapped in a standard RIFF WAV header (`WAVEfmt `) for instant playback and downloading.
+
+You can convert any voice note directly in your browser with zero downloads and complete privacy via [our SILK to WAV tool](/audio/silk-to-wav).

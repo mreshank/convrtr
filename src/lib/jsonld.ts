@@ -2,6 +2,7 @@ import type { BlogPostMeta } from "@/content/blog/types";
 import type { Tool } from "@/core/registry";
 
 export function buildToolJsonLd(tool: Tool, url: string) {
+	const origin = url.split("/")[0] + "//" + url.split("/")[2];
 	return {
 		"@context": "https://schema.org",
 		"@graph": [
@@ -33,6 +34,30 @@ export function buildToolJsonLd(tool: Tool, url: string) {
 				],
 			},
 			{
+				"@type": "BreadcrumbList",
+				itemListElement: [
+					{
+						"@type": "ListItem",
+						position: 1,
+						name: "Home",
+						item: origin,
+					},
+					{
+						"@type": "ListItem",
+						position: 2,
+						name:
+							tool.category.charAt(0).toUpperCase() + tool.category.slice(1),
+						item: `${origin}/${tool.category}`,
+					},
+					{
+						"@type": "ListItem",
+						position: 3,
+						name: tool.seo.h1,
+						item: url,
+					},
+				],
+			},
+			{
 				"@type": "FAQPage",
 				mainEntity: tool.seo.faq.map((item) => ({
 					"@type": "Question",
@@ -51,6 +76,20 @@ export function buildBlogPostingJsonLd(post: BlogPostMeta, url: string) {
 		headline: post.title,
 		description: post.description,
 		datePublished: post.publishedAt,
+		url,
+	};
+}
+
+export function buildComparisonJsonLd(
+	title: string,
+	description: string,
+	url: string,
+) {
+	return {
+		"@context": "https://schema.org",
+		"@type": "TechArticle",
+		headline: title,
+		description,
 		url,
 	};
 }

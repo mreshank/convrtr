@@ -16,6 +16,7 @@ type LinkItem = { href: string; label: string; megaMenu?: boolean };
 type Props = {
 	links: LinkItem[];
 	cta: LinkItem;
+	authSlot?: React.ReactNode;
 };
 
 /**
@@ -89,7 +90,7 @@ const COLLAPSED = "(max-width: 600px)";
  * glyphs and code tokens, and a full-viewport panel is the largest fill on the
  * site — the one place the accent must not go.
  */
-export function SiteHeader({ links, cta }: Props) {
+export function SiteHeader({ links, cta, authSlot }: Props) {
 	const [open, setOpen] = useState(false);
 	const toggleRef = useRef<HTMLButtonElement>(null);
 	const navRef = useRef<HTMLElement>(null);
@@ -570,6 +571,8 @@ export function SiteHeader({ links, cta }: Props) {
 					),
 				)}
 			</nav>
+
+			{authSlot}
 
 			{/* v2's `navbar-cta`: white fill, black text, pill corners, 36px. */}
 			<Link

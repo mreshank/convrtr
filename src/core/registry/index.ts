@@ -1,6 +1,7 @@
 import { adxToWav } from "./tools/audio/adx-to-wav";
 import { aiffToWav } from "./tools/audio/aiff-to-wav";
 import { auToWav } from "./tools/audio/au-to-wav";
+import { cafToWav } from "./tools/audio/caf-to-wav";
 import { dsfToWav } from "./tools/audio/dsf-to-wav";
 import { coverArtFLAC } from "./tools/audio/flac-cover-art";
 import { flacToWav } from "./tools/audio/flac-to-wav";
@@ -54,6 +55,7 @@ import { subToSrt } from "./tools/document/sub-to-srt";
 import { tcxToGeoJson } from "./tools/document/tcx-to-geojson";
 import { vcfToCsv } from "./tools/document/vcf-to-csv";
 import { vntToTxt } from "./tools/document/vnt-to-txt";
+import { vttToSrt } from "./tools/document/vtt-to-srt";
 import { wadToZip } from "./tools/document/wad-to-zip";
 import { webarchiveToHtml } from "./tools/document/webarchive-to-html";
 import { xmindToMarkdown } from "./tools/document/xmind-to-markdown";
@@ -79,6 +81,7 @@ import { rasToPng } from "./tools/image/ras-to-png";
 import { rpgmvpToPng } from "./tools/image/rpgmvp-to-png";
 import { sgiToPng } from "./tools/image/sgi-to-png";
 import { studio3ToSvg } from "./tools/image/studio3-to-svg";
+import { svgzToSvg } from "./tools/image/svgz-to-svg";
 import { tgaToPng } from "./tools/image/tga-to-png";
 import { tgsToJson } from "./tools/image/tgs-to-json";
 import { vtfToPng } from "./tools/image/vtf-to-png";
@@ -183,6 +186,7 @@ export const TOOLS: Tool[] = [
 	sgiToPng,
 	xwdToPng,
 	fitsToPng,
+	svgzToSvg,
 	mlwToMp4,
 	procreateToMp4,
 	pkgToMp4,
@@ -211,6 +215,7 @@ export const TOOLS: Tool[] = [
 	nistToWav,
 	dsfToWav,
 	modToWav,
+	cafToWav,
 	rpgmvoToOgg,
 	rpgmvmToM4a,
 	opusToMp3,
@@ -255,6 +260,7 @@ export const TOOLS: Tool[] = [
 	kmzToGeoJson,
 	osmToGeoJson,
 	gmlToGeoJson,
+	vttToSrt,
 ];
 
 export function getTool(id: string): Tool | undefined {

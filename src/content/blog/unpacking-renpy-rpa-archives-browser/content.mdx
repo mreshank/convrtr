@@ -1,0 +1,53 @@
+Ren'Py is the dominant open-source visual novel game engine, powering thousands of games on Steam, Itch.io, and mobile. If you inspect the `game/` folder of almost any Ren'Py title, you will find files named `archive.rpa`, `scripts.rpa`, or `audio.rpa`.
+
+These are RPA (Ren'Py Archive) files. While they serve a similar purpose to ZIP archives, double-clicking them in your operating system will fail. They are deliberately designed with an obfuscated index to prevent accidental spoilers and raw script browsing.
+
+This guide explains the exact byte structure of RPA-2.0 and RPA-3.0 archives, how the index table is obfuscated with XOR keys, and how you can unpack them directly into a standard ZIP file in your browser using [the RPA to ZIP tool](/document/rpa-to-zip).
+
+## The RPA Header Signatures
+
+An RPA archive starts with a human-readable ASCII header line ending in a newline (`0x0A`). Ren'Py has evolved across several archive revisions:
+
+1. **RPA-3.0**: Starts with `RPA-3.0 ` followed by an 8 or 16-hexadecimal character offset, a space, and an 8 or 16-hexadecimal character key:
+   ```
+   RPA-3.0 012a4f00 42c89f10
+   ```
+2. **RPA-2.0**: Starts with `RPA-2.0 ` followed by an 8-character hex index offset, followed by the index block:
+   ```
+   RPA-2.0 00fa3210
+   ```
+3. **RPA-1.0**: A legacy format where the index sits directly at the start of the archive without obfuscation.
+
+The key values in the header define two critical pieces of information:
+- **Index Offset**: The exact byte position in the file where the archive's file directory table begins.
+- **XOR Key**: A 32-bit or 64-bit mask used to de-obfuscate the index block.
+
+## Reading the Obfuscated Directory Index
+
+Unlike ZIP files which store an uncompressed Central Directory Record at the end of the file, RPA archives place a zlib-compressed or raw byte stream containing a serialized Python dictionary at the index offset.
+
+In RPA-3.0:
+1. Seek to the `offset` decoded from the ASCII header.
+2. Read the remaining byte stream.
+3. Apply the `key` across the index payload using bitwise XOR (`byte ^ key[i % key_len]`).
+4. Decompress the resulting bytes using zlib inflate.
+5. Parse the dictionary containing filenames, byte offsets, lengths, and optional prefixes.
+
+Each record inside the decompressed index contains:
+- `filename`: The relative virtual path of the asset (e.g. `images/character_happy.png` or `audio/bgm01.ogg`).
+- `offset`: The absolute byte position where the raw file data starts within the `.rpa` file.
+- `length`: The exact size of the payload in bytes.
+- `prefix`: An optional byte sequence prepended to file contents in memory.
+
+## Browser-Based In-Memory Extraction
+
+Historically, extracting RPA files required installing Python and running external command-line scripts like `rpatool` or `unrpa`.
+
+Because Ren'Py archives simply concatenate assets at continuous byte offsets, our parser reads the file into a streaming buffer:
+1. Validates the `RPA-3.0` or `RPA-2.0` header.
+2. Unmasks the dictionary index in memory.
+3. Iterates over each file entry and slices the exact byte ranges from the underlying Uint8Array.
+4. Repackages all slices into a standard RFC 1951 Deflate container.
+5. Generates an uncompressed or compressed `.zip` archive ready for instant download.
+
+Because everything executes in a dedicated Web Worker on your device, gigabyte-sized archives unpack in seconds without uploading a single byte to an external server. You can try it now with [convrtr's RPA to ZIP extractor](/document/rpa-to-zip).

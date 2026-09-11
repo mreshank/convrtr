@@ -1,0 +1,32 @@
+import type { Metadata } from "next";
+import { HistoryClient } from "@/components/history/HistoryClient";
+import { ConverterPage } from "@/design/templates";
+import { SITE } from "@/lib/site";
+
+export function generateMetadata(): Metadata {
+	const title = "Conversion History & Audit Log — convrtr";
+	const description =
+		"Private in-browser conversion audit log. View past conversions, processing times, byte savings, and export CSV reports.";
+	return {
+		title,
+		description,
+		alternates: { canonical: `${SITE}/history` },
+		openGraph: {
+			title,
+			description,
+			url: `${SITE}/history`,
+		},
+	};
+}
+
+export default function HistoryPage() {
+	return (
+		<ConverterPage
+			eyebrow="AUDIT TRAIL // 30-DAY WORKSPACE METRICS"
+			title="Conversion History"
+			lede="Review past local conversions, compression savings, and duration metrics. Converted files are processed 100% inside your browser and never stored on any server."
+		>
+			<HistoryClient />
+		</ConverterPage>
+	);
+}
