@@ -25,6 +25,9 @@ const POST_SLUGS = [
 	"converting-gedcom-family-tree-to-csv",
 	"converting-telephony-ulaw-alaw-to-wav",
 	"decoding-zx-spectrum-scr-memory-dumps",
+	"converting-c64-koala-koa-to-png",
+	"converting-adobe-photoshop-aco-palette-to-css",
+	"converting-playstation-vag-audio-to-wav",
 ];
 
 describe("blog registry conformance", () => {

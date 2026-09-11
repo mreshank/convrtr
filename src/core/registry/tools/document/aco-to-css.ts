@@ -73,10 +73,6 @@ export const acoToCss: Tool = {
 				a: "Never. All parsing and conversion run 100% locally in your web browser memory using pure TypeScript. No data is ever transmitted over the network.",
 			},
 		],
-		related: [
-			"document/ase-to-css",
-			"document/act-to-css",
-			"image/abr-to-png",
-		],
+		related: ["document/ase-to-css", "document/act-to-css", "image/abr-to-png"],
 	},
 };

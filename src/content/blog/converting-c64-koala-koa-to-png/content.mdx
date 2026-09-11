@@ -1,0 +1,58 @@
+The Commodore 64, released in 1982, remains the highest-selling single computer model of all time. Among the legendary software packages developed for the platform, Audio Light's 1983 release *KoalaPainter* (paired with the iconic KoalaPad graphics tablet) set the gold standard for 8-bit digital art.
+
+Artists and demoscene illustrators pushed the machine's MOS Technology VIC-II graphics processor to its theoretical limits, producing intricate loading screens, pixel art portraits, and game backgrounds. The native output format, `.koa` (or `.gg`), is still exchanged across demoscene archives like CSDb.
+
+This guide explains the architecture of the 10,003-byte KoalaPainter container, how the VIC-II chip's multi-color bitmap mode works, and how to convert `.koa` graphics into standard PNGs directly in your browser using [convrtr's C64 Koala to PNG converter](/image/koa-to-png).
+
+## The Anatomy of a 10,003-Byte Koala File
+
+Standard Commodore 64 executable and data files begin with a two-byte PRG load address header. For KoalaPainter files, this header points to video memory base address `$6000` (hexadecimal `0x6000`, stored as little-endian bytes `0x00, 0x60`).
+
+The complete file layout spans four distinct memory buffers totaling 10,003 bytes:
+
+1. **Load Address Header (2 bytes)**: Base address `$6000`.
+2. **Multi-color Bitmap Data (8,000 bytes)**: Memory range `$6000` to `$7F3F`. Stores 160×200 pixels at 2 bits per pixel.
+3. **Screen RAM Matrix (1,000 bytes)**: Memory range `$5C00` to `$5FE7`. Stores 40×25 cell color selections for bit patterns `01` and `10`.
+4. **Color RAM Buffer (1,000 bytes)**: Memory range `$D800` to `$DBE7`. Stores 40×25 cell color selections for bit pattern `11`.
+5. **Background Color Byte (1 byte)**: Memory address `$D021`. Specifies the global background color (bit pattern `00`).
+
+`2 + 8,000 + 1,000 + 1,000 + 1 = 10,003 bytes`
+
+Some raw memory dumps omit the 2-byte load address, resulting in an exact 10,001-byte file.
+
+## VIC-II Multi-Color Bitmap Mechanics
+
+The VIC-II chip supports two primary bitmap graphics modes:
+- **Standard Hi-Res Bitmap (320×200)**: 1 bit per pixel. Each 8×8 block can have only 2 colors from the 16-color palette.
+- **Multi-Color Bitmap (160×200)**: 2 bits per pixel. Each 8×8 block can display up to 4 colors simultaneously, but pixels are twice as wide horizontally.
+
+On a standard 4:3 cathode-ray tube (CRT) television or monitor, the 160 double-wide pixels stretch horizontally to fill a 320-pixel raster, producing the iconic warm aesthetic of 1980s 8-bit gaming.
+
+### Color Allocation per Cell
+
+For every 8×8 pixel character block, each two-bit pair maps to a specific color:
+- **`00`**: Global background color (from register `$D021`).
+- **`01`**: Upper 4 bits (high nibble) of Screen RAM for that cell.
+- **`10`**: Lower 4 bits (low nibble) of Screen RAM for that cell.
+- **`11`**: Lower 4 bits (low nibble) of Color RAM for that cell.
+
+This clever hardware layout allows artists to use up to 4 different colors within any 8×8 block while drawing from the full 16-color palette across the whole canvas.
+
+## Palette Calibration: Pepto vs Colodore
+
+The original C64 VIC-II chip generated colors directly through analog luma and chroma composite signals. Because different TV standards (NTSC vs PAL) and monitor revisions decoded analog color phases differently, there is no single "correct" RGB palette.
+
+[convrtr's C64 Koala to PNG converter](/image/koa-to-png) gives you access to the two most respected mathematical calibrations:
+- **Pepto Palette**: Philip "Pepto" Bergwerf's classic calibration based on oscilloscope measurements of the 6569 PAL chip.
+- **Colodore Palette**: Modern demoscene standard calibrated for modern digital displays and OLED screens.
+
+## Zero-Upload Local Decoding
+
+Uploading vintage game artwork to cloud converters is unnecessary and slow.
+
+With convrtr, the entire VIC-II matrix decoding, pixel doubling, and Deflate PNG compression happen 100% inside your browser memory:
+- Handles both 10,003-byte PRG-headed files and 10,001-byte raw files.
+- Integer scaling (1x, 2x, 3x, 4x) renders pixel-sharp results on 4K and Retina screens.
+- Zero server uploads protect your files and privacy.
+
+Revive your classic Commodore 64 masterpieces and export them to pristine modern PNGs in milliseconds.

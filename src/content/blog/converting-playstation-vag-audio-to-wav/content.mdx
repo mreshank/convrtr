@@ -1,0 +1,54 @@
+# Decoding Sony PlayStation VAG Audio Streams into Universal 16-Bit WAV
+
+When the original Sony PlayStation launched in 1994, its custom Sound Processing Unit (SPU) delivered CD-quality synthesized audio, digital reverberation, and 24 hardware audio voices. To pack thousands of dialogue clips, sword swings, and footsteps onto CD-ROMs, Sony developed the **VAG** audio format (`.vag`, `.vagp`).
+
+From *Final Fantasy VII* and *Metal Gear Solid* to *Crash Bandicoot* and *Castlevania: Symphony of the Night*, VAG was the voice of a gaming generation. Here is how Sony SPU-ADPCM compression functions and how `convrtr` decodes it in your browser.
+
+## The VAG Header
+
+A standard VAG file begins with a 48-byte or 64-byte big-endian header:
+
+- **Bytes 0..3 (Magic):** ASCII `'VAGp'` (`0x56 0x41 0x47 0x70`), or rarely `'pGAV'` on little-endian targets.
+- **Bytes 4..7 (Version):** Typically `0x00000003` (VAG v3) or `0x00000020` (VAG v2).
+- **Bytes 12..15 (Data Size):** Total byte length of the ADPCM payload.
+- **Bytes 16..19 (Sample Rate):** Playback frequency in Hertz (typically 22,050 Hz, 32,000 Hz, or 44,100 Hz).
+- **Bytes 32..47 (Name):** Up to 16 ASCII characters identifying the sound cue (e.g. `SLASH_01`).
+
+If a 64-byte padded header is used, bytes 48 through 63 are filled with zeros before the audio blocks begin.
+
+## SPU-ADPCM 16-Byte Block Format
+
+Sony's hardware ADPCM compression reduces 16-bit linear audio to 4 bits per sample—a 4:1 reduction in storage footprint. Audio is structured in uniform **16-byte blocks**, each expanding into **28 linear PCM samples**:
+
+- **Byte 0 (Predictor & Shift):**
+  - Lower nibble (`byte & 0x0f`): Shift factor (0 through 12).
+  - Upper nibble (`(byte >> 4) & 0x07`): Filter coefficient index (0 through 4).
+- **Byte 1 (Flags):** Loop flags including Loop End (`0x01`), Loop Repeat (`0x02`), and Loop Start (`0x04`).
+- **Bytes 2..15 (14 bytes):** 28 4-bit signed samples packed in low-nibble-first order.
+
+## The 2-Pole SPU Linear Prediction Filter
+
+To reconstruct the acoustic waveform, the hardware applies a 2-pole Infinite Impulse Response (IIR) filter using two previous sample values (s1 and s2) and fixed coefficient pairs:
+
+| Filter Index | Positive Coeff (K1) | Negative Coeff (K2) |
+|---|---|---|
+| 0 | 0.0 | 0.0 |
+| 1 | 60 / 64 (0.9375) | 0.0 |
+| 2 | 115 / 64 (1.7968) | -52 / 64 (-0.8125) |
+| 3 | 98 / 64 (1.5312) | -55 / 64 (-0.8593) |
+| 4 | 122 / 64 (1.9062) | -60 / 64 (-0.9375) |
+
+For every 4-bit nibble `d`, the sample is sign-extended and decoded as:
+
+```
+raw = d << (12 - shift)
+predicted = raw + (s1 * K1 + s2 * K2 + 32) / 64
+```
+
+The predicted sample is clamped to the 16-bit signed integer range (-32,768 to 32,767) and stored in the sample buffer.
+
+## Universal RIFF WAV Synthesis
+
+Once all SPU blocks are decoded into signed 16-bit PCM samples, `convrtr` synthesizes a canonical 44-byte RIFF WAVE header with the native sample rate and little-endian sample stream.
+
+The resulting `.wav` file plays natively in any web browser, media player, or digital audio workstation with zero external software required and complete confidentiality.

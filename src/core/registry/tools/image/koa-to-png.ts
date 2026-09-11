@@ -6,11 +6,7 @@ export const koaToPng: Tool = {
 	category: "image",
 	kind: "extract",
 	accept: {
-		mime: [
-			"image/x-koala",
-			"application/x-koala",
-			"application/octet-stream",
-		],
+		mime: ["image/x-koala", "application/x-koala", "application/octet-stream"],
 		ext: ["koa", "kla"],
 	},
 	output: { ext: "png", mime: "image/png" },

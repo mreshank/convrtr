@@ -1,0 +1,62 @@
+# Converting Adobe Photoshop Color Swatches (.ACO) to CSS & Tailwind
+
+Designers frequently organize and distribute bespoke color schemes as Adobe Photoshop Color Swatch (`.aco`) files. Whether downloaded from Gumroad or shared by concept artists, these files contain precise color swatches that frontend developers need in their stylesheets.
+
+However, copying hex codes out of Photoshop one by one is slow and error-prone. Understanding the `.aco` binary structure allows us to automate this extraction entirely in the browser.
+
+## The Dual-Version Structure of .ACO Files
+
+An `.aco` file can contain two distinct records:
+
+### Version 1: Raw Color Components
+Introduced with early versions of Photoshop, Version 1 begins with a 2-byte version integer (`0x0001`) and a 2-byte count $N$. Each color specification is 10 bytes:
+- 2 bytes: Color space identifier (0 = RGB, 1 = HSB, 2 = CMYK, 7 = Lab, 8 = Grayscale).
+- 8 bytes: Four 16-bit values ($w, x, y, z$) representing channel intensities from $0$ to $65,535$.
+
+Crucially, Version 1 does not store swatch names.
+
+### Version 2: Named Swatches
+When artists name their swatches (e.g. "Primary Coral" or "Slate Dark"), Photoshop appends a Version 2 section immediately following the Version 1 records.
+
+Version 2 begins with `0x0002` and a swatch count $M$. For each color:
+- 10 bytes: Color space and channel intensities (identical to v1).
+- 2 bytes: Reserved padding (`0x0000`).
+- 4 bytes: Length of the name string in UTF-16 code units (including null terminator).
+- Variable bytes: The name encoded in big-endian UTF-16.
+
+## Color Space Transformations
+
+Because Photoshop supports print and professional publishing workflows, `.aco` swatches may be stored in color models other than standard sRGB:
+
+- **RGB:** Scaled from $0..65535$ to $0..255$ via integer division by 257.
+- **HSB:** Normalized hue ($0..360^\circ$), saturation ($0..1$), and brightness ($0..1$) converted to sRGB.
+- **CMYK:** Subtractive ink model inverted ($0$ is 100% ink, $65535$ is 0% ink) and converted to RGB via standard subtractive synthesis.
+- **CIE L\*a\*b\*:** Converted to CIE XYZ with standard D65 white point reference, then projected into sRGB gamut with standard non-linear transfer gamma.
+
+## Exporting for Modern Web Development
+
+`convrtr` parses the binary records and generates three web-ready formats:
+
+1. **CSS Custom Properties (`:root`):**
+   ```css
+   :root {
+     --primary-coral: #ff6b6b;
+     --slate-dark: #2c3e50;
+   }
+   ```
+2. **Tailwind CSS Configuration:**
+   ```javascript
+   module.exports = {
+     theme: {
+       extend: {
+         colors: {
+           "primary-coral": "#ff6b6b",
+           "slate-dark": "#2c3e50",
+         },
+       },
+     },
+   };
+   ```
+3. **Design Tokens JSON:** Complete structured metadata including hex, RGB array, and HSL values for design system workflows.
+
+All processing runs completely in your web browser memory with zero remote uploads.

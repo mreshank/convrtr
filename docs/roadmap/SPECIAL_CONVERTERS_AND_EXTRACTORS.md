@@ -2217,10 +2217,14 @@
     - Tool 85: `image/zx-to-png` (Sinclair ZX Spectrum `.scr` 6,912-byte display memory to 32-bit RGBA PNG)
     - Tool 86: `document/gedcom-to-csv` (GEDCOM genealogy `.ged` family tree records and relationships to RFC 4180 CSV)
     - Tool 87: `audio/ulaw-to-wav` (ITU-T G.711 mu-law & A-law `.ulaw`/`.alaw` telephony audio to 16-bit linear PCM WAV)
-31. **Wave 31 (Active Research & Next Builds):**
-    - Candidate 1: `document/aco-to-css` (Adobe Photoshop Color Palette `.aco` v1/v2 binary swatches to CSS variables & Tailwind config)
-    - Candidate 2: `image/koa-to-png` (Commodore 64 KoalaPainter `.koa` 10,003-byte multicolor bitmap to 32-bit RGBA PNG)
-    - Candidate 3: `document/bibtex-to-markdown` (BibTeX `.bib` bibliography references to clean Markdown tables & JSON)
+31. **Wave 31 (Shipped):**
+    - Tool 88: `image/koa-to-png` (Commodore 64 KoalaPainter `.koa` 10,003-byte multicolor bitmap to 32-bit RGBA PNG)
+    - Tool 89: `document/aco-to-css` (Adobe Photoshop Color Palette `.aco` v1/v2 binary swatches to CSS variables & Tailwind config)
+    - Tool 90: `audio/vag-to-wav` (Sony PlayStation 1 & 2 PSX `.vag` / `.vagp` ADPCM audio to 16-bit linear PCM WAV)
+32. **Wave 32 (Active Research & Next Builds):**
+    - Candidate 1: `document/bibtex-to-markdown` (BibTeX `.bib` bibliography references to clean Markdown tables & JSON)
+    - Candidate 2: `image/degas-to-png` (Atari ST DEGAS Elite `.pi1`, `.pi2`, `.pi3` pictures to 32-bit RGBA PNG)
+    - Candidate 3: `audio/xm-to-wav` (FastTracker II `.xm` extended module tracker music to 16-bit stereo WAV)
 
 
 

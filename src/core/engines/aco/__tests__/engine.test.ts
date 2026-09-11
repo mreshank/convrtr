@@ -36,9 +36,7 @@ function createSyntheticAcoV2(): Uint8Array {
 
 	// V2 header (4 bytes) + 2 colors (each: 10 bytes specs + 2 bytes reserved + 4 bytes len + len*2 chars)
 	const v2Len =
-		4 +
-		(10 + 2 + 4 + name1.length * 2) +
-		(10 + 2 + 4 + name2.length * 2);
+		4 + (10 + 2 + 4 + name1.length * 2) + (10 + 2 + 4 + name2.length * 2);
 
 	const v2Buffer = new ArrayBuffer(v2Len);
 	const view = new DataView(v2Buffer);

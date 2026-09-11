@@ -15,7 +15,7 @@ function createMockKoaBuffer(includePrgHeader = true): Uint8Array {
 
 	// 8000 bytes bitmap data
 	for (let i = 0; i < 8000; i++) {
-		buf[offset + i] = (i % 4 === 0) ? 0b11100100 : 0x00;
+		buf[offset + i] = i % 4 === 0 ? 0b11100100 : 0x00;
 	}
 
 	// 1000 bytes screen ram (color 01 = white (1), color 10 = red (2))
@@ -78,7 +78,11 @@ describe("C64 KoalaPainter engine", () => {
 
 	it("executes through the engine interface", async () => {
 		const mock = createMockKoaBuffer(true);
-		const out = await koaToPngEngine.run(mock.buffer as ArrayBuffer, { scale: "1" }, () => {});
+		const out = await koaToPngEngine.run(
+			mock.buffer as ArrayBuffer,
+			{ scale: "1" },
+			() => {},
+		);
 		expect(out.byteLength).toBeGreaterThan(100);
 	});
 });

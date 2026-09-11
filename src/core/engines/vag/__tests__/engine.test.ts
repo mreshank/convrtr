@@ -2,12 +2,14 @@ import { describe, expect, it } from "vitest";
 import { vagToWavEngine } from "../index";
 import { convertVagToWav } from "../parser";
 
-function createSyntheticVag(options: {
-	sampleRate?: number;
-	numBlocks?: number;
-	name?: string;
-	littleEndian?: boolean;
-} = {}): Uint8Array {
+function createSyntheticVag(
+	options: {
+		sampleRate?: number;
+		numBlocks?: number;
+		name?: string;
+		littleEndian?: boolean;
+	} = {},
+): Uint8Array {
 	const numBlocks = options.numBlocks ?? 4;
 	const dataSize = numBlocks * 16;
 	const totalSize = 48 + dataSize;
@@ -84,12 +86,17 @@ describe("Sony PlayStation VAG Parser & Engine", () => {
 	});
 
 	it("decodes little-endian pGAV variant", () => {
-		const vagBytes = createSyntheticVag({ sampleRate: 22050, littleEndian: true });
+		const vagBytes = createSyntheticVag({
+			sampleRate: 22050,
+			littleEndian: true,
+		});
 		const result = convertVagToWav(vagBytes);
 
 		expect(result.metadata.sampleRate).toBe(22050);
 		expect(result.metadata.sampleCount).toBe(4 * 28);
-		expect(new TextDecoder().decode(result.wavBytes.subarray(0, 4))).toBe("RIFF");
+		expect(new TextDecoder().decode(result.wavBytes.subarray(0, 4))).toBe(
+			"RIFF",
+		);
 	});
 
 	it("supports audio normalization", () => {
@@ -106,7 +113,9 @@ describe("Sony PlayStation VAG Parser & Engine", () => {
 
 		const fakeHeader = new Uint8Array(50);
 		fakeHeader[0] = 0x58; // 'X'
-		expect(() => convertVagToWav(fakeHeader)).toThrow(/Missing 'VAGp' signature/);
+		expect(() => convertVagToWav(fakeHeader)).toThrow(
+			/Missing 'VAGp' signature/,
+		);
 	});
 
 	it("executes cleanly via vagToWavEngine", async () => {

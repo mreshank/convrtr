@@ -2,7 +2,10 @@ import { SITE } from "@/lib/site";
 import type { AcoColor, AcoParseResult, AcoToCssOptions } from "./types";
 
 function rgbToHex(r: number, g: number, b: number): string {
-	const toHex = (n: number) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, "0");
+	const toHex = (n: number) =>
+		Math.max(0, Math.min(255, Math.round(n)))
+			.toString(16)
+			.padStart(2, "0");
 	return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 
@@ -35,7 +38,11 @@ function rgbToHsl(r: number, g: number, b: number): [number, number, number] {
 	return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
 }
 
-function hsbToRgb(hNorm: number, sNorm: number, bNorm: number): [number, number, number] {
+function hsbToRgb(
+	hNorm: number,
+	sNorm: number,
+	bNorm: number,
+): [number, number, number] {
 	const h = hNorm * 360;
 	const s = sNorm;
 	const v = bNorm;
@@ -75,14 +82,27 @@ function hsbToRgb(hNorm: number, sNorm: number, bNorm: number): [number, number,
 	];
 }
 
-function cmykToRgb(c: number, m: number, y: number, k: number): [number, number, number] {
+function cmykToRgb(
+	c: number,
+	m: number,
+	y: number,
+	k: number,
+): [number, number, number] {
 	const r = Math.round(255 * (1 - c) * (1 - k));
 	const g = Math.round(255 * (1 - m) * (1 - k));
 	const b = Math.round(255 * (1 - y) * (1 - k));
-	return [Math.max(0, Math.min(255, r)), Math.max(0, Math.min(255, g)), Math.max(0, Math.min(255, b))];
+	return [
+		Math.max(0, Math.min(255, r)),
+		Math.max(0, Math.min(255, g)),
+		Math.max(0, Math.min(255, b)),
+	];
 }
 
-function labToRgb(lStar: number, aStar: number, bStar: number): [number, number, number] {
+function labToRgb(
+	lStar: number,
+	aStar: number,
+	bStar: number,
+): [number, number, number] {
 	const fy = (lStar + 16) / 116;
 	const fx = aStar / 500 + fy;
 	const fz = fy - bStar / 200;
@@ -91,7 +111,8 @@ function labToRgb(lStar: number, aStar: number, bStar: number): [number, number,
 	const kappa = 24389 / 27;
 
 	const xr = fx ** 3 > epsilon ? fx ** 3 : (116 * fx - 16) / kappa;
-	const yr = lStar > kappa * epsilon ? ((lStar + 16) / 116) ** 3 : lStar / kappa;
+	const yr =
+		lStar > kappa * epsilon ? ((lStar + 16) / 116) ** 3 : lStar / kappa;
 	const zr = fz ** 3 > epsilon ? fz ** 3 : (116 * fz - 16) / kappa;
 
 	// D65 reference white
@@ -102,7 +123,7 @@ function labToRgb(lStar: number, aStar: number, bStar: number): [number, number,
 	// sRGB matrix transformation
 	const rLin = (x * 3.2406 + y * -1.5372 + z * -0.4986) / 100;
 	const gLin = (x * -0.9689 + y * 1.8758 + z * 0.0415) / 100;
-	const bLin = (x * 0.0557 + y * -0.2040 + z * 1.0570) / 100;
+	const bLin = (x * 0.0557 + y * -0.204 + z * 1.057) / 100;
 
 	const gamma = (c: number) =>
 		c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055;
@@ -115,10 +136,12 @@ function labToRgb(lStar: number, aStar: number, bStar: number): [number, number,
 }
 
 function slugify(text: string): string {
-	return text
-		.toLowerCase()
-		.replace(/[^a-z0-9]+/g, "-")
-		.replace(/^-|-$/g, "") || "color";
+	return (
+		text
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, "-")
+			.replace(/^-|-$/g, "") || "color"
+	);
 }
 
 /**
@@ -200,11 +223,7 @@ export function parseAco(
 
 		switch (colorSpace) {
 			case 0: // RGB
-				rgb = [
-					Math.round(w / 257),
-					Math.round(x / 257),
-					Math.round(y / 257),
-				];
+				rgb = [Math.round(w / 257), Math.round(x / 257), Math.round(y / 257)];
 				spaceName = "RGB";
 				break;
 			case 1: // HSB
@@ -221,7 +240,11 @@ export function parseAco(
 				spaceName = "CMYK";
 				break;
 			case 7: // Lab
-				rgb = labToRgb(w / 100, (x > 32767 ? x - 65536 : x) / 100, (y > 32767 ? y - 65536 : y) / 100);
+				rgb = labToRgb(
+					w / 100,
+					(x > 32767 ? x - 65536 : x) / 100,
+					(y > 32767 ? y - 65536 : y) / 100,
+				);
 				spaceName = "Lab";
 				break;
 			case 8: // Grayscale

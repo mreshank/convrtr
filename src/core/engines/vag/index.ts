@@ -23,8 +23,7 @@ export const vagToWavEngine: Engine = {
 		params: Record<string, ParamValue>,
 		onProgress: (ratio: number, phase: string) => void,
 	) {
-		const normalize =
-			params.normalize === true || params.normalize === "true";
+		const normalize = params.normalize === true || params.normalize === "true";
 		const options: VagToWavOptions = { normalize };
 
 		const result = convertVagToWav(input, options, onProgress);

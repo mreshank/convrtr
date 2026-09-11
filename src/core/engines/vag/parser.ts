@@ -38,15 +38,19 @@ export function convertVagToWav(
 		bytes[3] === 0x56; // "pGAV"
 
 	if (!isBigEndian && !isLittleEndian) {
-		throw new Error(
-			"Invalid VAG file: Missing 'VAGp' signature in header.",
-		);
+		throw new Error("Invalid VAG file: Missing 'VAGp' signature in header.");
 	}
 
 	const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-	const version = isBigEndian ? view.getUint32(4, false) : view.getUint32(4, true);
-	const dataSizeHeader = isBigEndian ? view.getUint32(12, false) : view.getUint32(12, true);
-	const rawSampleRate = isBigEndian ? view.getUint32(16, false) : view.getUint32(16, true);
+	const version = isBigEndian
+		? view.getUint32(4, false)
+		: view.getUint32(4, true);
+	const dataSizeHeader = isBigEndian
+		? view.getUint32(12, false)
+		: view.getUint32(12, true);
+	const rawSampleRate = isBigEndian
+		? view.getUint32(16, false)
+		: view.getUint32(16, true);
 
 	const sampleRate =
 		rawSampleRate > 0 && rawSampleRate <= 192000 ? rawSampleRate : 22050;
@@ -72,7 +76,10 @@ export function convertVagToWav(
 				break;
 			}
 		}
-		if (allZeros && (dataSizeHeader === 0 || bytes.length >= 64 + dataSizeHeader)) {
+		if (
+			allZeros &&
+			(dataSizeHeader === 0 || bytes.length >= 64 + dataSizeHeader)
+		) {
 			dataOffset = 64;
 		}
 	}

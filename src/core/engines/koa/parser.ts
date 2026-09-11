@@ -1,5 +1,9 @@
 import { encodeRgbaToPng } from "../dds/parser";
-import type { KoaConversionResult, KoaMetadata, KoaToPngOptions } from "./types";
+import type {
+	KoaConversionResult,
+	KoaMetadata,
+	KoaToPngOptions,
+} from "./types";
 
 const C64_COLS = 40;
 const C64_ROWS = 25;
