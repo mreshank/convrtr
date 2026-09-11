@@ -199,6 +199,13 @@ const MIME_MAP: Record<string, string> = {
 	"image/svg+xml-compressed": "svgz",
 	"audio/x-caf": "caf",
 	"audio/caf": "caf",
+	"image/x-portable-pixmap": "ppm",
+	"image/x-portable-graymap": "pgm",
+	"image/x-portable-bitmap": "pbm",
+	"image/x-portable-anymap": "pnm",
+	"application/vnd.comicbook+zip": "cbz",
+	"application/x-cbz": "cbz",
+	"application/x-subrip": "srt",
 };
 
 /**

@@ -34,6 +34,7 @@ import { actToCss } from "./tools/document/act-to-css";
 import { aseToCss } from "./tools/document/ase-to-css";
 import { assToSrt } from "./tools/document/ass-to-srt";
 import { bspToZip } from "./tools/document/bsp-to-zip";
+import { cbzToPdf } from "./tools/document/cbz-to-pdf";
 import { chmToZip } from "./tools/document/chm-to-zip";
 import { cueToJson } from "./tools/document/cue-to-json";
 import { dxfToSvg } from "./tools/document/dxf-to-svg";
@@ -51,6 +52,7 @@ import { pckToZip } from "./tools/document/pck-to-zip";
 import { rpaToZip } from "./tools/document/rpa-to-zip";
 import { scormToZip } from "./tools/document/scorm-to-zip";
 import { smiToSrt } from "./tools/document/smi-to-srt";
+import { srtToVtt } from "./tools/document/srt-to-vtt";
 import { subToSrt } from "./tools/document/sub-to-srt";
 import { tcxToGeoJson } from "./tools/document/tcx-to-geojson";
 import { vcfToCsv } from "./tools/document/vcf-to-csv";
@@ -76,6 +78,7 @@ import { gbrToPng } from "./tools/image/gbr-to-png";
 import { icnsToPng } from "./tools/image/icns-to-png";
 import { iffToPng } from "./tools/image/iff-to-png";
 import { pcxToPng } from "./tools/image/pcx-to-png";
+import { ppmToPng } from "./tools/image/ppm-to-png";
 import { procreateToPng } from "./tools/image/procreate-to-png";
 import { rasToPng } from "./tools/image/ras-to-png";
 import { rpgmvpToPng } from "./tools/image/rpgmvp-to-png";
@@ -261,6 +264,9 @@ export const TOOLS: Tool[] = [
 	osmToGeoJson,
 	gmlToGeoJson,
 	vttToSrt,
+	ppmToPng,
+	cbzToPdf,
+	srtToVtt,
 ];
 
 export function getTool(id: string): Tool | undefined {

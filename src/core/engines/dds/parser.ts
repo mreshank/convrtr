@@ -1,4 +1,4 @@
-import { deflateSync } from "fflate";
+import { zlibSync } from "fflate";
 
 /**
  * DirectDraw Surface (.dds) texture decoder and PNG synthesizer.
@@ -45,7 +45,7 @@ export function encodeRgbaToPng(
 		);
 	}
 
-	const compressedIdat = deflateSync(rawScanlines, { level: 6 });
+	const compressedIdat = zlibSync(rawScanlines, { level: 6 });
 
 	const signature = new Uint8Array([
 		0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,

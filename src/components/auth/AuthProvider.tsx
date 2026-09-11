@@ -1,6 +1,6 @@
 "use client";
 
-import { ClerkProvider, GoogleOneTap } from "@clerk/nextjs";
+import { ClerkProvider, GoogleOneTap } from "@clerk/react";
 import type { ReactNode } from "react";
 import { clerkAppearance } from "./clerk-theme";
 

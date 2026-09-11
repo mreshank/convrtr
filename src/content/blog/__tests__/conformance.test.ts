@@ -14,6 +14,9 @@ const POST_SLUGS = [
 	"is-extracting-mlw-video-legal",
 	"mlw-vs-other-course-platform-video-wrappers",
 	"troubleshooting-a-failed-mlw-extraction",
+	"unpacking-renpy-rpa-archives-browser",
+	"convert-whatsapp-wechat-silk-to-wav-mp3",
+	"why-client-side-wasm-converters-beat-cloud",
 ];
 
 describe("blog registry conformance", () => {

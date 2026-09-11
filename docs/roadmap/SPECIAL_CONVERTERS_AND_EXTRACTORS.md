@@ -1673,6 +1673,70 @@
 
 ---
 
+### 73. Netpbm Portable Anymap Graphics Suite (`.ppm`, `.pgm`, `.pbm`, `.pnm`, `.pam`)
+
+- **Ecosystem & Context:** Jef Poskanzer's Netpbm graphic formats (PBM monochrome, PGM grayscale, PPM 24-bit RGB, PNM anymap, and PAM arbitrary tuple maps) have served as the foundational raster graphic exchange format across Unix and POSIX operating systems since 1988. They are ubiquitous in computer vision pipelines, image processing courses, scientific simulations, ray tracing benchmarks, and embedded vision systems due to their minimalist header structure and lack of proprietary patents. However, modern web browsers, office suites, and design tools cannot render `.ppm`, `.pgm`, `.pbm`, or `.pnm` files natively.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/unixporn, r/computervision, r/graphics, r/embedded, r/cpp, r/linux.
+  - Queries: *"How to open .ppm files on Windows / Mac without installing GIMP"*, *"Convert PGM grayscale depth maps to PNG in browser"*, *"PBM monochrome scan to PNG"*, *"Netpbm P1-P7 image viewer and converter"*.
+- **Forensic Byte Layout:**
+  - **Magic Number (ASCII 2 bytes):**
+    - `P1`: Plain ASCII Portable Bitmap (1-bit monochrome, 0 = white, 1 = black).
+    - `P2`: Plain ASCII Portable Graymap (grayscale integers 0..maxval).
+    - `P3`: Plain ASCII Portable Pixmap (RGB triplets in ASCII decimal).
+    - `P4`: Raw Binary Portable Bitmap (packed 1-bit raster, MSB first).
+    - `P5`: Raw Binary Portable Graymap (8-bit or 16-bit binary gray bytes).
+    - `P6`: Raw Binary Portable Pixmap (24-bit binary RGB triplets or 48-bit 16-bit/channel).
+    - `P7`: PAM (Portable Arbitrary Map) multi-channel tuple layout (WIDTH, HEIGHT, DEPTH, MAXVAL, TUPLTYPE).
+  - **Header Structure:**
+    - Magic number followed by whitespace.
+    - Optional comments initiated by `#` extending to end of line.
+    - Width and Height dimensions in decimal ASCII.
+    - Maximum sample value (`maxval`, 1..65535, omitted for P1/P4).
+    - Exactly one whitespace delimiter separating header from binary payload (for P4, P5, P6).
+- **In-Browser Execution Strategy:**
+  - Client-side parser implemented in pure TypeScript. Tokenizes both ASCII text formats (P1, P2, P3) and high-speed binary formats (P4, P5, P6, P7), handles comment stripping (`# ...`), dynamic channel depth scaling (16-bit to 8-bit dynamic range downsampling), packed bit alignment (P4), and synthesizes standard lossless 32-bit RGBA PNG output directly in browser memory without server hops.
+- **Fidelity:** `LOSSLESS` (Direct pixel mapping with 100% colorimetric accuracy).
+- **Status:** **Wave 26 Shipped (`image/ppm-to-png`)**.
+
+---
+
+### 74. Comic Book ZIP Archive (`.cbz`)
+
+- **Ecosystem & Context:** CBZ (Comic Book ZIP) is the global de facto standard container format for digitized comic books, manga chapters, and graphic novels. Originally popularized by CDisplay, it packages high-resolution comic page scans (JPEG, PNG, WebP) along with optional XML metadata (`ComicInfo.xml`) inside an unencrypted PKZIP archive. While desktop and mobile comic readers (Tachiyomi, CDisplay Ex, YACReader, Mihon) handle CBZ natively, e-readers (Kindle, Kobo, reMarkable), cloud storage viewers, and standard office/PDF readers require bound PDF documents to view chapters sequentially.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/comicbooks, r/manga, r/kindle, r/ereader, r/Tachiyomi, r/Calibre.
+  - Queries: *"Convert CBZ manga to PDF for Kindle"*, *"How to convert .cbz to PDF without Calibre"*, *"Read comic book CBZ on iPad Apple Books"*, *"Batch convert comic archives to PDF online privately"*.
+- **Forensic Byte Layout:**
+  - Standard PKZIP archive structure (`PK\x03\x04` local file headers, `PK\x01\x02` central directory records).
+  - Contains image files named numerically or alphabetically (e.g. `001.jpg`, `page_02.png`, `ch01_p10.webp`).
+  - May contain thumbnail caches (`__MACOSX`, `.DS_Store`, `Thumbs.db`) and `ComicInfo.xml` metadata.
+- **In-Browser Execution Strategy:**
+  - In-browser archive decompressor using `fflate`. Filters out OS artifact files and non-image metadata, sorts page filenames using natural alphanumeric collation (`naturalSort`, ensuring `page_2` precedes `page_10`), embeds image streams into a sequentially bound vector PDF using `pdf-lib`, matching each PDF page's aspect ratio and dimensions precisely to the source scan, and outputs a publication-quality PDF ready for instant reading on any device.
+- **Fidelity:** `LOSSLESS` (Images embedded directly with original resolution and pixel dimensions).
+- **Status:** **Wave 26 Shipped (`document/cbz-to-pdf`)**.
+
+---
+
+### 75. SubRip Subtitle Format (`.srt`)
+
+- **Ecosystem & Context:** SubRip (`.srt`) is the world's most ubiquitous subtitle and closed-caption format for movies, television shows, and offline video players (VLC, MPV, Plex, Kodi). However, modern web standards (HTML5 `<video><track>`, YouTube captions, Vimeo, Video.js, Coursera, Canvas) strictly require WebVTT (`.vtt`, Web Video Text Tracks) as defined by the W3C. Web browsers reject raw `.srt` files inside HTML5 `<track>` elements, forcing video creators, educators, and web developers to convert their subtitle libraries into WebVTT.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/webdev, r/videography, r/premiere, r/editors, r/accessibility.
+  - Queries: *"Convert SRT to VTT for HTML5 video track"*, *"How to upload subtitles to YouTube SRT to WebVTT"*, *"Free online SRT to VTT converter without watermark or upload limit"*, *"Batch convert SRT to VTT with millisecond accuracy"*.
+- **Forensic Byte Layout:**
+  - Plain UTF-8 text with optional BOM (`\uFEFF`).
+  - Sequential numeric index block (`1`, `2`, ...).
+  - Timing line with comma millisecond separators: `00:01:23,456 --> 00:01:27,890`.
+  - Multi-line subtitle cue payload.
+  - Double newline (`\n\n`) cue boundary separation.
+- **In-Browser Execution Strategy:**
+  - Client-side subtitle parser and W3C WebVTT synthesizer. Strips UTF-8 BOM, parses SRT cue blocks even with malformed or omitted index numbers, converts comma millisecond timestamps (`00:01:23,456`) into standard dot timestamps (`00:01:23.456`), strips deprecated HTML styling tags (`<font color="...">`) while preserving standard semantic tags (`<b>`, `<i>`, `<u>`), prepends the mandatory `WEBVTT` header, and serializes clean, compliant `.vtt` captions ready for web publishing.
+- **Fidelity:** `LOSSLESS` (Exact millisecond sync preservation).
+- **Status:** **Wave 26 Shipped (`document/srt-to-vtt`)**.
+
+---
+
 ## Roadmap Waves & Next Steps
 
 1. **Wave 1 (Shipped):**
@@ -1773,7 +1837,11 @@
     - Tool 70: `document/vtt-to-srt` (WebVTT subtitle format to SubRip SRT converter)
     - Tool 71: `image/svgz-to-svg` (Gzip-compressed SVG `.svgz` to uncompressed SVG)
     - Tool 72: `audio/caf-to-wav` (Apple Core Audio Format `.caf` 64-bit audio to standard RIFF WAV)
-26. **Wave 26 (Active Research & Next Builds):**
+26. **Wave 26 (Shipped):**
+    - Tool 73: `image/ppm-to-png` (Netpbm PPM, PGM, PBM, and PNM raster conversion engine to PNG)
+    - Tool 74: `document/cbz-to-pdf` (Comic Book ZIP archive `.cbz` reader and sequential page binder to PDF)
+    - Tool 75: `document/srt-to-vtt` (SubRip `.srt` subtitles to W3C-standard HTML5 WebVTT `.vtt`)
+27. **Wave 27 (Active Research & Next Builds):**
     - Candidate 1: `audio/amr-to-wav` (Adaptive Multi-Rate `.amr` mobile voice notes and legacy MMS audio to WAV)
     - Candidate 2: `document/cbr-to-zip` (Comic Book RAR `.cbr` comic archive extractor to ZIP)
     - Candidate 3: `image/exr-to-png` (OpenEXR `.exr` Industrial Light & Magic high-dynamic-range VFX raster to tone-mapped PNG)

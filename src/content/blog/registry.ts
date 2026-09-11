@@ -1,9 +1,12 @@
+import { meta as convertWhatsappWechatSilkToWavMp3 } from "./convert-whatsapp-wechat-silk-to-wav-mp3/meta";
 import { meta as howMlwEncryptionWorks } from "./how-mlw-encryption-works/meta";
 import { meta as isExtractingMlwVideoLegal } from "./is-extracting-mlw-video-legal/meta";
 import { meta as mlwVsOtherCoursePlatformVideoWrappers } from "./mlw-vs-other-course-platform-video-wrappers/meta";
 import { meta as recoveringCourseVideosAfterAPlatformShutsDown } from "./recovering-course-videos-after-a-platform-shuts-down/meta";
 import { meta as troubleshootingAFailedMlwExtraction } from "./troubleshooting-a-failed-mlw-extraction/meta";
 import type { BlogPostMeta } from "./types";
+import { meta as unpackingRenpyRpaArchivesBrowser } from "./unpacking-renpy-rpa-archives-browser/meta";
+import { meta as whyClientSideWasmConvertersBeatCloud } from "./why-client-side-wasm-converters-beat-cloud/meta";
 
 /**
  * Metadata only — every entry here is a plain object imported from a
@@ -20,6 +23,9 @@ export const BLOG_POSTS: BlogPostMeta[] = [
 	isExtractingMlwVideoLegal,
 	mlwVsOtherCoursePlatformVideoWrappers,
 	troubleshootingAFailedMlwExtraction,
+	unpackingRenpyRpaArchivesBrowser,
+	convertWhatsappWechatSilkToWavMp3,
+	whyClientSideWasmConvertersBeatCloud,
 ];
 
 export function getPost(

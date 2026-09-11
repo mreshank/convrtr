@@ -2,7 +2,7 @@ import type { BlogPostMeta } from "@/content/blog/types";
 import type { Tool } from "@/core/registry";
 
 export function buildToolJsonLd(tool: Tool, url: string) {
-	const origin = url.split("/")[0] + "//" + url.split("/")[2];
+	const origin = `${url.split("/")[0]}//${url.split("/")[2]}`;
 	return {
 		"@context": "https://schema.org",
 		"@graph": [
