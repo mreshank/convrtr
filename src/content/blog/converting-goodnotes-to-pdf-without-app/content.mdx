@@ -1,0 +1,40 @@
+GoodNotes is one of the most widely used note-taking applications across iOS, iPadOS, and macOS. Students, researchers, and engineers rely on it to annotate lecture slides, sketch architecture diagrams, and handwrite journal entries.
+
+However, when you export a notebook or share a backup using the native `.goodnotes` extension, you quickly discover that non-Apple platforms cannot open it. There is no official GoodNotes reader for Windows, Linux, Android, or standard web browsers.
+
+This guide explains the internal archive architecture of GoodNotes 5 and GoodNotes 6 files, how handwritten vector strokes and embedded PDF backgrounds are stored, and how you can convert `.goodnotes` files to standard printable PDF documents entirely inside your browser using [convrtr's GoodNotes to PDF converter](/document/goodnotes-to-pdf).
+
+## The GoodNotes Archive Architecture
+
+Despite its proprietary extension, a `.goodnotes` file is actually a compressed archive package conforming to standard ZIP specifications. If you inspect the first 4 bytes of any uncorrupted GoodNotes document, you will find the standard PK signature:
+
+```
+50 4B 03 04  (PK\x03\x04)
+```
+
+Inside the archive, GoodNotes organizes data hierarchically:
+- `attachments/`: Embedded images, photos, and inserted asset bitmaps.
+- `pdf/`: The underlying source document if you imported a PDF or slide deck to annotate.
+- `strokes/`: Serialized binary files containing Apple Pencil pressure values, coordinates, and color paths.
+- `metadata.json`: Document hierarchy, page numbering, bookmarks, and orientation definitions.
+
+## GoodNotes 5 vs GoodNotes 6 Differences
+
+Depending on which version produced the export, the payload layout varies:
+
+1. **GoodNotes 5 Packages**: Usually feature a flat or shallow directory tree where each page's handwriting strokes are serialized via Google Protocol Buffers (`.pb`) or binary property lists (`.plist`), combined with high-resolution rendered page snapshots or raw background PDF streams.
+2. **GoodNotes 6 Bundles**: Introduce block-level chunking and delta version tracking to support collaborative live editing and cloud sync across Apple CloudKit.
+
+When your primary goal is reading, printing, or archiving notes on Windows, Linux, or non-Apple hardware, extracting the rendered vector PDF stream or recombining the background PDF with high-resolution stroke overlays preserves the original document layout with pixel fidelity.
+
+## Client-Side Browser Extraction
+
+Most online converters ask you to upload multi-gigabyte personal notebooks to unknown third-party cloud servers. For confidential company notes, legal documents, or private lecture materials, cloud processing poses severe privacy risks.
+
+[convrtr's GoodNotes to PDF converter](/document/goodnotes-to-pdf) operates entirely in your browser memory:
+1. Validates the ZIP header and uncompresses the Central Directory.
+2. Locates the primary background document stream and embedded page assets.
+3. Renders and stitches all pages sequentially according to `metadata.json` pagination orders.
+4. Generates a pristine, standard PDF/A compatible document ready for viewing in Acrobat, Chrome, Firefox, or printing.
+
+No data is sent over the network, zero server storage is used, and conversions complete in seconds regardless of file size.

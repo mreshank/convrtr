@@ -1,4 +1,9 @@
+import { meta as appleMacpaintRetroGraphicsDecoding } from "./apple-macpaint-retro-graphics-decoding/meta";
 import { meta as convertWhatsappWechatSilkToWavMp3 } from "./convert-whatsapp-wechat-silk-to-wav-mp3/meta";
+import { meta as convertingGoodnotesToPdfWithoutApp } from "./converting-goodnotes-to-pdf-without-app/meta";
+import { meta as extractingChmHelpFilesModernSystems } from "./extracting-chm-help-files-modern-systems/meta";
+import { meta as extractingGodotPckPackagesBrowser } from "./extracting-godot-pck-packages-browser/meta";
+import { meta as garminFitToCsvGeojsonGpsData } from "./garmin-fit-to-csv-geojson-gps-data/meta";
 import { meta as howMlwEncryptionWorks } from "./how-mlw-encryption-works/meta";
 import { meta as isExtractingMlwVideoLegal } from "./is-extracting-mlw-video-legal/meta";
 import { meta as mlwVsOtherCoursePlatformVideoWrappers } from "./mlw-vs-other-course-platform-video-wrappers/meta";
@@ -26,6 +31,11 @@ export const BLOG_POSTS: BlogPostMeta[] = [
 	unpackingRenpyRpaArchivesBrowser,
 	convertWhatsappWechatSilkToWavMp3,
 	whyClientSideWasmConvertersBeatCloud,
+	convertingGoodnotesToPdfWithoutApp,
+	garminFitToCsvGeojsonGpsData,
+	extractingChmHelpFilesModernSystems,
+	appleMacpaintRetroGraphicsDecoding,
+	extractingGodotPckPackagesBrowser,
 ];
 
 export function getPost(

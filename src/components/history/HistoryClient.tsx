@@ -1,11 +1,13 @@
 "use client";
 
+import { useUser } from "@clerk/react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import {
 	calculateHistoryStats,
 	clearHistory,
 	exportHistoryAsCsv,
+	exportHistoryAsJson,
 	getHistory,
 } from "@/core/history/store";
 import type {
@@ -13,6 +15,159 @@ import type {
 	HistoryStats,
 } from "@/core/history/types";
 import { formatBytes } from "@/lib/format";
+
+const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
+function AuthenticatedRetentionCallout() {
+	const { isSignedIn, user } = useUser();
+
+	if (isSignedIn && user) {
+		return (
+			<div
+				style={{
+					display: "flex",
+					justifyContent: "space-between",
+					alignItems: "center",
+					flexWrap: "wrap",
+					gap: "var(--gap-sm)",
+					borderWidth: "var(--rule-width)",
+					borderStyle: "solid",
+					borderColor: "var(--accent)",
+					backgroundColor: "var(--surface)",
+					padding: "var(--gap-sm) var(--gap-md)",
+				}}
+			>
+				<div>
+					<span
+						className="meta"
+						style={{ color: "var(--accent)", marginRight: "var(--gap-sm)" }}
+					>
+						[ACCOUNT ACTIVE]
+					</span>
+					<span style={{ fontSize: "var(--label-size)", color: "var(--ink)" }}>
+						Signed in as{" "}
+						{user.primaryEmailAddress?.emailAddress ?? user.fullName ?? "User"}.
+						Extended 90-day conversion audit history active.
+					</span>
+				</div>
+				<span
+					className="meta"
+					style={{ color: "var(--ink-muted)", fontSize: "var(--mono-size)" }}
+				>
+					ZERO SERVER UPLOADS • LOCAL EXECUTION
+				</span>
+			</div>
+		);
+	}
+
+	return (
+		<div
+			style={{
+				display: "flex",
+				justifyContent: "space-between",
+				alignItems: "center",
+				flexWrap: "wrap",
+				gap: "var(--gap-sm)",
+				borderWidth: "var(--rule-width)",
+				borderStyle: "solid",
+				borderColor: "var(--rule)",
+				backgroundColor: "var(--surface)",
+				padding: "var(--gap-sm) var(--gap-md)",
+			}}
+		>
+			<div>
+				<span
+					className="meta"
+					style={{ color: "var(--accent)", marginRight: "var(--gap-sm)" }}
+				>
+					[ANONYMOUS SESSION]
+				</span>
+				<span
+					style={{ fontSize: "var(--label-size)", color: "var(--ink-muted)" }}
+				>
+					Conversions are stored locally in your browser (30-day retention).
+					Sign in to unlock 90-day retention and multi-device sync.
+				</span>
+			</div>
+			<Link
+				href="/auth"
+				style={{
+					display: "inline-flex",
+					alignItems: "center",
+					height: "23px",
+					padding: "0 14px",
+					backgroundColor: "var(--ink)",
+					color: "var(--ground)",
+					fontFamily: "var(--font-mono)",
+					fontSize: "var(--mono-size)",
+					textTransform: "uppercase",
+					letterSpacing: "0.08em",
+					borderRadius: "var(--radius-pill)",
+					textDecoration: "none",
+				}}
+			>
+				Sign In
+			</Link>
+		</div>
+	);
+}
+
+function AccountRetentionCallout() {
+	if (!PUBLISHABLE_KEY) {
+		return (
+			<div
+				style={{
+					display: "flex",
+					justifyContent: "space-between",
+					alignItems: "center",
+					flexWrap: "wrap",
+					gap: "var(--gap-sm)",
+					borderWidth: "var(--rule-width)",
+					borderStyle: "solid",
+					borderColor: "var(--rule)",
+					backgroundColor: "var(--surface)",
+					padding: "var(--gap-sm) var(--gap-md)",
+				}}
+			>
+				<div>
+					<span
+						className="meta"
+						style={{ color: "var(--accent)", marginRight: "var(--gap-sm)" }}
+					>
+						[ANONYMOUS SESSION]
+					</span>
+					<span
+						style={{ fontSize: "var(--label-size)", color: "var(--ink-muted)" }}
+					>
+						Conversions are stored locally in your browser (30-day retention).
+						Sign in to unlock 90-day retention and multi-device sync.
+					</span>
+				</div>
+				<Link
+					href="/auth"
+					style={{
+						display: "inline-flex",
+						alignItems: "center",
+						height: "23px",
+						padding: "0 14px",
+						backgroundColor: "var(--ink)",
+						color: "var(--ground)",
+						fontFamily: "var(--font-mono)",
+						fontSize: "var(--mono-size)",
+						textTransform: "uppercase",
+						letterSpacing: "0.08em",
+						borderRadius: "var(--radius-pill)",
+						textDecoration: "none",
+					}}
+				>
+					Sign In
+				</Link>
+			</div>
+		);
+	}
+
+	return <AuthenticatedRetentionCallout />;
+}
 
 export function HistoryClient() {
 	const [records, setRecords] = useState<ConversionHistoryRecord[]>([]);
@@ -52,6 +207,17 @@ export function HistoryClient() {
 		URL.revokeObjectURL(url);
 	};
 
+	const handleExportJson = () => {
+		const json = exportHistoryAsJson(records);
+		const blob = new Blob([json], { type: "application/json;charset=utf-8;" });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = `convrtr-audit-history-${new Date().toISOString().slice(0, 10)}.json`;
+		a.click();
+		URL.revokeObjectURL(url);
+	};
+
 	const handleClear = () => {
 		if (
 			window.confirm("Clear all conversion history? This cannot be undone.")
@@ -72,6 +238,7 @@ export function HistoryClient() {
 				width: "100%",
 			}}
 		>
+			<AccountRetentionCallout />
 			{/* Metric stats grid */}
 			<div
 				style={{
@@ -244,6 +411,28 @@ export function HistoryClient() {
 						}}
 					>
 						Export CSV
+					</button>
+					<button
+						type="button"
+						onClick={handleExportJson}
+						disabled={records.length === 0}
+						style={{
+							height: "23px",
+							padding: "0 14px",
+							borderWidth: "var(--rule-width)",
+							borderStyle: "solid",
+							borderColor: "var(--rule)",
+							backgroundColor: "transparent",
+							color: "var(--ink)",
+							fontFamily: "var(--font-mono)",
+							fontSize: "var(--mono-size)",
+							textTransform: "uppercase",
+							letterSpacing: "0.08em",
+							cursor: records.length === 0 ? "not-allowed" : "pointer",
+							opacity: records.length === 0 ? 0.4 : 1,
+						}}
+					>
+						Export JSON
 					</button>
 					<button
 						type="button"

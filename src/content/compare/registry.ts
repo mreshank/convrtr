@@ -729,6 +729,311 @@ export const COMPARISONS: ComparisonMeta[] = [
 			"document/ass-to-srt",
 		],
 	},
+	{
+		slug: "wav-vs-mp3",
+		title: "WAV vs MP3: Uncompressed Studio Quality vs Universal Storage",
+		description:
+			"An in-depth audio engineering comparison between WAV and MP3. Compare bitrates, file sizes, audio frequencies, and production workflows.",
+		formatA: "WAV",
+		formatB: "MP3",
+		category: "audio",
+		summary:
+			"WAV provides uncompressed linear pulse-code modulation (LPCM) audio fidelity with zero compression artifacts, making it the industry standard for studio recording and mastering. MP3 employs psychoacoustic perceptual coding to shrink file sizes by 75-90%, making it the universal consumer playback standard.",
+		prosA: [
+			"Bit-perfect uncompressed PCM audio fidelity without acoustic loss",
+			"Industry standard for music production, DAWs, and audio editing",
+			"Fast, lightweight decoding with zero CPU decoding overhead",
+			"Supports sample rates up to 192kHz and 32-bit floating point depth",
+		],
+		prosB: [
+			"Up to 10x smaller file sizes than uncompressed WAV (typically 1MB per minute at 128kbps)",
+			"Universal playback support across all modern and legacy consumer electronics",
+			"Comprehensive ID3 metadata tag support (cover art, artist, lyrics, album)",
+			"Ideal for streaming, podcasts, and mobile storage distribution",
+		],
+		specs: [
+			{
+				feature: "Compression Type",
+				formatA: "Uncompressed (LPCM)",
+				formatB: "Lossy perceptual encoding",
+			},
+			{
+				feature: "Typical Bitrate",
+				formatA: "1411 kbps (16-bit 44.1kHz)",
+				formatB: "128 – 320 kbps (CBR/VBR)",
+			},
+			{
+				feature: "File Size (4 min song)",
+				formatA: "~40 – 45 MB",
+				formatB: "~4 – 9 MB",
+			},
+			{ feature: "Max Sample Rate", formatA: "192+ kHz", formatB: "48 kHz" },
+			{
+				feature: "Metadata Standards",
+				formatA: "RIFF INFO chunks (limited)",
+				formatB: "ID3v1 / ID3v2.3 / ID3v2.4",
+			},
+			{
+				feature: "Primary Use Case",
+				formatA: "Studio recording & mastering",
+				formatB: "Consumer playback & streaming",
+			},
+		],
+		verdict:
+			"Keep masters and raw multitrack recordings in WAV or lossless FLAC. Convert to MP3 at 256–320 kbps for web distribution, podcast feeds, and consumer streaming.",
+		relatedTools: [
+			"audio/wav-to-mp3",
+			"audio/flac-to-wav",
+			"audio/flac-to-mp3",
+		],
+	},
+	{
+		slug: "webm-vs-mp4",
+		title: "WebM vs MP4: Modern Web Video Codecs vs Universal Hardware Support",
+		description:
+			"Compare WebM and MP4 video containers. Examine VP9/AV1 vs H.264/HEVC compression efficiency, browser streaming performance, and player compatibility.",
+		formatA: "WebM",
+		formatB: "MP4",
+		category: "video",
+		summary:
+			"WebM is an open-source, royalty-free media container optimized for HTML5 web streaming using VP8, VP9, or AV1 codecs. MP4 is the ISO-standard multimedia container with ubiquitous hardware decoding acceleration on virtually every smartphone, television, and computer manufactured in the last two decades.",
+		prosA: [
+			"Royalty-free, open-source container maintained by Google and the web community",
+			"Superior compression efficiency when paired with modern AV1 or VP9 video codecs",
+			"Native HTML5 video support in all modern desktop and mobile browsers",
+			"Alpha channel transparency video support in Chrome, Firefox, and Safari",
+		],
+		prosB: [
+			"Universal dedicated silicon hardware decoding on iPhone, Android, Smart TVs, and PCs",
+			"Lowest battery consumption and thermals during video playback",
+			"Compatible with all video editing software (Premiere, Final Cut, DaVinci Resolve)",
+			"Standard format for social media uploads (YouTube, Instagram, TikTok, Twitter/X)",
+		],
+		specs: [
+			{
+				feature: "Governing Body",
+				formatA: "Google / WebM Project",
+				formatB: "ISO / IEC Moving Picture Experts Group",
+			},
+			{
+				feature: "Primary Video Codecs",
+				formatA: "VP8, VP9, AV1",
+				formatB: "H.264 (AVC), H.265 (HEVC), AV1",
+			},
+			{
+				feature: "Primary Audio Codecs",
+				formatA: "Opus, Vorbis",
+				formatB: "AAC, MP3, ALAC",
+			},
+			{
+				feature: "Alpha Transparency",
+				formatA: "Supported (VP9 with alpha)",
+				formatB: "Unsupported in standard H.264",
+			},
+			{
+				feature: "Hardware Decoding",
+				formatA: "Modern GPUs / SoCs only",
+				formatB: "Universal hardware acceleration",
+			},
+			{
+				feature: "Licensing Status",
+				formatA: "100% Free & Open Source",
+				formatB: "Patent-encumbered (MPEG LA)",
+			},
+		],
+		verdict:
+			"Use WebM with VP9 or AV1 for web apps, web page background video loops, and bandwidth-critical browser delivery. Use MP4 with H.264 for maximum compatibility across older devices, smart TVs, and editing suites.",
+		relatedTools: ["video/webm-to-mp4", "video/mp4-to-webm"],
+	},
+	{
+		slug: "jxl-vs-avif",
+		title:
+			"JPEG XL vs AVIF: Which Next-Gen Image Format Wins for High Fidelity?",
+		description:
+			"Technical comparison between JPEG XL (JXL) and AVIF. Compare lossless JPEG recompression, HDR fidelity, multi-threaded encoding, and browser roadmap.",
+		formatA: "JXL",
+		formatB: "AVIF",
+		category: "image",
+		summary:
+			"JPEG XL and AVIF are the two modern contenders succeeding JPEG and WebP. AVIF delivers extreme compression at tiny file sizes using AV1 video keyframe compression. JPEG XL delivers superior photo fidelity, effortless lossless JPEG transcoding (saving 20% losslessly), and lightning-fast multi-core encoding.",
+		prosA: [
+			"Lossless transcoding of legacy JPEG files without re-encoding generational loss (saving ~20% size)",
+			"Exceptional high-fidelity image retention with minimal blurring or color shift",
+			"Blazing fast multi-threaded encoding and decoding speeds on standard CPUs",
+			"Supports up to 4099 channels, layers, animation, and CMYK print color spaces",
+		],
+		prosB: [
+			"Industry-wide browser adoption across Chrome, Safari, Firefox, and Edge",
+			"Outstanding compression efficiency at aggressive low-bitrate settings",
+			"Native 10-bit and 12-bit High Dynamic Range (HDR) color support",
+			"Backed by the Alliance for Open Media (Google, Apple, Microsoft, Netflix, Meta)",
+		],
+		specs: [
+			{
+				feature: "Base Technology",
+				formatA: "Pik + FUIF custom architecture",
+				formatB: "AV1 video intra-frames (AOMedia)",
+			},
+			{
+				feature: "Lossless JPEG Recompression",
+				formatA: "Yes (bit-exact restoration)",
+				formatB: "No (requires full decode/re-encode)",
+			},
+			{
+				feature: "Encoding Speed",
+				formatA: "Fast & highly parallel",
+				formatB: "Relatively slow on high resolutions",
+			},
+			{
+				feature: "Max Resolution",
+				formatA: "1 billion x 1 billion pixels",
+				formatB: "65536 x 65536 pixels",
+			},
+			{
+				feature: "Current Browser Support",
+				formatA: "Safari 17+, Firefox (flag)",
+				formatB: "Chrome, Safari, Firefox, Edge (>93%)",
+			},
+			{
+				feature: "Primary Strength",
+				formatA: "Archival, professional photography, print",
+				formatB: "Web delivery, bandwidth reduction",
+			},
+		],
+		verdict:
+			"Use AVIF for current production web delivery where broad browser support and tiny file size are paramount. Convert JXL to AVIF or PNG when distributing assets across web ecosystems.",
+		relatedTools: [
+			"image/jpg-to-jxl",
+			"image/png-to-jxl",
+			"image/avif-to-png",
+			"image/avif-to-jpg",
+		],
+	},
+	{
+		slug: "gpx-vs-kml",
+		title: "GPX vs KML: GPS Activity Tracklogs vs Rich Geospatial Markup",
+		description:
+			"Compare GPX and KML geospatial formats. Understand GPS waypoint recording, Google Earth 3D overlays, drone mapping, and converting to GeoJSON.",
+		formatA: "GPX",
+		formatB: "KML",
+		category: "document",
+		summary:
+			"GPX is the universal XML exchange format for GPS devices, smartwatches, and fitness trackers focused on time-series track points. KML is Google Earth's geospatial markup language designed for rich 3D visualization, polygons, camera angles, and styled spatial overlays.",
+		prosA: [
+			"Universal standard for GPS units (Garmin, Wahoo, Strava, Komoot, Suunto)",
+			"Built specifically for sequential trackpoints with elevation, time, and heart rate telemetry",
+			"Lean, simple schema supported by all outdoor recreation and trail mapping apps",
+			"Direct import into GPS hardware navigation units without transformation",
+		],
+		prosB: [
+			"Rich geographic styling with custom colored pins, line widths, and 3D polygon extrusions",
+			"Supports camera vantage points, tour animations, and ground overlays in Google Earth",
+			"Can package icons and models into compressed KMZ archives",
+			"Comprehensive polygon boundary and territory visualization support",
+		],
+		specs: [
+			{
+				feature: "Originator",
+				formatA: "Topografix",
+				formatB: "Keyhole Inc. / Google / OGC standard",
+			},
+			{
+				feature: "Underlying Syntax",
+				formatA: "XML (<gpx>)",
+				formatB: "XML (<kml>)",
+			},
+			{
+				feature: "Primary Data Model",
+				formatA: "Waypoints, routes, trackpoints (lat/lon/ele/time)",
+				formatB: "Placemarks, geometries, styles, folders, tours",
+			},
+			{
+				feature: "Styling & Colors",
+				formatA: "Very limited (extensions only)",
+				formatB: "Extensive (Style, LineStyle, PolyStyle, IconStyle)",
+			},
+			{
+				feature: "Google Earth Integration",
+				formatA: "Basic import",
+				formatB: "Native complete feature support",
+			},
+			{
+				feature: "Fitness Device Support",
+				formatA: "Universal standard",
+				formatB: "Unsupported by bike computers & GPS watches",
+			},
+		],
+		verdict:
+			"Use GPX when tracking, logging, or exporting GPS trails for outdoor fitness and navigation devices. Use KML when presenting styled spatial boundaries, territories, or 3D tours in Google Earth. Convert both to GeoJSON for web mapping APIs.",
+		relatedTools: [
+			"document/gpx-to-geojson",
+			"document/kml-to-geojson",
+			"document/kmz-to-geojson",
+		],
+	},
+	{
+		slug: "ass-vs-srt",
+		title:
+			"ASS vs SRT: Advanced Anime Fansub Styling vs Clean Subtitle Compatibility",
+		description:
+			"Compare Advanced SubStation Alpha (ASS) and SubRip (SRT) subtitle formats. Learn about vector drawing, fonts, karaoke timing, and converting to web formats.",
+		formatA: "ASS",
+		formatB: "SRT",
+		category: "document",
+		summary:
+			"Advanced SubStation Alpha (ASS) offers complete desktop publishing control over video captions with font styling, vector shapes, rotation, and karaoke timing. SubRip (SRT) is the world's most ubiquitous subtitle standard, offering distraction-free plain text captions that play on any screen.",
+		prosA: [
+			"Pixel-precise positioning anywhere on the video frame",
+			"Custom fonts, font sizes, drop shadows, outlines, and border styles",
+			"Dynamic animation tags for rotation, fading, clipping, and motion tracking",
+			"Karaoke timing tags (\\k) for music videos and opening themes",
+		],
+		prosB: [
+			"Universal hardware and software media player compatibility",
+			"Lightweight, clean plain text with minimal parsing overhead",
+			"Directly supported by YouTube, Vimeo, Plex, and streaming platforms",
+			"Effortless translation and localization workflow in CAT tools",
+		],
+		specs: [
+			{
+				feature: "Format Complexity",
+				formatA: "Scripting language with style declarations",
+				formatB: "Sequential plain-text blocks",
+			},
+			{
+				feature: "Styling Attributes",
+				formatA: "Fonts, colors, margins, rotation, outlines, vectors",
+				formatB: "Basic HTML (<b>, <i>, <u>) only",
+			},
+			{
+				feature: "Positioning Flexibility",
+				formatA: "Coordinate-exact (\\pos(x,y))",
+				formatB: "Bottom-center default",
+			},
+			{
+				feature: "Anime / Fansub Dominance",
+				formatA: "Universal de facto standard",
+				formatB: "Rarely used for fansubs",
+			},
+			{
+				feature: "HTML5 Video Support",
+				formatA: "Requires Canvas / WebAssembly renderer",
+				formatB: "Converts effortlessly to WebVTT",
+			},
+			{
+				feature: "File Overhead",
+				formatA: "Higher (contains style definitions)",
+				formatB: "Minimal",
+			},
+		],
+		verdict:
+			"Use ASS when typesetting anime, music videos, or on-screen translation signs where visual placement matters. Convert ASS to clean SRT or WebVTT for playback on mobile devices, smart TVs, or web video players.",
+		relatedTools: [
+			"document/ass-to-srt",
+			"document/srt-to-vtt",
+			"document/vtt-to-srt",
+		],
+	},
 ];
 
 export function getComparison(slug: string): ComparisonMeta | undefined {

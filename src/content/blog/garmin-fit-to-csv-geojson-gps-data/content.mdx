@@ -1,0 +1,50 @@
+Garmin sports watches, cycling computers, and heart rate monitors record training sessions in a compact binary format with the `.fit` extension. 
+
+FIT stands for **Flexible and Interoperable Data Transfer**, a protocol created by Dynastream Innovations (a Garmin subsidiary) designed specifically for low-power microcontrollers with tight memory and storage constraints.
+
+While text formats like GPX or TCX (XML-based) consume megabytes of storage for a single marathon or bike ride, a `.fit` file stores heart rate, cadence, power, temperature, elevation, and GPS coordinates in a fraction of the space.
+
+However, standard data analysis tools like Excel, pandas, GIS mappers (Mapbox, Leaflet, QGIS), and database engines cannot directly read binary FIT byte streams. This guide breaks down the FIT binary layout and explains how to extract your activity records into universal CSV spreadsheets or GIS GeoJSON trails.
+
+## The FIT Binary Header
+
+Every valid FIT file begins with a 14-byte (or legacy 12-byte) header:
+
+| Offset | Size | Field | Description |
+|---|---|---|---|
+| 0 | 1 byte | Header Size | Usually `14` (`0x0E`) |
+| 1 | 1 byte | Protocol Version | Major/minor FIT protocol version |
+| 2 | 2 bytes | Profile Version | FIT SDK data definition profile version |
+| 4 | 4 bytes | Data Size | Little-endian uint32 byte count of data records |
+| 8 | 4 bytes | Data Type | ASCII string `".FIT"` (`0x2E 0x46 0x49 0x54`) |
+| 12 | 2 bytes | CRC | 16-bit CRC checksum of bytes 0–11 |
+
+Immediately following this header is the data section, followed by a final 2-byte CRC checksum validating the entire payload.
+
+## Definition Messages vs Data Messages
+
+FIT files do not use fixed schemas. Instead, they use a dynamic self-describing system composed of two alternating message types:
+
+1. **Definition Messages**: Declare the schema for subsequent records. They define the global message number (e.g. `0` for File ID, `20` for Record/telemetry, `18` for Session summary), how many fields exist, each field's definition number, byte size, and data type (signed integer, unsigned integer, string, float).
+2. **Data Messages**: Contain raw byte values matching the layout declared by the active definition message.
+
+For example, a high-frequency telemetry record (Global Message `20`) contains:
+- `timestamp`: Seconds since UTC 1989-12-31 00:00:00 (Garmin epoch).
+- `position_lat` / `position_long`: 32-bit signed integers in semicircles, where `degrees = semicircles * (180 / 2^31)`.
+- `distance`: Accumulated distance in meters (scaled by 100).
+- `enhanced_altitude`: Elevation in meters (scaled by 5, offset by 500).
+- `heart_rate`: Beats per minute uint8.
+- `cadence` / `power`: Cycling or running metrics.
+
+## Converting FIT to CSV and GeoJSON in the Browser
+
+Traditional workflows require installing Python and compiling the C++ FIT SDK or installing tools like `fitparse` or `gpsbabel`.
+
+[convrtr's FIT to CSV converter](/document/fit-to-csv) runs a complete WebAssembly FIT decoder directly in your browser:
+1. Verifies the header CRC and `".FIT"` magic bytes.
+2. Dynamically builds the field dictionary as definition messages appear.
+3. Decodes coordinate semicircles to standard WGS84 decimal degrees (`latitude`, `longitude`).
+4. Converts Garmin epoch timestamps to standard ISO-8601 UTC strings.
+5. Emits a clean, tabular CSV file containing every track point, ready for instant import into Microsoft Excel, Google Sheets, or Python pandas.
+
+Because the conversion runs locally, your private health telemetry, GPS locations, and home coordinates never leave your device.

@@ -1,0 +1,54 @@
+When Apple unveiled the original Macintosh 128K on January 24, 1984, Steve Jobs showed off two groundbreaking applications written by Apple fellows Bill Atkinson and Andy Hertzfeld: MacWrite and MacPaint.
+
+MacPaint revolutionized consumer graphics. Operating on a monochrome screen with a 1-bit framebuffer, MacPaint allowed users to draw, erase, and dither textures using a mouse.
+
+Every document saved in MacPaint has a fixed canvas size: **576 pixels wide by 720 pixels tall**, exactly matching an 8.5 x 11 inch printed page on Apple's ImageWriter dot matrix printer at 72 DPI (with 0.25 inch margins).
+
+Modern image tools, operating systems, and browsers cannot render these vintage `.mac`, `.pic`, or `.pnt` files. This article documents the byte format of MacPaint documents and how our WebAssembly parser resurrects them into high-resolution PNGs.
+
+## The MacPaint File Layout
+
+A MacPaint file has a straightforward, predictable structure:
+
+```
++-----------------------------------------------------------+
+| Version / Header: 4 bytes (uint32)                        |
+| Usually 0x00000000 or 0x00000002                          |
++-----------------------------------------------------------+
+| Pattern Palette: 38 patterns * 8 bytes = 304 bytes        |
+| Custom 8x8 dither patterns used in the document           |
++-----------------------------------------------------------+
+| Reserved Padding: 204 bytes (all zeros)                   |
++-----------------------------------------------------------+
+| Bitmap Data: PackBits compressed scanlines                |
+| Exactly 720 lines of 576 pixels (72 bytes per scanline)   |
++-----------------------------------------------------------+
+```
+
+Total header size before image data is exactly `4 + 304 + 204 = 512 bytes`.
+
+## The PackBits Byte-Run RLE Algorithm
+
+Because the Macintosh 128K had only 128 kilobytes of RAM shared with video memory, Atkinson designed a lightweight run-length encoding compression algorithm called **PackBits** (later incorporated into Apple's QuickDraw and the TIFF standard).
+
+The uncompressed canvas has 720 lines. Each line is 576 pixels wide, requiring `576 / 8 = 72 bytes` of bitmap data. The compressed stream encodes these 72-byte scanlines using signed control bytes:
+
+1. Read a signed byte `n` (`-128` to `127`):
+   - **If `n >= 0` and `n <= 127`**: Literal run. Copy the next `n + 1` bytes directly to the output scanline buffer.
+   - **If `n >= -127` and `n <= -1`**: Replicate run. Read the next 1 byte, and repeat its value `(1 - n)` times (i.e. `2` to `128` times).
+   - **If `n == -128`**: No-op (ignored for word alignment).
+2. Continue until exactly 72 bytes have been decoded for the current scanline.
+3. Repeat for all 720 scanlines.
+
+## Restoring 1-Bit Graphics to Modern Formats
+
+In original Macintosh QuickDraw:
+- Bit `0` represented a white pixel (`#FFFFFF`).
+- Bit `1` represented a black pixel (`#000000`).
+
+To convert MacPaint files into modern PNG images:
+1. Decode the 720 PackBits scanlines into a contiguous `576 * 720 = 414,720` pixel buffer.
+2. Map each bit to standard 32-bit RGBA pixels (`[0, 0, 0, 255]` for 1s, `[255, 255, 255, 255]` for 0s).
+3. Encode the RGBA buffer into standard RFC 2083 Deflate-compressed PNG scanlines.
+
+You can preserve and restore historical MacPaint illustrations instantly using [convrtr's MacPaint to PNG converter](/image/macpaint-to-png) with zero dependencies.

@@ -4,6 +4,7 @@ import {
 	calculateHistoryStats,
 	clearHistory,
 	exportHistoryAsCsv,
+	exportHistoryAsJson,
 	getHistory,
 } from "../store";
 
@@ -122,6 +123,29 @@ describe("conversion history store", () => {
 		expect(csv).toContain("photo.min.jpg");
 		expect(csv).toContain("2000");
 		expect(csv).toContain("1000");
+	});
+
+	it("exports records to JSON format", () => {
+		const records = [
+			{
+				id: "json_test",
+				timestamp: 1700000000000,
+				toolId: "image/compress-jpg",
+				category: "image",
+				inputName: "photo.jpg",
+				inputSize: 2000,
+				outputName: "photo.min.jpg",
+				outputSize: 1000,
+				durationMs: 75,
+				status: "success" as const,
+			},
+		];
+
+		const json = exportHistoryAsJson(records);
+		const parsed = JSON.parse(json);
+		expect(parsed.length).toBe(1);
+		expect(parsed[0].id).toBe("json_test");
+		expect(parsed[0].toolId).toBe("image/compress-jpg");
 	});
 
 	it("clears history completely", () => {

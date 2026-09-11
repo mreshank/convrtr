@@ -1,5 +1,10 @@
+import { meta as documentForensics } from "./document-forensics/meta";
+import { meta as gameDevPipeline } from "./game-dev-pipeline/meta";
+import { meta as geodataSpatial } from "./geodata-spatial/meta";
 import { meta as podcastKit } from "./podcast-kit/meta";
+import { meta as retroComputing } from "./retro-computing/meta";
 import { meta as stripMetadata } from "./strip-metadata/meta";
+import { meta as subtitleLocalization } from "./subtitle-localization/meta";
 import type { CollectiveMeta } from "./types";
 
 /**
@@ -13,7 +18,15 @@ import type { CollectiveMeta } from "./types";
  * blog registry guards against for post bodies. Resolving an id to a `Tool`
  * is left to the route that renders one collective, via `getTool`.
  */
-export const COLLECTIVES: CollectiveMeta[] = [podcastKit, stripMetadata];
+export const COLLECTIVES: CollectiveMeta[] = [
+	podcastKit,
+	stripMetadata,
+	gameDevPipeline,
+	retroComputing,
+	subtitleLocalization,
+	geodataSpatial,
+	documentForensics,
+];
 
 export function getCollective(
 	slug: string,

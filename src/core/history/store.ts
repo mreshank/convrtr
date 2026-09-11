@@ -2,6 +2,7 @@ import type { ConversionHistoryRecord, HistoryStats } from "./types";
 
 const STORAGE_KEY = "convrtr_conversion_history_v1";
 export const DEFAULT_RETENTION_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+export const EXTENDED_RETENTION_MS = 90 * 24 * 60 * 60 * 1000; // 90 days for logged in users
 
 function getStorage(): Storage | null {
 	if (typeof window === "undefined") return null;
@@ -149,4 +150,11 @@ export function exportHistoryAsCsv(records: ConversionHistoryRecord[]): string {
 	]);
 
 	return [headers.join(","), ...rows.map((row) => row.join(","))].join("\n");
+}
+
+/**
+ * Exports history records as formatted JSON string.
+ */
+export function exportHistoryAsJson(records: ConversionHistoryRecord[]): string {
+	return JSON.stringify(records, null, 2);
 }

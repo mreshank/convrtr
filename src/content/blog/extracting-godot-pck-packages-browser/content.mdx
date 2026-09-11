@@ -1,0 +1,50 @@
+Godot Engine has rapidly risen as one of the world's premier open-source game engines, powering indie hits like *Brotato*, *Dome Keeper*, and *Cassette Beasts*.
+
+When distributing a Godot game, the engine exports all scenes (`.tscn`), scripts (`.gd`, `.gdc`), textures (`.png`, `.ctex`), audio (`.wav`, `.ogg`), and shaders into a unified archive file with the `.pck` extension (or embedded directly into the executable binary).
+
+Modders, game archivists, and developers who need to inspect game assets often face hurdles when attempting to view the contents of a `.pck` file without installing external Python tools like `gdtoolkit` or decompilers like `gdsdecomp`.
+
+This guide walks through Godot's PCK container layout across Godot 2, 3, and 4, explaining how virtual paths and file offsets are structured, and how you can extract PCK archives into clean ZIP files in your browser.
+
+## The Godot PCK Binary Header
+
+A standalone Godot PCK package begins with a 4-byte ASCII magic identifier:
+
+```
+47 44 50 43  ("GDPC")
+```
+
+The header layout follows:
+
+| Offset | Size | Type | Field Description |
+|---|---|---|---|
+| 0 | 4 bytes | char[4] | Magic identifier: `"GDPC"` |
+| 4 | 4 bytes | uint32 | Package format version (`1` for Godot 3, `2` for Godot 4) |
+| 8 | 4 bytes | uint32 | Godot major engine version (e.g. `3` or `4`) |
+| 12 | 4 bytes | uint32 | Godot minor engine version (e.g. `5` or `3`) |
+| 16 | 4 bytes | uint32 | Godot patch revision number |
+| 20 | 64 bytes | uint32[16] | Reserved / flags (e.g. encrypted directory flag in Godot 4) |
+| 84 | 4 bytes | uint32 | File entry count `N` |
+
+## The Virtual Path Directory Table
+
+Following the header is the file directory table containing `N` sequential records. For each file packed inside the package:
+
+1. **Path Length**: 4-byte uint32 indicating the string length `L` in bytes.
+2. **Virtual Path**: `L` bytes of UTF-8 text representing the internal Godot resource path (e.g., `res://scenes/player.tscn` or `res://icon.svg`).
+3. **Offset**: 8-byte uint64 pointing to the byte position of the file content in the `.pck` file.
+4. **Size**: 8-byte uint64 indicating the byte length of the file data.
+5. **MD5 Checksum**: 16 bytes of MD5 hash verifying content integrity.
+6. **Flags**: 4-byte uint32 flags (such as encryption bitmask in Godot 4).
+
+## Unpacking Godot Assets in the Browser
+
+Traditional PCK unpackers require running command-line utilities.
+
+[convrtr's PCK to ZIP extractor](/document/pck-to-zip) runs directly in your browser:
+1. Validates the `GDPC` magic signature and determines the engine format version.
+2. Reads the directory table into memory, normalizing `res://` prefixes into standard clean directory structures.
+3. Slices each file payload from the source binary array using zero-copy byte views.
+4. Streams the extracted entries into a standard RFC 1951 Deflate ZIP archive.
+
+Because everything happens locally inside a Web Worker, you can unpack multi-hundred-megabyte game archives in seconds with zero uploads and complete privacy.

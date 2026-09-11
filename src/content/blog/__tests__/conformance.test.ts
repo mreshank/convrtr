@@ -17,6 +17,11 @@ const POST_SLUGS = [
 	"unpacking-renpy-rpa-archives-browser",
 	"convert-whatsapp-wechat-silk-to-wav-mp3",
 	"why-client-side-wasm-converters-beat-cloud",
+	"converting-goodnotes-to-pdf-without-app",
+	"garmin-fit-to-csv-geojson-gps-data",
+	"extracting-chm-help-files-modern-systems",
+	"apple-macpaint-retro-graphics-decoding",
+	"extracting-godot-pck-packages-browser",
 ];
 
 describe("blog registry conformance", () => {

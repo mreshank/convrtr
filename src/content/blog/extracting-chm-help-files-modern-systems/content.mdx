@@ -1,0 +1,53 @@
+For nearly two decades, Microsoft Compiled HTML Help (`.chm`) was the standard format for software documentation, developer reference manuals (including MSDN), and offline technical books across Windows 98, 2000, XP, and 7.
+
+Opening a `.chm` file on modern operating systems has become increasingly difficult:
+- **macOS & Linux**: Have no built-in viewer for CHM files.
+- **Modern Windows 10 & 11**: Block opening `.chm` files downloaded from the internet by default under Windows Attachment Manager (yielding "Navigation to the webpage was canceled" errors).
+- **Security Vulnerabilities**: Legacy Microsoft HTML Help relies on outdated Internet Explorer ActiveX controls, presenting security risks when opening untrusted manuals.
+
+This guide explains how CHM files pack web pages using proprietary ITSP/ITIR headers and LZX compression, and how to unpack them directly into modern HTML files and ZIP archives.
+
+## The Internal Structure of Microsoft CHM
+
+A `.chm` file is an Info-Tech Storage (ITS) container, essentially a virtual file system packaged inside a single binary:
+
+```
++------------------------------------------------------+
+| Header: "ITSF" (0x49 0x54 0x53 0x46)                 |
++------------------------------------------------------+
+| Directory Chunk Table: "ITSP" (0x49 0x54 0x53 0x50)  |
+| - B-Tree directory index                              |
+| - Virtual file listings with offsets and sizes       |
++------------------------------------------------------+
+| Content Stream: "::DataSpace/Storage/MSCompressed"   |
+| - LZX Compressed Data Blocks                          |
+| - Reset Table (every 512KB for random access)        |
++------------------------------------------------------+
+```
+
+### The LZX Compression Algorithm
+
+Unlike standard ZIP files that compress individual files using Deflate, CHM concatenates all HTML pages, CSS stylesheets, JavaScript files, and GIF/JPEG images into one continuous byte stream, which is then compressed using Microsoft's LZX algorithm with a sliding window (typically 32KB to 2MB).
+
+LZX compression achieves significantly higher compression ratios on sets of similar documentation pages compared to per-file compression. However, decompressing a single file requires seeking to the nearest reset block and decompressing the stream sequentially.
+
+### The Internal File Hierarchy
+
+Inside the CHM virtual file system, key control files govern navigation:
+- `#SYSTEM`: Version and build information.
+- `#TOPICS`: Title and URL mappings for pages.
+- `#STRINGS`: Human-readable strings and keywords.
+- `toc.hhc` / `index.hhk`: HTML-based Table of Contents and Keyword Index trees.
+- `*.htm`, `*.html`: The actual documentation pages.
+
+## Extracting CHM to Clean HTML & ZIP in the Browser
+
+To read CHM documentation on a modern Mac, iPad, Android device, or Linux terminal, you can unpack the virtual filesystem into standard static HTML and modern image assets.
+
+Using [convrtr's CHM to ZIP extractor](/document/chm-to-zip):
+1. The ITSF and ITSP directory headers are validated in memory.
+2. The LZX bitstream is decoded through WebAssembly.
+3. Every file path is normalized to safe standard relative paths (stripping Windows backslashes).
+4. All HTML files, stylesheets, and images are packaged into a clean `.zip` archive.
+
+Once extracted, you can browse the documentation in Chrome, Safari, or Firefox with full styling and clickable local links intact.
