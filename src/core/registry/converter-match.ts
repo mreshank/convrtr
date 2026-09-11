@@ -259,6 +259,11 @@ const MIME_MAP: Record<string, string> = {
 	"audio/x-aud": "aud",
 	"audio/aud": "aud",
 	"application/x-aud": "aud",
+	"audio/x-avr": "avr",
+	"audio/avr": "avr",
+	"text/x-nfo": "nfo",
+	"application/x-nfo": "nfo",
+	"application/x-nes-rom": "chr",
 };
 
 /**

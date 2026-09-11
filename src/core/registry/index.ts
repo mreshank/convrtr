@@ -3,6 +3,7 @@ import { adxToWav } from "./tools/audio/adx-to-wav";
 import { aiffToWav } from "./tools/audio/aiff-to-wav";
 import { auToWav } from "./tools/audio/au-to-wav";
 import { audToWav } from "./tools/audio/aud-to-wav";
+import { avrToWav } from "./tools/audio/avr-to-wav";
 import { cafToWav } from "./tools/audio/caf-to-wav";
 import { dsfToWav } from "./tools/audio/dsf-to-wav";
 import { dspToWav } from "./tools/audio/dsp-to-wav";
@@ -33,6 +34,7 @@ import { wavToFlac } from "./tools/audio/wav-to-flac";
 import { wavToMp3 } from "./tools/audio/wav-to-mp3";
 import { wavToOpus } from "./tools/audio/wav-to-opus";
 import { waveformWAV } from "./tools/audio/wav-waveform";
+import { xmToWav } from "./tools/audio/xm-to-wav";
 import { avifToJpg } from "./tools/avif-to-jpg";
 import { avifToPng } from "./tools/avif-to-png";
 import { compressJpg } from "./tools/compress-jpg";
@@ -57,6 +59,8 @@ import { kmzToGeoJson } from "./tools/document/kmz-to-geojson";
 import { latexToMarkdown } from "./tools/document/latex-to-markdown";
 import { mhtmlToHtml } from "./tools/document/mhtml-to-html";
 import { msgToEml } from "./tools/document/msg-to-eml";
+import { orgToMarkdown } from "./tools/document/org-to-markdown";
+import { nfoToHtml } from "./tools/document/nfo-to-html";
 import { osmToGeoJson } from "./tools/document/osm-to-geojson";
 import { pakToZip } from "./tools/document/pak-to-zip";
 import { pckToZip } from "./tools/document/pck-to-zip";
@@ -82,8 +86,10 @@ import { abrToPng } from "./tools/image/abr-to-png";
 import { aniToPng } from "./tools/image/ani-to-png";
 import { asepriteToPng } from "./tools/image/aseprite-to-png";
 import { cdrToPng } from "./tools/image/cdr-to-png";
+import { chrToPng } from "./tools/image/chr-to-png";
 import { clipToPng } from "./tools/image/clip-to-png";
 import { curToPng } from "./tools/image/cur-to-png";
+import { dcmToPng } from "./tools/image/dcm-to-png";
 import { ddsToPng } from "./tools/image/dds-to-png";
 import { degasToPng } from "./tools/image/degas-to-png";
 import { fitsToPng } from "./tools/image/fits-to-png";
@@ -303,6 +309,12 @@ export const TOOLS: Tool[] = [
 	bibtexToMarkdown,
 	degasToPng,
 	audToWav,
+	avrToWav,
+	nfoToHtml,
+	chrToPng,
+	orgToMarkdown,
+	dcmToPng,
+	xmToWav,
 ];
 
 export function getTool(id: string): Tool | undefined {
