@@ -1196,11 +1196,7 @@ export const COMPARISONS: ComparisonMeta[] = [
 		],
 		verdict:
 			"VAG is an iconic retro gaming format optimized for Sony's vintage SPU sound chips. Convert VAG files to standard RIFF WAV to listen to, sample, remix, or preserve classic PlayStation game sound effects and soundtracks.",
-		relatedTools: [
-			"audio/vag-to-wav",
-			"audio/wav-to-mp3",
-			"audio/wav-to-flac",
-		],
+		relatedTools: ["audio/vag-to-wav", "audio/wav-to-mp3", "audio/wav-to-flac"],
 	},
 	{
 		slug: "aco-vs-css",
@@ -1252,7 +1248,8 @@ export const COMPARISONS: ComparisonMeta[] = [
 	},
 	{
 		slug: "koa-vs-png",
-		title: "KOA vs PNG: Commodore 64 Multi-Color Bitmaps vs Modern 32-Bit Web Graphics",
+		title:
+			"KOA vs PNG: Commodore 64 Multi-Color Bitmaps vs Modern 32-Bit Web Graphics",
 		description:
 			"Compare Commodore 64 KoalaPainter (.koa) graphics with 32-bit RGBA PNG. Learn about VIC-II multi-color constraints, color clash, 16-color palettes, and lossless web images.",
 		formatA: "KOA",
@@ -1345,10 +1342,7 @@ export const COMPARISONS: ComparisonMeta[] = [
 		],
 		verdict:
 			"Use BibTeX when writing formal academic papers in LaTeX or managing citation databases with Zotero. Convert BibTeX to Markdown to publish reading lists, bibliographies, and literature reviews on websites, GitHub repositories, or Obsidian knowledge graphs.",
-		relatedTools: [
-			"document/bibtex-to-markdown",
-			"document/latex-to-markdown",
-		],
+		relatedTools: ["document/bibtex-to-markdown", "document/latex-to-markdown"],
 	},
 	{
 		slug: "degas-vs-png",
@@ -1401,8 +1395,7 @@ export const COMPARISONS: ComparisonMeta[] = [
 	},
 	{
 		slug: "aud-vs-wav",
-		title:
-			"AUD vs WAV: Westwood Studios Game Audio vs Uncompressed Linear PCM",
+		title: "AUD vs WAV: Westwood Studios Game Audio vs Uncompressed Linear PCM",
 		description:
 			"Compare Westwood Studios AUD sound files from Command & Conquer and Red Alert with standard RIFF WAV. Understand WS-ADPCM compression, sample rates, and DAW playback.",
 		formatA: "AUD",
@@ -1446,11 +1439,7 @@ export const COMPARISONS: ComparisonMeta[] = [
 		],
 		verdict:
 			"AUD is a nostalgic video game audio format from the golden era of PC real-time strategy gaming. Convert Westwood AUD files to standard RIFF WAV to listen to, sample, remix, or preserve iconic C&C and Red Alert sound effects on modern systems.",
-		relatedTools: [
-			"audio/aud-to-wav",
-			"audio/wav-to-mp3",
-			"audio/wav-to-flac",
-		],
+		relatedTools: ["audio/aud-to-wav", "audio/wav-to-mp3", "audio/wav-to-flac"],
 	},
 ];
 
