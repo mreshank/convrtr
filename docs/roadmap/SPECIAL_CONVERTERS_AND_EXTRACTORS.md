@@ -2356,8 +2356,13 @@
     - Tool 94: `audio/avr-to-wav` (Atari ST & Falcon030 Audio Visual Research `.avr` digital audio to 16-bit linear PCM WAV)
     - Tool 95: `document/nfo-to-html` (IBM CP437 ASCII/ANSI demoscene release art `.nfo` & `.diz` to styled HTML & UTF-8 text)
     - Tool 96: `image/chr-to-png` (NES / Famicom 2bpp planar character tile ROM `.chr` to 32-bit RGBA PNG sprite sheet)
-34. **Wave 34 (Active Research & Next Builds):**
-    - Candidate 1: `audio/xm-to-wav` (FastTracker II `.xm` extended module tracker music to 16-bit stereo WAV)
-    - Candidate 2: `document/org-to-markdown` (Emacs Org Mode `.org` agenda and documentation to GitHub Flavored Markdown)
-    - Candidate 3: `image/dcm-to-png` (DICOM `.dcm` medical diagnostic imaging to 32-bit PNG)
+34. **Wave 34 (Shipped):**
+    - Tool 97: `audio/xm-to-wav` (FastTracker II `.xm` extended module tracker music to 16-bit stereo WAV)
+    - Tool 98: `document/org-to-markdown` (Emacs Org Mode `.org` agenda and documentation to GitHub Flavored Markdown)
+    - Tool 99: `image/dcm-to-png` (DICOM `.dcm` medical diagnostic imaging to 32-bit PNG)
+35. **Wave 35 (Active Research & Next Builds):**
+    - Candidate 1: `image/cgm-to-svg` (Computer Graphics Metafile `.cgm` ISO vector graphics to clean SVG)
+    - Candidate 2: `audio/it-to-wav` (Impulse Tracker `.it` compressed module music to 16-bit stereo WAV)
+    - Candidate 3: `document/vcard-to-csv` (vCard `.vcf` electronic business cards and address books to RFC 4180 CSV)
+
 
