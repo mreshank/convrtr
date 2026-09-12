@@ -20,3 +20,4 @@ export { Marquee } from "./Marquee";
 export { MediaFrame } from "./MediaFrame";
 export { MonoMeta } from "./MonoMeta";
 export { Reveal } from "./Reveal";
+export { SectionSeparator } from "./SectionSeparator";

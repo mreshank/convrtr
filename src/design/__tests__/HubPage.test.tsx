@@ -82,6 +82,52 @@ describe("HubPage", () => {
 		expect(screen.getByRole("button", { name: /PNG/ })).toBeDefined();
 	});
 
+	it("renders collapsible sections with separators between multiple grid dimensions", () => {
+		render(
+			<HubPage
+				title="Browse"
+				lede="Test"
+				grid={[
+					{
+						heading: "BY TYPE",
+						unit: "types",
+						items: [
+							{
+								href: "/image",
+								title: "Image",
+								meta: "1 tool",
+								tools: [{ href: "/png-to-webp", title: "PNG to WebP" }],
+							},
+						],
+					},
+					{
+						heading: "BY TASK",
+						unit: "tasks",
+						items: [
+							{
+								href: "/groups/task/convert",
+								title: "Convert",
+								meta: "1 tool",
+								tools: [{ href: "/png-to-webp", title: "PNG to WebP" }],
+							},
+						],
+					},
+				]}
+			/>,
+		);
+
+		// Both headings exist and are buttons with aria-expanded="true"
+		const typeButton = screen.getByRole("button", { name: /BY TYPE/i });
+		const taskButton = screen.getByRole("button", { name: /BY TASK/i });
+		expect(typeButton.getAttribute("aria-expanded")).toBe("true");
+		expect(taskButton.getAttribute("aria-expanded")).toBe("true");
+
+		// Separator between section 1 and 2 exists
+		const separator = screen.getByRole("separator");
+		expect(separator).toBeDefined();
+		expect(separator.getAttribute("aria-label")).toContain("BY TASK");
+	});
+
 	it("renders BlogGrid when given blogPosts", () => {
 		render(
 			<HubPage

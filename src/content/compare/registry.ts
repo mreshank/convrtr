@@ -1950,6 +1950,301 @@ export const COMPARISONS: ComparisonMeta[] = [
 			"document/epub-to-markdown",
 		],
 	},
+	{
+		slug: "it-vs-wav",
+		title:
+			"Impulse Tracker IT vs WAV: 64-Channel Chiptune Tracker Module vs Linear PCM Audio",
+		description:
+			"Compare Jeffrey Lim's Impulse Tracker (.it) format with standard 16-bit linear PCM WAV audio. Learn about 64-channel polyphony, resonant filters, sample compression, and lossless audio synthesis.",
+		formatA: "IT",
+		formatB: "WAV",
+		category: "audio",
+		summary:
+			"Impulse Tracker (.it) is an advanced tracker music module created in 1996 by Jeffrey Lim, packing 64 digital channels, dynamic volume/pan envelopes, and compressed sample instruments into tiny kilobyte-sized files. WAV is the uncompressed, universal linear PCM standard for digital audio playback across all modern devices and operating systems.",
+		prosA: [
+			"Extremely compact file size: complete multi-minute orchestral or chiptune songs fit into under 500 KB",
+			"Full musical score and individual instrument samples remain accessible and editable",
+			"Advanced tracking features: 64 channels, resonant lowpass filters, and New Note Actions (NNA)",
+			"Zero generational audio compression loss during composition or pattern transposition",
+		],
+		prosB: [
+			"100% universal hardware and software compatibility across all modern OSes, mobile devices, and DAWs",
+			"Exact, bit-perfect reproduction of complex synthesizers and audio mixes without tracker emulation",
+			"Industry-standard master format for streaming distribution, CD burning, and podcasting",
+			"Instant playback with zero CPU overhead or DSP synthesis requirements",
+		],
+		specs: [
+			{
+				feature: "Format Architecture",
+				formatA: "Pattern Matrix + Sample Instrument Bank",
+				formatB: "Linear Pulse-Code Modulation (PCM)",
+			},
+			{
+				feature: "Channel Capacity",
+				formatA: "Up to 64 discrete channels",
+				formatB: "Fixed 1 or 2 channels (Mono/Stereo)",
+			},
+			{
+				feature: "Typical File Size",
+				formatA: "100 KB - 1 MB per song",
+				formatB: "30 MB - 60 MB (uncompressed 44.1 kHz stereo)",
+			},
+			{
+				feature: "Device Compatibility",
+				formatA: "Requires specialized tracker players/emulators",
+				formatB: "Universal native support on all devices",
+			},
+			{
+				feature: "Synthesis Requirement",
+				formatA: "Real-time voice mixing & filter synthesis",
+				formatB: "Direct digital-to-analog converter streaming",
+			},
+		],
+		verdict:
+			"Impulse Tracker (.it) is an extraordinary demoscene artifact offering incredible musical flexibility and microscopic file sizes for retro game soundtracks. Converting IT modules into 16-bit linear stereo WAV preserves these historic tracker compositions in a universal, lossless audio format ready for modern streaming, editing, and permanent archival.",
+		relatedTools: [
+			"audio/it-to-wav",
+			"audio/s3m-to-wav",
+			"audio/xm-to-wav",
+			"audio/mod-to-wav",
+		],
+	},
+	{
+		slug: "opml-vs-markdown",
+		title:
+			"OPML vs Markdown: XML Outline & Feed Standard vs Human-Readable Knowledge Text",
+		description:
+			"Compare OPML (Outline Processor Markup Language) and Markdown. Explore RSS feed subscriptions, hierarchical mindmaps, task outlines, and personal knowledge management workflows.",
+		formatA: "OPML",
+		formatB: "Markdown",
+		category: "document",
+		summary:
+			"OPML is an XML specification established by Dave Winer for exchanging hierarchical outlines, RSS/Atom subscription directories, and podcast feeds. Markdown is a human-readable plain-text formatting syntax that has become the ubiquitous standard for notes, documentation, and personal knowledge management (PKM).",
+		prosA: [
+			"Native import/export format for virtually all RSS readers (Feedly, Inoreader, NetNewsWire)",
+			"Standard interchange format for podcast subscription migration across apps (Pocket Casts, Overcast)",
+			"Explicit XML attributes for URLs, feed types, and machine-readable metadata",
+			"Deeply nested parent-child trees supported natively by dedicated outliner software",
+		],
+		prosB: [
+			"Clean, elegant plain text instantly readable without specialized XML viewers",
+			"Universal standard across PKM tools (Obsidian, Logseq, Notion, GitHub, Bear)",
+			"Rich formatting including tables, bold, italics, code blocks, and task checklists (- [x])",
+			"Lightweight, future-proof, and seamlessly version-controlled with Git",
+		],
+		specs: [
+			{
+				feature: "Syntax Paradigm",
+				formatA: "Structured XML tags (<outline text='...'>)",
+				formatB: "Plain-text punctuation (- item, # heading)",
+			},
+			{
+				feature: "RSS/Feed Interchange",
+				formatA: "De-facto industry standard for subscriptions",
+				formatB: "Requires tabular or list formatting",
+			},
+			{
+				feature: "Human Readability",
+				formatA: "Cluttered by XML attributes and entities",
+				formatB: "Maximum readability and clarity",
+			},
+			{
+				feature: "PKM Tool Support",
+				formatA: "Limited to outliners and feed aggregators",
+				formatB: "Universal support across all note platforms",
+			},
+			{
+				feature: "Task Checklists",
+				formatA: "Custom attributes (_status='checked')",
+				formatB: "Standard GFM - [ ] / - [x] task lists",
+			},
+		],
+		verdict:
+			"OPML remains the undisputed king for migrating RSS feed subscriptions and podcast libraries between aggregators, but its rigid XML syntax makes it awkward for daily reading and note-taking. Converting OPML into clean Markdown with YAML frontmatter turns subscription directories and outlines into beautifully formatted, searchable reference notes in Obsidian or Notion.",
+		relatedTools: [
+			"document/opml-to-markdown",
+			"document/enex-to-markdown",
+			"document/org-to-markdown",
+			"document/xmind-to-markdown",
+		],
+	},
+	{
+		slug: "ora-vs-png",
+		title:
+			"OpenRaster ORA vs PNG: Layered Open Canvas Archive vs Universal Flattened Raster",
+		description:
+			"Should you save your artwork as OpenRaster (.ora) or PNG? Compare layered digital painting archives, layer blend modes, file sizes, and universal image compatibility.",
+		formatA: "ORA",
+		formatB: "PNG",
+		category: "image",
+		summary:
+			"OpenRaster (.ora) is an open-standard layered raster graphics format created by Freedesktop.org, Krita, MyPaint, and GIMP as a vendor-neutral alternative to PSD. PNG is the universal, lossless single-raster bitmap standard supported natively by every browser, operating system, and image viewer on Earth.",
+		prosA: [
+			"Preserves complete multi-layer painting workflows, layer names, opacities, and blend modes",
+			"Open, vendor-neutral specification without proprietary Adobe Photoshop lock-in",
+			"Standard ZIP container containing transparent raster tiles and human-readable stack.xml",
+			"Mandatory embedded mergedimage.png ensures future-proof composite rendering",
+		],
+		prosB: [
+			"100% universal display across all web browsers, operating systems, and messaging apps",
+			"Lossless 32-bit RGBA color representation with crisp 8-bit alpha channel transparency",
+			"Directly embeddable in websites, digital publications, and social media posts",
+			"Significantly smaller file size than layered project archives",
+		],
+		specs: [
+			{
+				feature: "Layer Architecture",
+				formatA: "Full multi-layer stack with composite operations",
+				formatB: "Single flattened 2D raster bitmap",
+			},
+			{
+				feature: "Software Ecosystem",
+				formatA: "Krita, MyPaint, GIMP, Paint.NET (via plugin)",
+				formatB: "Universal support across all digital devices",
+			},
+			{
+				feature: "Browser Display",
+				formatA: "Not natively supported by any web browser",
+				formatB: "Native instant rendering on all web clients",
+			},
+			{
+				feature: "Format Type",
+				formatA: "ZIP archive (stack.xml + PNG layer tiles)",
+				formatB: "Chunk-based single-file binary stream",
+			},
+			{
+				feature: "Alpha Transparency",
+				formatA: "Per-layer 8-bit alpha channels",
+				formatB: "Lossless 8-bit alpha channel transparency",
+			},
+		],
+		verdict:
+			"Use OpenRaster (.ora) as your primary working file format when painting in Krita or MyPaint to preserve non-destructive layers, opacity adjustments, and sketch tiers without Adobe lock-in. Convert your finished ORA artwork into standard 32-bit RGBA PNG for instant web publishing, client proofs, and universal portfolio display.",
+		relatedTools: [
+			"image/ora-to-png",
+			"image/clip-to-png",
+			"image/procreate-to-png",
+			"image/aseprite-to-png",
+		],
+	},
+	{
+		slug: "fb2-vs-markdown",
+		title:
+			"FictionBook FB2 vs Markdown: XML E-Book Structure vs Portable Plain-Text Reading",
+		description:
+			"Compare FictionBook 2.0 (.fb2) structured e-book files with clean GitHub Flavored Markdown (.md). Explore XML book hierarchies, chapters, poems, epigraphs, and personal knowledge management.",
+		formatA: "FB2",
+		formatB: "Markdown",
+		category: "document",
+		summary:
+			"FictionBook 2.0 (.fb2) is an open XML-based electronic book format widely used across digital readers and literature archives, storing book metadata, chapters, poems, and embedded base64 images within a single structured XML document. Markdown is the lightweight, human-readable plain-text standard supported by Obsidian, Notion, GitHub, and modern note-taking ecosystems.",
+		prosA: [
+			"Strict XML schema enforces structured book hierarchy (chapters, subtitles, epigraphs, poems)",
+			"Self-contained container holds full bibliographic metadata and embedded base64 illustrations",
+			"Native format for popular e-readers like PocketBook, FBReader, and Calibre libraries",
+			"Dedicated semantic markup for verses, stanzas, and literary footnotes",
+		],
+		prosB: [
+			"Instant human readability across every text editor, operating system, and mobile device",
+			"Seamless integration with personal knowledge management tools like Obsidian and Logseq",
+			"Zero XML boilerplate: clean, distraction-free reading and easy inline editing",
+			"Lightweight footprint easily version-controlled via Git and exportable to PDF, HTML, or EPUB",
+		],
+		specs: [
+			{
+				feature: "Document Structure",
+				formatA: "Hierarchical XML tree (<FictionBook>)",
+				formatB: "Lightweight plain text markup",
+			},
+			{
+				feature: "Primary Ecosystem",
+				formatA: "E-Readers, Calibre, Digital Book Archives",
+				formatB: "Web, PKM (Obsidian/Notion), Documentation",
+			},
+			{
+				feature: "Embedded Images",
+				formatA: "Inlined base64 <binary> tags",
+				formatB: "Standard image links / data URLs",
+			},
+			{
+				feature: "Human Readability",
+				formatA: "Requires XML viewer or e-reader",
+				formatB: "Directly readable without special software",
+			},
+			{
+				feature: "Metadata System",
+				formatA: "Structured <title-info> XML block",
+				formatB: "YAML Frontmatter (title, author, tags)",
+			},
+		],
+		verdict:
+			"FB2 is an outstanding archival e-book format for preserving literary hierarchies, book covers, and structured poetry. Convert FB2 e-books to Markdown to organize excerpts in Obsidian, create searchable book summaries, and read literature anywhere without dedicated e-reading apps.",
+		relatedTools: [
+			"document/fb2-to-markdown",
+			"document/epub-to-markdown",
+			"document/enex-to-markdown",
+			"document/org-to-markdown",
+		],
+	},
+	{
+		slug: "qoi-vs-png",
+		title:
+			"QOI vs PNG: Next-Gen Fast Lossless Image Format vs Universal Web Standard",
+		description:
+			"Compare Dominic Szablewski's Quite OK Image (.qoi) format with standard Portable Network Graphics (.png). Explore compression speeds, decode performance, and lossless image workflows.",
+		formatA: "QOI",
+		formatB: "PNG",
+		category: "image",
+		summary:
+			"Quite OK Image (.qoi) is a modern, ultra-fast lossless image compression format designed by Dominic Szablewski in 2021 as a simpler, faster alternative to PNG. PNG is the undisputed universal raster graphics standard for the web, digital graphics, and application user interfaces.",
+		prosA: [
+			"Encodes and decodes 20x to 50x faster than standard PNG libraries",
+			"Lossless compression ratios comparable to PNG across typical game textures and photos",
+			"Extremely simple 1-page specification with zero third-party library dependencies",
+			"Ideal for game development, runtime asset streaming, and embedded systems",
+		],
+		prosB: [
+			"100% native rendering support across all web browsers, operating systems, and image viewers",
+			"Standard RFC 2083 container with Deflate compression and extensive chunk metadata",
+			"Supports full 32-bit RGBA color with 8-bit alpha transparency and color management profiles",
+			"Ubiquitous tooling across Photoshop, Figma, GIMP, Blender, and digital photography apps",
+		],
+		specs: [
+			{
+				feature: "Compression Type",
+				formatA: "Lossless (Index, Diff, Luma, Run)",
+				formatB: "Lossless (Deflate / Zlib + Filtering)",
+			},
+			{
+				feature: "Decode Speed",
+				formatA: "Ultra-fast (single-pass linear byte stream)",
+				formatB: "Moderate (Deflate decompression overhead)",
+			},
+			{
+				feature: "Browser Support",
+				formatA: "Requires custom JavaScript / WebAssembly decoder",
+				formatB: "Universal native browser support",
+			},
+			{
+				feature: "Alpha Transparency",
+				formatA: "Full 8-bit alpha channel",
+				formatB: "Full 8-bit alpha channel",
+			},
+			{
+				feature: "Specification Complexity",
+				formatA: "Minimal (single C file / ~300 lines)",
+				formatB: "Complex (multi-stage filtering & RFC 1951 Deflate)",
+			},
+		],
+		verdict:
+			"QOI is an engineering breakthrough for game developers, embedded graphics, and rendering pipelines needing instant lossless compression and decompression. Convert QOI images into standard 32-bit RGBA PNG for universal web sharing, social media display, and compatibility with desktop graphic suites.",
+		relatedTools: [
+			"image/qoi-to-png",
+			"image/dds-to-png",
+			"image/tga-to-png",
+			"image/pcx-to-png",
+		],
+	},
 ];
 
 export function getComparison(slug: string): ComparisonMeta | undefined {

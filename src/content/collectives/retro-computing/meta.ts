@@ -20,5 +20,6 @@ export const meta: CollectiveMeta = {
 		"image/chr-to-png",
 		"audio/xm-to-wav",
 		"audio/s3m-to-wav",
+		"audio/it-to-wav",
 	],
 };

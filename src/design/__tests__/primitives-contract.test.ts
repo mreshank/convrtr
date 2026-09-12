@@ -186,6 +186,9 @@ const CLIENT_COMPONENT_ALLOWLIST = new Set([
 	// `GroupGrid` holds which single cell is expanded -- a server component
 	// cannot hold that state.
 	"GroupGrid.tsx",
+	// `CollapsibleSection` holds open/closed disclosure state and attaches
+	// interactive toggle handlers.
+	"CollapsibleSection.tsx",
 	// `BlogGrid` holds fuzzy search query, active tag filter, and sort order.
 	"BlogGrid.tsx",
 	// `CollectiveGrid` holds interactive search query state.

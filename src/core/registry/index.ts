@@ -11,6 +11,7 @@ import { coverArtFLAC } from "./tools/audio/flac-cover-art";
 import { flacToWav } from "./tools/audio/flac-to-wav";
 import { waveformFLAC } from "./tools/audio/flac-waveform";
 import { ircamToWav } from "./tools/audio/ircam-to-wav";
+import { itToWav } from "./tools/audio/it-to-wav";
 import { modToWav } from "./tools/audio/mod-to-wav";
 import { coverArtMP3 } from "./tools/audio/mp3-cover-art";
 import { mp4ToM4a } from "./tools/audio/mp4-to-m4a";
@@ -51,6 +52,7 @@ import { cueToJson } from "./tools/document/cue-to-json";
 import { dxfToSvg } from "./tools/document/dxf-to-svg";
 import { enexToMarkdown } from "./tools/document/enex-to-markdown";
 import { epubToMarkdown } from "./tools/document/epub-to-markdown";
+import { fb2ToMarkdown } from "./tools/document/fb2-to-markdown";
 import { fitToCsv } from "./tools/document/fit-to-csv";
 import { gedcomToCsv } from "./tools/document/gedcom-to-csv";
 import { gmlToGeoJson } from "./tools/document/gml-to-geojson";
@@ -62,6 +64,7 @@ import { latexToMarkdown } from "./tools/document/latex-to-markdown";
 import { mhtmlToHtml } from "./tools/document/mhtml-to-html";
 import { msgToEml } from "./tools/document/msg-to-eml";
 import { nfoToHtml } from "./tools/document/nfo-to-html";
+import { opmlToMarkdown } from "./tools/document/opml-to-markdown";
 import { orgToMarkdown } from "./tools/document/org-to-markdown";
 import { osmToGeoJson } from "./tools/document/osm-to-geojson";
 import { pakToZip } from "./tools/document/pak-to-zip";
@@ -102,9 +105,11 @@ import { icoToPng } from "./tools/image/ico-to-png";
 import { iffToPng } from "./tools/image/iff-to-png";
 import { koaToPng } from "./tools/image/koa-to-png";
 import { macpaintToPng } from "./tools/image/macpaint-to-png";
+import { oraToPng } from "./tools/image/ora-to-png";
 import { pcxToPng } from "./tools/image/pcx-to-png";
 import { ppmToPng } from "./tools/image/ppm-to-png";
 import { procreateToPng } from "./tools/image/procreate-to-png";
+import { qoiToPng } from "./tools/image/qoi-to-png";
 import { rasToPng } from "./tools/image/ras-to-png";
 import { rpgmvpToPng } from "./tools/image/rpgmvp-to-png";
 import { sgiToPng } from "./tools/image/sgi-to-png";
@@ -321,6 +326,11 @@ export const TOOLS: Tool[] = [
 	cgmToSvg,
 	s3mToWav,
 	enexToMarkdown,
+	itToWav,
+	fb2ToMarkdown,
+	qoiToPng,
+	opmlToMarkdown,
+	oraToPng,
 ];
 
 export function getTool(id: string): Tool | undefined {

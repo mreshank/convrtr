@@ -231,3 +231,33 @@
 [data-collective-tool-row]:hover {
 	border-color: var(--rule-strong);
 }
+
+/*
+ * `CollapsibleSection` disclosure styles and CSS Grid transition
+ */
+[data-collapsible-trigger]:hover {
+	border-color: var(--rule-strong);
+}
+
+[data-collapsible-trigger]:focus-visible {
+	outline: 1px solid var(--accent);
+	outline-offset: -1px;
+}
+
+[data-collapsible-content] {
+	display: grid;
+	grid-template-rows: 1fr;
+	transition: grid-template-rows var(--dur-state) var(--ease), opacity var(--dur-fade) var(--ease);
+	opacity: 1;
+}
+
+[data-collapsible-content][data-collapsed="true"] {
+	grid-template-rows: 0fr;
+	opacity: 0;
+	pointer-events: none;
+}
+
+[data-collapsible-inner] {
+	overflow: hidden;
+	min-height: 0;
+}

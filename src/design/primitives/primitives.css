@@ -118,3 +118,79 @@ body.has-custom-cursor:has(a:hover, button:hover) [data-cursor] {
 	transform-origin: center;
 	scale: 2.5;
 }
+
+/*
+ * SectionSeparator: an engineered boundary between major sections or dimensions.
+ *
+ * A 1px hairline track with an animated laser sweep in `--accent` and a centered
+ * telemetry badge with a live pulsing beacon dot. Animation is suppressed under
+ * `prefers-reduced-motion`.
+ */
+[data-separator-runner] {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 80px;
+	height: 100%;
+	background: var(--accent);
+	animation: separator-laser-sweep 4s var(--ease) infinite alternate;
+}
+
+[data-separator-track="reverse"] [data-separator-runner] {
+	animation-name: separator-laser-sweep-reverse;
+}
+
+[data-separator-beacon] {
+	width: var(--space-base);
+	height: var(--space-base);
+	border-radius: 50%;
+	background: var(--accent);
+	display: inline-block;
+	animation: separator-beacon-pulse 2s var(--ease) infinite;
+}
+
+@keyframes separator-laser-sweep {
+	0% {
+		transform: translateX(-100%);
+		opacity: 0.2;
+	}
+	50% {
+		opacity: 1;
+	}
+	100% {
+		transform: translateX(1200%);
+		opacity: 0.2;
+	}
+}
+
+@keyframes separator-laser-sweep-reverse {
+	0% {
+		transform: translateX(1200%);
+		opacity: 0.2;
+	}
+	50% {
+		opacity: 1;
+	}
+	100% {
+		transform: translateX(-100%);
+		opacity: 0.2;
+	}
+}
+
+@keyframes separator-beacon-pulse {
+	0%, 100% {
+		transform: scale(1);
+		opacity: 1;
+	}
+	50% {
+		transform: scale(1.4);
+		opacity: 0.4;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	[data-separator-runner],
+	[data-separator-beacon] {
+		animation: none;
+	}
+}

@@ -282,6 +282,18 @@ const MIME_MAP: Record<string, string> = {
 	"application/x-s3m": "s3m",
 	"application/x-evernote-enex": "enex",
 	"application/enex+xml": "enex",
+	"audio/it": "it",
+	"audio/x-it": "it",
+	"application/x-it": "it",
+	"application/x-fictionbook+xml": "fb2",
+	"application/x-fictionbook": "fb2",
+	"image/qoi": "qoi",
+	"image/x-qoi": "qoi",
+	"application/x-qoi": "qoi",
+	"text/x-opml": "opml",
+	"application/opml+xml": "opml",
+	"image/openraster": "ora",
+	"application/x-openraster": "ora",
 };
 
 /**

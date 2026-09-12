@@ -1,16 +1,18 @@
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import {
 	BlogGrid,
 	type BlogGridItem,
 	BranchDiagram,
 	CollectiveGrid,
 	type CollectiveGridItem,
+	CollapsibleSection,
 	FusedHeadline,
 	GroupGrid,
 	type GroupGridItem,
 	type ListingItem,
 	ListingRows,
 } from "@/design/families";
+import { SectionSeparator } from "@/design/primitives";
 import { HALFTONE_FRAGMENT, ShaderSurface } from "@/design/texture";
 
 /**
@@ -64,7 +66,7 @@ type Props = {
 	 * as distinct groups in space rather than one flat ruled list. A hub
 	 * passes one or the other, never both.
 	 */
-	grid?: { heading?: string; items: GroupGridItem[] }[];
+	grid?: { heading?: string; unit?: string; items: GroupGridItem[] }[];
 	/** Interactive blog cards with fuzzy search, tag filters, and sorting. */
 	blogPosts?: BlogGridItem[];
 	/** Curated collectives with interactive search, editorial mission, and tool pipeline. */
@@ -229,22 +231,26 @@ export function HubPage({
 				</div>
 			))}
 
-			{grid?.map((section) => (
-				<div
-					key={section.heading ?? "grid"}
-					style={{
-						display: "flex",
-						flexDirection: "column",
-						gap: "var(--gap-sm)",
-					}}
-				>
-					{section.heading ? (
-						<p className="meta" style={{ color: "var(--ink-muted)" }}>
-							{section.heading}
-						</p>
+			{grid?.map((section, index) => (
+				<Fragment key={section.heading ?? `grid-${index}`}>
+					{index > 0 ? (
+						<SectionSeparator
+							label={
+								section.heading
+									? `DIMENSION // ${section.heading}`
+									: "DIMENSION // SPLIT"
+							}
+						/>
 					) : null}
-					<GroupGrid items={section.items} />
-				</div>
+					<CollapsibleSection
+						heading={section.heading}
+						total={section.items.length}
+						unit={section.unit}
+						defaultOpen={true}
+					>
+						<GroupGrid items={section.items} />
+					</CollapsibleSection>
+				</Fragment>
 			))}
 
 			{blogPosts ? <BlogGrid posts={blogPosts} /> : null}

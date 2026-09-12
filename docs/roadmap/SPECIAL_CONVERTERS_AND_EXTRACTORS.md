@@ -70,6 +70,10 @@
 | `.cgm` | Computer Graphics Metafile 2D Vector | CAD / Engineering | ISO/IEC 8632 binary and clear-text 2D vector elements to clean W3C SVG | `SOLVED` | **SHIPPED** |
 | `.s3m` | Scream Tracker 3 Module Tracker | Tracker Music / Audio | Future Crew 16/32-channel pattern unpacker & GUS/AdLib chiptune synthesis to 16-bit stereo WAV | `SOLVED` | **SHIPPED** |
 | `.enex` | Evernote XML Export Archive | Note-Taking / PKM | ENML note markup, attachments, tags, and timestamps to GFM Markdown | `SOLVED` | **SHIPPED** |
+| `.it` | Impulse Tracker Module Tracker | Tracker Music / Audio | Jeffrey Lim 64-channel tracker, sample compression & voice synthesis to 16-bit stereo WAV | `SOLVED` | **SHIPPED** |
+| `.opml` | Outline Processor Markup Language | Productivity / Feeds | OPML 1.0/2.0 outline trees, RSS subscription feeds & podcast directories to GFM tables & lists | `SOLVED` | **SHIPPED** |
+| `.ora` | OpenRaster Layered Graphics Archive | Creative Art / Design | Freedesktop.org ZIP container with stack.xml & layer blend compositor to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
+
 
 
 ---
@@ -2271,6 +2275,51 @@
 
 ---
 
+### 103. Jeffrey Lim Impulse Tracker Module (.it)
+- **Ecosystem & Context:** Impulse Tracker (`.it`), created in 1996 by Australian programmer Jeffrey Lim, represents the pinnacle of the tracker golden age. Supporting up to 64 channels, resonant lowpass filters, New Note Actions (NNA), 16-bit compressed samples, and complex envelope modulations, IT powered legendary PC game soundtracks including *Jazz Jackrabbit 2*, *Deus Ex*, *Unreal*, and *Unreal Tournament*.
+- **Forensic Format Architecture:**
+  - 0xC0-byte Header: `IMPM` magic signature at offset 0, 26-byte song title, OrdNum, InsNum, SmpNum, PatNum, Cwt/v version, Flags (stereo, linear slides, old effects), Global Volume (0–128), Mix Volume (0–128), Initial Speed, Initial Tempo (BPM), and 64-channel Pan/Volume tables.
+  - Parapointers: 32-bit absolute file offsets pointing to sample headers (`IMPS`) and pattern data blocks.
+  - Sample Headers: `IMPS` signature, DOS filename, Gvsl, Flags (16-bit, stereo, compressed, looped), Cvt (signed/delta), default volume, sample name, C5Speed (frequency for note C-5 in Hz), loop start/end points, and raw sample offset.
+  - Patterns: 64-channel bit-packed row records with channel variable bitmasks for note (0–119), instrument, volume/panning, and effect commands.
+- **In-Browser Execution Strategy:**
+  - Unpacks 64-channel pattern rows, parses `IMPS` sample headers with 8-bit/16-bit signed delta PCM decoding, models voice frequency playback relative to C5Speed, runs multi-voice mixing with volume envelopes and stereo panning, and generates a standard 16-bit linear PCM stereo WAV.
+- **Fidelity:** `64-CHANNEL TRACKER VOICE SYNTHESIS`.
+- **Status:** **Wave 36 Shipped (`audio/it-to-wav`) — Milestone Tool 103**.
+
+---
+
+### 104. Outline Processor Markup Language (.opml)
+- **Ecosystem & Context:** Established by Dave Winer for UserLand Software, OPML 1.0 and 2.0 is the universal open standard for exchanging hierarchical outlines, RSS/Atom feed subscriptions (Feedly, Inoreader, NetNewsWire), podcast directories (Pocket Casts, Overcast), and outliner mindmaps (Workflowy, OmniOutliner).
+- **Forensic Format Architecture:**
+  - XML Root: `<opml version="1.0|2.0">` with `<head>` and `<body>` sections.
+  - `<head>`: `<title>`, `<dateCreated>`, `<dateModified>`, `<ownerName>`, `<ownerEmail>`.
+  - `<body>`: Arbitrarily nested `<outline>` tags featuring attributes: `text`, `title`, `type` (e.g. `rss`), `xmlUrl`, `htmlUrl`, `url`, `description`, `_note`, and `_status` / `completed`.
+- **In-Browser Execution Strategy:**
+  - Robust XML entity decoding and recursive tree parsing.
+  - Generates YAML frontmatter from `<head>` metadata.
+  - Renders RSS feed collections into structured Markdown reference tables (`| Feed Title | Site | Feed URL |`).
+  - Converts general outline hierarchies into nested Markdown bullet lists and GFM task checklists (`- [ ]`, `- [x]`) with child notes rendered as indented blockquotes.
+- **Fidelity:** `HIERARCHICAL OUTLINE & TABULAR FEED PRESERVATION`.
+- **Status:** **Wave 36 Shipped (`document/opml-to-markdown`) — Milestone Tool 104**.
+
+---
+
+### 105. OpenRaster Layered Graphics Archive (.ora)
+- **Ecosystem & Context:** OpenRaster (`.ora`) is an open, vendor-neutral specification for layered raster graphics created by Freedesktop.org, Krita, MyPaint, and GIMP as an open alternative to Adobe Photoshop's `.psd`. It enables non-destructive multi-layer painting workflows across open-source digital painting programs.
+- **Forensic Format Architecture:**
+  - Container: Standard PKZIP archive with `mimetype` file containing `image/openraster`.
+  - Manifest: `stack.xml` defining `<image w="..." h="...">` and a `<stack>` of `<layer>` nodes specifying `src="data/layer.png"`, `name`, `x`, `y`, `opacity`, `visibility="visible|hidden"`, and `composite-op`.
+  - Image Assets: `mergedimage.png` (mandatory composite rendering per OpenRaster spec) or individual PNG layer tiles in `data/`.
+- **In-Browser Execution Strategy:**
+  - Unzips container in browser memory via `fflate`.
+  - Parses `stack.xml` layout geometry, layer opacities, and visibility flags.
+  - Extracts the full-resolution composite artwork (`mergedimage.png`) or falls back to topmost visible layer tiles, verifying PNG signatures and outputting high-fidelity 32-bit RGBA PNG.
+- **Fidelity:** `LOSSLESS FLATTENED RASTER EXTRACTION`.
+- **Status:** **Wave 36 Shipped (`image/ora-to-png`) — Milestone Tool 105**.
+
+---
+
 ## Roadmap Waves & Next Steps
 
 1. **Wave 1 (Shipped):**
@@ -2411,9 +2460,13 @@
     - Tool 100: `image/cgm-to-svg` (Computer Graphics Metafile `.cgm` ISO vector graphics to clean W3C SVG) — **100-Tool Landmark Milestone**
     - Tool 101: `audio/s3m-to-wav` (Scream Tracker 3 `.s3m` 32-channel tracker music to 16-bit stereo WAV)
     - Tool 102: `document/enex-to-markdown` (Evernote XML Export `.enex` notes to GitHub Flavored Markdown with YAML frontmatter)
-36. **Wave 36 (Active Research & Next Builds):**
-    - Candidate 1: `audio/it-to-wav` (Impulse Tracker `.it` compressed module music to 16-bit stereo WAV)
-    - Candidate 2: `archive/sit-to-zip` (StuffIt Archive `.sit` vintage Mac compressed archive to ZIP)
-    - Candidate 3: `document/fb2-to-markdown` (FictionBook 2.0 `.fb2` e-book XML format to Markdown)
+36. **Wave 36 (Shipped):**
+    - Tool 103: `audio/it-to-wav` (Impulse Tracker `.it` 64-channel module music to 16-bit linear stereo WAV)
+    - Tool 104: `document/opml-to-markdown` (Outline Processor Markup Language `.opml` RSS feeds and outlines to GFM tables and lists)
+    - Tool 105: `image/ora-to-png` (OpenRaster `.ora` layered graphics archive to 32-bit RGBA PNG)
+37. **Wave 37 (Active Research & Next Builds):**
+    - Candidate 1: `document/fb2-to-markdown` (FictionBook 2.0 `.fb2` e-book XML format to Markdown)
+    - Candidate 2: `audio/ptm-to-wav` (PolyTracker `.ptm` multi-channel module music to 16-bit stereo WAV)
+    - Candidate 3: `archive/sit-to-zip` (StuffIt Archive `.sit` vintage Mac compressed archive to ZIP)
 
 

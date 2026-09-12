@@ -16,5 +16,6 @@ export const meta: CollectiveMeta = {
 		"audio/aud-to-wav",
 		"document/aco-to-css",
 		"image/chr-to-png",
+		"image/ora-to-png",
 	],
 };
