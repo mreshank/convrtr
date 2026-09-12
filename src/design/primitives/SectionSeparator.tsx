@@ -16,10 +16,13 @@ export function SectionSeparator({
 	className,
 }: Props) {
 	return (
+		// biome-ignore lint/a11y/useFocusableInteractive: static section boundary separator
+		// biome-ignore lint/a11y/useSemanticElements: custom multi-track laser styled separator container
 		<div
 			data-section-separator
 			role="separator"
 			aria-label={label}
+			aria-valuenow={0}
 			className={className}
 			style={{
 				position: "relative",

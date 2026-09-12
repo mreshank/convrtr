@@ -131,6 +131,7 @@ const familyFiles = readdirSync(FAMILIES_DIR).filter((name) =>
  */
 const NOT_BAND_LEVEL = new Set([
 	"BarChart.tsx",
+	"CollapsibleSection.tsx",
 	"FusedHeadline.tsx",
 	"DotMatrix.tsx",
 	"ProseSection.tsx",

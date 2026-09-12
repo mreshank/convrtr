@@ -40,6 +40,11 @@ const POST_SLUGS = [
 	"converting-cgm-to-svg",
 	"converting-scream-tracker-s3m-to-wav",
 	"converting-evernote-enex-to-markdown",
+	"converting-impulse-tracker-it-to-wav",
+	"converting-opml-outlines-to-markdown",
+	"converting-openraster-ora-to-png",
+	"converting-fictionbook-fb2-to-markdown",
+	"converting-quite-ok-image-qoi-to-png",
 ];
 
 describe("blog registry conformance", () => {

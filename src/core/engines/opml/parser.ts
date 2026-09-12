@@ -47,7 +47,7 @@ export function parseOpml(xmlText: string): OpmlDocument {
 	// Parse <head>
 	const head: OpmlHead = {};
 	const headMatch = xmlText.match(/<head>([\s\S]*?)<\/head>/i);
-	if (headMatch && headMatch[1]) {
+	if (headMatch?.[1]) {
 		const headContent = headMatch[1];
 		const titleMatch = headContent.match(/<title>([\s\S]*?)<\/title>/i);
 		if (titleMatch?.[1]) head.title = decodeXmlEntities(titleMatch[1].trim());

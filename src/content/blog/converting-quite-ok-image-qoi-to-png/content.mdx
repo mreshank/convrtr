@@ -1,0 +1,85 @@
+In late 2021, game developer Dominic Szablewski released a technical manifesto that captivated the systems engineering world: *The Quite OK Image Format*.
+
+Frustrated by the extreme complexity of PNG—which relies on DEFLATE compression, LZ77 sliding dictionaries, Huffman trees, and five distinct per-scanline adaptive filters—Dominic designed **QOI** (`.qoi`). Its goal was radical simplicity: achieve compression ratios comparable to PNG while encoding and decoding **20x to 50x faster**, using a specification that fits on a single sheet of paper and an implementation written in less than 400 lines of clean C.
+
+Game engines, embedded systems, and graphics developers quickly adopted QOI for real-time texture streaming. However, standard web browsers, desktop operating systems, and image editors still lack native QOI display support.
+
+This engineering guide examines the forensic byte architecture of QOI streams, walks through its 6-opcode state machine and 64-entry color indexing cache, and explains how [convrtr's QOI to PNG engine](/image/qoi-to-png) converts `.qoi` images into universal 32-bit RGBA PNGs directly in your browser.
+
+## The 14-Byte QOI Header Specification
+
+Every valid QOI file begins with a fixed 14-byte big-endian header:
+
+| Offset (Bytes) | Field Name | Data Type | Forensic Description |
+| :--- | :--- | :--- | :--- |
+| `0x00 - 0x03` | Magic Signature | 4 ASCII chars | Constant `"qoif"` (`0x71 0x6F 0x69 0x66`) |
+| `0x04 - 0x07` | Width | 32-bit uint (BE) | Image width in pixels |
+| `0x08 - 0x0B` | Height | 32-bit uint (BE) | Image height in pixels |
+| `0x0C` | Channels | 8-bit uint | `3` = 24-bit RGB, `4` = 32-bit RGBA |
+| `0x0D` | Color Space | 8-bit uint | `0` = sRGB with linear alpha, `1` = all channels linear |
+
+The file terminates with an 8-byte end-of-stream sentinel marker:
+`00 00 00 00 00 00 00 01`
+
+## The 64-Color Indexing Cache and Running State
+
+QOI achieves its phenomenal decoding speed by processing pixels sequentially using a minimal internal state:
+- A `currentPixel` register initialized to `{ r: 0, g: 0, b: 0, a: 255 }` (opaque black).
+- A 64-entry running color array `colorIndex[64]`, initialized to all zeros.
+
+Whenever a pixel is encountered or modified, its color is recorded into `colorIndex` at an index derived from a custom integer hash function:
+`indexPosition = (r * 3 + g * 5 + b * 7 + a * 11) % 64`
+
+Because the hash uses small prime multipliers and bitwise modulo 64 (`& 63`), computing the array index takes less than a nanosecond on modern CPUs.
+
+## The Six Byte-Aligned Opcodes
+
+QOI encodes image data as a continuous stream of byte-aligned tokens. The decoder determines the operation by inspecting the first byte's high 2 bits (or the entire byte for full RGB/RGBA updates):
+
+### 1. `QOI_OP_INDEX` (`00xxxxxx`)
+- **Tag**: `00` (2 bits)
+- **Data**: `xxxxxx` (6 bits, value `0` to `63`)
+- **Operation**: The next pixel is an exact duplicate of the color stored at `colorIndex[index]`. This achieves 1-byte encoding for previously seen palette colors.
+
+### 2. `QOI_OP_DIFF` (`01xxxxxx`)
+- **Tag**: `01` (2 bits)
+- **Data**: 2-bit `dr`, 2-bit `dg`, 2-bit `db` (each biased by `2`, representing deltas from `-2` to `+1`)
+- **Operation**: Small pixel-to-pixel color changes:
+  - `r = currentPixel.r + (dr - 2)`
+  - `g = currentPixel.g + (dg - 2)`
+  - `b = currentPixel.b + (db - 2)`
+  - Alpha remains unchanged.
+
+### 3. `QOI_OP_LUMA` (`10xxxxxx`)
+- **Tag**: `10` (2 bits)
+- **Data**: 6-bit `dg` (biased by `32`, delta `-32` to `+31`), followed by a second byte with two 4-bit nibbles: `dr_dg` and `db_dg` (each biased by `8`, delta `-8` to `+7`).
+- **Operation**: Handles larger brightness transitions where green (luminance) changes moderately and red/blue track relatively close to green. Takes 2 bytes total.
+
+### 4. `QOI_OP_RUN` (`11xxxxxx`)
+- **Tag**: `11` (2 bits)
+- **Data**: `xxxxxx` (6 bits, value `0` to `61`, biased by `-1`, representing run lengths from `1` to `62`)
+- **Operation**: Run-length encoding. Repeats `currentPixel` consecutively for up to 62 pixels in a single byte.
+
+### 5. `QOI_OP_RGB` (`11111110` / `0xFE`)
+- **Tag**: `0xFE` (8 bits)
+- **Data**: 3 bytes containing raw `red`, `green`, `blue` values.
+- **Operation**: Full 24-bit color update when deltas exceed LUMA bounds. Alpha remains unchanged. Takes 4 bytes total.
+
+### 6. `QOI_OP_RGBA` (`11111111` / `0xFF`)
+- **Tag**: `0xFF` (8 bits)
+- **Data**: 4 bytes containing raw `red`, `green`, `blue`, `alpha` values.
+- **Operation**: Complete 32-bit color and alpha update. Takes 5 bytes total.
+
+## In-Browser Decompression and PNG Encoding
+
+Because QOI avoids expensive LZ77 table allocations and bit-level entropy decoders, convrtr's browser engine decompresses QOI byte streams into raw RGBA pixel arrays in just **1 to 5 milliseconds** for multi-megapixel textures.
+
+The pipeline executes entirely in memory:
+1. Validates the 14-byte `qoif` header and extracts dimensions.
+2. Allocates a typed `Uint8ClampedArray` of size `width * height * 4`.
+3. Iterates through the opcode stream, updating `colorIndex` and writing raw 32-bit RGBA bytes.
+4. Encodes the resulting RGBA raster buffer into a standardized W3C PNG with full 8-bit alpha transparency.
+
+## Zero-Server Processing
+
+Textures, game sprites, UI assets, and photographs converted on convrtr never touch a remote server. Everything executes locally within your browser tab using pure TypeScript, ensuring instantaneous performance and absolute privacy.

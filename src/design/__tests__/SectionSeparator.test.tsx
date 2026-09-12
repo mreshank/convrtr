@@ -21,7 +21,9 @@ describe("SectionSeparator", () => {
 	it("renders track runners and beacon element", () => {
 		const { container } = render(<SectionSeparator />);
 		expect(container.querySelectorAll("[data-separator-track]").length).toBe(2);
-		expect(container.querySelectorAll("[data-separator-runner]").length).toBe(2);
+		expect(container.querySelectorAll("[data-separator-runner]").length).toBe(
+			2,
+		);
 		expect(container.querySelector("[data-separator-beacon]")).not.toBeNull();
 	});
 });

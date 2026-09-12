@@ -138,15 +138,14 @@ export function CollapsibleSection({
 				</button>
 			) : null}
 
-			<div
+			<section
 				id={panelId}
-				role="region"
 				aria-labelledby={heading ? headingId : undefined}
 				data-collapsible-content
 				data-collapsed={!isOpen}
 			>
 				<div data-collapsible-inner>{children}</div>
-			</div>
+			</section>
 		</div>
 	);
 }

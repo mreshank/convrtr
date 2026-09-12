@@ -11,10 +11,15 @@ import { meta as convertingDicomMedicalImagesToPng } from "./converting-dicom-me
 import { meta as convertingEmacsOrgModeToMarkdown } from "./converting-emacs-org-mode-to-markdown/meta";
 import { meta as convertingEvernoteEnexToMarkdown } from "./converting-evernote-enex-to-markdown/meta";
 import { meta as convertingFasttrackerXmModulesToWav } from "./converting-fasttracker-xm-modules-to-wav/meta";
+import { meta as convertingFictionbookFb2ToMarkdown } from "./converting-fictionbook-fb2-to-markdown/meta";
 import { meta as convertingGedcomFamilyTreeToCsv } from "./converting-gedcom-family-tree-to-csv/meta";
 import { meta as convertingGoodnotesToPdfWithoutApp } from "./converting-goodnotes-to-pdf-without-app/meta";
+import { meta as convertingImpulseTrackerItToWav } from "./converting-impulse-tracker-it-to-wav/meta";
 import { meta as convertingNesChrTileRomToPng } from "./converting-nes-chr-tile-rom-to-png/meta";
+import { meta as convertingOpenrasterOraToPng } from "./converting-openraster-ora-to-png/meta";
+import { meta as convertingOpmlOutlinesToMarkdown } from "./converting-opml-outlines-to-markdown/meta";
 import { meta as convertingPlaystationVagAudioToWav } from "./converting-playstation-vag-audio-to-wav/meta";
+import { meta as convertingQuiteOkImageQoiToPng } from "./converting-quite-ok-image-qoi-to-png/meta";
 import { meta as convertingScreamTrackerS3mToWav } from "./converting-scream-tracker-s3m-to-wav/meta";
 import { meta as convertingTelephonyUlawAlawToWav } from "./converting-telephony-ulaw-alaw-to-wav/meta";
 import { meta as convertingWestwoodAudAudioToWav } from "./converting-westwood-aud-audio-to-wav/meta";
@@ -72,6 +77,11 @@ export const BLOG_POSTS: BlogPostMeta[] = [
 	convertingCgmToSvg,
 	convertingScreamTrackerS3mToWav,
 	convertingEvernoteEnexToMarkdown,
+	convertingImpulseTrackerItToWav,
+	convertingOpmlOutlinesToMarkdown,
+	convertingOpenrasterOraToPng,
+	convertingFictionbookFb2ToMarkdown,
+	convertingQuiteOkImageQoiToPng,
 ];
 
 export function getPost(

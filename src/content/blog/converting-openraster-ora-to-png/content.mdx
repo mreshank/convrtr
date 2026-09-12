@@ -1,0 +1,87 @@
+For decades, digital painters, illustrators, and graphic designers were trapped by Adobe Photoshop's proprietary `.psd` format. Because Adobe never published a formal, open specification for modern PSD features, open-source software developers struggled with complex, reverse-engineered Photoshop files.
+
+In response, developers from the **Freedesktop.org**, **Krita**, **MyPaint**, and **GIMP** communities joined forces to create **OpenRaster** (`.ora`). Designed as a vendor-neutral, transparent, and extensible open standard for layered raster graphics, OpenRaster provides non-destructive multi-layer painting workflows without commercial lock-in.
+
+However, web browsers, operating systems, and messaging applications do not have native support for viewing `.ora` files. Sharing a finished concept art sketch or character illustration typically requires converting the archive into a universal bitmap format like PNG.
+
+This deep dive breaks down the internal forensic structure of OpenRaster packages, explains how `stack.xml` layer hierarchies and coordinates are managed, and shows how [convrtr's OpenRaster to PNG engine](/image/ora-to-png) extracts full-resolution 32-bit RGBA PNG artwork directly inside your browser.
+
+## The OpenRaster Package Architecture
+
+An OpenRaster file is a standard PKZIP archive organized according to the OpenDocument package convention:
+
+| Internal File Path | Compression | Forensic Purpose |
+| :--- | :--- | :--- |
+| `mimetype` | Stored (Uncompressed) | Contains exact ASCII string `"image/openraster"` |
+| `stack.xml` | Deflated | Primary XML manifest declaring canvas size and layer stack |
+| `mergedimage.png` | Deflated | Full-resolution pre-rendered composite of all visible layers |
+| `Thumbnails/thumbnail.png` | Deflated | 256x256 square thumbnail for desktop file managers |
+| `data/layer001.png` | Deflated | Individual raster bitmap tiles containing layer pixels |
+
+### The `mimetype` File Rule
+
+Per the Freedesktop.org OpenRaster specification, the `mimetype` file must be the very first entry in the ZIP archive, stored with zero compression (compression method `0`), with no extra header fields. This allows Unix `file` utilities and MIME sniffers to detect an OpenRaster file instantly from its first 60 bytes:
+- Bytes 0–3: `50 4B 03 04` (ZIP Local File Header)
+- Bytes 30–37: File name `"mimetype"`
+- Bytes 38–55: File payload `"image/openraster"`
+
+## Demystifying `stack.xml`
+
+The structural heart of any `.ora` file is `stack.xml`. This document defines the overall canvas dimensions and the bottom-to-top rendering order of layers:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<image version="0.0.3" w="1920" h="1080">
+  <stack>
+    <layer name="Background" src="data/layer0.png" x="0" y="0" opacity="1.0" visibility="visible" composite-op="svg:src-over" />
+    <layer name="Character Sketch" src="data/layer1.png" x="250" y="100" opacity="0.85" visibility="visible" composite-op="svg:src-over" />
+    <layer name="Lineart" src="data/layer2.png" x="250" y="100" opacity="1.0" visibility="visible" composite-op="svg:src-over" />
+    <layer name="Color Highlights" src="data/layer3.png" x="250" y="100" opacity="0.9" visibility="visible" composite-op="svg:screen" />
+    <layer name="Reference Notes" src="data/layer4.png" x="0" y="0" opacity="0.5" visibility="hidden" />
+  </stack>
+</image>
+```
+
+### Forensic Layer Attributes
+
+Each `<layer>` node specifies parameters governing how that raster tile is rendered:
+- `src`: Path to the corresponding PNG image file within the ZIP container (typically `data/*.png`).
+- `name`: Human-readable layer name assigned by the artist in Krita or MyPaint.
+- `x` and `y`: Integer pixel offsets relative to the top-left canvas origin `(0, 0)`. Unlike flattened images, OpenRaster layers do not need to span the entire canvas; a small badge or stroke can occupy a minimal bounding box at its designated coordinate offset.
+- `opacity`: Float from `0.0` (fully transparent) to `1.0` (fully opaque).
+- `visibility`: `"visible"` or `"hidden"`. Hidden draft layers, sketch lines, and reference guides must be skipped during rendering.
+- `composite-op`: W3C SVG blend mode specifying how the layer blends with the underlying composite stack (e.g., `svg:src-over`, `svg:multiply`, `svg:screen`, `svg:overlay`).
+
+## The `mergedimage.png` Guarantee
+
+A defining strength of the OpenRaster specification is the **mandatory pre-rendered composite**:
+Section 3 of the OpenRaster standard mandates that all compliant saving applications must generate a full-resolution, flattened rendering of all visible layers and save it as `mergedimage.png` at the root of the archive.
+
+This architectural requirement solves the fundamental flaw of proprietary formats like PSD, where opening a file in different software often alters the appearance due to incompatible proprietary blend algorithms. In OpenRaster:
+- The canonical composite image `mergedimage.png` guarantees 100% pixel-perfect fidelity matching the exact brush strokes, blend modes, and opacity curves rendered by the originating authoring tool.
+- If an application needs to extract an isolated layer or inspect individual assets, the layer PNGs in `data/*.png` remain independently accessible as standard transparent PNGs.
+
+## In-Browser Extraction Pipeline
+
+convrtr converts `.ora` archives to PNG entirely in memory using a fast, multi-stage client-side pipeline:
+
+1. **ZIP Container Decompression**:
+   - Uses `fflate` in-browser unzipping to decompress the archive without temporary disk writes.
+2. **Composite Detection**:
+   - Inspects the package for `mergedimage.png`.
+   - If present, extracts the pristine composite PNG directly in under 15 milliseconds.
+3. **Layer Stack Fallback**:
+   - If `mergedimage.png` is absent or the user requests an isolated layer, the engine parses `stack.xml`, filters for active `visibility="visible"` layers, and extracts the topmost layer from `data/*.png`.
+4. **PNG Header Verification**:
+   - Validates the standard 8-byte PNG signature:
+     `[137, 80, 78, 71, 13, 10, 26, 10]`
+   - Preserves 32-bit RGBA color representation and crisp 8-bit alpha transparency.
+
+## Privacy for Artists and Studios
+
+Concept art, comic panels, game assets, and client commissions represent valuable intellectual property. Uploading layered artwork archives to cloud converter services risks copyright leaks, training on unreleased IP, and bandwidth bottlenecks on multi-hundred-megabyte files.
+
+Because convrtr processes OpenRaster files 100% inside your local browser tab:
+- **Zero Cloud Exposure**: Your digital artwork never leaves your computer or mobile device.
+- **Blazing Fast**: Conversions finish in milliseconds without upload delays.
+- **Unrestricted**: Convert multi-gigabyte layered artwork collections completely offline with zero file size caps.

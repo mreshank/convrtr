@@ -247,7 +247,9 @@
 [data-collapsible-content] {
 	display: grid;
 	grid-template-rows: 1fr;
-	transition: grid-template-rows var(--dur-state) var(--ease), opacity var(--dur-fade) var(--ease);
+	transition:
+		grid-template-rows var(--dur-state) var(--ease),
+		opacity var(--dur-fade) var(--ease);
 	opacity: 1;
 }
 

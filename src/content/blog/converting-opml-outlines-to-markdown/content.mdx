@@ -1,0 +1,109 @@
+In 2000, software pioneer Dave Winer of UserLand Software published the **Outline Processor Markup Language** (`.opml`) specification. Originally designed to exchange structural data between outliner desktop applications, OPML quickly evolved into the universal interchange format for the open web.
+
+Today, virtually every RSS/Atom feed aggregator (Feedly, Inoreader, NetNewsWire, Miniflux), podcast player (Pocket Casts, Overcast, Apple Podcasts, Castro), and hierarchical outliner (Workflowy, OmniOutliner, Dynalist) uses OPML to export and import user libraries.
+
+However, viewing, curating, or archiving OPML files outside of a feed reader is frustrating. Raw OPML files are rigid XML trees cluttered with nested tags, URL attributes, and encoded entities that desktop Markdown editors and personal knowledge management (PKM) platforms cannot natively display.
+
+This engineering guide examines the forensic XML architecture of OPML 1.0 and 2.0 files, explores how nested outlines and feed subscriptions are parsed, and explains how [convrtr's OPML to Markdown engine](/document/opml-to-markdown) transforms XML outlines into structured GitHub Flavored Markdown (GFM) tables and checklists directly inside your browser.
+
+## The OPML Container Specification
+
+An `.opml` document is an XML file defined by an `<opml>` root element declaring the specification version:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="2.0">
+  <head>
+    <title>Engineering Feeds and Roadmap</title>
+    <dateCreated>Sat, 12 Sep 2026 14:00:00 GMT</dateCreated>
+    <dateModified>Sun, 13 Sep 2026 09:30:00 GMT</dateModified>
+    <ownerName>Systems Architect</ownerName>
+  </head>
+  <body>
+    <outline text="Technology Feeds">
+      <outline type="rss" text="Hacker News" xmlUrl="https://news.ycombinator.com/rss" htmlUrl="https://news.ycombinator.com"/>
+      <outline type="rss" text="Ars Technica" xmlUrl="https://arstechnica.com/feed/" htmlUrl="https://arstechnica.com"/>
+    </outline>
+    <outline text="Q3 Milestones" _status="checked">
+      <outline text="Design client-side IT chiptune synthesizer" _status="checked"/>
+      <outline text="Implement OpenRaster composite engine" _status="unchecked" _note="Handle stack.xml and mergedimage.png"/>
+    </outline>
+  </body>
+</opml>
+```
+
+### Forensic Header Metadata (`<head>`)
+
+The `<head>` block stores document-level attributes:
+- `<title>`: Human-readable title of the outline or subscription library.
+- `<dateCreated>` / `<dateModified>`: RFC 822 or ISO 8601 formatted timestamps.
+- `<ownerName>` / `<ownerEmail>`: Author identity and contact information.
+- `<expansionState>`: Comma-separated line numbers indicating which outline levels were expanded when the file was saved.
+
+### Recursive Outline Elements (`<outline>`)
+
+The `<body>` contains one or more `<outline>` nodes. Nodes can be self-closing (`<outline ... />`) or contain nested child `<outline>` elements.
+
+Key attributes include:
+- `text`: The primary text label for the node (mandatory in OPML 1.0).
+- `title`: Often duplicate of `text` or providing expanded wording.
+- `type`: Node classification, most commonly `"rss"`, `"atom"`, or `"link"`.
+- `xmlUrl`: The exact URL of the RSS or Atom syndicated XML feed.
+- `htmlUrl`: The website homepage URL associated with the feed.
+- `url`: Direct hyperlink target for link-type outlines.
+- `description`: Extended summary of the feed or outline node.
+- `_note` / `note`: Multi-line commentary or notes associated with the outline item.
+- `_status` / `completed`: Task completion state used by outliners (`"checked"` / `"unchecked"` or `"true"` / `"false"`).
+
+## Transforming OPML into GitHub Flavored Markdown
+
+A single OPML file often contains two distinct types of data:
+1. **Syndicated Feed Collections**: RSS/Atom subscriptions grouped into thematic categories.
+2. **Hierarchical Task Outlines**: Nested parent-child brainstorms, checklists, and project structures.
+
+convrtr's conversion engine dynamically distinguishes between these structures to produce clean, legible Markdown:
+
+### Stage 1: YAML Frontmatter Extraction
+Header metadata is parsed, decoded from XML entities, and formatted into clean YAML frontmatter:
+
+```markdown
+---
+title: "Engineering Feeds and Roadmap"
+dateCreated: "Sat, 12 Sep 2026 14:00:00 GMT"
+dateModified: "Sun, 13 Sep 2026 09:30:00 GMT"
+author: "Systems Architect"
+---
+```
+
+### Stage 2: Tabular Feed Generation
+When an `<outline>` group contains exclusively or predominantly child nodes declaring `xmlUrl` or `type="rss"`, the engine generates an intuitive reference section:
+
+```markdown
+## Technology Feeds
+
+| Feed Title | Site | Feed URL |
+| :--- | :--- | :--- |
+| Hacker News | [Website](https://news.ycombinator.com) | [RSS Feed](https://news.ycombinator.com/rss) |
+| Ars Technica | [Website](https://arstechnica.com) | [RSS Feed](https://arstechnica.com/feed/) |
+```
+
+This tabular presentation makes subscription exports immediately usable as curated reading lists in Obsidian, GitHub READMEs, and team wikis.
+
+### Stage 3: Hierarchical Outlines and Checklists
+For general outline structures, the engine preserves nested depth using standard 2-space indentation:
+- Task statuses (`_status="checked"`, `completed="true"`) are converted to GFM task list items (`- [x]` and `- [ ]`).
+- Items with hyperlinks are formatted as standard Markdown links: `[Label](url)`.
+- Associated notes (`_note` or `description`) are rendered as indented blockquotes:
+
+```markdown
+- [x] Q3 Milestones
+  - [x] Design client-side IT chiptune synthesizer
+  - [ ] Implement OpenRaster composite engine
+    > Handle stack.xml and mergedimage.png
+```
+
+## Private, Local-First Knowledge Migration
+
+Subscription feeds, podcast subscriptions, and project outlines are deeply personal. They reflect an individual's reading habits, political interests, health research, and internal company roadmaps.
+
+Uploading OPML archives to third-party conversion websites poses significant data privacy risks. Because convrtr processes OPML files 100% locally in your browser memory using pure TypeScript and native Web APIs, your subscription directories and notes are never transmitted across the network, tracked, or retained.

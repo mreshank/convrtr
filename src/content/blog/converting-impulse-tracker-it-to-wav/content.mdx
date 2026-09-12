@@ -1,0 +1,99 @@
+In 1996, Australian programmer Jeffrey Lim released **Impulse Tracker** (`.it`) for MS-DOS. It quickly established itself as the zenith of tracker music production, marking the final evolutionary leap of the classic demoscene tracker quartet alongside Amiga ProTracker (`.mod`), Scream Tracker 3 (`.s3m`), and FastTracker II (`.xm`).
+
+While earlier formats struggled with channel constraints, rigid Amiga clock periods, or primitive envelope controls, Impulse Tracker introduced up to 64 polyphonic audio channels, resonant low-pass digital filters, New Note Actions (NNA) for intelligent voice management, 16-bit compressed samples, and precision pitch calculation based on arbitrary C-5 sampling frequencies. Video game composers embraced IT to create iconic soundtracks for titles like *Jazz Jackrabbit 2*, *Deus Ex*, and *Unreal Tournament*.
+
+This technical guide breaks down the forensic byte layout of Impulse Tracker files, explains how 64-channel bit-packed patterns and `IMPS` sample headers are decoded, and demonstrates how [convrtr's Impulse Tracker to WAV engine](/audio/it-to-wav) synthesizes multi-channel tracker arrangements into standard 16-bit linear stereo PCM audio directly inside your browser.
+
+## The IMPM Header Specification
+
+Every valid `.it` file begins with a 192-byte primary module header starting with the 4-byte ASCII signature `IMPM` (`0x49 0x4D 0x50 0x4D`):
+
+| Offset (Bytes) | Field Name | Data Type | Forensic Description |
+| :--- | :--- | :--- | :--- |
+| `0x00 - 0x03` | Magic Signature | 4 ASCII chars | Constant `"IMPM"` (`0x49 0x4D 0x50 0x4D`) |
+| `0x04 - 0x1D` | Song Name | 26 ASCII chars | Song title, null-padded (`0x00`) |
+| `0x1E - 0x1F` | Row Highlights | 2 bytes | Pattern row highlight markers (minor, major) |
+| `0x20 - 0x21` | Order Count | 16-bit uint (LE) | Number of playback order entries (`OrdNum`) |
+| `0x22 - 0x23` | Instrument Count | 16-bit uint (LE) | Number of instrument definitions (`InsNum`) |
+| `0x24 - 0x25` | Sample Count | 16-bit uint (LE) | Total sample headers in module (`SmpNum`) |
+| `0x26 - 0x27` | Pattern Count | 16-bit uint (LE) | Total unique 64-row pattern chunks (`PatNum`) |
+| `0x28 - 0x29` | Created Version | 16-bit uint (LE) | Tracker version (`0x0214` = IT 2.14) |
+| `0x2A - 0x2B` | Compatible Version | 16-bit uint (LE) | Minimum compatible tracker version |
+| `0x2C - 0x2D` | Flags | 16-bit bitfield | Bit 0: Stereo, Bit 2: Instruments, Bit 3: Linear Slides |
+| `0x2E - 0x2F` | Special Flags | 16-bit bitfield | Bit 0: Song message attached, Bit 3: MIDI pitch bend |
+| `0x30` | Global Volume | 1 byte | Master song volume (0 to 128) |
+| `0x31` | Mix Volume | 1 byte | Mixing attenuation volume (0 to 128) |
+| `0x32` | Initial Speed | 1 byte | Ticks per pattern row (typically 6) |
+| `0x33` | Initial Tempo | 1 byte | Beats per minute clock rate (typically 125) |
+| `0x34` | Panning Separation | 1 byte | Stereo separation factor (0 to 128) |
+| `0x40 - 0x7F` | Channel Pan Table | 64 bytes | Initial panning for channels 0–63 (0=left, 32=center, 64=right, 100=surround, 128=disabled) |
+| `0x80 - 0xBF` | Channel Vol Table | 64 bytes | Initial volume for channels 0–63 (0 to 64) |
+| `0xC0 onwards` | Order List | Byte array | Sequence array of order indices (255 = End, 254 = Skip) |
+
+### 32-Bit Absolute Parapointers
+
+Unlike Scream Tracker 3, which relied on 16-bit paragraph pointers multiplied by 16 (`offset << 4`), Impulse Tracker adopted clean 32-bit little-endian absolute file offsets for addressing data structures:
+
+Following the `OrdNum` order table:
+- `InsNum * 4` bytes: 32-bit absolute offsets pointing to instrument blocks.
+- `SmpNum * 4` bytes: 32-bit absolute offsets pointing to `IMPS` sample headers.
+- `PatNum * 4` bytes: 32-bit absolute offsets pointing to compressed pattern blocks.
+
+## The IMPS Sample Header and C-5 Frequency
+
+Each sample header begins with the 4-byte ASCII signature `IMPS` (`0x49 0x4D 0x50 0x53`) at its declared 32-bit file offset:
+
+- **DOS Filename**: 12 ASCII characters storing the legacy 8.3 filename.
+- **Flags**:
+  - Bit 0: Sample data present.
+  - Bit 1: 16-bit sample format (vs 8-bit).
+  - Bit 2: Stereo sample data.
+  - Bit 3: Compressed sample payload.
+  - Bit 4: Loop enabled.
+  - Bit 5: Sustain loop enabled.
+  - Bit 6: Bidirectional (ping-pong) loop.
+- **Sample Name**: 26-character ASCII sample label.
+- **Conversion Flags (`Cvt`)**: Bit 0 indicates signed PCM samples; Bit 2 indicates differential delta encoding.
+- **Length, LoopStart, LoopEnd**: 32-bit integers specifying sample bounds.
+- **C5Speed**: A critical 32-bit integer representing the exact sample playback frequency (in Hertz) when playing note C-5 (e.g. `8363 Hz`, `22050 Hz`, or `44100 Hz`). Unlike Amiga modules where pitch was dictated by hardware clock dividers, C5Speed allows arbitrary sample rates to be tuned accurately.
+- **Sample Pointer**: 32-bit absolute file offset indicating where the raw audio waveform data begins.
+
+## Pattern Packing and 64-Channel Matrix
+
+Impulse Tracker patterns can contain up to 64 polyphonic channels. To eliminate redundant storage on empty rows, IT uses a dynamic channel packing protocol:
+
+Each row consists of channel tokens ending with a null byte (`0x00`):
+1. Read byte `chvar`:
+   - If `chvar == 0x00`: End of row. Increment the row counter.
+2. Decode channel number and mask update flag:
+   - `channelIndex = (chvar - 1) & 63` (Channels 0 to 63).
+   - If `chvar & 128`: A new `maskvar` byte follows immediately. Otherwise, reuse the previous `maskvar` recorded for this channel.
+3. Unpack channel data according to the active `maskvar` bits:
+   - **Bit 0 (`0x01`)**: Read `Note` byte (`0` to `119` where `60` is C-5; `254` = Note Cut, `255` = Note Fade).
+   - **Bit 1 (`0x02`)**: Read `Instrument` byte (1-based sample index).
+   - **Bit 2 (`0x04`)**: Read `Volume` byte (`0` to `64` = volume, `128` to `192` = panning).
+   - **Bit 3 (`0x08`)**: Read `Command` effect letter and `CommandValue` parameter byte.
+
+## In-Browser Multi-Channel Audio Synthesis
+
+Rendering an `.it` module into universal 16-bit linear stereo PCM audio requires a multi-voice digital mixing pipeline:
+
+1. **Tempo and Ticks**:
+   - `tickDuration = 2.5 / tempo` (seconds).
+   - `samplesPerTick = sampleRate * tickDuration`.
+   - Each row advances after `speed` ticks (default 6).
+2. **Frequency Calculation**:
+   - For note `n` (where C-5 is `60`) and sample rate `sampleRate`:
+     `frequency = C5Speed * (2 ** ((n - 60) / 12))`
+   - The playback step per output audio frame is:
+     `step = frequency / sampleRate`
+3. **Voice Mixing and Loop Points**:
+   - For each active channel voice, sample position advances by `step`.
+   - If a voice passes `LoopEnd` with looping enabled, it wraps cleanly back to `LoopStart`.
+   - Voice amplitudes are panned across stereo output buffers according to channel pan settings.
+4. **Encoding to Standard WAV**:
+   - Left and right float channels are normalized and converted to signed 16-bit little-endian words, enveloped in a canonical RIFF WAV container.
+
+## 100% Client-Side Retro Audio Preservation
+
+Vintage demoscene modules and game audio archives should be playable anywhere without installing obsolete MS-DOS emulators or third-party executable trackers. Because convrtr executes the entire Impulse Tracker decoding and synthesis pipeline client-side in pure TypeScript, your chiptune files convert instantly in your browser tab with complete privacy.

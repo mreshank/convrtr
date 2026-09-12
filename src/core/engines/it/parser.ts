@@ -392,7 +392,7 @@ export function convertItToWav(
 
 				for (let ch = 0; ch < 64; ch++) {
 					const state = channels[ch];
-					if (!state || !state.sample || state.step === 0) continue;
+					if (!state?.sample || state.step === 0) continue;
 
 					const smp = state.sample;
 					const idx = Math.floor(state.samplePos);

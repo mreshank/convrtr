@@ -1,0 +1,114 @@
+In the early 2000s, software architects Dmitry Gribov and Michael Matsnev recognized a critical flaw in electronic publishing formats. Most e-books (like early PDF and proprietary Mobipocket formats) focused purely on visual layout, ignoring document semantics.
+
+To create an open, future-proof standard for digital literature, they designed **FictionBook 2.0** (`.fb2`). Unlike EPUB—which bundles a web of HTML, CSS, images, and package descriptors inside a ZIP container—FictionBook encapsulates the entire book, bibliographic metadata, semantic chapters, poems, epigraphs, and base64 illustrations into a single, unified XML document.
+
+Today, millions of novels, academic classics, and public-domain anthologies are archived in FB2. However, modern personal knowledge management (PKM) platforms, static site generators, and mobile Markdown editors cannot parse FB2 XML directly.
+
+This technical guide dissects the forensic XML architecture of FictionBook 2.0 files, explains how literary structures and metadata are mapped, and demonstrates how [convrtr's FictionBook to Markdown engine](/document/fb2-to-markdown) transforms FB2 manuscripts into clean, semantic GitHub Flavored Markdown (GFM) directly inside your browser.
+
+## The FictionBook 2.0 XML Architecture
+
+An `.fb2` document is governed by the `http://www.gribuser.ru/xml/fictionbook/2.0` schema. Its top-level structure consists of three distinct sections:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0" xmlns:l="http://www.w3.org/1999/xlink">
+  <description>
+    <title-info>
+      <genre>sf_cyberpunk</genre>
+      <author>
+        <first-name>William</first-name>
+        <last-name>Gibson</last-name>
+      </author>
+      <book-title>Neuromancer</book-title>
+      <annotation>
+        <p>The sky above the port was the color of television, tuned to a dead channel.</p>
+      </annotation>
+      <date value="1984">1984</date>
+      <lang>en</lang>
+    </title-info>
+    <document-info>
+      <author><nickname>convrtr-archivist</nickname></author>
+      <program-used>convrtr FB2 Engine</program-used>
+      <id>9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d</id>
+      <version>1.0</version>
+    </document-info>
+  </description>
+  <body>
+    <title><p>Neuromancer</p></title>
+    <section>
+      <title><p>Part 1: Chiba City Blues</p></title>
+      <epigraph>
+        <p>The city was a sprawling corporate neon sprawl.</p>
+        <text-author>Case</text-author>
+      </epigraph>
+      <p>The sky above the port was the color of television, tuned to a dead channel.</p>
+    </section>
+  </body>
+</FictionBook>
+```
+
+### 1. Bibliographic Metadata (`<description>`)
+
+The `<description>` block houses comprehensive publishing metadata across three sub-elements:
+- `<title-info>`: Essential literary metadata including `<genre>` (standardized classifications like `sf_space`, `prose_classic`, `detective`), author details (`<first-name>`, `<middle-name>`, `<last-name>`), `<book-title>`, synopsis `<annotation>`, publication `<date>`, and language code `<lang>`.
+- `<document-info>`: Provenance of the digital edition, including scanner credits, creation software, and unique document UUID.
+- `<publish-info>`: Traditional print details including ISBN, original publisher, and printing year.
+
+### 2. Semantic Document Body (`<body>`)
+
+Unlike raw HTML where text is grouped into arbitrary `<div>` containers, FictionBook enforces strict structural semantics:
+- `<section>`: Recursive chapter and sub-chapter hierarchy. Sections can be nested arbitrarily deep to represent books, parts, chapters, and scenes.
+- `<title>`: Structural heading for the section, containing paragraphs `<p>` or subtitle elements.
+- `<epigraph>`: Introductory quotation preceding a chapter, paired with a `<text-author>` tag.
+- `<poem>`, `<stanza>`, `<v>`: Structured poetic verse. Individual verse lines `<v>` preserve line breaks without manual HTML `<br>` tags.
+- `<cite>`: Block quotation with explicit source citation.
+- `<empty-line>`: Deliberate typographical pause or scene break.
+
+### 3. Embedded Binary Payloads (`<binary>`)
+
+Images, book covers, and decorative chapter headings are encoded directly inside `<binary>` tags as base64 character blocks at the end of the file, referenced via `xlink:href="#image_id"` attributes in the body text.
+
+## Transforming FB2 Semantics to Markdown
+
+To convert an FB2 manuscript into clean Markdown that renders seamlessly in Obsidian, Logseq, or GitHub, the converter executes a multi-stage semantic transformation:
+
+### Stage 1: Frontmatter and Metadata Synthesis
+The engine parses `<title-info>` to build rich YAML frontmatter:
+
+```markdown
+---
+title: "Neuromancer"
+author: "William Gibson"
+genre:
+  - sf_cyberpunk
+date: "1984"
+language: "en"
+---
+```
+
+### Stage 2: Section Depth and Headings
+In FictionBook, sections do not declare rigid heading levels (like `<h1>` or `<h3>`); instead, heading hierarchy is inferred from `<section>` nesting depth:
+- Root body title becomes `# Book Title`.
+- Level 1 `<section><title>` becomes `## Chapter Title`.
+- Level 2 `<section><title>` becomes `### Section Heading`.
+
+### Stage 3: Literary Constructs (Poems, Epigraphs, Quotes)
+- **Epigraphs**: Formatted as indented blockquotes with italicized text and author attribution:
+  ```markdown
+  > *The city was a sprawling corporate neon sprawl.*
+  > — Case
+  ```
+- **Poetry and Verse**: Poetic stanzas are converted into blockquotes with explicit two-space line breaks to preserve verse meter without collapsing lines:
+  ```markdown
+  > First line of poetic meter  
+  > Second rhyming cadence  
+  > Ending of the stanza
+  ```
+- **Emphasis and Formatting**: `<emphasis>` translates to `*italic*`, `<strong>` to `**bold**`, `<strikethrough>` to `~~strike~~`, and `<subtitle>` to bold centered subtitles.
+
+## Local-First Privacy for Manuscripts
+
+Books, unpublished literary manuscripts, and private scholarly anthologies frequently contain unreleased intellectual property. Uploading entire book files to remote online converter portals risks content scraping and confidentiality leaks.
+
+Because convrtr executes the entire FictionBook parsing and Markdown serialization pipeline 100% locally inside your browser memory using Web APIs, your books, notes, and manuscripts never leave your personal computer.

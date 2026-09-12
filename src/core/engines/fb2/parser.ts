@@ -192,7 +192,6 @@ export function convertFb2ToMarkdown(
 		const tagRegex =
 			/<(title|subtitle|epigraph|cite|poem|p|empty-line|image|section)([\s\S]*?)>([\s\S]*?)<\/\1>|<(empty-line|image)([\s\S]*?)\/?>/gi;
 
-		let lastIndex = 0;
 		let match = tagRegex.exec(content);
 
 		while (match) {
@@ -258,7 +257,6 @@ export function convertFb2ToMarkdown(
 				}
 			}
 
-			lastIndex = tagRegex.lastIndex;
 			match = tagRegex.exec(content);
 		}
 
@@ -268,7 +266,7 @@ export function convertFb2ToMarkdown(
 				.split(/\n\s*\n/)
 				.map((p) => formatInline(p))
 				.filter(Boolean);
-			return paragraphs.join("\n\n") + "\n\n";
+			return `${paragraphs.join("\n\n")}\n\n`;
 		}
 
 		return out.join("\n");
