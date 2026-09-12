@@ -58,12 +58,15 @@
 | `.koa` / `.kla` | Commodore 64 KoalaPainter Bitmap | Retro / 8-Bit Art | 10,003-byte multicolor VRAM & Color RAM dump to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
 | `.aco` | Adobe Photoshop Color Swatch | Design / Palettes | v1/v2 binary color swatch parser with CMYK/Lab/RGB decoding to CSS & Tailwind | `SOLVED` | **SHIPPED** |
 | `.vag` / `.vagp` | Sony PlayStation SPU-ADPCM Audio | Retro Gaming / Audio | 4-bit SPU ADPCM 16-byte block decoding with 5-coefficient filter to 16-bit WAV | `SOLVED` | **SHIPPED** |
-| `.bib` / `.bibtex` | BibTeX Academic Citations | Academic / Docs | LaTeX citation macro parser & field extractor to GFM Markdown & JSON | `SOLVED` | **SHIPPED** |
-| `.pi1` / `.pc1` | Atari ST DEGAS & DEGAS Elite Graphics | Retro / 16-Bit Art | Motorola 68000 4-bitplane & 9-bit hardware palette decoder to PNG | `SOLVED` | **SHIPPED** |
-| `.aud` | Westwood Studios RTS Game Audio | Retro Gaming / Audio | 4-bit WS-ADPCM / IMA-ADPCM chunk stream decoder to 16-bit linear PCM WAV | `SOLVED` | **SHIPPED** |
 | `.bib` / `.bibtex` | BibTeX Academic Citations | Academic / PKM | Citation database parser with LaTeX accent macro translation to Markdown | `SOLVED` | **SHIPPED** |
 | `.pi1` / `.pi2` / `.pi3` / `.pc1` | Atari ST DEGAS & DEGAS Elite Graphics | Retro / 16-Bit Art | Interleaved bitplane & 9-bit RGB palette decoder with PackBits RLE to PNG | `SOLVED` | **SHIPPED** |
 | `.aud` | Westwood Studios RTS Audio | Retro Gaming / Audio | WS-ADPCM / IMA-ADPCM chunked game audio decoder to 16-bit linear PCM WAV | `SOLVED` | **SHIPPED** |
+| `.avr` | Atari ST / Falcon030 Audio Visual Research | Retro / Audio | Motorola big-endian 2VRH 128-byte header & signed/unsigned 8/16-bit PCM to WAV | `SOLVED` | **SHIPPED** |
+| `.nfo` / `.diz` | IBM CP437 ASCII / ANSI Demoscene Art | Retro / Docs | IBM Code Page 437 byte decoder with box drawing & block elements to styled HTML / UTF-8 | `SOLVED` | **SHIPPED** |
+| `.chr` | NES / Famicom 2bpp Character Tile ROM | Retro Gaming / Graphics | Planar 16-byte 8x8 tile decoder with classic NES palettes to 32-bit RGBA PNG sprite sheet | `SOLVED` | **SHIPPED** |
+| `.xm` | FastTracker II Extended Module Tracker | Tracker Music / Audio | Extended Module header, multi-channel pattern unpacker, and linear frequency synthesis to 16-bit stereo WAV | `SOLVED` | **SHIPPED** |
+| `.org` | Emacs Org Mode Documentation & Agenda | Productivity / Docs | Org outline tree, TODO items, checkboxes, tables, code blocks, and frontmatter to GitHub Flavored Markdown | `SOLVED` | **SHIPPED** |
+| `.dcm` / `.dicom` | DICOM Medical Diagnostic Imaging | Medical / Imaging | Part 10 explicit/implicit VR transfer syntax parser with Window/Level contrast normalization to 32-bit PNG | `SOLVED` | **SHIPPED** |
 
 
 ---
@@ -2140,6 +2143,84 @@
   - Unpacks chunk streams, maintains 16-bit ADPCM step indices and predictors, scales samples to 16-bit linear PCM, and wraps with a standard RIFF/WAVE header.
 - **Fidelity:** `LOSSLESS ADPCM RECONSTRUCTION`.
 - **Status:** **Wave 32 Shipped (`audio/aud-to-wav`)**.
+
+---
+
+### 94. Atari ST & Falcon030 Audio Visual Research Audio (.avr)
+- **Ecosystem & Context:** Audio Visual Research (`.avr`) was a premier audio sample format created on the Atari ST and Falcon030 for professional digital sampling workstations and sound editing tools like Megamax, Replay 16, and Avalon.
+- **Forensic Format Architecture:**
+  - 128-Byte Motorola 68000 Header: Magic bytes `2VRH` (0x32 0x56 0x52 0x48), sample name (8 ASCII bytes), mono/stereo mode (`0` = mono, `0xFFFF` = stereo), bit resolution (uint16 BE: 8 or 16 bits), signedness (`0` = unsigned, `0xFFFF` = signed), sample frequency (uint32 BE in Hz), and sample length in frames (uint32 BE).
+  - Audio Payload: Big-endian 16-bit signed/unsigned or 8-bit PCM data following the 128-byte header.
+- **In-Browser Execution Strategy:**
+  - Parses 128-byte big-endian header, converts Motorola big-endian samples into little-endian linear PCM, normalizes signedness to standard two's complement 16-bit, and packages a valid RIFF/WAVE container with zero external dependencies.
+- **Fidelity:** `LOSSLESS BIT-EXACT PCM RECONSTRUCTION`.
+- **Status:** **Wave 33 Shipped (`audio/avr-to-wav`)**.
+
+---
+
+### 95. IBM CP437 ASCII / ANSI Art (.nfo, .diz)
+- **Ecosystem & Context:** Standard information files distributed with demoscene releases, BBS file descriptions (`file_id.diz`), and warez scene groups. Encoded in the classic IBM PC hardware Code Page 437 character set featuring box-drawing characters, shades, and mathematical glyphs.
+- **Forensic Format Architecture:**
+  - Raw 8-bit byte stream where codes 0x01–0x1F and 0x80–0xFF map to DOS hardware glyphs (box-drawing lines, solid blocks `█`, half blocks `▄`/`▀`, light/medium/dark shades `░`/`▒`/`▓`, card suits `♠`/`♣`/`♥`/`♦`, and Greek symbols).
+  - Lines delimited by standard CRLF or LF, often with intricate multi-column ANSI/ASCII artwork.
+- **In-Browser Execution Strategy:**
+  - Decodes byte-by-byte via CP437 glyph map into clean UTF-8 Unicode, computes art density statistics (line count, box character percentage), and renders either clean raw text or a standalone, responsive HTML viewer with customizable retro themes (Dark, Matrix Green, Amber CRT, Clean Paper) and monospace font stacks (Cascadia Code, Consolas, Courier New).
+- **Fidelity:** `LOSSLESS CP437 UNICODE MAPPING & RETRO STYLING`.
+- **Status:** **Wave 33 Shipped (`document/nfo-to-html`)**.
+
+---
+
+### 96. NES / Famicom Planar Character Tile ROM Graphics (.chr)
+- **Ecosystem & Context:** Nintendo Entertainment System (NES) and Famicom PPU (Picture Processing Unit) pattern table character memory dumps, commonly found in `.nes` iNES ROMs or standalone `.chr` files for homebrew development and ROM hacking.
+- **Forensic Format Architecture:**
+  - 8x8 pixel tiles stored in 16 bytes each.
+  - Planar 2bpp Encoding: First 8 bytes define Bitplane 0 (lower bit of all 8 rows); subsequent 8 bytes define Bitplane 1 (higher bit of all 8 rows). The two bitplanes combine bit-by-bit to produce a 2-bit color index (0 to 3) per pixel.
+  - Standard banks are 4KB (256 tiles) or 8KB (512 tiles).
+- **In-Browser Execution Strategy:**
+  - Unpacks 16-byte planar tiles, reconstructs 2bpp indexes, maps indices to authentic NES palette presets (Classic Grey, Super Mario Bros, The Legend of Zelda, Metroid, Game Boy Green), lays tiles out in a configurable 16-column sprite sheet grid, and encodes a 32-bit RGBA PNG.
+- **Fidelity:** `LOSSLESS 2BPP PIXEL RECONSTRUCTION`.
+- **Status:** **Wave 33 Shipped (`image/chr-to-png`)**.
+
+---
+
+### 97. Triton FastTracker II Extended Module Tracker Music (.xm)
+- **Ecosystem & Context:** Extended Module (`.xm`) format created by Fredrik Huss and Magnus Högdahl (Mr. H and Vogue of Triton) for FastTracker II on PC DOS in 1994. The undisputed king of PC tracker formats throughout the 1990s demoscene and tracker music culture.
+- **Forensic Format Architecture:**
+  - Header: Signature `Extended Module: ` at offset 0, tracker name, version (`0x0104`), header size, song length, restart position, channel count (up to 32), pattern count (up to 256), instrument count (up to 128), and flags (linear frequency table vs. Amiga periods).
+  - Patterns: Packed channel notes with note, instrument, volume column, effect type, and effect parameters.
+  - Instruments & Samples: Multi-sample instruments with volume/pan envelopes, vibrato settings, and 8/16-bit delta-encoded PCM sample data.
+- **In-Browser Execution Strategy:**
+  - Unpacks pattern data, decodes delta-compressed 8/16-bit PCM samples, evaluates linear pitch periods and tempo/speed tick counters, synthesizes multi-channel mixing with volume ramping into an interleaved 16-bit stereo PCM stream, and outputs a standard WAV file.
+- **Fidelity:** `CYCLE-ACCURATE MULTI-CHANNEL SYNTHESIS`.
+- **Status:** **Wave 34 Shipped (`audio/xm-to-wav`)**.
+
+---
+
+### 98. Emacs Org Mode Outline & Agenda Documentation (.org)
+- **Ecosystem & Context:** Carsten Dominik's Org Mode for GNU Emacs, one of the most sophisticated plain-text authoring, task planning, and literate programming systems in computing history.
+- **Forensic Format Architecture:**
+  - Plain-text hierarchy with asterisk headings (`* Heading 1`, `** Heading 2`).
+  - Metadata frontmatter (`#+TITLE:`, `#+AUTHOR:`, `#+DATE:`, `#+TAGS:`).
+  - Task state keywords (`TODO`, `DONE`, `WAITING`), priority tags (`[#A]`, `[#B]`), and checkboxes (`[ ]`, `[X]`, `[-]`).
+  - Org table syntax with pipe delimiters (`| Header |` and `|---+---|` separators), source code blocks (`#+BEGIN_SRC lang ... #+END_SRC`), and quote blocks (`#+BEGIN_QUOTE ... #+END_QUOTE`).
+- **In-Browser Execution Strategy:**
+  - Tokenizes heading depth, translates Org metadata to YAML frontmatter, converts task states and checkboxes to GFM checklists (`- [ ]`, `- [x]`), converts Org tables to GFM pipe tables, maps Org block structures to Markdown fenced blocks, and handles inline formatting (`*bold*`, `/italic/`, `_underline_`, `~code~`, `=verbatim=`, `+strike+`).
+- **Fidelity:** `SEMANTIC STRUCTURAL MARKDOWN PRESERVATION`.
+- **Status:** **Wave 34 Shipped (`document/org-to-markdown`)**.
+
+---
+
+### 99. DICOM Medical Diagnostic Imaging (.dcm, .dicom)
+- **Ecosystem & Context:** Digital Imaging and Communications in Medicine (DICOM / NEMA PS3 / ISO 12052), the universal international standard for medical radiology imaging (CT, MRI, X-ray, Ultrasound, PET).
+- **Forensic Format Architecture:**
+  - 128-byte preamble followed by 4-byte magic signature `DICM` at offset 128.
+  - Tag-Length-Value Data Elements: Group and Element numbers (uint16 LE each, e.g. `(0028, 0010)` Rows, `(0028, 0011)` Columns, `(0028, 0100)` Bits Allocated, `(0028, 1050)` Window Center, `(0028, 1051)` Window Width, `(0028, 1052)` Rescale Intercept, `(0028, 1053)` Rescale Slope).
+  - Transfer Syntaxes: Explicit VR Little Endian, Implicit VR Little Endian, and Deflated Little Endian.
+  - Pixel Data Tag `(7FE0, 0010)`: Raw 8-bit, 12-bit, or 16-bit greyscale or RGB planar pixel arrays.
+- **In-Browser Execution Strategy:**
+  - Scans DICOM data elements across explicit/implicit transfer syntaxes, extracts window/level contrast settings and modality rescale slopes, maps raw Hounsfield units (HU) into high-contrast 8-bit dynamic range, supports preset medical windows (Bone, Soft Tissue, Lung, Brain), and encodes a crisp 32-bit RGBA PNG.
+- **Fidelity:** `CLINICAL CONTRAST WINDOW NORMALIZATION`.
+- **Status:** **Wave 34 Shipped (`image/dcm-to-png`)**.
 
 ---
 
