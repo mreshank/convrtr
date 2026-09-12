@@ -282,7 +282,7 @@ export function convertOpmlToMarkdown(
 	onProgress?.(1.0, "COMPLETE");
 
 	return {
-		markdown: lines.join("\n").trim() + "\n",
+		markdown: `${lines.join("\n").trim()}\n`,
 		document,
 		stats: {
 			totalNodes,

@@ -73,6 +73,8 @@
 | `.it` | Impulse Tracker Module Tracker | Tracker Music / Audio | Jeffrey Lim 64-channel tracker, sample compression & voice synthesis to 16-bit stereo WAV | `SOLVED` | **SHIPPED** |
 | `.opml` | Outline Processor Markup Language | Productivity / Feeds | OPML 1.0/2.0 outline trees, RSS subscription feeds & podcast directories to GFM tables & lists | `SOLVED` | **SHIPPED** |
 | `.ora` | OpenRaster Layered Graphics Archive | Creative Art / Design | Freedesktop.org ZIP container with stack.xml & layer blend compositor to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
+| `.fb2` | FictionBook 2.0 e-Book | Publishing / E-Books | XML semantic e-book structure, embedded base64 graphics & poems to Markdown | `SOLVED` | **SHIPPED** |
+| `.qoi` | Quite OK Image Fast Lossless | Fast Graphics / Vision | Dominic Szablewski lossless 8-byte chunk decompressor to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
 
 
 
@@ -2320,6 +2322,46 @@
 
 ---
 
+### 106. FictionBook 2.0 e-Book (.fb2)
+- **Ecosystem & Context:** FictionBook 2.0 (`.fb2`) is an open XML-based e-book standard widely used throughout Eastern Europe, supported by FBReader, Calibre, PocketBook, and retro e-readers. Unlike EPUB, which packages multiple HTML/CSS files in a ZIP container, FB2 is a single semantic XML file encompassing book metadata, cover art, nested chapters, epigraphs, poems, citations, and base64-encoded inline illustrations.
+- **Forensic Format Architecture:**
+  - XML Root: `<FictionBook xmlns="http://www.gribuser.ru/xml/fictionbook/2.0">` containing `<description>`, `<body>`, and optional `<binary>` blocks.
+  - `<description>`: Structured `<title-info>` (genre, author names, book-title, annotation, publication date, language, coverpage), `<document-info>`, and `<publish-info>`.
+  - `<body>`: Hierarchical `<section>` nodes containing `<title>`, `<subtitle>`, `<epigraph>`, `<cite>`, `<poem>`, `<p>`, `<empty-line>`, and `<image>` tags.
+  - `<binary>`: Base64-encoded image payloads keyed by an `id` attribute, referenced within the body via `xlink:href="#id"` or `l:href="#id"`.
+- **In-Browser Execution Strategy:**
+  - Pre-scans XML prolog to determine document character encoding (supporting UTF-8, Windows-1251, and KOI8-R via `TextDecoder`).
+  - Serializes bibliographic metadata into standardized YAML frontmatter.
+  - Indexes all `<binary>` illustrations into base64 data URLs for seamless markdown image rendering.
+  - Formats epigraphs and citations into indented blockquotes, poetic stanzas into verse blocks, and nested sections into proportional GitHub Flavored Markdown heading levels (`#`, `##`, etc.).
+- **Fidelity:** `SEMANTIC E-BOOK & EMBEDDED MEDIA PRESERVATION`.
+- **Status:** **Wave 37 Shipped (`document/fb2-to-markdown`) — Milestone Tool 106**.
+
+---
+
+### 107. Quite OK Image (.qoi)
+- **Ecosystem & Context:** Created by Dominic Szablewski, Quite OK Image (`.qoi`) is a fast, lossless image compression format designed to compress RGB/RGBA rasters to sizes comparable to PNG while decompressing 20x to 50x faster. It is increasingly adopted in real-time game engines, graphics pipelines, and embedded microcontrollers where PNG deflate overhead is prohibitive.
+- **Forensic Format Architecture:**
+  - Magic Signature: `qoif` (`0x71 0x6F 0x69 0x66`) at byte offset 0.
+  - Header (14 bytes): 32-bit big-endian width, 32-bit big-endian height, channels byte (3 = RGB, 4 = RGBA), colorspace byte (0 = sRGB with linear alpha, 1 = all channels linear).
+  - Running Color Array: 64-entry cache initialized to transparent black (`{r: 0, g: 0, b: 0, a: 0}`), indexed by `(r * 3 + g * 5 + b * 7 + a * 11) % 64`.
+  - Byte-Stream Chunk Opcodes:
+    - `QOI_OP_INDEX` (2-bit tag `00`, 6-bit index): fetches color directly from the cache.
+    - `QOI_OP_DIFF` (2-bit tag `01`, 2-bit dr, 2-bit dg, 2-bit db with bias 2): small RGB diffs (-2..1).
+    - `QOI_OP_LUMA` (2-bit tag `10`, 6-bit dg with bias 32, followed by byte containing dr-dg and db-dg with bias 8): green-correlated luminance diffs.
+    - `QOI_OP_RUN` (2-bit tag `11`, 6-bit run length with bias -1): run of 1 to 62 consecutive identical pixels.
+    - `QOI_OP_RGB` (8-bit tag `0xFE`, 3 payload bytes): new RGB color, preserving current alpha.
+    - `QOI_OP_RGBA` (8-bit tag `0xFF`, 4 payload bytes): new complete RGBA color.
+  - End Marker: 7 bytes of `0x00` followed by `0x01`.
+- **In-Browser Execution Strategy:**
+  - Inspects `qoif` header and dimensions with boundary checking against maximum canvas limits.
+  - Decodes sequential opcodes into a linear 32-bit RGBA pixel array using a 64-entry running color table.
+  - Packages raw pixels into a standard 32-bit RGBA lossless PNG with IHDR, IDAT (zlib deflate), and IEND chunks.
+- **Fidelity:** `LOSSLESS FAST RASTER DECOMPRESSION`.
+- **Status:** **Wave 37 Shipped (`image/qoi-to-png`) — Milestone Tool 107**.
+
+---
+
 ## Roadmap Waves & Next Steps
 
 1. **Wave 1 (Shipped):**
@@ -2464,9 +2506,9 @@
     - Tool 103: `audio/it-to-wav` (Impulse Tracker `.it` 64-channel module music to 16-bit linear stereo WAV)
     - Tool 104: `document/opml-to-markdown` (Outline Processor Markup Language `.opml` RSS feeds and outlines to GFM tables and lists)
     - Tool 105: `image/ora-to-png` (OpenRaster `.ora` layered graphics archive to 32-bit RGBA PNG)
-37. **Wave 37 (Active Research & Next Builds):**
-    - Candidate 1: `document/fb2-to-markdown` (FictionBook 2.0 `.fb2` e-book XML format to Markdown)
-    - Candidate 2: `audio/ptm-to-wav` (PolyTracker `.ptm` multi-channel module music to 16-bit stereo WAV)
-    - Candidate 3: `archive/sit-to-zip` (StuffIt Archive `.sit` vintage Mac compressed archive to ZIP)
+37. **Wave 37 (Active Wave):**
+    - Tool 106: `document/fb2-to-markdown` (FictionBook 2.0 `.fb2` e-book XML format to Markdown) — **Shipped**
+    - Tool 107: `image/qoi-to-png` (Quite OK Image `.qoi` lossless fast decompressor to 32-bit RGBA PNG) — **Shipped**
+    - Candidate 3 / Tool 108: `audio/ptm-to-wav` (PolyTracker `.ptm` multi-channel module music to 16-bit stereo WAV)
 
 
