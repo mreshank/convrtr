@@ -75,6 +75,10 @@
 | `.ora` | OpenRaster Layered Graphics Archive | Creative Art / Design | Freedesktop.org ZIP container with stack.xml & layer blend compositor to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
 | `.fb2` | FictionBook 2.0 e-Book | Publishing / E-Books | XML semantic e-book structure, embedded base64 graphics & poems to Markdown | `SOLVED` | **SHIPPED** |
 | `.qoi` | Quite OK Image Fast Lossless | Fast Graphics / Vision | Dominic Szablewski lossless 8-byte chunk decompressor to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
+| `.ptm` | PolyTracker Multi-Channel Module | Tracker Music / Audio | PolyTracker PTMF 32-channel panning, 8BDIFF delta sample decoding & voice synthesis to 16-bit stereo WAV | `SOLVED` | **SHIPPED** |
+| `.hdr` / `.pic` | Radiance RGBE High Dynamic Range Image | 3D Graphics / VFX | Run-length encoded 32-bit RGBE high dynamic range raster with Reinhard tone mapping & gamma encoding to PNG | `SOLVED` | **SHIPPED** |
+| `.pdb` / `.prc` | Palm OS PalmDoc E-Book Database | Retro / E-Books | Palm OS database record unpacker with 4KB sliding-window LZ77 decompressor to GitHub Flavored Markdown | `SOLVED` | **SHIPPED** |
+| `.neo` | Atari ST NeoChrome Master Image | Retro / 16-Bit Art | 4-bitplane planar bitmap with 16-color ST/STE color palette mapping & aspect ratio correction to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
 
 
 
@@ -2362,6 +2366,84 @@
 
 ---
 
+### 108. PolyTracker Module (.ptm)
+- **Ecosystem & Context:** PolyTracker was a popular DOS multi-channel music tracker released in the mid-1990s by Chris Cox, bridging ProTracker and FastTracker formats. It is known for its distinctive 32-channel panning, compact 8BDIFF delta-encoded 8-bit/16-bit sample representation, and proprietary PTMF structure.
+- **Forensic Format Architecture:**
+  - Magic Signature: `PTMF` (`0x50 0x54 0x4D 0x46`) at offset 0x2C (following 28-byte song title and `0x1A` end-of-file byte).
+  - Version Byte: `0x02` (v2.03) or `0x01` (v1.xx).
+  - Channel Setup: 1 to 32 channels, channel panning table (0 = left, 7 = center, 15 = right).
+  - Sample Headers: loop flags, sample length, c4spd frequency tuning, default volume, panning, and sample type (bit 0 = 16-bit, bit 2 = 8BDIFF delta encoding).
+  - Multi-Channel Patterns: 64 rows per pattern, packed note/sample/effect events.
+- **In-Browser Execution Strategy:**
+  - Validates `PTMF` signature and decodes channel count, orders, sample descriptors, and pattern tables.
+  - Decompresses 8BDIFF delta samples via cumulative accumulator (`current = (current + delta[i]) & 0xff`) and scales to signed 16-bit linear PCM.
+  - Synthesizes multi-channel tracker voices with linear interpolation, loop handling, tick/speed timing (BPM and SPD), and stereo panning into clean 16-bit stereo linear PCM RIFF WAV.
+- **Fidelity:** `CHIPTUNE SYNTHESIS & RESTORATION`.
+- **Status:** **Wave 37 Shipped (`audio/ptm-to-wav`) — Milestone Tool 108**.
+
+---
+
+### 109. Radiance RGBE High Dynamic Range Image (.hdr, .pic)
+- **Ecosystem & Context:** Developed by Greg Ward at Lawrence Berkeley National Laboratory as part of the Radiance lighting simulation system, the Radiance RGBE format (`.hdr`, `.pic`) is one of the earliest and most enduring high-dynamic-range image standards. It remains extensively used in computer graphics, visual effects (VFX), architectural visualization, and physically based rendering (PBR) for 360° image-based lighting environment maps (HDRI).
+- **Forensic Format Architecture:**
+  - Magic Signature: `#?RADIANCE` or `#?RGBE` followed by variable-length ASCII header lines terminating with an empty line `\n\n`.
+  - Format Identifier: `FORMAT=32-bit_rle_rgbe` or `FORMAT=32-bit_rle_xyze`.
+  - Resolution Line: Standard orientation `-Y height +X width` (or variants like `+Y`, `-X`).
+  - Encoding:
+    - 32-bit per pixel shared exponent: Red, Green, Blue (8 bits each mantissa) and Exponent (8 bits, excess-128 bias).
+    - Adaptive RLE: scanline indicator `0x02 0x02` followed by 16-bit big-endian scanline width, then 4 separate RLE streams for R, G, B, and E channels per scanline.
+- **In-Browser Execution Strategy:**
+  - Parses ASCII key-value header pairs and extracts canvas dimensions.
+  - Decodes adaptive RLE per scanline channel-by-channel into 32-bit RGBE bytequads.
+  - Applies Reinhard global tone mapping ($L_d = \frac{L}{1 + L}$) or linear exposure normalization and sRGB transfer curve ($\gamma \approx 2.2$) to project 32-bit HDR floating-point luminances into 8-bit display-referred RGBA pixels.
+  - Encodes lossless 32-bit RGBA PNG output.
+- **Fidelity:** `HDR TONE-MAPPED & sRGB GAMMA-CORRECTED RASTERIZATION`.
+- **Status:** **Wave 38 Shipped (`image/hdr-to-png`) — Milestone Tool 109**.
+
+---
+
+### 110. Palm OS PalmDoc E-Book (.pdb, .prc)
+- **Ecosystem & Context:** Introduced in the late 1990s for Palm OS PDAs by Rick Bram and popularized by AportisDoc, PalmDoc (`.pdb`, `.prc`) was the de facto standard digital reading format for the pioneering PalmPilot, Handspring Visor, and Sony CLIÉ handhelds. Millions of vintage texts, medical handbooks, and classic literature releases remain locked in PalmDoc `.pdb` database files.
+- **Forensic Format Architecture:**
+  - Header (78 bytes): 32-byte null-padded database name, attributes, version, creation/modification Palm timestamps (seconds since Jan 1, 1904), type/creator ID (`TEXtREAd` for PalmDoc), and record count.
+  - Record Offset List: 8 bytes per record (`offset` 4 bytes, `attributes` 1 byte, `uniqueID` 3 bytes).
+  - Record 0 (PalmDoc Header, 16 bytes): Compression version (1 = uncompressed, 2 = PalmDoc LZ77 compressed), text length in bytes, record count, record size (typically 4096 bytes).
+  - Records 1..N: Compressed or uncompressed text chunks (maximum 4096 uncompressed bytes per record).
+  - PalmDoc LZ77 Byte Opcodes:
+    - `0x00`: Literal NULL byte.
+    - `0x01`..`0x08`: Literal count of next 1 to 8 bytes.
+    - `0x09`..`0x7F`: Single literal ASCII/Windows-1252 character.
+    - `0x80`..`0xBF`: 2-byte sliding window reference: `distance = ((b0 & 0x3F) << 5) | (b1 >> 3)`, `length = (b1 & 0x07) + 3` (window up to 2047 bytes, length up to 10 bytes).
+    - `0xC0`..`0xFF`: Two-character sequence of a space `' '` followed by byte XORed with `0x80`.
+- **In-Browser Execution Strategy:**
+  - Reads Palm OS database record list and extracts PalmDoc metadata from Record 0.
+  - Decompresses each sequential text record in browser memory using the PalmDoc LZ77 sliding window decoder.
+  - Detects chapter titles, headers, and paragraph breaks, converting the text into structured GitHub Flavored Markdown with clean YAML frontmatter containing the database name and Palm timestamp.
+- **Fidelity:** `LOSSLESS TEXT & CHAPTER STRUCTURE RECOVERY`.
+- **Status:** **Wave 38 Shipped (`document/pdb-to-markdown`) — Milestone Tool 110**.
+
+---
+
+### 111. Atari ST NeoChrome Master Image (.neo)
+- **Ecosystem & Context:** Developed in 1985 by Dave Staugas at Atari Corporation, NeoChrome (`.neo`) was the premier color paint program for the Atari ST 16/32-bit personal computer. Its 16-color palette animations, cycling effects, and pixel-precise tools defined the golden age of Atari ST demoscene art and video game concept graphics.
+- **Forensic Format Architecture:**
+  - File Size: Exactly 32,128 bytes.
+  - Header (128 bytes):
+    - Offset 0x00: 16-bit word (0x0000 = NeoChrome format flag).
+    - Offset 0x02: Resolution word (0 = Low 320x200 16 colors, 1 = Medium 640x200 4 colors, 2 = High 640x400 monochrome).
+    - Offset 0x04–0x23: 16 palette entries (16-bit ST RGB words: `0x0RGB`, 3 bits per channel for 512 total colors, or STE extended 4 bits per channel).
+    - Offset 0x24–0x2F: Color animation limits and directional speed flags.
+    - Offset 0x44: X/Y slide offsets and data.
+  - Display Data (32,000 bytes): Exactly 200 scanlines of 160 bytes each. Each scanline consists of 20 16-pixel groups arranged as 4 interleaved bitplanes (Planar 4bpp).
+- **In-Browser Execution Strategy:**
+  - Verifies the 32,128-byte file length and extracts the 16-color Atari ST palette (mapping 3-bit/4-bit ST RGB values with non-linear DAC scaling to 8-bit sRGB).
+  - Unpacks 4 interleaved bitplanes per 16-pixel word group into discrete 4-bit palette indexes for all 320x200 pixels.
+  - Corrects non-square Atari ST CRT pixel aspect ratios if requested, and formats the pixel buffer into a lossless 32-bit RGBA PNG.
+- **Fidelity:** `CYCLE-ACCURATE BITPLANE & PALETTE EXTRACTION`.
+- **Status:** **Wave 38 Shipped (`image/neo-to-png`) — Milestone Tool 111**.
+
+---
+
 ## Roadmap Waves & Next Steps
 
 1. **Wave 1 (Shipped):**
@@ -2506,9 +2588,18 @@
     - Tool 103: `audio/it-to-wav` (Impulse Tracker `.it` 64-channel module music to 16-bit linear stereo WAV)
     - Tool 104: `document/opml-to-markdown` (Outline Processor Markup Language `.opml` RSS feeds and outlines to GFM tables and lists)
     - Tool 105: `image/ora-to-png` (OpenRaster `.ora` layered graphics archive to 32-bit RGBA PNG)
-37. **Wave 37 (Active Wave):**
+37. **Wave 37 (Shipped):**
     - Tool 106: `document/fb2-to-markdown` (FictionBook 2.0 `.fb2` e-book XML format to Markdown) — **Shipped**
     - Tool 107: `image/qoi-to-png` (Quite OK Image `.qoi` lossless fast decompressor to 32-bit RGBA PNG) — **Shipped**
-    - Candidate 3 / Tool 108: `audio/ptm-to-wav` (PolyTracker `.ptm` multi-channel module music to 16-bit stereo WAV)
+    - Tool 108: `audio/ptm-to-wav` (PolyTracker `.ptm` multi-channel module music to 16-bit stereo WAV) — **Shipped**
+38. **Wave 38 (Shipped):**
+    - Tool 109: `image/hdr-to-png` (Radiance RGBE `.hdr`/`.pic` high dynamic range image decompressor to 32-bit RGBA PNG) — **Shipped**
+    - Tool 110: `document/pdb-to-markdown` (Palm OS PalmDoc `.pdb`/`.prc` e-book database unpacker and LZ77 decompressor to GFM Markdown) — **Shipped**
+    - Tool 111: `image/neo-to-png` (Atari ST NeoChrome `.neo` 4-bitplane planar graphics decoder to 32-bit RGBA PNG) — **Shipped**
+39. **Wave 39 (Active Wave / Proposed Candidates):**
+    - Candidate 1 / Tool 112: `audio/far-to-wav` (Farandole Composer `.far` 16-channel DOS module tracker to 16-bit stereo WAV)
+    - Candidate 2 / Tool 113: `document/abw-to-markdown` (AbiWord `.abw` XML document and formatting unpacker to GitHub Flavored Markdown)
+    - Candidate 3 / Tool 114: `image/art-to-png` (Commodore 64 Advanced Art Studio `.art` hires/multicolor graphics decoder to 32-bit RGBA PNG)
+
 
 
