@@ -19,6 +19,7 @@ import { nistToWav } from "./tools/audio/nist-to-wav";
 import { normaliseFLAC } from "./tools/audio/normalise-flac";
 import { normaliseWAV } from "./tools/audio/normalise-wav";
 import { opusToMp3 } from "./tools/audio/opus-to-mp3";
+import { ptmToWav } from "./tools/audio/ptm-to-wav";
 import { removeTagsFlac } from "./tools/audio/remove-tags-flac";
 import { removeTagsMp3 } from "./tools/audio/remove-tags-mp3";
 import { rpgmvmToM4a } from "./tools/audio/rpgmvm-to-m4a";
@@ -69,6 +70,7 @@ import { orgToMarkdown } from "./tools/document/org-to-markdown";
 import { osmToGeoJson } from "./tools/document/osm-to-geojson";
 import { pakToZip } from "./tools/document/pak-to-zip";
 import { pckToZip } from "./tools/document/pck-to-zip";
+import { pdbToMarkdown } from "./tools/document/pdb-to-markdown";
 import { rpaToZip } from "./tools/document/rpa-to-zip";
 import { rtfToMarkdown } from "./tools/document/rtf-to-markdown";
 import { scormToZip } from "./tools/document/scorm-to-zip";
@@ -100,11 +102,13 @@ import { ddsToPng } from "./tools/image/dds-to-png";
 import { degasToPng } from "./tools/image/degas-to-png";
 import { fitsToPng } from "./tools/image/fits-to-png";
 import { gbrToPng } from "./tools/image/gbr-to-png";
+import { hdrToPng } from "./tools/image/hdr-to-png";
 import { icnsToPng } from "./tools/image/icns-to-png";
 import { icoToPng } from "./tools/image/ico-to-png";
 import { iffToPng } from "./tools/image/iff-to-png";
 import { koaToPng } from "./tools/image/koa-to-png";
 import { macpaintToPng } from "./tools/image/macpaint-to-png";
+import { neoToPng } from "./tools/image/neo-to-png";
 import { oraToPng } from "./tools/image/ora-to-png";
 import { pcxToPng } from "./tools/image/pcx-to-png";
 import { ppmToPng } from "./tools/image/ppm-to-png";
@@ -331,6 +335,10 @@ export const TOOLS: Tool[] = [
 	qoiToPng,
 	opmlToMarkdown,
 	oraToPng,
+	ptmToWav,
+	hdrToPng,
+	pdbToMarkdown,
+	neoToPng,
 ];
 
 export function getTool(id: string): Tool | undefined {

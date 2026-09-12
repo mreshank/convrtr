@@ -45,6 +45,10 @@ const POST_SLUGS = [
 	"converting-openraster-ora-to-png",
 	"converting-fictionbook-fb2-to-markdown",
 	"converting-quite-ok-image-qoi-to-png",
+	"converting-radiance-hdr-rgbe-to-png",
+	"converting-palmdoc-pdb-to-markdown",
+	"converting-polytracker-ptm-to-wav",
+	"converting-atari-st-neochrome-to-png",
 ];
 
 describe("blog registry conformance", () => {

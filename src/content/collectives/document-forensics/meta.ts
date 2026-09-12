@@ -16,5 +16,7 @@ export const meta: CollectiveMeta = {
 		"image/dcm-to-png",
 		"document/enex-to-markdown",
 		"document/opml-to-markdown",
+		"document/fb2-to-markdown",
+		"document/pdb-to-markdown",
 	],
 };

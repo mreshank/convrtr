@@ -2245,6 +2245,238 @@ export const COMPARISONS: ComparisonMeta[] = [
 			"image/pcx-to-png",
 		],
 	},
+	{
+		slug: "ptm-vs-wav",
+		title: "PTM vs WAV: PolyTracker Module vs Standard Linear PCM",
+		description:
+			"A technical comparison between Pascal Brochart's PolyTracker (.ptm) module format and standard linear PCM WAV audio. Explore 32-channel tracker synthesis, delta compression, and universal playback.",
+		formatA: "PTM",
+		formatB: "WAV",
+		category: "audio",
+		summary:
+			"PolyTracker (PTM) was created in the mid-1990s by Pascal Brochart (Lone / Renaissance) for MS-DOS PC music composition. It offered 32-channel polyphony, native Gravis UltraSound (GUS) hardware acceleration, and differential delta sample compression (8BDIFF). Standard RIFF WAV is the universal audio container recognized by modern media players, DAWs, operating systems, and web browsers.",
+		prosA: [
+			"Compact multi-channel module format with embedded delta-compressed instrument samples",
+			"Supports up to 32 independent channels with dedicated stereo panning and GUS parameters",
+			"Stores musical score, note triggers, tempos, and audio samples in a single standalone file",
+			"Historic demoscene and retro PC tracker archive format from the DOS golden age",
+		],
+		prosB: [
+			"Universal playback across all modern media players, smartphones, web browsers, and OSs",
+			"Directly importable into professional DAWs (Ableton, FL Studio, Logic Pro, Pro Tools)",
+			"Zero specialized tracker emulation or synthesizer required to play or edit",
+			"Lossless uncompressed linear PCM preserving audio fidelity without proprietary codec dependencies",
+		],
+		specs: [
+			{
+				feature: "Format Architecture",
+				formatA: "32-channel tracker score + delta-encoded samples ('PTMF')",
+				formatB: "Linear PCM stream in RIFF chunks ('RIFF'/'WAVE')",
+			},
+			{
+				feature: "Sample Compression",
+				formatA: "8-bit/16-bit differential delta bytes (8BDIFF)",
+				formatB: "Uncompressed linear integer PCM",
+			},
+			{
+				feature: "Playback Requirements",
+				formatA: "Specialized tracker replayer (Libxmp, OpenMPT, DOSBox)",
+				formatB: "Native OS audio subsystem (CoreAudio, WASAPI, ALSA)",
+			},
+			{
+				feature: "Max Channels",
+				formatA: "Up to 32 tracker channels",
+				formatB: "Stereo 2-channel or arbitrary multichannel PCM",
+			},
+			{
+				feature: "Primary Use Case",
+				formatA: "Retro DOS demoscene music production and gaming",
+				formatB: "Master audio distribution, streaming, and studio editing",
+			},
+		],
+		verdict:
+			"PolyTracker (.ptm) files are irreplaceable digital artifacts of 1990s PC tracker music and demoscene culture. Convert PTM modules into standard 16-bit stereo WAV to listen to, sample, preserve, or remaster vintage chiptunes across modern audio hardware and media players.",
+		relatedTools: [
+			"audio/ptm-to-wav",
+			"audio/it-to-wav",
+			"audio/s3m-to-wav",
+			"audio/xm-to-wav",
+		],
+	},
+	{
+		slug: "hdr-vs-exr",
+		title: "HDR vs EXR: Radiance RGBE vs OpenEXR High Dynamic Range Formats",
+		description:
+			"A technical comparison between Greg Ward's Radiance HDR (.hdr / RGBE) and ILM's OpenEXR (.exr). Explore shared exponents, half-float pixels, multi-layer rendering, and tone mapping.",
+		formatA: "HDR",
+		formatB: "EXR",
+		category: "image",
+		summary:
+			"Radiance HDR (.hdr / .pic) pioneered 32-bit RGBE high dynamic range imaging for architectural lighting simulation and skyboxes. OpenEXR, developed by Industrial Light & Magic (ILM), is the visual effects industry standard supporting 16-bit half float, 32-bit float, deep data, and multi-channel layer compositing.",
+		prosA: [
+			"Compact 32-bit per pixel RGBE representation with shared 8-bit common exponent",
+			"Broad support across real-time 3D graphics engines (Three.js, Babylon.js, Unity, Unreal)",
+			"Simple byte-stream RLE compression with fast CPU decoding without heavy library dependencies",
+			"Universal format for HDRI 360-degree environment lighting and background panorama maps",
+		],
+		prosB: [
+			"Native 16-bit half-float and 32-bit float channels offering superior numerical precision",
+			"Supports arbitrary multi-layer rendering passes (Diffuse, Specular, Normal, Z-Depth, Cryptomatte)",
+			"Lossless (ZIP, PIZ, RLE) and lossy (B44, DWA, DWAB) modern compression algorithms",
+			"Definitive VFX and animation industry standard across Nuke, DaVinci Resolve, Blender, and Maya",
+		],
+		specs: [
+			{
+				feature: "Color Encoding",
+				formatA: "32-bit RGBE (8-bit R, G, B + 8-bit shared exponent)",
+				formatB: "16-bit half or 32-bit full float per channel",
+			},
+			{
+				feature: "Multi-Layer / Channels",
+				formatA: "RGB only (single layer)",
+				formatB: "Arbitrary channels and multi-part layers",
+			},
+			{
+				feature: "Compression",
+				formatA: "Adaptive Run-Length Encoding (RLE)",
+				formatB: "PIZ, ZIP, ZIPS, RLE, B44, DWAA, DWAB",
+			},
+			{
+				feature: "Decoder Footprint",
+				formatA: "Lightweight (~200 lines of pure code)",
+				formatB: "Heavy (requires OpenEXR C++ library / WASM)",
+			},
+			{
+				feature: "Primary Domain",
+				formatA: "Environment maps, game lighting, WebGL skyboxes",
+				formatB: "Film VFX, CGI rendering, and multi-pass compositing",
+			},
+		],
+		verdict:
+			"Use OpenEXR when rendering 3D CGI scenes, VFX multi-pass composites, and cinematic color grades requiring extreme floating-point dynamic range. Use Radiance HDR for fast, lightweight WebGL skyboxes and 360-degree environment textures, or convert HDR maps to tone-mapped PNG for instant in-browser viewing and web deployment.",
+		relatedTools: [
+			"image/hdr-to-png",
+			"image/dds-to-png",
+			"image/tga-to-png",
+			"image/qoi-to-png",
+		],
+	},
+	{
+		slug: "pdb-vs-epub",
+		title: "PDB vs EPUB: PalmDoc Vintage Handheld E-Books vs Modern EPUB",
+		description:
+			"A technical comparison between Palm OS PalmDoc (.pdb / .prc) databases and modern W3C EPUB digital publishing containers. Compare LZ77 record blocks, HTML5 styling, and reflowable typography.",
+		formatA: "PDB",
+		formatB: "EPUB",
+		category: "document",
+		summary:
+			"PalmDoc (.pdb) was the dominant eBook and reference format of the late 1990s and early 2000s for PalmPilot, Sony CLIÉ, and Handspring PDA devices, utilizing 4KB LZ77 compressed record blocks. EPUB 3 is the open international digital publishing standard based on HTML5, CSS3, and ZIP packaging.",
+		prosA: [
+			"Tiny memory footprint designed to run within 2MB–8MB Palm OS RAM constraints",
+			"Fast linear decompression via lightweight 2-byte sliding-window LZ77 algorithms",
+			"Carries book metadata, bookmarks, and record offsets in a single compact binary structure",
+			"Historical archive format preserving early digital literature and personal memos from the PDA era",
+		],
+		prosB: [
+			"Rich typographical control using standard HTML5 semantic markup and CSS3 styling",
+			"Native support for embedded vector graphics (SVG), audio narration, mathematical equations (MathML), and fonts",
+			"Reflowable layout that adapts dynamically to any screen resolution, aspect ratio, or reader font size",
+			"Universal standard supported by Apple Books, Kobo, Android, Calibre, and modern e-readers",
+		],
+		specs: [
+			{
+				feature: "Underlying Architecture",
+				formatA: "Palm OS Database (.pdb) with 4KB record blocks",
+				formatB: "ZIP archive with XHTML, CSS, and OPF manifest",
+			},
+			{
+				feature: "Compression",
+				formatA: "PalmDoc LZ77 (sliding window + space shortcuts)",
+				formatB: "Deflate / Zlib (standard ZIP packaging)",
+			},
+			{
+				feature: "Styling & Layout",
+				formatA: "Plain monospace/proportional text only",
+				formatB: "Full CSS3 layout, fonts, and media queries",
+			},
+			{
+				feature: "Device Era",
+				formatA: "1996–2005 (Palm Pilot, Visor, Treo, CLIÉ)",
+				formatB: "2007–Present (e-readers, tablets, web, mobile)",
+			},
+			{
+				feature: "Media Embedding",
+				formatA: "None (text only)",
+				formatB: "Images (PNG, JPEG, WebP, SVG), audio, and video",
+			},
+		],
+		verdict:
+			"EPUB is the unquestioned modern standard for digital books and e-reading. Convert vintage PalmDoc PDB files into clean Markdown or modern EPUB to liberate stranded handheld archives, historical manuscripts, and personal PDA notes into modern note-taking apps and e-readers.",
+		relatedTools: [
+			"document/pdb-to-markdown",
+			"document/epub-to-markdown",
+			"document/fb2-to-markdown",
+			"document/rtf-to-markdown",
+		],
+	},
+	{
+		slug: "neo-vs-degas",
+		title: "NeoChrome vs DEGAS Elite: Atari ST Vintage Graphics Formats",
+		description:
+			"A technical comparison between Dave Staugas's NeoChrome (.neo) and Tom Hudson's DEGAS Elite (.pi1 / .pc1). Explore Atari ST 4-bitplane planar architectures, 12-bit hardware palettes, and color animation.",
+		formatA: "NEO",
+		formatB: "DEGAS",
+		category: "image",
+		summary:
+			"NeoChrome (.neo), developed by Dave Staugas at Atari Corp in 1985, and DEGAS Elite (.pi1/.pc1), designed by Tom Hudson for Batteries Included, were the two defining graphics programs of the Atari ST computer. Both utilized the Motorola 68000's planar bitplane architecture to produce 16-color 320x200 graphics from a 512-color hardware palette.",
+		prosA: [
+			"Uncompressed 32,128-byte layout allowing direct DMA memory blitting into ST screen RAM",
+			"Embedded 16-color hardware palette with hardware color cycling limits and animation speed",
+			"The original bundled graphics package that established 16-bit microcomputer pixel art",
+			"Standard format for Atari ST demoscene titles, crackers, and pixel art showcases",
+		],
+		prosB: [
+			"Offers both uncompressed (.pi1, .pi2, .pi3) and PackBits RLE compressed (.pc1, .pc2, .pc3) files",
+			"Supports all three Atari ST resolutions: Low (320x200 16-col), Medium (640x200 4-col), High (640x400 mono)",
+			"Advanced color animation registers and brush libraries in DEGAS Elite",
+			"Widely adopted across commercial Atari ST game development and productivity titles",
+		],
+		specs: [
+			{
+				feature: "Developer",
+				formatA: "Dave Staugas (Atari Corp, 1985)",
+				formatB: "Tom Hudson (Batteries Included, 1986)",
+			},
+			{
+				feature: "Compression",
+				formatA: "Uncompressed (fixed 32,128 bytes)",
+				formatB: "Uncompressed (.pi*) or PackBits RLE (.pc*)",
+			},
+			{
+				feature: "Header Size",
+				formatA: "128 bytes (palette, cycling, resolution)",
+				formatB: "34 bytes (resolution + 16-color palette)",
+			},
+			{
+				feature: "Color Palette",
+				formatA: "16 colors from 512 (ST) or 4096 (STE)",
+				formatB: "16 colors from 512 (ST) or 4096 (STE)",
+			},
+			{
+				feature: "Planar Structure",
+				formatA: "4 interleaved 16-pixel word bitplanes",
+				formatB: "4 interleaved 16-pixel word bitplanes",
+			},
+		],
+		verdict:
+			"Both NeoChrome and DEGAS Elite represent the pinnacle of 16-bit Atari ST pixel art. Convert .neo and .pi1/.pc1 files into standard 32-bit RGBA PNG with aspect ratio correction to preserve retro computing art, demoscene screens, and game sprites on modern high-DPI displays.",
+		relatedTools: [
+			"image/neo-to-png",
+			"image/degas-to-png",
+			"image/iff-to-png",
+			"image/koa-to-png",
+		],
+	},
 ];
 
 export function getComparison(slug: string): ComparisonMeta | undefined {

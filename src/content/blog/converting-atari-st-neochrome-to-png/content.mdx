@@ -1,0 +1,91 @@
+In 1985, Atari released the 520ST personal computer, powered by Motorola's 68000 processor. Bundled with the machine was **NeoChrome**, a groundbreaking paint program created by Atari engineer Dave Staugas.
+
+Long before Photoshop, NeoChrome became the canvas where early computer artists, demoscene groups (such as The Carebears, Overlanders, and TEX), and video game designers pioneered 16-color pixel art. Its uncompressed file format (`.neo`) was engineered for pure speed: exactly 32,128 bytes, consisting of a 128-byte hardware state header followed by 32,000 bytes of raw Atari ST video memory that could be blitted directly into screen RAM in a single vertical blank interrupt.
+
+However, modern operating systems, web browsers, and image editing software do not understand Motorola 68000 planar memory layouts or Atari ST hardware palette registers.
+
+This guide examines the forensic byte architecture of the NeoChrome format, explains how 4-bitplane planar graphics interleave into chunky 32-bit RGBA pixels, and demonstrates how [convrtr's NEO to PNG converter](/image/neo-to-png) renders vintage Atari ST artwork directly in your browser.
+
+## The 128-Byte NeoChrome Header
+
+The first 128 bytes of a `.neo` file store the machine display mode, hardware color palette, and hardware color-cycling animation registers:
+
+| Byte Offset | Field Name | Data Type | Description |
+| :--- | :--- | :--- | :--- |
+| `0x00 - 0x01` | Flag Word | 16-bit uint (BE) | Header identifier (usually `0x0000`) |
+| `0x02 - 0x03` | Resolution | 16-bit uint (BE) | `0` = Low (320x200), `1` = Med (640x200), `2` = High (640x400) |
+| `0x04 - 0x23` | Palette Table | 16 words (32 bytes) | 16-color hardware palette words |
+| `0x24 - 0x2F` | Color Animation | 12 bytes | Color cycling ranges, direction flags, and timer intervals |
+| `0x30 - 0x7F` | Filename & Padding | 80 bytes | Original DOS / TOS filename and unused reserved bytes |
+
+### Resolution Modes
+The Atari ST supported three hardware monitor resolutions:
+- **Low Resolution (Mode 0)**: 320x200 pixels with 16 simultaneous colors drawn from a master palette of 512 colors (or 4096 on the STE). This was the primary mode for games, demos, and pixel art.
+- **Medium Resolution (Mode 1)**: 640x200 pixels with 4 colors. Because color CRT monitors doubled vertical scanlines, medium resolution was displayed at a 640x400 aspect ratio.
+- **High Resolution (Mode 2)**: 640x400 pixels monochrome (black and white) on dedicated high-resolution paper-white monitors (SM124).
+
+## The Atari ST 12-Bit Hardware Palette
+
+The Atari ST Shifter chip decoded 16-bit color words into analog RGB signals. In the original ST, each color channel (Red, Green, Blue) was allocated 3 bits:
+
+```text
+Bits 10 - 8: Red   (0 to 7)
+Bits  6 - 4: Green (0 to 7)
+Bits  2 - 0: Blue  (0 to 7)
+```
+
+In the enhanced Atari STE (1989), Atari expanded the color gamut to 4 bits per channel (4096 colors). To preserve backwards compatibility with older software, the least significant bit (LSB) of each channel was mapped into previously unused high bits:
+- Red LSB: Bit 11
+- Green LSB: Bit 7
+- Blue LSB: Bit 3
+
+The converter inspects these bits. If STE bits are present, color values are normalized over 15:
+```text
+redByte   = Math.round((red4Bit / 15.0) * 255);
+greenByte = Math.round((green4Bit / 15.0) * 255);
+blueByte  = Math.round((blue4Bit / 15.0) * 255);
+```
+Otherwise, standard 3-bit values are normalized over 7:
+```text
+redByte   = Math.round((red3Bit / 7.0) * 255);
+greenByte = Math.round((green3Bit / 7.0) * 255);
+blueByte  = Math.round((blue3Bit / 7.0) * 255);
+```
+
+## Planar vs Chunky: The 4-Bitplane Architecture
+
+Modern image formats store pixels in **chunky** order: `[R0, G0, B0, A0, R1, G1, B1, A1...]`. 
+
+In contrast, the Motorola 68000 and Atari ST Shifter hardware organized screen memory in **bitplanes**. In 320x200 Low Resolution mode, the screen is composed of 32,000 bytes divided into 200 scanlines. Each scanline contains 20 blocks of 16 horizontal pixels (20 * 16 = 320 pixels).
+
+Each 16-pixel block consists of **four 16-bit big-endian words** representing the four bitplanes:
+- Word 0: Bitplane 0 (LSB)
+- Word 1: Bitplane 1
+- Word 2: Bitplane 2
+- Word 3: Bitplane 3 (MSB)
+
+To determine the color index of pixel `p` (from `0` on the left to `15` on the right within a word block):
+
+```text
+shift = 15 - p;
+bit0  = (plane0Word >> shift) & 1;
+bit1  = (plane1Word >> shift) & 1;
+bit2  = (plane2Word >> shift) & 1;
+bit3  = (plane3Word >> shift) & 1;
+
+colorIndex = bit0 | (bit1 << 1) | (bit2 << 2) | (bit3 << 3);
+```
+
+This 4-bit index (`0` to `15`) looks up the RGB color in the palette table.
+
+The converter loops through all 200 scanlines and 20 word blocks, decodes the planar bitfields into contiguous chunky 32-bit RGBA pixels, and compresses the pixel matrix into a lossless PNG container.
+
+## Aspect Ratio Correction for Medium Resolution
+
+In Medium Resolution (Mode 1), the native pixel dimensions are 640x200. On authentic Atari color monitors (SC1224), each scanline was scanned twice vertically, resulting in a square-pixel 640x400 visual display.
+
+If rendered without correction on modern high-resolution screens, 640x200 images appear squished to half their intended height. [convrtr's NEO engine](/image/neo-to-png) automatically applies vertical scanline doubling when converting Medium Resolution files, ensuring the exported PNG matches what retro artists saw on CRT monitors in 1985.
+
+## 100% In-Browser Retro Computing Preservation
+
+Because [convrtr](/image/neo-to-png) operates 100% client-side using pure TypeScript and WebAssembly, retro enthusiasts and archivists can drag-and-drop vintage floppy disk dumps, Atari hard drive images, and `.neo` files without uploading private archives to external servers.

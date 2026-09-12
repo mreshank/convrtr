@@ -17,5 +17,7 @@ export const meta: CollectiveMeta = {
 		"document/aco-to-css",
 		"image/chr-to-png",
 		"image/ora-to-png",
+		"image/qoi-to-png",
+		"image/hdr-to-png",
 	],
 };

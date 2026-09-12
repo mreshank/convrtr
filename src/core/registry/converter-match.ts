@@ -294,6 +294,18 @@ const MIME_MAP: Record<string, string> = {
 	"application/opml+xml": "opml",
 	"image/openraster": "ora",
 	"application/x-openraster": "ora",
+	"audio/ptm": "ptm",
+	"audio/x-ptm": "ptm",
+	"application/x-ptm": "ptm",
+	"image/vnd.radiance": "hdr",
+	"image/x-hdr": "hdr",
+	"image/hdr": "hdr",
+	"application/x-pilot": "pdb",
+	"application/vnd.palm": "pdb",
+	"application/x-palm-database": "pdb",
+	"image/x-neo": "neo",
+	"application/x-neo": "neo",
+	"image/neo": "neo",
 };
 
 /**

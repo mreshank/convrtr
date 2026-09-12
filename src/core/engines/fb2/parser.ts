@@ -227,7 +227,7 @@ export function convertFb2ToMarkdown(
 					.map((line) => formatInline(line))
 					.filter(Boolean);
 				if (lines.length > 0) {
-					out.push(lines.map((l) => `> ${l}`).join("\n>\n") + "\n");
+					out.push(`${lines.map((l) => `> ${l}`).join("\n>\n")}\n`);
 				}
 			} else if (tagName === "poem") {
 				// Poem stanzas
@@ -237,7 +237,7 @@ export function convertFb2ToMarkdown(
 					for (const vm of vMatches) {
 						verses.push(formatInline(vm));
 					}
-					out.push(verses.map((v) => `> *${v}*  `).join("\n") + "\n");
+					out.push(`${verses.map((v) => `> *${v}*  `).join("\n")}\n`);
 				}
 			} else if (tagName === "p") {
 				const pText = formatInline(innerContent);

@@ -3,6 +3,7 @@ import { meta as convertWhatsappWechatSilkToWavMp3 } from "./convert-whatsapp-we
 import { meta as convertingAdobePhotoshopAcoPaletteToCss } from "./converting-adobe-photoshop-aco-palette-to-css/meta";
 import { meta as convertingAtariStAvrAudioToWav } from "./converting-atari-st-avr-audio-to-wav/meta";
 import { meta as convertingAtariStDegasToPng } from "./converting-atari-st-degas-to-png/meta";
+import { meta as convertingAtariStNeochromeToPng } from "./converting-atari-st-neochrome-to-png/meta";
 import { meta as convertingBibtexToMarkdownTables } from "./converting-bibtex-to-markdown-tables/meta";
 import { meta as convertingC64KoalaKoaToPng } from "./converting-c64-koala-koa-to-png/meta";
 import { meta as convertingCgmToSvg } from "./converting-cgm-to-svg/meta";
@@ -18,8 +19,11 @@ import { meta as convertingImpulseTrackerItToWav } from "./converting-impulse-tr
 import { meta as convertingNesChrTileRomToPng } from "./converting-nes-chr-tile-rom-to-png/meta";
 import { meta as convertingOpenrasterOraToPng } from "./converting-openraster-ora-to-png/meta";
 import { meta as convertingOpmlOutlinesToMarkdown } from "./converting-opml-outlines-to-markdown/meta";
+import { meta as convertingPalmdocPdbToMarkdown } from "./converting-palmdoc-pdb-to-markdown/meta";
 import { meta as convertingPlaystationVagAudioToWav } from "./converting-playstation-vag-audio-to-wav/meta";
+import { meta as convertingPolytrackerPtmToWav } from "./converting-polytracker-ptm-to-wav/meta";
 import { meta as convertingQuiteOkImageQoiToPng } from "./converting-quite-ok-image-qoi-to-png/meta";
+import { meta as convertingRadianceHdrRgbeToPng } from "./converting-radiance-hdr-rgbe-to-png/meta";
 import { meta as convertingScreamTrackerS3mToWav } from "./converting-scream-tracker-s3m-to-wav/meta";
 import { meta as convertingTelephonyUlawAlawToWav } from "./converting-telephony-ulaw-alaw-to-wav/meta";
 import { meta as convertingWestwoodAudAudioToWav } from "./converting-westwood-aud-audio-to-wav/meta";
@@ -82,6 +86,10 @@ export const BLOG_POSTS: BlogPostMeta[] = [
 	convertingOpenrasterOraToPng,
 	convertingFictionbookFb2ToMarkdown,
 	convertingQuiteOkImageQoiToPng,
+	convertingRadianceHdrRgbeToPng,
+	convertingPalmdocPdbToMarkdown,
+	convertingPolytrackerPtmToWav,
+	convertingAtariStNeochromeToPng,
 ];
 
 export function getPost(

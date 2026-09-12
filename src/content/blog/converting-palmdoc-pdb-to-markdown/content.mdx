@@ -1,0 +1,106 @@
+In 1996, the release of the PalmPilot 1000 ignited the handheld computing revolution. Long before the modern Kindle, iPhone, or iPad, millions of professionals, doctors, students, and digital literature pioneers read entire novels, medical encyclopedias, and personal memos on 160x160 monochrome LCD screens.
+
+Because early Palm OS devices possessed only 512KB to 2MB of system RAM and ran on modest 16MHz Motorola DragonBall 68328 processors, storing long texts required an exceptionally lean architecture. To solve this, developers created **PalmDoc** (also known as AportisDoc or Palm Database format with `"TEXt"` or `"REAd"` type markers). 
+
+Decades later, vast collections of historical digital literature, Project Gutenberg handheld releases, and vintage PDA notes remain trapped in `.pdb` and `.prc` files that modern operating systems and e-readers cannot open.
+
+This guide examines the forensic byte architecture of the Palm OS Database container, traces the PalmDoc Record 0 header, breaks down its sliding-window LZ77 decompression bytecode, and explains how [convrtr's PDB to Markdown converter](/document/pdb-to-markdown) restores vintage e-books into clean GitHub Flavored Markdown directly in your browser.
+
+## The 78-Byte Palm Database (PDB) Header
+
+Every Palm OS Database file begins with a fixed 78-byte big-endian header defining the database identity, timestamps, and record count:
+
+| Byte Offset | Field Name | Data Type | Description |
+| :--- | :--- | :--- | :--- |
+| `0x00 - 0x1F` | Database Name | 32-byte string | Null-terminated database title (ASCII / Latin-1) |
+| `0x20 - 0x21` | Attributes | 16-bit uint (BE) | File flags (read-only, dirty, backup, etc.) |
+| `0x22 - 0x23` | Version | 16-bit uint (BE) | Application-specific database version |
+| `0x24 - 0x27` | Creation Date | 32-bit uint (BE) | Seconds elapsed since January 1, 1904 (Palm epoch) |
+| `0x28 - 0x2B` | Modification Date | 32-bit uint (BE) | Seconds elapsed since January 1, 1904 |
+| `0x2C - 0x2F` | Backup Date | 32-bit uint (BE) | Most recent backup timestamp |
+| `0x30 - 0x33` | Modification Number | 32-bit uint (BE) | Counter incremented on database changes |
+| `0x34 - 0x37` | App Info ID | 32-bit uint (BE) | Offset to optional application-specific metadata |
+| `0x38 - 0x3B` | Sort Info ID | 32-bit uint (BE) | Offset to optional sort metadata |
+| `0x3C - 0x3F` | Type | 4 ASCII chars | Format identifier (`"TEXt"`, `"REAd"`, `"BOOK"`) |
+| `0x40 - 0x43` | Creator | 4 ASCII chars | Application creator code (`"REAd"`, `"panl"`, `"DocG"`) |
+| `0x44 - 0x47` | Unique ID Seed | 32-bit uint (BE) | Seed for generating record IDs |
+| `0x48 - 0x4B` | Next Record List | 32-bit uint (BE) | Offset to chained record list (usually `0`) |
+| `0x4C - 0x4D` | Number of Records | 16-bit uint (BE) | Total count of records contained in the database |
+
+### Palm Epoch vs Unix Epoch
+Notice that Palm OS measures time starting from January 1, 1904, rather than the Unix epoch (January 1, 1970). To compute modern UTC dates, the converter subtracts `2,082,844,800` seconds (the 66-year delta between 1904 and 1970, accounting for 17 leap years).
+
+## The Record Index Table
+
+Immediately following the 78-byte header, the file contains an 8-byte entry for each record:
+
+- `localChunkID` (4 bytes, uint32 BE): Absolute byte offset in the file where the record payload begins.
+- `attributes` (1 byte, uint8): Record category, dirty flag, and deletion status.
+- `uniqueID` (3 bytes, uint24 BE): Unique identifier for Palm OS synchronization engines (HotSync).
+
+The converter reads these offsets to isolate each record block cleanly.
+
+## Record 0: The PalmDoc Manifest
+
+In a PalmDoc database, **Record 0** never contains story text. Instead, it serves as the master manifest describing the text structure and compression format:
+
+| Byte Offset | Field Name | Data Type | Forensic Meaning |
+| :--- | :--- | :--- | :--- |
+| `0x00 - 0x01` | Compression Code | 16-bit uint (BE) | `1` = Uncompressed plain text, `2` = PalmDoc LZ77 |
+| `0x02 - 0x03` | Reserved | 16-bit uint (BE) | Always `0x0000` |
+| `0x04 - 0x07` | Text Length | 32-bit uint (BE) | Total uncompressed text length in bytes |
+| `0x08 - 0x09` | Text Record Count | 16-bit uint (BE) | Number of subsequent text records (Records 1 to N) |
+| `0x0A - 0x0B` | Record Size | 16-bit uint (BE) | Maximum uncompressed block size (standard `4096` bytes) |
+| `0x0C - 0x0F` | Position | 32-bit uint (BE) | Last saved reading position / bookmark |
+
+Because early handhelds had minimal free contiguous RAM, long books could not be loaded into memory all at once. PalmDoc divided books into 4096-byte blocks so that the Palm OS could decompress and page in one block at a time as the user tapped the scroll buttons.
+
+## The PalmDoc LZ77 Bytecode Decompressor
+
+Records 1 through N contain the compressed text chunks. PalmDoc uses a specialized byte-aligned sliding-window LZ77 algorithm.
+
+The decompressor examines incoming bytes sequentially. The first byte, `b0`, dictates the operation:
+
+### 1. `0x00`: Literal Null
+Passed directly as a literal null byte or format spacing.
+
+### 2. `0x01 - 0x08`: Literal Run
+The byte value itself (`1` to `8`) represents a count of consecutive uncompressed literal bytes following immediately in the stream. The decoder reads the next `b0` bytes and appends them directly to the output buffer without compression checks.
+
+### 3. `0x09 - 0x7F`: Single Literal Character
+Standard ASCII printable characters and control codes (tab, newline). Emitted directly as a single byte.
+
+### 4. `0x80 - 0xBF`: Sliding Window Back-Reference (2 Bytes)
+When `b0` is between `0x80` and `0xBF`, it signals a back-reference to text previously decompressed in the current 4096-byte block. It requires a second byte `b1`:
+
+```text
+distance = ((b0 & 0x3F) << 3) | ((b1 & 0xE0) >> 5);
+length   = (b1 & 0x1F) + 3;
+```
+
+- **Distance**: The lookback offset in the output buffer (up to 2047 bytes back).
+- **Length**: Number of bytes to copy (from 3 to 34 bytes).
+
+The decoder copies `length` bytes from `output[output.length - distance]` to the end of the buffer.
+
+### 5. `0xC0 - 0xFF`: Space-Prefixed ASCII Shortcut
+Because English text frequently contains words separated by single spaces, PalmDoc packs both a space character (`0x20`) and the subsequent ASCII character into a single byte:
+
+```text
+character = b0 ^ 0x80;
+output.push(0x20); // space
+output.push(character);
+```
+
+For example, `0xC1` decodes to `' A'`, and `0xE5` decodes to `' e'`. This single optimization eliminates up to 15% of bytes in ordinary English prose.
+
+## Structuring Output into GitHub Flavored Markdown
+
+Once all 4096-byte blocks are decompressed, the raw byte stream is decoded into text using Windows-1252 (the standard character encoding of vintage Palm OS systems, providing curly quotes, em-dashes, and accented characters).
+
+The converter then applies structural transformations:
+1. **YAML Frontmatter**: Extracts the database title, Palm creation timestamp, format version, and creator code into an editable metadata block.
+2. **Heading Detection**: Identifies chapters, acts, prologues, and capitalized section boundaries (e.g. `CHAPTER 1`, `BOOK II`, `ACT III`) and formats them as standard Markdown headings (`## ...`).
+3. **Paragraph Normalization**: Cleans up vintage hard line wraps and multiple blank spaces, restoring responsive paragraphs suited for modern e-readers and note apps like Obsidian, Notion, and Logseq.
+
+All parsing and decompression run 100% client-side in memory—ensuring vintage manuscripts and private documents are never uploaded to third-party cloud servers.

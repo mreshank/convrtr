@@ -1,0 +1,98 @@
+In the mid-1990s, MS-DOS personal computer gaming was undergoing a sonic renaissance. Sound cards like the Gravis UltraSound (GUS) and Sound Blaster AWE32 freed game developers from the harsh square waves of FM synthesis by offering hardware wave-table sample mixing.
+
+To harness this hardware power, Chilean programmer and demoscene musician Carlos Hasan (working with demogroup Renaissance and Epic MegaGames) created **PolyTracker** and its underlying **PTMF** container format (`.ptm`). PolyTracker became the musical backbone for iconic 1990s PC shareware games, including *Jazz Jackrabbit*, *Extreme Pinball*, and *Silverball*.
+
+By supporting up to 32 simultaneous channels, true 16-bit linear PCM instruments, ping-pong loop modes, and per-channel stereo panning, PolyTracker pushed PC tracker chiptunes far beyond the traditional 4-channel limits of the Commodore Amiga MOD format.
+
+This guide explores the internal byte layout of the PTMF container, walks through the sample headers and pattern playback matrices, and explains how [convrtr's PTM to WAV synthesizer](/audio/ptm-to-wav) converts vintage DOS game music into uncompressed 16-bit 44.1kHz stereo WAV audio directly in your browser.
+
+## The PTMF Header Layout
+
+Every PolyTracker file begins with a structured header defining the song identity, channel configuration, and structural counts:
+
+| Offset | Size (Bytes) | Field Name | Description |
+| :--- | :--- | :--- | :--- |
+| `0x00` | 28 bytes | Song Name | Null-terminated ASCII song title |
+| `0x1C` | 1 byte | DOS EOF | Always `0x1A` (prevents screen flooding if typed in DOS) |
+| `0x1D` | 2 bytes (LE) | File Type | Format indicator (`0x0001` or `0x0002`) |
+| `0x1F` | 2 bytes (LE) | Version | Tracker version (e.g. `0x0100` = v1.00) |
+| `0x23` | 2 bytes (LE) | Number of Orders | Song length in pattern order steps (1 to 256) |
+| `0x25` | 2 bytes (LE) | Number of Samples | Total count of instrument waveforms (1 to 256) |
+| `0x27` | 2 bytes (LE) | Number of Patterns | Total unique pattern tables (1 to 128) |
+| `0x29` | 2 bytes (LE) | Number of Channels | Active mixing channels (1 to 32) |
+| `0x2B` | 2 bytes (LE) | Flags | Module playback flags |
+| `0x2F` | 4 bytes | Magic Identifier | Constant ASCII string `"PTMF"` (`0x50 0x54 0x4D 0x46`) |
+
+The magic signature `"PTMF"` confirms that the file is an authentic PolyTracker module rather than a standard ProTracker MOD or FastTracker XM file.
+
+## 32-Channel Stereo Panning Table
+
+Immediately following the `"PTMF"` magic signature, PolyTracker stores a 32-byte hardware panning table. 
+
+Each byte corresponds to an active audio channel:
+- Value `0`: Hard Left
+- Value `7` - `8`: Center
+- Value `15`: Hard Right
+
+The synthesizer maps these values into stereo fractional gain coefficients:
+
+```text
+panLeft  = 1.0 - (panValue / 15.0);
+panRight = (panValue / 15.0);
+```
+
+This allows wide, immersive stereo soundscapes that sounded breathtaking through GUS hardware in 1994.
+
+## Sample Headers and Multi-Format PCM Waveforms
+
+Following the order table and pattern paragraph offset lists, the PTMF file stores an 80-byte header for each sample:
+
+| Offset | Size (Bytes) | Field Name | Description |
+| :--- | :--- | :--- | :--- |
+| `+0x00` | 1 byte | Sample Type | `0` = Empty, `1` = 8-bit PCM, `2` = 16-bit PCM |
+| `+0x01` | 12 bytes | DOS Filename | Original DOS 8.3 filename (e.g. `BASSDRUM.SMP`) |
+| `+0x0D` | 28 bytes | Sample Name | Descriptive instrument name |
+| `+0x29` | 1 byte | Default Volume | Initial volume level (0 to 64) |
+| `+0x2A` | 2 bytes (LE) | C4Speed | Base playback frequency for middle C (e.g. 8363 Hz) |
+| `+0x2C` | 4 bytes (LE) | Sample Offset | Absolute byte offset in the file where PCM data starts |
+| `+0x30` | 4 bytes (LE) | Length | Length of sample data in bytes |
+| `+0x34` | 4 bytes (LE) | Loop Start | Byte offset where loop starts |
+| `+0x38` | 4 bytes (LE) | Loop End | Byte offset where loop ends |
+| `+0x3C` | 2 bytes (LE) | Loop Flags | Bit 0: Loop enabled; Bit 1: Ping-pong bidirectional loop |
+
+PolyTracker supported both 8-bit signed PCM samples and 16-bit little-endian integer PCM samples. When decoding 16-bit instruments, the converter divides integer values by `32,768.0` to yield normalized floating-point waveforms. For 8-bit instruments, values are sign-extended and divided by `128.0`.
+
+## Replay Synthesis Architecture
+
+To render a `.ptm` module into modern linear PCM audio, the converter runs a multi-channel synthesis engine at 44.1kHz:
+
+### 1. Timing and Ticks
+Tracker playback timing is governed by Beats Per Minute (BPM) and Speed (ticks per row):
+
+```text
+tickSeconds = 2.5 / BPM;
+samplesPerTick = Math.floor(sampleRate * tickSeconds);
+samplesPerRow = samplesPerTick * speed;
+```
+
+For standard tracker defaults (BPM = 125, Speed = 6), each row represents 6 ticks or approximately 0.12 seconds.
+
+### 2. Pitch Calculation
+When a note is triggered on a channel, its pitch frequency is derived from the instrument's tuned middle-C frequency (`c4Speed`):
+
+```text
+frequency = c4Speed * Math.pow(2.0, (note - 48) / 12.0);
+stepPerSample = frequency / targetSampleRate;
+```
+
+### 3. Ping-Pong Loop Wrapping
+For sustained instruments (strings, pads, synth leads), PolyTracker supported bidirectional ping-pong looping. When the playback position reaches `loopEnd`, the playback direction reverses back toward `loopStart`, preventing abrupt clicks or pops at loop boundaries.
+
+### 4. Stereo Channel Mixing
+During every audio frame, the synthesizer samples all 32 channels, applies channel volume envelopes and stereo panning weights, sums the left and right channels, and applies soft clipping to prevent digital distortion.
+
+The final mixed audio is packed into a standard 44-byte RIFF/WAVE header and emitted as a pristine 16-bit 44.1kHz stereo WAV file.
+
+## Why Browser-Based Conversion Matters
+
+Many vintage DOS tracker formats require obsolete players, DOSBox emulation, or unsupported Winamp plugins that fail to run on modern 64-bit operating systems. By writing the complete PTMF parser and multi-channel synthesizer in pure TypeScript, [convrtr](/audio/ptm-to-wav) makes legendary shareware game soundtracks instantly playable, sampleable, and preservable directly inside any modern web browser.

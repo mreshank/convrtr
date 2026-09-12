@@ -21,5 +21,7 @@ export const meta: CollectiveMeta = {
 		"audio/xm-to-wav",
 		"audio/s3m-to-wav",
 		"audio/it-to-wav",
+		"audio/ptm-to-wav",
+		"image/neo-to-png",
 	],
 };

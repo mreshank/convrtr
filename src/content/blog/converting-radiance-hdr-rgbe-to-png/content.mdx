@@ -1,0 +1,124 @@
+In 1989, computer graphics pioneer Greg Ward at the Lawrence Berkeley National Laboratory faced an engineering bottleneck: standard 24-bit RGB raster formats clamped all luminance values between 0.0 and 1.0 (0 to 255 per channel). In the real world, the dynamic range of light between direct sunlight and deep cavernous shadows spans over twelve orders of magnitude. 
+
+To enable physically accurate architectural lighting simulation, Ward designed the **Radiance Picture Format** (`.hdr`, `.pic`), widely known as **RGBE**. Rather than storing three 32-bit floating-point numbers per pixel (which would consume 96 bits per pixel and overwhelm 1990s workstation memory), Ward devised a 32-bit floating-point representation where red, green, and blue share a common 8-bit exponent.
+
+Decades later, Radiance HDR remains one of the premier formats for image-based lighting (IBL), 360-degree panoramic skyboxes, and environment lighting in Blender, Unreal Engine, Unity, and WebGL. However, standard web browsers, mobile displays, and photo software cannot natively render floating-point HDR files without tone mapping.
+
+This technical guide dissects the forensic byte layout of Radiance HDR files, explores its adaptive run-length encoded (RLE) scanline structure, and explains how [convrtr's HDR to PNG converter](/image/hdr-to-png) tone-maps high dynamic range pixels into standard 32-bit RGBA PNG images entirely in client-side WebAssembly and TypeScript.
+
+## The ASCII Header and Resolution Descriptor
+
+A Radiance HDR file begins with an ASCII header terminated by an empty newline (`\n\n` or `\r\n\r\n`), followed by a resolution orientation string and the binary pixel payload.
+
+### 1. Magic Identifier and Header Variables
+
+The file must begin with `#?RADIANCE` or the legacy `#?RGBE` signature:
+
+```text
+#?RADIANCE
+FORMAT=32-bit_rle_rgbe
+EXPOSURE=1.0000000000000
+GAMMA=2.2
+SOFTWARE=radiance 5.2
+```
+
+Key variables parsed from the header:
+- `FORMAT=32-bit_rle_rgbe`: Specifies standard 32-bit RGBE encoding.
+- `EXPOSURE=<float>`: Calibration multiplier for radiometric calculations.
+- `GAMMA=<float>`: Optional display gamma hint.
+
+### 2. Resolution Orientation
+
+Immediately following the blank line, Radiance specifies the scanline orientation and dimensions using coordinate flags:
+
+```text
+-Y 1024 +X 2048
+```
+
+This specifies that the image is 2048 pixels wide (`+X` progressing left to right) and 1024 pixels tall (`-Y` progressing top to bottom). The decoder extracts both dimensions, validates that they lie within safe memory limits (1 to 65,536 pixels), and prepares the raster decompression buffers.
+
+## The 32-Bit RGBE Color Encoding
+
+In the RGBE scheme, every pixel is represented by four 8-bit unsigned integers: `[R, G, B, E]`.
+
+The fourth byte, `E`, is an 8-bit excess-128 exponent:
+
+```text
+if (E == 0) {
+    Red   = 0.0;
+    Green = 0.0;
+    Blue  = 0.0;
+} else {
+    factor = 2.0 ^ (E - 128 - 8) = 2.0 ^ (E - 136);
+    Red   = (R + 0.5) * factor;
+    Green = (G + 0.5) * factor;
+    Blue  = (B + 0.5) * factor;
+}
+```
+
+This allows a single 32-bit pixel to represent dynamic ranges spanning from 10^-38 to 10^38 with approximately 1% mantissa precision—more than sufficient to capture both blinding noon sunlight and subtle night-sky starlight without visible quantization stepping.
+
+## Adaptive Run-Length Encoding (RLE) Scanlines
+
+Uncompressed RGBE data would store pixels sequentially as `[R0, G0, B0, E0, R1, G1, B1, E1...]`. However, neighboring pixels in real-world scenes often share similar exponents or color values, making interleaved byte compression inefficient.
+
+To maximize compression efficiency, Greg Ward introduced an adaptive scanline compression scheme for images between 8 and 32,767 pixels wide. Each scanline begins with a 4-byte marker:
+
+| Byte Offset | Expected Byte Value | Description |
+| :--- | :--- | :--- |
+| `0` | `0x02` | New RLE scanline indicator |
+| `1` | `0x02` | New RLE scanline indicator |
+| `2` | `(width >> 8) & 0xFF` | High byte of image width |
+| `3` | `width & 0xFF` | Low byte of image width |
+
+If these four bytes match the expected image width, the decoder knows the scanline is split into **four separate planar runs**:
+1. All Red bytes for the scanline (length = `width`)
+2. All Green bytes for the scanline (length = `width`)
+3. All Blue bytes for the scanline (length = `width`)
+4. All Exponent bytes for the scanline (length = `width`)
+
+Each planar channel is decompressed using standard run-length decoding:
+- Read count byte `code`.
+- If `code > 128`: A repeated byte run of length `(code - 128)` follows. Read the next byte and write it `(code - 128)` times into the channel buffer.
+- If `code <= 128`: A non-run literal sequence of `code` distinct bytes follows. Copy the next `code` bytes directly from the stream.
+
+Once all four channel runs are populated, the decoder interleaves the bytes back into chunky `[R, G, B, E]` pixels.
+
+## Tone Mapping and sRGB Gamma Reproduction
+
+Because standard computer monitors and mobile screens cannot display floating-point radiance values directly, the decoded floating-point colors must undergo **tone reproduction** and **gamma correction**.
+
+### 1. Exposure Scaling
+The raw linear floating-point values are multiplied by an exposure factor:
+
+```text
+r_exposed = r_linear * exposure;
+g_exposed = g_linear * exposure;
+b_exposed = b_linear * exposure;
+```
+
+### 2. Reinhard Global Tone Reproduction
+To prevent extreme highlight clipping (such as the sun disc or specular reflections) while preserving shadow detail, the converter applies the classic Reinhard tone reproduction curve:
+
+```text
+r_mapped = r_exposed / (1.0 + r_exposed);
+g_mapped = g_exposed / (1.0 + g_exposed);
+b_mapped = b_exposed / (1.0 + b_exposed);
+```
+
+This smoothly compresses values approaching infinity asymptotically toward 1.0.
+
+### 3. sRGB Gamma Transfer Curve
+Finally, the linear tone-mapped values are converted into non-linear sRGB display values using a power curve:
+
+```text
+r_byte = Math.round(Math.pow(r_mapped, 1.0 / gamma) * 255);
+g_byte = Math.round(Math.pow(g_mapped, 1.0 / gamma) * 255);
+b_byte = Math.round(Math.pow(b_mapped, 1.0 / gamma) * 255);
+```
+
+The resulting 8-bit color channels are packed into standard 32-bit RGBA scanlines (with solid `0xFF` alpha) and compressed into an RFC 2083 Deflate-stream PNG file using pure TypeScript.
+
+## Zero-Upload Client-Side Privacy
+
+Environment lighting maps, 3D studio skyboxes, and game sky domes often contain proprietary game assets or architectural renders. By performing all scanline decompression, floating-point math, and tone mapping client-side in your local browser, [convrtr](/image/hdr-to-png) ensures that sensitive 3D assets never leave your device.
