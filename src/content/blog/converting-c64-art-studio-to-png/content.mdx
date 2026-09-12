@@ -1,0 +1,81 @@
+In 1986, Oxford Computer Systems published **Advanced Art Studio** for the Commodore 64. Following the massive success of *The Complete Graphic System* and *The Artist*, Advanced Art Studio became one of the most capable graphic design suites on the C64.
+
+Images authored in Advanced Art Studio use the **`.art`** extension. Unlike KoalaPainter (`.koa`), which was locked exclusively into the C64's 160x200 Multicolor mode, Advanced Art Studio gave artists the freedom to paint in either **High-Resolution (Hires)** 320x200 monochrome mode or **Multicolor** 160x200 mode.
+
+This dual-mode architecture made `.art` a preferred format for creating intricate game loading screens, demoscene title art, and detailed digital illustrations across the 1980s.
+
+This guide explains how Commodore 64 VIC-II bitmap data is organized in `.art` files, how Hires and Multicolor bitplane packing functions, and how [convrtr's ART to PNG converter](/image/art-to-png) renders vintage C64 paintings into crystal-clear 32-bit RGBA PNG graphics directly in your browser.
+
+## Memory Maps and PRG Structure
+
+Commodore 64 graphic formats are structured as direct snapshots of the computer's video RAM. A `.art` file contains:
+
+1. **Load Address (2 bytes):** Typically `0x00 0x20` ($2000) or `0x00 0x60` ($6000) in little-endian format.
+2. **Bitmap Data (8,000 bytes):** 1,000 character cells (40 columns $\times$ 25 rows), where each $8 \times 8$ cell occupies 8 sequential bytes.
+3. **Screen RAM (1,000 bytes):** Color attribute definitions for each of the 1,000 cells.
+4. **Color RAM (1,000 bytes, Multicolor only):** Extended color data mapped to hardware address `$D800`.
+5. **Background Color Byte (1 byte, Multicolor only):** Color register `$D021`.
+
+### File Size Differentiation
+
+Depending on the mode selected by the artist, the file size varies:
+- **Hires Mode:** 9,002 bytes (2-byte header + 8,000 bytes bitmap + 1,000 bytes screen RAM).
+- **Multicolor Mode:** 10,002 or 10,003 bytes (including Color RAM and background register).
+
+## Decoding High-Resolution (Hires) Mode
+
+In Hires mode, the Commodore 64 delivers a full $320 \times 200$ resolution with single-width square pixels. However, the hardware imposes an 8-bit attribute limit: **each $8 \times 8$ pixel cell can only use 2 colors simultaneously**.
+
+For each character cell ($Y \in [0, 24], X \in [0, 39]$):
+1. **Color Decoding:** The cell's color attribute byte is fetched from Screen RAM:
+   - **Foreground Color:** High nibble `(screenByte >> 4) & 0x0F`
+   - **Background Color:** Low nibble `screenByte & 0x0F`
+2. **Bitplane Mapping:** For each of the 8 scanlines in the cell, 1 byte is fetched from Bitmap RAM:
+   - Each bit represents one pixel from left to right (`bit 7` down to `bit 0`).
+   - If the bit is `1`, the pixel is rendered in the cell's **Foreground Color**.
+   - If the bit is `0`, the pixel is rendered in the cell's **Background Color**.
+
+## Decoding Multicolor Mode
+
+In Multicolor mode, horizontal resolution is halved to $160 \times 200$, creating double-wide rectangular pixels, but allowing **4 simultaneous colors per $8 \times 8$ cell**:
+
+1. **Color Selection:**
+   - Color `00`: Universal background color register (`$D021`)
+   - Color `01`: High nibble of Screen RAM for the cell
+   - Color `10`: Low nibble of Screen RAM for the cell
+   - Color `11`: Low nibble of Color RAM (`$D800`) for the cell
+2. **Pixel Bit Pairs:**
+   Each byte in Bitmap RAM contains 4 double-wide pixels (2 bits each):
+   - Bits `7-6`: Pixel 0
+   - Bits `5-4`: Pixel 1
+   - Bits `3-2`: Pixel 2
+   - Bits `1-0`: Pixel 3
+
+The converter doubles each pixel horizontally to reconstruct the full $320 \times 200$ framebuffer.
+
+## The 16-Color VIC-II Palette
+
+The Commodore 64's VIC-II graphics chip generated analog composite video with 16 fixed colors. [convrtr](/image/art-to-png) supports both the industry-standard **Pepto palette** (calibrated to authentic CRT phosphor decay) and the **Colodore palette** (color-calibrated to modern D65 sRGB displays):
+
+| Index | Color Name | Pepto sRGB | Colodore sRGB |
+| :--- | :--- | :--- | :--- |
+| `0` | Black | `#000000` | `#000000` |
+| `1` | White | `#FFFFFF` | `#FFFFFF` |
+| `2` | Red | `#880000` | `#813338` |
+| `3` | Cyan | `#AAFFEE` | `#75CEC8` |
+| `4` | Purple | `#CC44CC` | `#8E3C97` |
+| `5` | Green | `#00CC55` | `#56AC4D` |
+| `6` | Blue | `#0000AA` | `#2E2C9B` |
+| `7` | Yellow | `#EEEE77` | `#EDF171` |
+| `8` | Orange | `#DD8855` | `#8E5029` |
+| `9` | Brown | `#664400` | `#553800` |
+| `10` | Light Red | `#FF7777` | `#C46C71` |
+| `11` | Dark Grey | `#333333` | `#4A4A4A` |
+| `12` | Medium Grey | `#777777` | `#7B7B7B` |
+| `13` | Light Green | `#AAFF66` | `#A9FF9F` |
+| `14` | Light Blue | `#0088FF` | `#706DEB` |
+| `15` | Light Grey | `#BBBBBB` | `#B2B2B2` |
+
+## Preserving Retro Art Locally
+
+With [convrtr's Art Studio decoder](/image/art-to-png), vintage Commodore 64 `.art` files decode entirely in browser memory. Choose your preferred palette and scaling factor (up to 8x for sharp pixel scaling) to export authentic 1980s 8-bit digital artwork into high-resolution PNG with zero cloud uploads.

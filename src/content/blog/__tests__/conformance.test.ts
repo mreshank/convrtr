@@ -49,6 +49,9 @@ const POST_SLUGS = [
 	"converting-palmdoc-pdb-to-markdown",
 	"converting-polytracker-ptm-to-wav",
 	"converting-atari-st-neochrome-to-png",
+	"converting-farandole-composer-far-to-wav",
+	"converting-abiword-abw-to-markdown",
+	"converting-c64-art-studio-to-png",
 ];
 
 describe("blog registry conformance", () => {

@@ -18,5 +18,6 @@ export const meta: CollectiveMeta = {
 		"document/opml-to-markdown",
 		"document/fb2-to-markdown",
 		"document/pdb-to-markdown",
+		"document/abw-to-markdown",
 	],
 };

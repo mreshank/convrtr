@@ -1,0 +1,136 @@
+In the late 1990s and early 2000s, the AbiSource project created **AbiWord**, a fast, cross-platform, open-source word processor. Designed to run on resource-constrained hardware where bloated office suites choked, AbiWord became a staple on Linux distributions, GNOME Office desktops, and the One Laptop Per Child (OLPC) XO initiative.
+
+To store documents, AbiWord engineered an open, human-readable XML-based specification using the **`.abw`** extension (and **`.zabw`** for GZIP-compressed files). Long before Microsoft Word adopted Office Open XML (`.docx`), AbiWord was already proving that rich word processing documents could be stored cleanly in structured markup.
+
+However, on modern macOS, Windows, and mobile devices without AbiWord installed, opening a `.abw` or `.zabw` file often results in raw XML code or "unsupported file format" errors.
+
+This engineering guide examines the internal architecture of the AbiWord document tree and explains how [convrtr's ABW to Markdown extractor](/document/abw-to-markdown) transforms vintage AbiWord documents into portable GitHub Flavored Markdown with preserved YAML frontmatter, tables, styles, and embedded illustrations—100% locally in your browser.
+
+## The AbiWord Document Hierarchy
+
+An AbiWord document is a single XML file conforming to the AbiWord Markup Language (AWML) Document Type Definition (DTD). Its root element is `<abiword>`:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE abiword PUBLIC "-//ABISOURCE//DTD AWML 1.0 Strict//EN" "http://www.abisource.com/2001/xhtml/awml">
+<abiword xmlns:awml="http://www.abisource.com/2001/xhtml/awml" version="3.0.5">
+  <metadata>...</metadata>
+  <history>...</history>
+  <styles>...</styles>
+  <section>...</section>
+</abiword>
+```
+
+### 1. Dublin Core Metadata Mapping
+
+AbiWord was an early adopter of the Dublin Core metadata standard. Inside the `<metadata>` block, document properties are serialized as key-value pairs:
+
+```xml
+<metadata>
+  <m key="dc.title">Operating System Architecture</m>
+  <m key="dc.creator">Linus Torvalds</m>
+  <m key="dc.date">2001-05-15</m>
+  <m key="dc.description">Technical notes on microkernel vs monolithic design.</m>
+  <m key="abiword.keywords">kernel, memory, virtual filesystem</m>
+</metadata>
+```
+
+When [convrtr's engine](/document/abw-to-markdown) processes this block, it serializes the Dublin Core tags into standard YAML frontmatter for Obsidian, Notion, and static site generators:
+
+```yaml
+---
+title: "Operating System Architecture"
+author: "Linus Torvalds"
+date: "2001-05-15"
+description: "Technical notes on microkernel vs monolithic design."
+tags:
+  - kernel
+  - memory
+  - virtual filesystem
+---
+```
+
+## Paragraph Styles and Heading Levels
+
+Within the document's `<section>`, textual content is stored in `<p>` elements. Paragraph formatting is declared through `style` and `props` attributes:
+
+```xml
+<p props="heading:1">Microkernel Architecture</p>
+<p props="heading:2">Inter-Process Communication</p>
+<p style="Block Text">"A distributed system is one in which the failure of a computer you didn't even know existed can render your own computer unusable."</p>
+<p style="Bullet List">Message queues</p>
+<p style="Numbered List">Initialize message descriptor</p>
+```
+
+The converter maps these properties directly into GitHub Flavored Markdown syntax:
+- `heading:1` or `style="Heading 1"` $\rightarrow$ `# Heading 1`
+- `heading:2` or `style="Heading 2"` $\rightarrow$ `## Heading 2`
+- `style="Block Text"` $\rightarrow$ `> Blockquote`
+- `style="Bullet List"` $\rightarrow$ `- Bullet list item`
+- `style="Numbered List"` $\rightarrow$ `1. Numbered list item`
+
+## Character Spans and Inline Typography
+
+Within paragraphs, styled runs of text are enclosed in `<c>` (character) elements using CSS-like property strings in the `props` attribute:
+
+```xml
+<p>
+  This text includes <c props="font-weight:bold">bold words</c>, 
+  <c props="font-style:italic">italic phrasing</c>, 
+  <c props="text-decoration:line-through">strikethrough text</c>, and 
+  <c props="font-family:Courier">monospace code</c>.
+</p>
+```
+
+The parser inspects the `props` string and wraps inner text with corresponding markdown delimiters:
+- `font-weight:bold` $\rightarrow$ `**bold words**`
+- `font-style:italic` $\rightarrow$ `*italic phrasing*`
+- `text-decoration:line-through` $\rightarrow$ `~~strikethrough text~~`
+- `font-family:Courier` $\rightarrow$ `` `monospace code` ``
+- `text-position:superscript` $\rightarrow$ `<sup>text</sup>`
+- `text-position:subscript` $\rightarrow$ `<sub>text</sub>`
+
+Hyperlinks defined as `<a href="...">...</a>` are translated into standard markdown link syntax: `[Label](URL)`.
+
+## 2D Grid Table Extraction
+
+AbiWord handles tabular structures with `<table>` and `<cell>` elements. Rather than relying on HTML-like rows (`<tr>`), AbiWord indexes cells using 2D grid coordinates:
+
+```xml
+<table>
+  <cell x="0" y="0"><p props="font-weight:bold">Subsystem</p></cell>
+  <cell x="1" y="0"><p props="font-weight:bold">Latency</p></cell>
+  <cell x="0" y="1"><p>L1 Cache</p></cell>
+  <cell x="1" y="1"><p>1.0 ns</p></cell>
+</table>
+```
+
+The parser groups cells by their `y` row coordinate, sorts columns by `x`, and formats a clean Markdown table with headers and alignment separators:
+
+```markdown
+| Subsystem | Latency |
+| --- | --- |
+| L1 Cache | 1.0 ns |
+```
+
+## Handling Embedded Images and GZIP Compression
+
+### 1. Inlined Base64 Images
+Unlike DOCX or ODT files that store images as loose binary files in a ZIP container, AbiWord inlines raster illustrations directly into XML `<image>` tags:
+
+```xml
+<image mime-type="image/png" data="iVBORw0KGgoAAAANSUhEUgAA..."/>
+```
+
+The converter extracts the base64 string, strips whitespace, and outputs a self-contained Markdown image:
+
+```markdown
+![Embedded Image](data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...)
+```
+
+### 2. GZIP Archive Decompression (`.zabw`)
+To save disk space, AbiWord allows users to save documents with the `.zabw` extension. A `.zabw` file is a standard GZIP-compressed `.abw` stream. The converter detects GZIP magic bytes (`0x1F 0x8B 0x08`) and inflates the document in memory before XML parsing.
+
+## 100% Client-Side Privacy
+
+Confidential documents, manuscripts, and legal agreements should never be transmitted to third-party conversion servers. With [convrtr's ABW to Markdown converter](/document/abw-to-markdown), all XML decoding, style translation, and image processing execute entirely within your browser using client-side TypeScript. Your documents never touch an external server.

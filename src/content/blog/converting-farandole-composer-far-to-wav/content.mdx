@@ -1,0 +1,100 @@
+In the golden age of PC demoscene trackers between 1993 and 1996, musicians pushed beyond the standard 4-channel limits of the Amiga MOD format. Among the wave of innovative DOS tracking tools was **Farandole Composer**, created in 1994 by Daniel Potter. Modules composed in Farandole use the **`.far`** extension.
+
+Farandole Composer stood out in the tracker underground for its streamlined 16-channel architecture, integrated song comments, per-channel panning assignments, and direct 8-bit linear PCM instrument storage. It provided demoscene composers with an accessible, high-performance tracking workflow on 386 and 486 PCs.
+
+This deep-dive examines the internal binary structure of the Farandole `.far` file, explains how its 16-channel pattern matrices and sample tables operate, and details how [convrtr's FAR to WAV synthesizer](/audio/far-to-wav) renders vintage DOS tracker tracks into clean, CD-quality 16-bit 44.1kHz stereo WAV audio entirely in client-side memory.
+
+## The FAR File Header Layout
+
+Every authentic Farandole Composer module begins with a compact 97-byte fixed header:
+
+| Offset | Size (Bytes) | Field Name | Description |
+| :--- | :--- | :--- | :--- |
+| `0x00` | 4 bytes | Magic Identifier | Constant signature `"FAR\xFE"` (`0x46 0x41 0x52 0xFE`) |
+| `0x04` | 40 bytes | Song Title | ASCII song title (null-padded or space-padded) |
+| `0x2C` | 1 byte | DOS EOF | Always `0x1A` (prevents binary display clutter in DOS) |
+| `0x2D` | 2 bytes (LE) | Header Length | Total byte offset to pattern order data |
+| `0x2F` | 1 byte | Version | Tracker version (typically `0x10` for Farandole 1.0) |
+| `0x30` | 16 bytes | Channel Map | Channel on/off flags for channels 1 through 16 |
+| `0x40` | 9 bytes | Reserved | Empty padding bytes |
+| `0x49` | 2 bytes (LE) | Default Tempo | Initial playback tempo |
+| `0x4B` | 16 bytes | Panning Table | Per-channel stereo panning settings (0 to 15) |
+| `0x5B` | 4 bytes | Coarse Tempo | Playback speed/timing modifiers |
+| `0x5F` | 2 bytes (LE) | Text Message Length | Length of embedded author message in bytes |
+
+The signature `"FAR\xFE"` identifies the module as a Farandole Composer file.
+
+## Embedded Text Messages and Song Notes
+
+Unlike early tracker formats that forced artists to type messages into unused instrument name slots, Farandole Composer incorporated a dedicated author text field.
+
+Immediately following the 97-byte header at offset `0x61`, the file stores `textLength` bytes of ASCII text containing greeting lists, demogroup credits, and musical notes. After this message block, the file transitions directly to the order table.
+
+## Order Lists and Pattern Structures
+
+Following the song message, Farandole stores the pattern sequencing structure:
+
+1. **Order Table (256 bytes):** An array of pattern numbers representing the song's playback order. A value of `255` indicates the end of the song.
+2. **Song Statistics (3 bytes):** Total unique patterns, number of orders played, and song loop point.
+3. **Pattern Size Table:** A 2-byte integer per pattern specifying its packed or unpacked size in bytes.
+
+Each pattern consists of 64 rows across 16 channels. In Farandole Composer, each channel cell is represented by 4 bytes:
+
+```text
+[Note Byte, Sample Byte, Volume Byte, Effect Byte]
+```
+
+- **Note Byte:** `0` indicates no note. Values `1` to `84` represent musical semitones spanning 7 full octaves.
+- **Sample Byte:** The 1-indexed instrument number (1 to 64). `0` indicates no sample trigger.
+- **Volume Byte:** Direct volume setting from `0` to `16` (scaled up to standard 0–64 tracker volume).
+- **Effect Byte:** Encodes pitch bends, volume slides, and vibrato effects.
+
+## Sample Descriptors and Waveform Banks
+
+After the pattern tables, Farandole Composer stores 64 sample headers, each occupying 64 bytes:
+
+| Offset | Size (Bytes) | Field Name | Description |
+| :--- | :--- | :--- | :--- |
+| `+0x00` | 32 bytes | Sample Name | ASCII instrument label |
+| `+0x20` | 4 bytes (LE) | Sample Length | Total PCM length in bytes |
+| `+0x24` | 1 byte | Finetune | Tuning adjustments |
+| `+0x25` | 1 byte | Default Volume | Initial volume level (0 to 64) |
+| `+0x26` | 4 bytes (LE) | Loop Start | Beginning offset of loop window |
+| `+0x2A` | 4 bytes (LE) | Loop End | Ending offset of loop window |
+| `+0x2E` | 1 byte | Loop Type | `1` if sample loops; `0` for one-shot |
+
+Following the 64 sample headers, the raw 8-bit signed linear PCM waveforms are stored sequentially. Farandole stores sample values as signed 8-bit integers ranging from `-128` to `+127`.
+
+## Client-Side Replay Synthesis
+
+To convert a `.far` file into standard 16-bit stereo WAV audio without a DOS emulator, [convrtr's synthesis engine](/audio/far-to-wav) performs real-time multi-channel voice mixing in the browser:
+
+### 1. Pitch Period Calculation
+For any note $N \in [1, 84]$, the target frequency $f$ is calculated using equal temperament relative to middle C (note 49 at 8363 Hz):
+
+$$f = 8363 \times 2^{\frac{N - 49}{12}}$$
+
+The per-sample playback increment step is then:
+
+$$\text{step} = \frac{f}{\text{sampleRate}}$$
+
+### 2. Linear Interpolation and Loop Wrapping
+When stepping through 8-bit PCM waveforms at fractional positions, linear interpolation eliminates high-frequency aliasing distortion:
+
+$$\text{sample}(t) = (1 - \text{frac}) \times \text{pcm}[\lfloor t \rfloor] + \text{frac} \times \text{pcm}[\lceil t \rceil]$$
+
+If playback reaches `loopEnd` on a looping sample, the read cursor smoothly resets to `loopStart`.
+
+### 3. Stereo Panning Distribution
+Each channel's 4-bit panning byte (0 to 15) is converted to fractional stereo gains and scaled with a user-adjustable stereo separation factor:
+
+```text
+leftGain  = (1.0 - pan) * stereoSeparation + (1.0 - stereoSeparation) * 0.5;
+rightGain = pan * stereoSeparation + (1.0 - stereoSeparation) * 0.5;
+```
+
+All 16 voices are summed, clipped to $[-1.0, 1.0]$, scaled to signed 16-bit integers (`-32768` to `+32767`), and packaged into a canonical 44-byte RIFF/WAVE container.
+
+## Preservation and Playback
+
+Because modern operating systems lack native Farandole players, valuable demoscene compositions and vintage PC game soundtracks risk becoming unplayable. Converting `.far` modules to uncompressed 16-bit 44.1kHz stereo WAV ensures that vintage tracker music can be played on modern smartphones, imported into digital audio workstations (DAWs), and permanently preserved for future generations.

@@ -306,6 +306,14 @@ const MIME_MAP: Record<string, string> = {
 	"image/x-neo": "neo",
 	"application/x-neo": "neo",
 	"image/neo": "neo",
+	"audio/far": "far",
+	"audio/x-far": "far",
+	"application/x-far": "far",
+	"application/x-abiword": "abw",
+	"application/abiword": "abw",
+	"image/x-c64-art": "art",
+	"image/x-artstudio": "art",
+	"application/x-artstudio": "art",
 };
 
 /**

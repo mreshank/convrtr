@@ -7,6 +7,7 @@ import { avrToWav } from "./tools/audio/avr-to-wav";
 import { cafToWav } from "./tools/audio/caf-to-wav";
 import { dsfToWav } from "./tools/audio/dsf-to-wav";
 import { dspToWav } from "./tools/audio/dsp-to-wav";
+import { farToWav } from "./tools/audio/far-to-wav";
 import { coverArtFLAC } from "./tools/audio/flac-cover-art";
 import { flacToWav } from "./tools/audio/flac-to-wav";
 import { waveformFLAC } from "./tools/audio/flac-waveform";
@@ -41,6 +42,7 @@ import { xmToWav } from "./tools/audio/xm-to-wav";
 import { avifToJpg } from "./tools/avif-to-jpg";
 import { avifToPng } from "./tools/avif-to-png";
 import { compressJpg } from "./tools/compress-jpg";
+import { abwToMarkdown } from "./tools/document/abw-to-markdown";
 import { acoToCss } from "./tools/document/aco-to-css";
 import { actToCss } from "./tools/document/act-to-css";
 import { aseToCss } from "./tools/document/ase-to-css";
@@ -91,6 +93,7 @@ import { heicToPng } from "./tools/heic-to-png";
 import { heicToWebp } from "./tools/heic-to-webp";
 import { abrToPng } from "./tools/image/abr-to-png";
 import { aniToPng } from "./tools/image/ani-to-png";
+import { artToPng } from "./tools/image/art-to-png";
 import { asepriteToPng } from "./tools/image/aseprite-to-png";
 import { cdrToPng } from "./tools/image/cdr-to-png";
 import { cgmToSvg } from "./tools/image/cgm-to-svg";
@@ -339,6 +342,9 @@ export const TOOLS: Tool[] = [
 	hdrToPng,
 	pdbToMarkdown,
 	neoToPng,
+	farToWav,
+	abwToMarkdown,
+	artToPng,
 ];
 
 export function getTool(id: string): Tool | undefined {

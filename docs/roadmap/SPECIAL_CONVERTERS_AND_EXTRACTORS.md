@@ -79,6 +79,9 @@
 | `.hdr` / `.pic` | Radiance RGBE High Dynamic Range Image | 3D Graphics / VFX | Run-length encoded 32-bit RGBE high dynamic range raster with Reinhard tone mapping & gamma encoding to PNG | `SOLVED` | **SHIPPED** |
 | `.pdb` / `.prc` | Palm OS PalmDoc E-Book Database | Retro / E-Books | Palm OS database record unpacker with 4KB sliding-window LZ77 decompressor to GitHub Flavored Markdown | `SOLVED` | **SHIPPED** |
 | `.neo` | Atari ST NeoChrome Master Image | Retro / 16-Bit Art | 4-bitplane planar bitmap with 16-color ST/STE color palette mapping & aspect ratio correction to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
+| `.far` | Farandole Composer Tracker Module | Tracker Music / Audio | Daniel Potter 16-channel DOS tracker unpacker & 8-bit signed PCM synthesis with panning to 16-bit stereo WAV | `SOLVED` | **SHIPPED** |
+| `.abw` / `.zabw` | AbiWord Word Processor Document | Document Forensics / Office | AbiWord XML & GZIP container parser with Dublin Core metadata, tables & styled spans to Markdown | `SOLVED` | **SHIPPED** |
+| `.art` | Commodore 64 Advanced Art Studio | Retro / 8-Bit Art | Advanced Art Studio Hires (320x200) & Multicolor (160x200) bitplane decoder with VIC-II palettes to PNG | `SOLVED` | **SHIPPED** |
 
 
 
@@ -2444,6 +2447,81 @@
 
 ---
 
+### 112. Farandole Composer Tracker Module (.far)
+- **Ecosystem & Context:** Created in 1994 by Daniel Potter, Farandole Composer (`.far`) was a pioneering 16-channel DOS module tracker known for its clean user interface, support for Sound Blaster 16 and Gravis UltraSound cards, and 16 independent playback channels. Farandole modules are treasured in retro computing and tracker music archives, but modern media players cannot open raw `.far` files without specialized plugin DLLs.
+- **Forensic Format Architecture:**
+  - Header (44 bytes):
+    - Magic Signature (4 bytes): ASCII `"FAR\xFE"` (`0x46, 0x41, 0x52, 0xFE`).
+    - Song Title (40 bytes): Space- or null-padded ASCII title.
+  - Header Continuation:
+    - CR/LF/EOF bytes: `0x0D, 0x0A, 0x1A`.
+    - Header Size (2 bytes, little-endian): Offset to order/pattern tables.
+    - Version (1 byte): Farandole version byte.
+    - Channel panning table (16 bytes): Default stereo panning for channels 0..15.
+    - Tempo and speed default settings.
+    - Order Table Length & Pattern Count.
+  - Sample Metadata:
+    - Up to 64 instrument sample headers with sample name, length, finetune, volume, loop points, and 8-bit sample flags.
+  - Pattern Data:
+    - 16 tracks per pattern, 64 rows per pattern. Each cell contains note (octave + chromatic note), instrument number, volume, and effect code/parameter.
+  - Sample Data:
+    - 8-bit signed PCM audio waveforms stored sequentially.
+- **In-Browser Execution Strategy:**
+  - Validates the `"FAR\xFE"` magic signature and decodes header metadata, channel pan positions, and sample definitions.
+  - Unpacks 16-track pattern matrices and tracks order playback tables.
+  - Executes software PCM mixing at 44.1 kHz stereo, resolving Amiga/PC period frequencies, volume scaling, stereo panning, and loop boundaries into a standard 16-bit RIFF WAV buffer.
+- **Fidelity:** `CYCLE-ACCURATE 16-CHANNEL MIXDOWN TO STEREO WAV`.
+- **Status:** **Wave 39 Shipped (`audio/far-to-wav`) — Milestone Tool 112**.
+
+---
+
+### 113. AbiWord Word Processor Document (.abw, .zabw)
+- **Ecosystem & Context:** Launched in 1998 as part of the AbiSource open-source desktop initiative, AbiWord is a lightweight, cross-platform word processor. Its native file formats, `.abw` (uncompressed XML) and `.zabw` (Gzip-compressed XML), store rich documents, tables, styles, Dublin Core metadata, and embedded images. When users encounter archived `.abw` files on modern systems without AbiWord installed, they need instant, high-fidelity conversion into clean Markdown without installing legacy Linux packages or LibreOffice.
+- **Forensic Format Architecture:**
+  - Container Detection: Detects GZIP magic header (`0x1F, 0x8B`) for `.zabw` or compressed `.abw`, decompressing in-browser using `fflate.decompressSync`.
+  - XML Root: `<abiword fileformat="1.x">` root element with XML namespace declarations.
+  - Metadata Section (`<metadata>`): Dublin Core elements including `dc:title`, `dc:creator`, `dc:subject`, `dc:description`, `dc:date`, and `abiword.keywords`.
+  - Content Hierarchy:
+    - Sections (`<section>`): Column counts and layout flow.
+    - Paragraphs (`<p style="...">`): Heading levels (`Heading 1`..`Heading 6`, `Title`, `Subtitle`), list items (`Numbered List`, `Bullet List`), and body text.
+    - Tables (`<table>`, `<cell>`): Row and column grid definitions with cell contents.
+    - Inline Spans (`<c props="...">`): Bold, italic, underline, strikethrough, monospace, and superscript/subscript properties.
+    - Embedded Images (`<image dataid="...">` and `<data id="..." data:type="...">`): Base64-encoded PNG/JPEG raster data embedded directly in the document.
+- **In-Browser Execution Strategy:**
+  - Checks for gzip compression and transparently decompresses `.zabw` files.
+  - Parses XML hierarchy, Dublin Core metadata, headings, bullet/numbered lists, tables, and character span properties.
+  - Emits structured YAML frontmatter, clean GitHub Flavored Markdown headings, paragraphs, styled text, and GFM markdown tables.
+- **Fidelity:** `LOSSLESS DOCUMENT STRUCTURE & STYLED TEXT CONVERSION`.
+- **Status:** **Wave 39 Shipped (`document/abw-to-markdown`) — Milestone Tool 113**.
+
+---
+
+### 114. Commodore 64 Advanced Art Studio Picture (.art)
+- **Ecosystem & Context:** Released in 1986 by Firebird Software (developed by Rainbird / OCPS), Advanced Art Studio was one of the most sophisticated graphics packages for the Commodore 64 8-bit computer. Supporting both high-resolution (320x200 monochrome per 8x8 cell) and multicolor (160x200 with 4 colors per 4x8 cell) graphics modes, it became a standard tool for C64 game illustrators and demoscene pixel artists.
+- **Forensic Format Architecture:**
+  - File Size & PRG Load Address:
+    - Standard C64 PRG container with 2-byte little-endian load address (`0x00, 0x20` = `$2000` or `$4000`).
+    - Raw file payload typically 9,218–10,003 bytes depending on whether background color bytes and border colors are saved at the end of the file.
+  - Hires Mode (320x200):
+    - Bitmap Data: 8,000 bytes (1,000 character cells of 8 bytes each, 1 bit per pixel).
+    - Screen RAM: 1,000 bytes (high nibble = foreground color, low nibble = background color for each 8x8 cell).
+  - Multicolor Mode (160x200):
+    - Bitmap Data: 8,000 bytes (1,000 character cells, 2 bits per double-width pixel: `00` = background register, `01` = screen RAM high nibble, `10` = screen RAM low nibble, `11` = color RAM).
+    - Screen RAM: 1,000 bytes.
+    - Color RAM: 1,000 bytes (VIC-II Color RAM at `$D800`).
+    - Background Color: Stored in header or footer byte.
+  - Color Palettes:
+    - The 16 Commodore 64 VIC-II system colors mapped using either Pepto (CRT-calibrated) or Colodore (modern sRGB) palette standards.
+- **In-Browser Execution Strategy:**
+  - Detects and strips optional 2-byte C64 PRG load address.
+  - Analyzes file dimensions and structure to automatically detect Hires vs Multicolor mode.
+  - Unpacks 8,000-byte bitmap bitplanes, screen color RAM, and attribute matrices into discrete 8-bit palette indexes for all 320x200 pixels.
+  - Renders the image into a 32-bit RGBA buffer and encodes to standard lossless PNG.
+- **Fidelity:** `CYCLE-ACCURATE VIC-II BITPLANE DECODING & PALETTE EMULATION`.
+- **Status:** **Wave 39 Shipped (`image/art-to-png`) — Milestone Tool 114**.
+
+---
+
 ## Roadmap Waves & Next Steps
 
 1. **Wave 1 (Shipped):**
@@ -2596,10 +2674,14 @@
     - Tool 109: `image/hdr-to-png` (Radiance RGBE `.hdr`/`.pic` high dynamic range image decompressor to 32-bit RGBA PNG) — **Shipped**
     - Tool 110: `document/pdb-to-markdown` (Palm OS PalmDoc `.pdb`/`.prc` e-book database unpacker and LZ77 decompressor to GFM Markdown) — **Shipped**
     - Tool 111: `image/neo-to-png` (Atari ST NeoChrome `.neo` 4-bitplane planar graphics decoder to 32-bit RGBA PNG) — **Shipped**
-39. **Wave 39 (Active Wave / Proposed Candidates):**
-    - Candidate 1 / Tool 112: `audio/far-to-wav` (Farandole Composer `.far` 16-channel DOS module tracker to 16-bit stereo WAV)
-    - Candidate 2 / Tool 113: `document/abw-to-markdown` (AbiWord `.abw` XML document and formatting unpacker to GitHub Flavored Markdown)
-    - Candidate 3 / Tool 114: `image/art-to-png` (Commodore 64 Advanced Art Studio `.art` hires/multicolor graphics decoder to 32-bit RGBA PNG)
+39. **Wave 39 (Shipped):**
+    - Tool 112: `audio/far-to-wav` (Farandole Composer `.far` 16-channel DOS module tracker to 16-bit stereo WAV) — **Shipped**
+    - Tool 113: `document/abw-to-markdown` (AbiWord `.abw` XML document and formatting unpacker to GitHub Flavored Markdown) — **Shipped**
+    - Tool 114: `image/art-to-png` (Commodore 64 Advanced Art Studio `.art` hires/multicolor graphics decoder to 32-bit RGBA PNG) — **Shipped**
+40. **Wave 40 (Active Wave / Proposed Candidates):**
+    - Candidate 1 / Tool 115: `audio/669-to-wav` (Composer 669 / UNIS 669 `.669` 8-channel DOS tracker module to 16-bit stereo WAV)
+    - Candidate 2 / Tool 116: `document/hwp-to-markdown` (Hangul Word Processor `.hwp` 5.x / OLE compound document text extractor to GitHub Flavored Markdown)
+    - Candidate 3 / Tool 117: `image/iff-acbm-to-png` (Amiga Continuous Bitmap `.acbm` / `.iff` non-interleaved raster decoder to 32-bit RGBA PNG)
 
 
 

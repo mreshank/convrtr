@@ -2477,6 +2477,184 @@ export const COMPARISONS: ComparisonMeta[] = [
 			"image/koa-to-png",
 		],
 	},
+	{
+		slug: "far-vs-it",
+		title:
+			"Farandole Composer vs Impulse Tracker: DOS Module Trackers Compared",
+		description:
+			"Technical comparison between Farandole Composer (.far) and Impulse Tracker (.it). Compare channel architectures, sample compression, and tracker music evolution.",
+		formatA: "Farandole (.far)",
+		formatB: "Impulse Tracker (.it)",
+		category: "audio",
+		summary:
+			"Farandole Composer and Impulse Tracker represent two pivotal milestones in DOS tracker history. Farandole pioneered streamlined 16-channel tracking with custom panning and text messages in 1994, while Impulse Tracker revolutionized tracker music with 64 channels, new note actions (NNA), and sample compression.",
+		prosA: [
+			"Simpler 16-channel architecture with lightweight file footprint",
+			"Integrated song comments and message payload storage",
+			"Authentic 1994 DOS demoscene chiptune sound aesthetics",
+			"Straightforward fixed-length pattern cell structure",
+		],
+		prosB: [
+			"Up to 64 physical playback channels with New Note Actions (NNA)",
+			"Advanced resonant digital filters and instrument envelope graphs",
+			"Proprietary 8-bit and 16-bit packed sample compression algorithms",
+			"Enormous worldwide library of professional tracker releases",
+		],
+		specs: [
+			{
+				feature: "Developer",
+				formatA: "Daniel Potter (1994)",
+				formatB: "Jeffrey Lim (1995)",
+			},
+			{
+				feature: "Max Channels",
+				formatA: "16 channels",
+				formatB: "64 channels",
+			},
+			{
+				feature: "Sample Resolution",
+				formatA: "8-bit signed linear PCM",
+				formatB: "8-bit and 16-bit delta PCM",
+			},
+			{
+				feature: "Sample Compression",
+				formatA: "None (uncompressed)",
+				formatB: "IT214/IT215 adaptive delta run-length",
+			},
+			{
+				feature: "Metadata",
+				formatA: "Song title + arbitrary text comment",
+				formatB: "Song message, instrument names, sample names",
+			},
+		],
+		verdict:
+			"While Impulse Tracker remains the most powerful tracker format of the 1990s, Farandole Composer holds an invaluable place in early PC demoscene history. Convert vintage .far and .it modules into standard 16-bit stereo WAV to archive, listen to, and sample classic chiptunes on modern audio workstations.",
+		relatedTools: [
+			"audio/far-to-wav",
+			"audio/it-to-wav",
+			"audio/ptm-to-wav",
+			"audio/s3m-to-wav",
+			"audio/xm-to-wav",
+		],
+	},
+	{
+		slug: "abw-vs-docx",
+		title: "AbiWord vs DOCX: Lightweight Open XML vs Microsoft Word",
+		description:
+			"Technical comparison between AbiWord (.abw) and Microsoft Word Open XML (.docx). Compare single-file XML architecture against zipped Open Packaging Conventions.",
+		formatA: "AbiWord (.abw)",
+		formatB: "Microsoft Word (.docx)",
+		category: "document",
+		summary:
+			"AbiWord (.abw) and Microsoft Word (.docx) take radically different approaches to XML document storage. AbiWord uses a single readable XML file encompassing Dublin Core metadata, styled spans, and base64 images, whereas DOCX packages dozens of XML parts inside a zipped OPC container.",
+		prosA: [
+			"Single plain-text XML file: easily readable, grep-friendly, and version-controllable",
+			"Standard Dublin Core metadata integration natively supported",
+			"Lightweight memory and CPU footprint ideal for low-power and embedded systems",
+			"Open, royalty-free specification created by the open-source community",
+		],
+		prosB: [
+			"Universal enterprise standard accepted across corporate, legal, and educational worlds",
+			"Comprehensive feature set: change tracking, macros, complex form controls, SmartArt",
+			"Rich third-party ecosystem across Microsoft Office, Google Docs, and LibreOffice",
+			"Native ZIP compression reduces binary document size on disk",
+		],
+		specs: [
+			{
+				feature: "Container Format",
+				formatA: "Single XML file (or GZIP .zabw)",
+				formatB: "ZIP archive (Open Packaging Conventions)",
+			},
+			{
+				feature: "Primary Specification",
+				formatA: "AbiWord AWML DTD",
+				formatB: "ECMA-376 / ISO/IEC 29500 (OOXML)",
+			},
+			{
+				feature: "Metadata Standard",
+				formatA: 'Dublin Core (<m key="dc.*">)',
+				formatB: "Dublin Core + Extended + Custom app.xml",
+			},
+			{
+				feature: "Image Storage",
+				formatA: 'Inlined base64 (<image data="...">)',
+				formatB: "Separate image binaries in word/media/",
+			},
+			{
+				feature: "Table Model",
+				formatA: 'Simple 2D grid (<cell x="..." y="...">)',
+				formatB: "Hierarchical (<w:tbl>, <w:tr>, <w:tc>)",
+			},
+		],
+		verdict:
+			"DOCX is the ubiquitous choice for corporate collaboration, but AbiWord's clean single-file XML structure is a masterpiece of lightweight document design. Convert .abw files to clean GitHub Flavored Markdown to unlock and preserve archived open-source documents in modern personal knowledge bases.",
+		relatedTools: [
+			"document/abw-to-markdown",
+			"document/rtf-to-markdown",
+			"document/epub-to-markdown",
+			"document/fb2-to-markdown",
+		],
+	},
+	{
+		slug: "art-vs-koa",
+		title:
+			"C64 Advanced Art Studio vs KoalaPainter: Commodore 64 Graphic Formats Compared",
+		description:
+			"Technical comparison between Advanced Art Studio (.art) and KoalaPainter (.koa). Compare Commodore 64 Hires and Multicolor bitmap encoding, memory maps, and palettes.",
+		formatA: "Art Studio (.art)",
+		formatB: "KoalaPainter (.koa)",
+		category: "image",
+		summary:
+			"Advanced Art Studio and KoalaPainter were the two preeminent digital painting tools of the Commodore 64 era. While KoalaPainter became the de facto standard for 160x200 Multicolor art, Advanced Art Studio offered versatile dual-mode support for both crisp 320x200 Hires and Multicolor graphics.",
+		prosA: [
+			"Supports both 320x200 Hires mode and 160x200 Multicolor mode",
+			"Smaller 9,000-byte storage footprint when saving purely in Hires mode",
+			"Sophisticated magnifying pixel editor and custom pattern fills",
+			"Popular across European C64 demo groups and graphic designers",
+		],
+		prosB: [
+			"Universal C64 standard supported by almost every retro viewer and slideshow",
+			"Fixed 10,003-byte PRG structure with standardized $6000 load address",
+			"Intuitive joystick/graphics pad control scheme that defined 1980s home art",
+			"Immense library of thousands of vintage commercial and hobbyist paintings",
+		],
+		specs: [
+			{
+				feature: "Developer",
+				formatA: "Oxford Computer Systems (1986)",
+				formatB: "Audio Light / Koala Technologies (1983)",
+			},
+			{
+				feature: "Supported Modes",
+				formatA: "Hires (320x200) & Multicolor (160x200)",
+				formatB: "Multicolor (160x200) only",
+			},
+			{
+				feature: "File Size",
+				formatA: "9,002 bytes (Hires) or 10,002 bytes (Multicolor)",
+				formatB: "10,003 bytes (fixed)",
+			},
+			{
+				feature: "Color Memory",
+				formatA: "Screen RAM + optional Color RAM",
+				formatB: "Screen RAM (1,000B) + Color RAM (1,000B) + BG",
+			},
+			{
+				feature: "Max Colors Per Cell",
+				formatA: "2 (Hires) or 4 (Multicolor)",
+				formatB: "4 colors per 8x8 cell",
+			},
+		],
+		verdict:
+			"KoalaPainter remains the classic multicolor standard for the C64, but Advanced Art Studio provided the flexibility artists needed for high-resolution typography and pixel art. Convert both .art and .koa files to standard 32-bit RGBA PNG to preserve vintage Commodore 64 graphics on modern displays.",
+		relatedTools: [
+			"image/art-to-png",
+			"image/koa-to-png",
+			"image/neo-to-png",
+			"image/degas-to-png",
+			"image/zx-to-png",
+		],
+	},
 ];
 
 export function getComparison(slug: string): ComparisonMeta | undefined {

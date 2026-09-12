@@ -1,10 +1,12 @@
 import { eightSvxToWavEngine } from "./8svx";
 import { abrToPngEngine } from "./abr";
+import { abwToMarkdownEngine } from "./abw";
 import { acoToCssEngine } from "./aco";
 import { actToCssEngine } from "./act";
 import { adxToWavEngine } from "./adx";
 import { aiffToWavEngine } from "./aiff";
 import { aniToPngEngine } from "./ani";
+import { artStudioToPngEngine } from "./artstudio";
 import { aseToCssEngine } from "./ase";
 import { asepriteToPngEngine } from "./aseprite";
 import { assToSrtEngine } from "./ass";
@@ -42,6 +44,7 @@ import { dspToWavEngine } from "./dsp";
 import { dxfToSvgEngine } from "./dxf";
 import { enexToMarkdownEngine } from "./enex";
 import { epubToMarkdownEngine } from "./epub";
+import { farToWavEngine } from "./far";
 import { fb2ToMarkdownEngine } from "./fb2";
 import { fitToCsvEngine } from "./fit";
 import { fitsToPngEngine } from "./fits";
@@ -329,6 +332,9 @@ function buildImageEngines(): Map<string, Engine> {
 	engines.set(hdrToPngEngine.id, hdrToPngEngine);
 	engines.set(neoToPngEngine.id, neoToPngEngine);
 	engines.set(palmdocToMarkdownEngine.id, palmdocToMarkdownEngine);
+	engines.set(farToWavEngine.id, farToWavEngine);
+	engines.set(abwToMarkdownEngine.id, abwToMarkdownEngine);
+	engines.set(artStudioToPngEngine.id, artStudioToPngEngine);
 	{
 		const engine = createAudioLegacyEngine("opus", "mp3");
 		engines.set(engine.id, engine);
@@ -467,9 +473,13 @@ export async function selectEngine(
 }
 
 export { eightSvxToWavEngine } from "./8svx";
+export { abrToPngEngine } from "./abr";
+export { abwToMarkdownEngine } from "./abw";
 export { acoToCssEngine } from "./aco";
 export { actToCssEngine } from "./act";
 export { aiffToWavEngine } from "./aiff";
+export { aniToPngEngine } from "./ani";
+export { artStudioToPngEngine } from "./artstudio";
 export { asepriteToPngEngine } from "./aseprite";
 export { assToSrtEngine } from "./ass";
 export { auToWavEngine } from "./au";
@@ -490,6 +500,7 @@ export { dsfToWavEngine } from "./dsf";
 export { dxfToSvgEngine } from "./dxf";
 export { enexToMarkdownEngine } from "./enex";
 export { epubToMarkdownEngine } from "./epub";
+export { farToWavEngine } from "./far";
 export { fb2ToMarkdownEngine } from "./fb2";
 export { fitsToPngEngine } from "./fits";
 export { gbrToPngEngine } from "./gbr";
