@@ -1441,6 +1441,342 @@ export const COMPARISONS: ComparisonMeta[] = [
 			"AUD is a nostalgic video game audio format from the golden era of PC real-time strategy gaming. Convert Westwood AUD files to standard RIFF WAV to listen to, sample, remix, or preserve iconic C&C and Red Alert sound effects on modern systems.",
 		relatedTools: ["audio/aud-to-wav", "audio/wav-to-mp3", "audio/wav-to-flac"],
 	},
+	{
+		slug: "avr-vs-wav",
+		title: "AVR vs WAV: Atari ST Digital Audio vs Standard Linear PCM",
+		description:
+			"A technical comparison between Atari ST Audio Visual Research (.avr) sound files and standard RIFF WAV. Understand 128-byte headers, Motorola big-endian PCM, and modern playback.",
+		formatA: "AVR",
+		formatB: "WAV",
+		category: "audio",
+		summary:
+			"Audio Visual Research (AVR) is a legacy digital sampling format created for the Atari ST and Falcon030 computing platforms. It stores uncompressed 8-bit or 16-bit big-endian PCM audio prefixed with a 128-byte header starting with magic '2VRH'. Standard RIFF WAV is the universal little-endian audio container recognized by modern operating systems, digital audio workstations (DAWs), and web browsers.",
+		prosA: [
+			"Native sample file format for Atari ST and Falcon030 audio software and trackers",
+			"Lightweight fixed 128-byte header with dedicated MIDI base note and pitch metadata",
+			"Supports mono and interleaved stereo with flexible sample rates up to 48 kHz",
+			"Historic preservation format for 1990s Atari ST music production and sample libraries",
+		],
+		prosB: [
+			"Universal playback across all modern media players, DAWs, operating systems, and browsers",
+			"Standard little-endian byte order natively processed by x86-64 and ARM processors",
+			"Supported by all professional audio production suites (Pro Tools, Ableton, FL Studio, Logic)",
+			"Preserves extensible RIFF chunk architecture with comprehensive broadcast metadata",
+		],
+		specs: [
+			{
+				feature: "Platform Origin",
+				formatA: "Atari ST / Falcon030 (1990s)",
+				formatB: "Microsoft / IBM Windows & OS/2 (1991)",
+			},
+			{
+				feature: "Header Structure",
+				formatA: "Fixed 128-byte ('2VRH' magic)",
+				formatB: "Variable RIFF chunk hierarchy ('RIFF'/'WAVE')",
+			},
+			{
+				feature: "Byte Endianness",
+				formatA: "Big-Endian (Motorola 68000)",
+				formatB: "Little-Endian (Intel x86 standard)",
+			},
+			{
+				feature: "Sample Precision",
+				formatA: "8-bit signed/unsigned or 16-bit signed",
+				formatB: "8-bit, 16-bit, 24-bit, 32-bit float",
+			},
+			{
+				feature: "Modern DAW Compatibility",
+				formatA: "Requires conversion",
+				formatB: "Native universal support",
+			},
+		],
+		verdict:
+			"AVR is an iconic format of the Atari ST and Falcon030 desktop music revolution. Because modern workstations and mobile operating systems cannot decode Motorola big-endian 2VRH streams, converting AVR files to standard RIFF WAV unlocks vintage sample libraries for contemporary music production.",
+		relatedTools: ["audio/avr-to-wav", "audio/wav-to-mp3", "audio/wav-to-flac"],
+	},
+	{
+		slug: "nfo-vs-txt",
+		title: "NFO vs TXT: IBM CP437 Scene ASCII Art vs UTF-8 Plain Text",
+		description:
+			"Compare IBM Code Page 437 NFO release files with standard UTF-8 text documents. Explore box-drawing glyphs, ANSI styling, demoscene art, and modern browser rendering.",
+		formatA: "NFO",
+		formatB: "TXT",
+		category: "document",
+		summary:
+			"NFO (information) files are stylized text documents originating from the PC demoscene, BBS community, and warez release groups. Encoded in IBM Code Page 437, they make heavy use of high-order box-drawing characters, shading blocks, and monospace layout to render intricate logos. Plain text (.txt) files adhere to standard UTF-8 or ASCII encoding for portable, readable prose without reliance on legacy OEM character sets.",
+		prosA: [
+			"Renders elaborate ASCII art, borders, logos, and shading blocks natively using CP437",
+			"Iconic underground culture artifact with rich demoscene and BBS heritage",
+			"Preserves exact 80-column terminal layout and fixed typographic styling",
+			"Contains detailed release specifications, system requirements, and group credits",
+		],
+		prosB: [
+			"Universal UTF-8 encoding displays correctly on every modern editor and browser",
+			"Fully readable without needing specialized MS-DOS fonts or code page decoders",
+			"Search engine indexable and compatible with screen readers and accessibility tools",
+			"Lightweight and editable using standard text manipulation utilities and command-line tools",
+		],
+		specs: [
+			{
+				feature: "Default Character Set",
+				formatA: "IBM Code Page 437 (DOS OEM)",
+				formatB: "UTF-8 / Unicode / 7-bit ASCII",
+			},
+			{
+				feature: "Visual Purpose",
+				formatA: "Decorative ASCII art, logos, and release notes",
+				formatB: "General-purpose plain text documentation",
+			},
+			{
+				feature: "High-Byte Characters (0x80-0xFF)",
+				formatA: "Box drawing, block shades, Greek letters",
+				formatB: "Accented characters, symbols, emojis (UTF-8)",
+			},
+			{
+				feature: "Modern OS Rendering",
+				formatA: "Renders gibberish without CP437 decoder",
+				formatB: "Universal native display",
+			},
+			{
+				feature: "Web & HTML Integration",
+				formatA: "Requires conversion to HTML/Unicode",
+				formatB: "Native browser display",
+			},
+		],
+		verdict:
+			"NFO files preserve exceptional typographic and graphic artistry from the DOS and BBS computing eras. Convert CP437 NFO documents to styled HTML or Unicode text to view vintage demoscene and release artwork with authentic green phosphor or dark terminal aesthetics directly in modern browsers.",
+		relatedTools: [
+			"document/nfo-to-html",
+			"document/rtf-to-markdown",
+			"document/latex-to-markdown",
+		],
+	},
+	{
+		slug: "chr-vs-png",
+		title: "NES CHR vs PNG: 2bpp Planar Tile ROMs vs 32-Bit Web Graphics",
+		description:
+			"A technical comparison between Nintendo Entertainment System 2bpp CHR tile ROMs and standard 32-bit RGBA PNG images. Learn about planar bitplanes, 8x8 tiles, and sprite extraction.",
+		formatA: "CHR",
+		formatB: "PNG",
+		category: "image",
+		summary:
+			"NES CHR files contain raw 8x8-pixel character tile graphics dumped from Nintendo Entertainment System and Famicom cartridges. Each tile is stored as 16 bytes of 2 bits-per-pixel (2bpp) planar bitplanes referencing a 4-color hardware palette. Portable Network Graphics (PNG) is the modern web standard for raster imagery, supporting 24-bit RGB color, 8-bit alpha transparency, and lossless DEFLATE compression.",
+		prosA: [
+			"Extremely compact memory footprint tailored for NES Picture Processing Unit (PPU) VRAM",
+			"Direct hardware alignment allowing real-time tile mapping at 60 Hz on 1980s hardware",
+			"Standard asset file format for NES homebrew, ROM hacking, and emulator development",
+			"Decouples tile geometry from color palettes, allowing dynamic palette swapping",
+		],
+		prosB: [
+			"Lossless 32-bit truecolor fidelity with an independent 8-bit alpha channel",
+			"Universal viewing and editing across all modern graphic editors (Photoshop, Aseprite, GIMP)",
+			"Standard sprite sheet format for modern game engines (Unity, Godot, Unreal, Phaser)",
+			"Supported natively by every modern web browser, mobile device, and operating system",
+		],
+		specs: [
+			{
+				feature: "Bit Depth",
+				formatA: "2 bits per pixel (4 color indexes)",
+				formatB: "Up to 32 bits per pixel (RGBA truecolor)",
+			},
+			{
+				feature: "Data Organization",
+				formatA: "Planar bitplanes (Low byte + High byte per scanline)",
+				formatB: "Interleaved scanlines with filter predictors",
+			},
+			{
+				feature: "Tile / Frame Size",
+				formatA: "Fixed 8x8 pixel tiles (16 bytes per tile)",
+				formatB: "Arbitrary dimensions (up to billions of pixels)",
+			},
+			{
+				feature: "Color Palette",
+				formatA: "Hardware indices (0-3) mapped at runtime",
+				formatB: "Direct truecolor (RGB) or embedded indexed palette",
+			},
+			{
+				feature: "Browser & Engine Support",
+				formatA: "None (requires custom emulator or converter)",
+				formatB: "Universal native support",
+			},
+		],
+		verdict:
+			"CHR ROM files represent the golden age of 8-bit console hardware architecture, squeezing detailed sprites into 8-kilobyte cartridge banks. Converting CHR tiles into modern PNG sprite sheets allows retro game developers and digital preservationists to inspect, edit, and remix classic 8-bit graphics in Aseprite and Godot.",
+		relatedTools: [
+			"image/chr-to-png",
+			"image/png-to-webp",
+			"image/png-to-avif",
+		],
+	},
+	{
+		slug: "xm-vs-wav",
+		title: "XM vs WAV: FastTracker II Chiptune Modules vs Rendered PCM Audio",
+		description:
+			"Compare FastTracker II Extended Module (.xm) tracker music with standard uncompressed WAV audio. Understand sample banks, pattern matrices, multi-channel polyphony, and modern DAW rendering.",
+		formatA: "XM",
+		formatB: "WAV",
+		category: "audio",
+		summary:
+			"FastTracker II XM (Extended Module) is a legendary tracker music container created by Triton in 1994. Instead of storing pre-rendered waveforms, XM packages digital sound samples alongside musical pattern sequences, note triggers, volume envelopes, and panning commands across up to 32 discrete audio channels. WAV is the universal linear PCM container that captures the rendered acoustic performance directly into static waveform samples.",
+		prosA: [
+			"Extremely compact distribution: complete multi-minute musical compositions occupy only hundreds of kilobytes",
+			"Interactive musical representation allowing real-time tempo shifting, instrument extraction, and remixing",
+			"Iconic tracker sound architecture powering 1990s demoscene productions and retro PC gaming soundtracks",
+			"Discrete channel arrangement facilitates studying music theory, sound design, and chiptune composition techniques",
+		],
+		prosB: [
+			"Universal playback compatibility across all modern media players, streaming platforms, and web browsers",
+			"Exact, reproducible acoustic fidelity with zero dependency on tracker synthesis engines or interpolation filters",
+			"Direct drag-and-drop import into all professional digital audio workstations (Ableton, FL Studio, Logic)",
+			"Supports high-resolution bit depths (24-bit, 32-bit float) and arbitrary sample rates up to 192 kHz",
+		],
+		specs: [
+			{
+				feature: "Audio Architecture",
+				formatA: "Pattern matrix + instrument sample bank",
+				formatB: "Continuous linear PCM waveform stream",
+			},
+			{
+				feature: "Typical File Size",
+				formatA: "100 KB - 2 MB (entire song)",
+				formatB: "30 MB - 60 MB (uncompressed)",
+			},
+			{
+				feature: "Synthesis Requirement",
+				formatA: "Requires tracker replayer engine",
+				formatB: "Direct hardware DAC playback",
+			},
+			{
+				feature: "Polyphony / Channels",
+				formatA: "Up to 32 independent tracker tracks",
+				formatB: "Interleaved 2-channel stereo or multichannel",
+			},
+			{
+				feature: "Native Browser Playback",
+				formatA: "Requires WebAudio tracker decoder",
+				formatB: "Universal HTML5 <audio> tag playback",
+			},
+		],
+		verdict:
+			"XM files capture the brilliant ingenuity of the 1990s tracker subculture, squeezing full symphonies and industrial techno into floppy-disk-friendly footprints. Convert XM modules to standard WAV audio using convrtr to preserve vintage tracker compositions and listen to iconic demoscene music on modern smartphones, headphones, and DAWs.",
+		relatedTools: ["audio/xm-to-wav", "audio/wav-to-mp3", "audio/wav-to-flac"],
+	},
+	{
+		slug: "dcm-vs-png",
+		title:
+			"DICOM vs PNG: Clinical Medical Imaging vs Web-Standard Lossless Rasters",
+		description:
+			"A technical comparison between DICOM (.dcm) medical imaging files and PNG rasters. Learn about 16-bit CT/MRI depth, Hounsfield units, window leveling, and clinical metadata.",
+		formatA: "DICOM",
+		formatB: "PNG",
+		category: "image",
+		summary:
+			"DICOM (Digital Imaging and Communications in Medicine) is the global standard format for medical healthcare imaging produced by CT scanners, MRI systems, ultrasounds, and X-ray machines. It embeds high-dynamic-range pixel data (often 12-bit or 16-bit grayscale) alongside extensive patient, study, and calibration metadata tags. PNG (Portable Network Graphics) is the universal lossless raster image standard for digital screens, supporting 8-bit or 16-bit color channels and cross-platform web display.",
+		prosA: [
+			"Stores full clinical dynamic range (12-bit, 16-bit) enabling diagnostic window-level (contrast) adjustment",
+			"Comprehensive patient and exam metadata (study dates, radiation dosages, slice thickness, modalities)",
+			"Strict compliance with hospital PACS (Picture Archiving and Communication Systems) networks",
+			"Supports volumetric 3D reconstruction and multi-planar tomography series",
+		],
+		prosB: [
+			"Universal display across all web browsers, smartphones, presentation tools, and desktop software",
+			"Lossless Deflate compression without requiring complex medical PACS client installations",
+			"Standard image format for educational medical slides, scientific publications, and web portals",
+			"Zero patient data leakage risk when converted to anonymized, stripped presentation graphics",
+		],
+		specs: [
+			{
+				feature: "Primary Use Case",
+				formatA: "Clinical diagnosis and PACS hospital storage",
+				formatB: "Web publication, documentation, and display",
+			},
+			{
+				feature: "Dynamic Range",
+				formatA: "12-bit to 16-bit grayscale (Hounsfield units)",
+				formatB: "8-bit or 16-bit per channel RGB/grayscale",
+			},
+			{
+				feature: "Embedded Metadata",
+				formatA: "Extensive DICOM header (patient, modality, study)",
+				formatB: "Optional standard chunks (tEXt, iTXt)",
+			},
+			{
+				feature: "Native Browser Support",
+				formatA: "Unsupported natively (requires DICOM viewer)",
+				formatB: "Universal native support (HTML5 <img>)",
+			},
+			{
+				feature: "Contrast Adjustments",
+				formatA: "Window center & width (WL/WW) parameters",
+				formatB: "Baked into rendered pixel intensities",
+			},
+		],
+		verdict:
+			"DICOM is essential for medical professionals requiring uncompressed 16-bit radiologic telemetry and diagnostic fidelity. For patients, medical researchers, and educators who need to share scan results in presentations, reports, or portfolio websites, converting DICOM scans to PNG renders CT and MRI slices into clean, universally viewable images with zero client-side data leakage.",
+		relatedTools: [
+			"image/dcm-to-png",
+			"image/png-to-webp",
+			"image/png-to-avif",
+		],
+	},
+	{
+		slug: "org-vs-markdown",
+		title:
+			"Org Mode vs Markdown: Emacs Hierarchical Outlines vs Universal Web Markup",
+		description:
+			"Compare GNU Emacs Org Mode (.org) with CommonMark and GitHub Flavored Markdown (.md). Evaluate task scheduling, tree folding, agenda views, and web ecosystem interoperability.",
+		formatA: "Org Mode",
+		formatB: "Markdown",
+		category: "document",
+		summary:
+			"Emacs Org Mode is a rich plain-text organization system developed by Carsten Dominik in 2003. Built primarily for GNU Emacs, Org Mode combines document authoring with hierarchical project management, interactive task tracking (TODO states), scheduled deadlines, and executable code blocks (Babel). Markdown is the universal lightweight markup language created by John Gruber, optimized for clean human readability and effortless conversion into HTML across the modern web.",
+		prosA: [
+			"Advanced project management: built-in TODO workflows, priority tags, time tracking, and deadlines",
+			"Collapsible hierarchical outline structure allowing fluid folding and tree reorganization",
+			"Built-in spreadsheet calculations, formula evaluation, and dynamic table alignment",
+			"Literate programming capabilities via Org Babel with multi-language code block execution",
+		],
+		prosB: [
+			"Universal industry standard adopted by GitHub, GitLab, Obsidian, Notion, and static site generators",
+			"Extremely simple, readable syntax with minimal cognitive overhead for non-programmers",
+			"Supported natively across all modern note-taking apps, content management systems, and editors",
+			"Native rendering support on web platforms without requiring Emacs configuration or plugins",
+		],
+		specs: [
+			{
+				feature: "Design Philosophy",
+				formatA: "Life organizer, outliner, and literate programming",
+				formatB: "Read-write web authoring and HTML publishing",
+			},
+			{
+				feature: "Header Syntax",
+				formatA: "Asterisks (`*`, `**`, `***`)",
+				formatB: "Hashes (`#`, `##`, `###`)",
+			},
+			{
+				feature: "Task & Agenda Management",
+				formatA: "Native (SCHEDULED, DEADLINE, TODO states)",
+				formatB: "Basic checklist items (`- [ ]`, `- [x]`)",
+			},
+			{
+				feature: "Table Calculations",
+				formatA: "Full Calc spreadsheet engine built-in",
+				formatB: "Static text grid presentation only",
+			},
+			{
+				feature: "Ecosystem Interoperability",
+				formatA: "Tightly coupled to Emacs and specialist plugins",
+				formatB: "Universal cross-platform support",
+			},
+		],
+		verdict:
+			"Org Mode is the gold standard for power users seeking an extensible, all-in-one personal information manager inside Emacs. When sharing documentation with teams, publishing to documentation hubs, or migrating notes to tools like Obsidian, Notion, or GitHub, converting Org Mode files to GitHub Flavored Markdown provides perfect cross-platform compatibility.",
+		relatedTools: [
+			"document/org-to-markdown",
+			"document/bibtex-to-markdown",
+			"document/rtf-to-markdown",
+		],
+	},
 ];
 
 export function getComparison(slug: string): ComparisonMeta | undefined {

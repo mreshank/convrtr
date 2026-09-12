@@ -2271,7 +2271,12 @@
     - Tool 91: `document/bibtex-to-markdown` (BibTeX `.bib` academic bibliography citations to clean Markdown tables & reading lists)
     - Tool 92: `image/degas-to-png` (Atari ST DEGAS & DEGAS Elite `.pi1`–`.pi3`, `.pc1`–`.pc3` pictures to 32-bit RGBA PNG)
     - Tool 93: `audio/aud-to-wav` (Westwood Studios RTS Game Audio `.aud` Command & Conquer / Red Alert WS-ADPCM to linear PCM WAV)
-33. **Wave 33 (Active Research & Next Builds):**
+33. **Wave 33 (Shipped):**
+    - Tool 94: `audio/avr-to-wav` (Atari ST & Falcon030 Audio Visual Research `.avr` digital audio to 16-bit linear PCM WAV)
+    - Tool 95: `document/nfo-to-html` (IBM CP437 ASCII/ANSI demoscene release art `.nfo` & `.diz` to styled HTML & UTF-8 text)
+    - Tool 96: `image/chr-to-png` (NES / Famicom 2bpp planar character tile ROM `.chr` to 32-bit RGBA PNG sprite sheet)
+34. **Wave 34 (Active Research & Next Builds):**
     - Candidate 1: `audio/xm-to-wav` (FastTracker II `.xm` extended module tracker music to 16-bit stereo WAV)
-    - Candidate 2: `image/cgm-to-svg` (Computer Graphics Metafile `.cgm` ISO vector graphics to clean SVG)
-    - Candidate 3: `document/org-to-markdown` (Emacs Org Mode `.org` agenda and documentation to GitHub Flavored Markdown)
+    - Candidate 2: `document/org-to-markdown` (Emacs Org Mode `.org` agenda and documentation to GitHub Flavored Markdown)
+    - Candidate 3: `image/dcm-to-png` (DICOM `.dcm` medical diagnostic imaging to 32-bit PNG)
+

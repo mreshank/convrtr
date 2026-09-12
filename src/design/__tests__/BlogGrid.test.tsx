@@ -118,7 +118,9 @@ describe("BlogGrid", () => {
 		render(<BlogGrid posts={SAMPLE_POSTS} />);
 		// Click #mlw on first card
 		const mlwCardBtns = screen.getAllByRole("button", { name: "#mlw" });
-		fireEvent.click(mlwCardBtns[0]);
+		const firstMlwBtn = mlwCardBtns[0];
+		expect(firstMlwBtn).toBeDefined();
+		if (firstMlwBtn) fireEvent.click(firstMlwBtn);
 
 		// Posts 1 and 2 both have tag mlw
 		expect(screen.getByText("SHOWING 2 OF 3 ARTICLES")).toBeDefined();

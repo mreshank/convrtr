@@ -419,10 +419,7 @@ export function BlogGrid({ posts }: Props) {
 										textOverflow: "ellipsis",
 									}}
 								>
-									<span
-										className="meta"
-										style={{ color: "var(--ink-muted)" }}
-									>
+									<span className="meta" style={{ color: "var(--ink-muted)" }}>
 										TAGS
 									</span>
 									<span
@@ -438,7 +435,7 @@ export function BlogGrid({ posts }: Props) {
 										{selectedTags.length === 0
 											? "All tags"
 											: selectedTags.length === 1
-												? `#${selectedTags[0].toUpperCase()}`
+												? `#${selectedTags[0]?.toUpperCase()}`
 												: `${selectedTags.length} tags selected`}
 									</span>
 								</span>
@@ -646,9 +643,7 @@ export function BlogGrid({ posts }: Props) {
 															</span>
 															<span
 																style={{
-																	color: isSelected
-																		? "var(--ink)"
-																		: "inherit",
+																	color: isSelected ? "var(--ink)" : "inherit",
 																}}
 															>
 																#{tag.toUpperCase()}
@@ -735,10 +730,7 @@ export function BlogGrid({ posts }: Props) {
 								borderTop: "var(--rule-width) solid var(--rule)",
 							}}
 						>
-							<span
-								className="meta"
-								style={{ color: "var(--ink-muted)" }}
-							>
+							<span className="meta" style={{ color: "var(--ink-muted)" }}>
 								ACTIVE TAGS:
 							</span>
 							{selectedTags.map((tag) => (

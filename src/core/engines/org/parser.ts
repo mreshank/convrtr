@@ -14,7 +14,10 @@ function convertInlineOrgToMarkdown(text: string): string {
 	s = s.replace(/\[\[([^\]]+)\]\]/g, "[$1]($1)");
 
 	// Bold: *bold* -> **bold** (ensure it's word-bounded and not a list bullet)
-	s = s.replace(/(^|[^\w*])\*([^\s*](?:.*?[^\s*])?)\*([^\w*]|$)/g, "$1**$2**$3");
+	s = s.replace(
+		/(^|[^\w*])\*([^\s*](?:.*?[^\s*])?)\*([^\w*]|$)/g,
+		"$1**$2**$3",
+	);
 
 	// Italic: /italic/ -> *italic*
 	s = s.replace(/(^|[^\w/])\/([^\s/](?:.*?[^\s/])?)\/([^\w/]|$)/g, "$1*$2*$3");
@@ -26,10 +29,16 @@ function convertInlineOrgToMarkdown(text: string): string {
 	s = s.replace(/(^|[^\w=])=([^\s=](?:.*?[^\s=])?)=([^\w=]|$)/g, "$1`$2`$3");
 
 	// Strikethrough: +strike+ -> ~~strike~~
-	s = s.replace(/(^|[^\w+])\+([^\s+](?:.*?[^\s+])?)\+([^\w+]|$)/g, "$1~~$2~~$3");
+	s = s.replace(
+		/(^|[^\w+])\+([^\s+](?:.*?[^\s+])?)\+([^\w+]|$)/g,
+		"$1~~$2~~$3",
+	);
 
 	// Underline: _underline_ -> <u>underline</u>
-	s = s.replace(/(^|[^\w_])_([^\s_](?:.*?[^\s_])?)_([^\w_]|$)/g, "$1<u>$2</u>$3");
+	s = s.replace(
+		/(^|[^\w_])_([^\s_](?:.*?[^\s_])?)_([^\w_]|$)/g,
+		"$1<u>$2</u>$3",
+	);
 
 	return s;
 }
@@ -156,7 +165,9 @@ export function parseOrgToMarkdown(
 			let headingContent = headingMatch[2].trim();
 
 			// Detect TODO / DONE / WAITING states
-			const todoMatch = headingContent.match(/^(TODO|DONE|WAITING|CANCELLED)\s+(.+)$/);
+			const todoMatch = headingContent.match(
+				/^(TODO|DONE|WAITING|CANCELLED)\s+(.+)$/,
+			);
 			if (todoMatch?.[1] && todoMatch[2]) {
 				todoCount++;
 				const state = todoMatch[1];
@@ -176,7 +187,8 @@ export function parseOrgToMarkdown(
 		if (checkboxMatch?.[1] && checkboxMatch[2] && checkboxMatch[3]) {
 			todoCount++;
 			const prefix = checkboxMatch[1];
-			const box = checkboxMatch[2].toLowerCase() === "x" ? "x" : checkboxMatch[2];
+			const box =
+				checkboxMatch[2].toLowerCase() === "x" ? "x" : checkboxMatch[2];
 			const content = convertInlineOrgToMarkdown(checkboxMatch[3]);
 			outputLines.push(`${prefix}[${box}] ${content}`);
 			continue;
@@ -186,7 +198,8 @@ export function parseOrgToMarkdown(
 		if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
 			// Separator line: |---+---| or |---|
 			if (/^\|[-+]+(?:\|[-+]+)*\|$/.test(trimmed)) {
-				const colCount = trimmed.split("+").length || trimmed.split("|").length - 1;
+				const colCount =
+					trimmed.split("+").length || trimmed.split("|").length - 1;
 				const sepCells = new Array(Math.max(colCount, 1)).fill("---");
 				outputLines.push(`| ${sepCells.join(" | ")} |`);
 			} else {
@@ -211,7 +224,10 @@ export function parseOrgToMarkdown(
 	// Build final Markdown document
 	const finalParts: string[] = [];
 
-	if (options.includeFrontmatter !== false && (title || author || date || tags.length > 0)) {
+	if (
+		options.includeFrontmatter !== false &&
+		(title || author || date || tags.length > 0)
+	) {
 		finalParts.push("---");
 		if (title) finalParts.push(`title: "${title.replace(/"/g, '\\"')}"`);
 		if (author) finalParts.push(`author: "${author.replace(/"/g, '\\"')}"`);
@@ -239,6 +255,6 @@ export function parseOrgToMarkdown(
 
 	return {
 		metadata,
-		markdown: finalParts.join("\n").trim() + "\n",
+		markdown: `${finalParts.join("\n").trim()}\n`,
 	};
 }

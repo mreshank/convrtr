@@ -4,7 +4,9 @@ import { convertNfoToHtml, decodeCp437 } from "../parser";
 describe("nfo engine", () => {
 	it("decodes CP437 box-drawing and block characters into Unicode", () => {
 		// 0xDB = '█', 0xB0 = '░', 0xB1 = '▒', 0xB2 = '▓', 0xC4 = '─', 0xDA = '┌', 0xBF = '┐'
-		const bytes = new Uint8Array([0xda, 0xc4, 0xc4, 0xbf, 0x0a, 0xdb, 0xb0, 0xb1, 0xb2]);
+		const bytes = new Uint8Array([
+			0xda, 0xc4, 0xc4, 0xbf, 0x0a, 0xdb, 0xb0, 0xb1, 0xb2,
+		]);
 		const { text, boxCharCount } = decodeCp437(bytes);
 
 		expect(text).toBe("┌──┐\n█░▒▓");
@@ -19,17 +21,17 @@ describe("nfo engine", () => {
 		expect(result.metadata.lineCount).toBe(2);
 		expect(result.content).toContain("<!DOCTYPE html>");
 		expect(result.content).toContain("<pre>┌─┐\n└─┘</pre>");
-		expect(result.content).toContain("--bg: #0d1117");
+		expect(result.content).toContain("background: #0d1117");
 	});
 
 	it("supports matrix green and amber phosphor themes", () => {
 		const bytes = new Uint8Array([0x48, 0x65, 0x6c, 0x6c, 0x6f]); // "Hello"
 
 		const matrixResult = convertNfoToHtml(bytes, { theme: "matrix" });
-		expect(matrixResult.content).toContain("--fg: #00ff66");
+		expect(matrixResult.content).toContain("color: #00ff66");
 
 		const amberResult = convertNfoToHtml(bytes, { theme: "amber" });
-		expect(amberResult.content).toContain("--fg: #ffb000");
+		expect(amberResult.content).toContain("color: #ffb000");
 	});
 
 	it("outputs pure UTF-8 text when format is txt", () => {

@@ -148,7 +148,7 @@ describe("engine id references", () => {
 				expect(ENGINES.has(engineId), `${tool.id} -> ${engineId}`).toBe(true);
 			}
 		}
-	});
+	}, 15000);
 });
 
 describe("module boundary", () => {

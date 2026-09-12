@@ -45,7 +45,9 @@ describe("Emacs Org to Markdown Engine", () => {
 		expect(result.metadata.author).toBe("Dr. Elena Vance");
 		expect(result.metadata.date).toBe("2026-09-11");
 		expect(result.metadata.tags).toContain("quantum");
-		expect(result.markdown).toContain('title: "Research Notes on Quantum Algorithms"');
+		expect(result.markdown).toContain(
+			'title: "Research Notes on Quantum Algorithms"',
+		);
 	});
 
 	it("converts headings and TODO states into Markdown task checkboxes", () => {
@@ -68,8 +70,12 @@ describe("Emacs Org to Markdown Engine", () => {
 	it("converts #+BEGIN_SRC code blocks and #+BEGIN_QUOTE", () => {
 		const result = parseOrgToMarkdown(SAMPLE_ORG);
 
-		expect(result.markdown).toContain("```python\ndef quantum_teleportation():");
-		expect(result.markdown).toContain("> The future of computing is fundamentally non-classical.");
+		expect(result.markdown).toContain(
+			"```python\ndef quantum_teleportation():",
+		);
+		expect(result.markdown).toContain(
+			"> The future of computing is fundamentally non-classical.",
+		);
 	});
 
 	it("converts inline formatting and Org links", () => {
@@ -77,7 +83,9 @@ describe("Emacs Org to Markdown Engine", () => {
 
 		expect(result.markdown).toContain("**quantum computing**");
 		expect(result.markdown).toContain("*error correction*");
-		expect(result.markdown).toContain("[Quantum Lib](https://github.com/example/quantum)");
+		expect(result.markdown).toContain(
+			"[Quantum Lib](https://github.com/example/quantum)",
+		);
 	});
 
 	it("strips property drawers cleanly", () => {
@@ -89,7 +97,8 @@ describe("Emacs Org to Markdown Engine", () => {
 
 	it("runs through engine execution runner with progress", async () => {
 		const phases: string[] = [];
-		const inputBuffer = new TextEncoder().encode(SAMPLE_ORG).buffer as ArrayBuffer;
+		const inputBuffer = new TextEncoder().encode(SAMPLE_ORG)
+			.buffer as ArrayBuffer;
 
 		const outBuffer = await orgToMarkdownEngine.run(
 			inputBuffer,

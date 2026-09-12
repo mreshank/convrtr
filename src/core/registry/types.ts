@@ -17,7 +17,18 @@ export const QUALITY_PRESETS = [
 	"target-size",
 	"custom",
 ] as const;
-export type QualityPreset = (typeof QUALITY_PRESETS)[number];
+/**
+ * A quality preset id, as declared by a tool's `quality.presets` list.
+ *
+ * Tools commonly reuse the well-known vocabulary above (`"lossless"`,
+ * `"balanced"`, ...) so the UI's global PRESET dropdown and the fidelity
+ * labels can speak a shared language, but nothing requires them to -- CHR and
+ * DICOM converters declare presets like `"standard"` and `"bone-window"` that
+ * mean something only in their own context. The id has to be an open string,
+ * not a closed union, or every such tool would leak its private preset names
+ * into the global vocabulary (and into every other tool's dropdown).
+ */
+export type QualityPreset = string;
 
 export const AdvancedParamSchema = z.discriminatedUnion("control", [
 	z.object({
@@ -141,10 +152,10 @@ export const ToolSchema = z.object({
 	combinesInputs: z.boolean().optional(),
 	quality: z.object({
 		losslessAvailable: z.boolean(),
-		defaultPreset: z.enum(QUALITY_PRESETS),
+		defaultPreset: z.string(),
 		presets: z.array(
 			z.object({
-				id: z.enum(QUALITY_PRESETS),
+				id: z.string(),
 				label: z.string(),
 				explanation: z.string(),
 				params: z.record(

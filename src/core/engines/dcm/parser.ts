@@ -50,7 +50,9 @@ export function convertDcmToPng(
 		if (firstGroup === 0x0002 || firstGroup === 0x0008) {
 			offset = 0;
 		} else {
-			throw new Error("Invalid DICOM file: Missing 'DICM' magic marker at offset 128.");
+			throw new Error(
+				"Invalid DICOM file: Missing 'DICM' magic marker at offset 128.",
+			);
 		}
 	}
 
@@ -82,8 +84,7 @@ export function convertDcmToPng(
 		// Detect Explicit VR vs Implicit VR
 		const char0 = bytes[offset] ?? 0;
 		const char1 = bytes[offset + 1] ?? 0;
-		const isExplicit =
-			char0 >= 65 && char0 <= 90 && char1 >= 65 && char1 <= 90;
+		const isExplicit = char0 >= 65 && char0 <= 90 && char1 >= 65 && char1 <= 90;
 
 		let length = 0;
 		let vr = "";
@@ -125,7 +126,10 @@ export function convertDcmToPng(
 				offset += 2;
 			}
 			if (group === 0x7fe0 && element === 0x0010) {
-				pixelDataBytes = bytes.subarray(startData, Math.min(offset, bytes.length));
+				pixelDataBytes = bytes.subarray(
+					startData,
+					Math.min(offset, bytes.length),
+				);
 			}
 			continue;
 		}
@@ -148,19 +152,55 @@ export function convertDcmToPng(
 		} else if (group === 0x0010 && element === 0x0020) {
 			patientId = parseStringValue(valBytes);
 		} else if (group === 0x0028 && element === 0x0002) {
-			samplesPerPixel = valBytes.length >= 2 ? new DataView(valBytes.buffer, valBytes.byteOffset).getUint16(0, true) : 1;
+			samplesPerPixel =
+				valBytes.length >= 2
+					? new DataView(valBytes.buffer, valBytes.byteOffset).getUint16(
+							0,
+							true,
+						)
+					: 1;
 		} else if (group === 0x0028 && element === 0x0004) {
 			photometricInterpretation = parseStringValue(valBytes).toUpperCase();
 		} else if (group === 0x0028 && element === 0x0010) {
-			rows = valBytes.length >= 2 ? new DataView(valBytes.buffer, valBytes.byteOffset).getUint16(0, true) : 0;
+			rows =
+				valBytes.length >= 2
+					? new DataView(valBytes.buffer, valBytes.byteOffset).getUint16(
+							0,
+							true,
+						)
+					: 0;
 		} else if (group === 0x0028 && element === 0x0011) {
-			columns = valBytes.length >= 2 ? new DataView(valBytes.buffer, valBytes.byteOffset).getUint16(0, true) : 0;
+			columns =
+				valBytes.length >= 2
+					? new DataView(valBytes.buffer, valBytes.byteOffset).getUint16(
+							0,
+							true,
+						)
+					: 0;
 		} else if (group === 0x0028 && element === 0x0100) {
-			bitsAllocated = valBytes.length >= 2 ? new DataView(valBytes.buffer, valBytes.byteOffset).getUint16(0, true) : 16;
+			bitsAllocated =
+				valBytes.length >= 2
+					? new DataView(valBytes.buffer, valBytes.byteOffset).getUint16(
+							0,
+							true,
+						)
+					: 16;
 		} else if (group === 0x0028 && element === 0x0101) {
-			bitsStored = valBytes.length >= 2 ? new DataView(valBytes.buffer, valBytes.byteOffset).getUint16(0, true) : bitsAllocated;
+			bitsStored =
+				valBytes.length >= 2
+					? new DataView(valBytes.buffer, valBytes.byteOffset).getUint16(
+							0,
+							true,
+						)
+					: bitsAllocated;
 		} else if (group === 0x0028 && element === 0x0103) {
-			pixelRepresentation = valBytes.length >= 2 ? new DataView(valBytes.buffer, valBytes.byteOffset).getUint16(0, true) : 0;
+			pixelRepresentation =
+				valBytes.length >= 2
+					? new DataView(valBytes.buffer, valBytes.byteOffset).getUint16(
+							0,
+							true,
+						)
+					: 0;
 		} else if (group === 0x0028 && element === 0x1050) {
 			const str = parseStringValue(valBytes).split("\\")[0];
 			const parsed = Number.parseFloat(str || "");
@@ -181,12 +221,17 @@ export function convertDcmToPng(
 	}
 
 	if (!pixelDataBytes || pixelDataBytes.length === 0) {
-		throw new Error("Invalid DICOM file: No Pixel Data (7FE0,0010) element found.");
+		throw new Error(
+			"Invalid DICOM file: No Pixel Data (7FE0,0010) element found.",
+		);
 	}
 
 	if (rows <= 0 || columns <= 0) {
 		// Fallback: estimate square dimensions from pixel buffer size
-		const pixelCount = bitsAllocated === 8 ? pixelDataBytes.length : Math.floor(pixelDataBytes.length / 2);
+		const pixelCount =
+			bitsAllocated === 8
+				? pixelDataBytes.length
+				: Math.floor(pixelDataBytes.length / 2);
 		const dim = Math.floor(Math.sqrt(pixelCount / (samplesPerPixel || 1)));
 		rows = dim || 256;
 		columns = dim || 256;
@@ -198,8 +243,14 @@ export function convertDcmToPng(
 	const rgbaBuffer = new Uint8Array(totalPixels * 4);
 
 	// Determine Window Center and Window Width
-	let wc = options.windowCenter !== undefined ? Number(options.windowCenter) : windowCenter;
-	let ww = options.windowWidth !== undefined ? Number(options.windowWidth) : windowWidth;
+	let wc =
+		options.windowCenter !== undefined
+			? Number(options.windowCenter)
+			: windowCenter;
+	let ww =
+		options.windowWidth !== undefined
+			? Number(options.windowWidth)
+			: windowWidth;
 	const isSigned = pixelRepresentation === 1;
 
 	// If no window parameters exist, scan pixel min/max for auto-contrast
@@ -208,10 +259,19 @@ export function convertDcmToPng(
 		let maxVal = -Infinity;
 
 		if (bitsAllocated === 16) {
-			const pv = new DataView(pixelDataBytes.buffer, pixelDataBytes.byteOffset, pixelDataBytes.byteLength);
-			const count = Math.min(totalPixels, Math.floor(pixelDataBytes.length / 2));
+			const pv = new DataView(
+				pixelDataBytes.buffer,
+				pixelDataBytes.byteOffset,
+				pixelDataBytes.byteLength,
+			);
+			const count = Math.min(
+				totalPixels,
+				Math.floor(pixelDataBytes.length / 2),
+			);
 			for (let i = 0; i < count; i++) {
-				const raw = isSigned ? pv.getInt16(i * 2, true) : pv.getUint16(i * 2, true);
+				const raw = isSigned
+					? pv.getInt16(i * 2, true)
+					: pv.getUint16(i * 2, true);
 				const hu = raw * rescaleSlope + rescaleIntercept;
 				if (hu < minVal) minVal = hu;
 				if (hu > maxVal) maxVal = hu;
@@ -255,11 +315,20 @@ export function convertDcmToPng(
 		}
 	} else if (bitsAllocated === 16) {
 		// 16-bit Grayscale (CT / MRI / X-ray)
-		const pv = new DataView(pixelDataBytes.buffer, pixelDataBytes.byteOffset, pixelDataBytes.byteLength);
-		const maxCount = Math.min(totalPixels, Math.floor(pixelDataBytes.length / 2));
+		const pv = new DataView(
+			pixelDataBytes.buffer,
+			pixelDataBytes.byteOffset,
+			pixelDataBytes.byteLength,
+		);
+		const maxCount = Math.min(
+			totalPixels,
+			Math.floor(pixelDataBytes.length / 2),
+		);
 
 		for (let i = 0; i < maxCount; i++) {
-			const raw = isSigned ? pv.getInt16(i * 2, true) : pv.getUint16(i * 2, true);
+			const raw = isSigned
+				? pv.getInt16(i * 2, true)
+				: pv.getUint16(i * 2, true);
 			const hu = raw * rescaleSlope + rescaleIntercept;
 
 			let norm = 0;

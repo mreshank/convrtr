@@ -29,10 +29,10 @@ Unlike raw headerless sample dumps, AVR files begin with a fixed 128-byte metada
 
 A unique aspect of vintage digital audio formats is signedness flexibility:
 - **8-bit Unsigned**: Bytes range from `0` to `255`, where `128` represents digital zero. To convert to standard 16-bit signed PCM:
-  $$\text{Sample}_{16} = (\text{Byte} - 128) \times 256$$
+  `Sample16 = (Byte - 128) * 256`
 - **8-bit Signed**: Bytes range from `-128` to `+127`, where `0` is digital zero:
-  $$\text{Sample}_{16} = \text{Byte} \times 256$$
-- **16-bit Big-Endian**: Read as 16-bit big-endian integers, clamped to the $[-32768, 32767]$ range, and written as little-endian words into the target RIFF WAV container.
+  `Sample16 = Byte * 256`
+- **16-bit Big-Endian**: Read as 16-bit big-endian integers, clamped to the `[-32768, 32767]` range, and written as little-endian words into the target RIFF WAV container.
 
 ## Decoding AVR in Modern Browsers
 

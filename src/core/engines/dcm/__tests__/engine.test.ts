@@ -23,7 +23,12 @@ function createMockDicomFile(options: {
 	// 'DICM'
 	buffer.push(0x44, 0x49, 0x43, 0x4d);
 
-	function writeElement(group: number, element: number, vr: string, data: Uint8Array) {
+	function writeElement(
+		group: number,
+		element: number,
+		vr: string,
+		data: Uint8Array,
+	) {
 		// Group (2 bytes LE)
 		buffer.push(group & 0xff, (group >> 8) & 0xff);
 		// Element (2 bytes LE)
@@ -35,7 +40,12 @@ function createMockDicomFile(options: {
 		if (isLong) {
 			buffer.push(0, 0); // reserved
 			const len = data.length;
-			buffer.push(len & 0xff, (len >> 8) & 0xff, (len >> 16) & 0xff, (len >> 24) & 0xff);
+			buffer.push(
+				len & 0xff,
+				(len >> 8) & 0xff,
+				(len >> 16) & 0xff,
+				(len >> 24) & 0xff,
+			);
 		} else {
 			const len = data.length;
 			buffer.push(len & 0xff, (len >> 8) & 0xff);

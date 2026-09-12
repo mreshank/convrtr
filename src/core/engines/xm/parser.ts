@@ -64,7 +64,7 @@ export function convertXmToWav(
 		patternOrder.push(bytes[80 + i] ?? 0);
 	}
 
-	const header: XmHeader = {
+	const _header: XmHeader = {
 		title,
 		trackerName,
 		version,
@@ -99,7 +99,13 @@ export function convertXmToWav(
 			for (let r = 0; r < numRows; r++) {
 				const rowNotes: XmNote[] = [];
 				for (let c = 0; c < channels; c++) {
-					rowNotes.push({ note: 0, instrument: 0, volume: 0, effectType: 0, effectParam: 0 });
+					rowNotes.push({
+						note: 0,
+						instrument: 0,
+						volume: 0,
+						effectType: 0,
+						effectParam: 0,
+					});
 				}
 				rows.push(rowNotes);
 			}
@@ -111,7 +117,13 @@ export function convertXmToWav(
 
 				for (let c = 0; c < channels; c++) {
 					if (pos >= endPacked) {
-						rowNotes.push({ note: 0, instrument: 0, volume: 0, effectType: 0, effectParam: 0 });
+						rowNotes.push({
+							note: 0,
+							instrument: 0,
+							volume: 0,
+							effectType: 0,
+							effectParam: 0,
+						});
 						continue;
 					}
 
@@ -160,7 +172,11 @@ export function convertXmToWav(
 		const numSamples = view.getUint16(pos + 27, true);
 
 		if (numSamples === 0) {
-			instruments.push({ name: instName, samples: [], sampleMapping: new Array(96).fill(0) });
+			instruments.push({
+				name: instName,
+				samples: [],
+				sampleMapping: new Array(96).fill(0),
+			});
 			pos += instHeaderSize;
 			continue;
 		}
@@ -269,9 +285,15 @@ export function convertXmToWav(
 	onProgress?.(0.55, "SYNTHESIZING_AUDIO");
 
 	const sampleRate = Number(options.sampleRate) || 44100;
-	const maxDurationSeconds = Math.max(5, Math.min(600, Number(options.maxDurationSeconds) || 180));
+	const maxDurationSeconds = Math.max(
+		5,
+		Math.min(600, Number(options.maxDurationSeconds) || 180),
+	);
 	const maxSamples = sampleRate * maxDurationSeconds;
-	const stereoSep = typeof options.stereoSeparation === "number" ? options.stereoSeparation : 0.7;
+	const stereoSep =
+		typeof options.stereoSeparation === "number"
+			? options.stereoSeparation
+			: 0.7;
 
 	// Mixer state per channel
 	interface ChannelState {
@@ -286,7 +308,10 @@ export function convertXmToWav(
 	const channelStates: ChannelState[] = [];
 	for (let c = 0; c < channels; c++) {
 		// Alternate stereo panning based on channel index
-		const panVal = c % 2 === 0 ? Math.round(128 - 120 * stereoSep) : Math.round(128 + 120 * stereoSep);
+		const panVal =
+			c % 2 === 0
+				? Math.round(128 - 120 * stereoSep)
+				: Math.round(128 + 120 * stereoSep);
 		channelStates.push({
 			samplePos: 0,
 			step: 0,
@@ -305,7 +330,8 @@ export function convertXmToWav(
 	function calculateStep(note: number, sample: XmSample): number {
 		const realNote = note + sample.relativeNote;
 		// FastTracker II linear frequency formula
-		const period = 10 * 12 * 16 * 4 - realNote * 16 * 4 - Math.round(sample.finetune / 2);
+		const period =
+			10 * 12 * 16 * 4 - realNote * 16 * 4 - Math.round(sample.finetune / 2);
 		const freq = 8363 * 2 ** ((6 * 12 * 16 * 4 - period) / (12 * 16 * 4));
 		return freq / sampleRate;
 	}
@@ -330,7 +356,8 @@ export function convertXmToWav(
 				if (cell.instrument > 0) {
 					const inst = instruments[cell.instrument - 1];
 					if (inst && inst.samples.length > 0) {
-						const sampleIdx = inst.sampleMapping[cell.note > 0 ? cell.note - 1 : 0] ?? 0;
+						const sampleIdx =
+							inst.sampleMapping[cell.note > 0 ? cell.note - 1 : 0] ?? 0;
 						ch.currentSample = inst.samples[sampleIdx] ?? inst.samples[0];
 						if (ch.currentSample) {
 							ch.volume = ch.currentSample.volume;
@@ -382,7 +409,9 @@ export function convertXmToWav(
 					if (idx >= smp.length) {
 						// Loop handling
 						if ((smp.type & 0x03) !== 0 && smp.loopLength > 2) {
-							ch.samplePos = smp.loopStart + ((ch.samplePos - smp.loopStart) % smp.loopLength);
+							ch.samplePos =
+								smp.loopStart +
+								((ch.samplePos - smp.loopStart) % smp.loopLength);
 						} else {
 							continue;
 						}
@@ -457,7 +486,8 @@ export function convertXmToWav(
 		outPos += 4;
 	}
 
-	const durationSeconds = sampleRate > 0 ? Math.round((sampleCount / sampleRate) * 10) / 10 : 0;
+	const durationSeconds =
+		sampleRate > 0 ? Math.round((sampleCount / sampleRate) * 10) / 10 : 0;
 
 	const metadata: XmMetadata = {
 		title,

@@ -31,6 +31,9 @@ const POST_SLUGS = [
 	"converting-bibtex-to-markdown-tables",
 	"converting-atari-st-degas-to-png",
 	"converting-westwood-aud-audio-to-wav",
+	"converting-atari-st-avr-audio-to-wav",
+	"converting-cp437-nfo-scene-art-to-html",
+	"converting-nes-chr-tile-rom-to-png",
 ];
 
 describe("blog registry conformance", () => {

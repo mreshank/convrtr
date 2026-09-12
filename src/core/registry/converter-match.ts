@@ -264,6 +264,15 @@ const MIME_MAP: Record<string, string> = {
 	"text/x-nfo": "nfo",
 	"application/x-nfo": "nfo",
 	"application/x-nes-rom": "chr",
+	"text/org": "org",
+	"text/x-org": "org",
+	"application/x-org": "org",
+	"application/dicom": "dcm",
+	"application/x-dicom": "dcm",
+	"image/dicom": "dcm",
+	"audio/xm": "xm",
+	"audio/x-xm": "xm",
+	"application/x-xm": "xm",
 };
 
 /**

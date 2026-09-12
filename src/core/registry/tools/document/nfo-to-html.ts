@@ -63,7 +63,8 @@ export const nfoToHtml: Tool = {
 		],
 	},
 	seo: {
-		title: "NFO to HTML — View & Convert CP437 ASCII Art (.nfo, .diz) | convrtr",
+		title:
+			"NFO to HTML — View & Convert CP437 ASCII Art (.nfo, .diz) | convrtr",
 		h1: "Convert & View NFO (.nfo, .diz) Scene Art in HTML",
 		intent:
 			"Convert and view vintage IBM CP437 ASCII and ANSI .nfo scene artwork and FILE_ID.DIZ descriptions in responsive, styled HTML or clean UTF-8 text directly in your browser. 100% private in-browser decoder.",

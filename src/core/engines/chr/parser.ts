@@ -61,7 +61,7 @@ export function convertChrToPng(
 	const targetHeight = baseHeight * safeScale;
 
 	const paletteKey = options.palette ?? "grayscale";
-	const palette = PALETTES[paletteKey] ?? PALETTES.grayscale;
+	const palette = PALETTES[paletteKey] ?? PALETTES.grayscale ?? [];
 
 	onProgress?.(0.2, "DECODE_TILES");
 	const rgbaBuffer = new Uint8Array(targetWidth * targetHeight * 4);
@@ -82,8 +82,9 @@ export function convertChrToPng(
 				const bit1 = (plane1 >> shift) & 1;
 				const colorIndex = (bit1 << 1) | bit0;
 
-				const [r = 0, g = 0, b = 0, a = 255] =
-					palette[colorIndex] ?? [0, 0, 0, 255];
+				const [r = 0, g = 0, b = 0, a = 255] = palette[colorIndex] ?? [
+					0, 0, 0, 255,
+				];
 
 				const pixelX = tileX + col;
 				const pixelY = tileY + row;

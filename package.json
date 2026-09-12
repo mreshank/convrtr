@@ -4,7 +4,7 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"dev": "next dev",
+		"dev": "next dev -p 3964",
 		"build": "node scripts/copy-ffmpeg-core.mjs && next build --webpack && node scripts/copy-flac-wasm.mjs && node scripts/generate-sw.mjs",
 		"test": "vitest run",
 		"lint": "biome check .",

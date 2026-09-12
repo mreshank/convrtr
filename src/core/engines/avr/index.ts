@@ -22,8 +22,7 @@ export const avrToWavEngine: Engine = {
 		params: Record<string, ParamValue>,
 		onProgress: (ratio: number, phase: string) => void,
 	) {
-		const normalize =
-			params.normalize === true || params.normalize === "true";
+		const normalize = params.normalize === true || params.normalize === "true";
 		const options: AvrToWavOptions = { normalize };
 		const result = convertAvrToWav(input, options, onProgress);
 		return result.wavBytes.slice().buffer as ArrayBuffer;

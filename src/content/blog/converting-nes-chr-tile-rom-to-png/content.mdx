@@ -13,21 +13,21 @@ To maximize memory efficiency, the NES PPU stores tiles in a **planar format** r
 - **Bytes 0 to 7** represent **Bitplane 0** (one byte per scanline row from top to bottom).
 - **Bytes 8 to 15** represent **Bitplane 1** (one byte per scanline row from top to bottom).
 
-To determine the color of a pixel at row $y$ and column $x$ ($0 \le x, y < 8$):
-1. Extract bit $7 - x$ from Bitplane 0 row byte:
-   $$\text{bit}_0 = (\text{Plane}_0[y] \gg (7 - x)) \ \& \ 1$$
-2. Extract bit $7 - x$ from Bitplane 1 row byte:
-   $$\text{bit}_1 = (\text{Plane}_1[y] \gg (7 - x)) \ \& \ 1$$
-3. Combine both bits into a 2-bit color index ($0, 1, 2, \text{ or } 3$):
-   $$\text{Index} = (\text{bit}_1 \ll 1) \mid \text{bit}_0$$
+To determine the color of a pixel at row `y` and column `x` (`0 <= x, y < 8`):
+1. Extract bit `7 - x` from Bitplane 0 row byte:
+   `bit0 = (plane0[y] >> (7 - x)) & 1`
+2. Extract bit `7 - x` from Bitplane 1 row byte:
+   `bit1 = (plane1[y] >> (7 - x)) & 1`
+3. Combine both bits into a 2-bit color index (0, 1, 2, or 3):
+   `colorIndex = (bit1 << 1) | bit0`
 
 ## Pattern Table Layout and Sizing
 
 Standard NES game cartridges allocate an **8KB CHR bank** (8,192 bytes):
-- $8,192 \text{ bytes} \div 16 \text{ bytes/tile} = 512 \text{ tiles}$.
+- `8,192 bytes / 16 bytes per tile = 512 tiles`.
 - The PPU divides this into two 4KB pattern tables:
-  - Pattern Table 0: Background tiles ($256$ tiles, $128 \times 128$ px).
-  - Pattern Table 1: Sprite tiles ($256$ tiles, $128 \times 128$ px).
+  - Pattern Table 0: Background tiles (256 tiles, 128x128 px).
+  - Pattern Table 1: Sprite tiles (256 tiles, 128x128 px).
 - Arranged in standard 16-tile rows, an 8KB file formats cleanly into a **128 × 256 pixel sprite sheet**.
 
 ## Converting CHR to Modern PNG

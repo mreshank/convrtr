@@ -59,7 +59,9 @@ function createMockXmFile(): Uint8Array {
 	// Cell 0: note 49 (C-4), instrument 1
 	// 0x83 = note present (0x01) + instrument present (0x02)
 	const patternBytes = [
-		0x83, 49, 1, // Channel 0, Row 0: Note 49, Inst 1
+		0x83,
+		49,
+		1, // Channel 0, Row 0: Note 49, Inst 1
 		0x80, // Channel 1, Row 0: Empty
 		0x80, // Channel 0, Row 1: Empty
 		0x80, // Channel 1, Row 1: Empty
