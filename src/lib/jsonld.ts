@@ -708,11 +708,6 @@ export function buildBlogPostingJsonLd(post: BlogPostMeta, url: string) {
 
 	return {
 		"@context": "https://schema.org",
-		"@type": "BlogPosting",
-		headline: post.title,
-		description: post.description,
-		datePublished: post.publishedAt,
-		url,
 		"@graph": [
 			{
 				"@type": "BlogPosting",

@@ -18,6 +18,10 @@ export function generateMetadata(): Metadata {
 			description,
 			url: `${SITE}/history`,
 		},
+		robots: {
+			index: false,
+			follow: false,
+		},
 	};
 }
 
