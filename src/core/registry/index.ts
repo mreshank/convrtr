@@ -22,6 +22,7 @@ import { removeTagsFlac } from "./tools/audio/remove-tags-flac";
 import { removeTagsMp3 } from "./tools/audio/remove-tags-mp3";
 import { rpgmvmToM4a } from "./tools/audio/rpgmvm-to-m4a";
 import { rpgmvoToOgg } from "./tools/audio/rpgmvo-to-ogg";
+import { s3mToWav } from "./tools/audio/s3m-to-wav";
 import { sf2ToWav } from "./tools/audio/sf2-to-wav";
 import { silkToWav } from "./tools/audio/silk-to-wav";
 import { trimFlac } from "./tools/audio/trim-flac";
@@ -48,6 +49,7 @@ import { cbzToPdf } from "./tools/document/cbz-to-pdf";
 import { chmToZip } from "./tools/document/chm-to-zip";
 import { cueToJson } from "./tools/document/cue-to-json";
 import { dxfToSvg } from "./tools/document/dxf-to-svg";
+import { enexToMarkdown } from "./tools/document/enex-to-markdown";
 import { epubToMarkdown } from "./tools/document/epub-to-markdown";
 import { fitToCsv } from "./tools/document/fit-to-csv";
 import { gedcomToCsv } from "./tools/document/gedcom-to-csv";
@@ -86,6 +88,7 @@ import { abrToPng } from "./tools/image/abr-to-png";
 import { aniToPng } from "./tools/image/ani-to-png";
 import { asepriteToPng } from "./tools/image/aseprite-to-png";
 import { cdrToPng } from "./tools/image/cdr-to-png";
+import { cgmToSvg } from "./tools/image/cgm-to-svg";
 import { chrToPng } from "./tools/image/chr-to-png";
 import { clipToPng } from "./tools/image/clip-to-png";
 import { curToPng } from "./tools/image/cur-to-png";
@@ -315,6 +318,9 @@ export const TOOLS: Tool[] = [
 	orgToMarkdown,
 	dcmToPng,
 	xmToWav,
+	cgmToSvg,
+	s3mToWav,
+	enexToMarkdown,
 ];
 
 export function getTool(id: string): Tool | undefined {

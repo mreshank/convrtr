@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { RelatedReading } from "@/components/content/RelatedReading";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { BLOG_POSTS, getPost } from "@/content/blog/registry";
 import type { BlogPostMeta } from "@/content/blog/types";
 import { ArticlePage } from "@/design/templates";
@@ -72,14 +73,8 @@ export default async function BlogPostPage({
 
 	return (
 		<>
-			<script
-				type="application/ld+json"
-				// biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD requires raw script injection
-				dangerouslySetInnerHTML={{
-					__html: JSON.stringify(
-						buildBlogPostingJsonLd(post, `${SITE}/blog/${post.slug}`),
-					),
-				}}
+			<JsonLd
+				schema={buildBlogPostingJsonLd(post, `${SITE}/blog/${post.slug}`)}
 			/>
 			<ArticlePage
 				title={post.title}

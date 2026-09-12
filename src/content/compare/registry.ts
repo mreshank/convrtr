@@ -1777,6 +1777,179 @@ export const COMPARISONS: ComparisonMeta[] = [
 			"document/rtf-to-markdown",
 		],
 	},
+	{
+		slug: "cgm-vs-svg",
+		title: "CGM vs SVG: Computer Graphics Metafile vs Scalable Vector Graphics",
+		description:
+			"Compare ISO/IEC 8632 Computer Graphics Metafile (.cgm) technical illustrations with W3C Scalable Vector Graphics (.svg). Explore aerospace standards, CAD schematics, and modern browser rendering.",
+		formatA: "CGM",
+		formatB: "SVG",
+		category: "image",
+		summary:
+			"Computer Graphics Metafile (CGM) is an international ISO/IEC standard 2D vector and bitmap format widely deployed across aerospace (ATA Spec 2100), defense, automotive, and petroleum engineering documentation. Scalable Vector Graphics (SVG) is the open XML-based W3C standard for interactive vector graphics natively rendered by every modern web browser, graphic design application, and digital publishing platform.",
+		prosA: [
+			"Strict compliance with aerospace and military technical documentation standards (ATA e-Business, WebCGM, S1000D)",
+			"Supports both binary-encoded compact files and human-readable clear-text directives",
+			"Embedded hotspot metadata and interactive electrical schematic hyperlinking",
+			"Standard legacy interchange container for enterprise CAD systems and technical publishing suites",
+		],
+		prosB: [
+			"Universal native rendering across all modern web browsers, smartphones, and desktop operating systems",
+			"Easily styled with CSS and manipulated dynamically via JavaScript and the HTML5 DOM",
+			"Native import and export in all modern design tools (Figma, Adobe Illustrator, Inkscape)",
+			"Open XML text format compatible with standard version control (Git), search indexing, and web workflows",
+		],
+		specs: [
+			{
+				feature: "Standardization Body",
+				formatA: "ISO/IEC 8632 / ANSI (1987)",
+				formatB: "World Wide Web Consortium (W3C)",
+			},
+			{
+				feature: "Primary Industries",
+				formatA: "Aerospace, defense, CAD schematics, oil & gas",
+				formatB: "Web development, UI design, digital vector art",
+			},
+			{
+				feature: "Encoding Variants",
+				formatA: "Binary, Clear-Text, and Character-Encoded",
+				formatB: "Standard UTF-8 XML text (or SVGZ gzip)",
+			},
+			{
+				feature: "Web Browser Support",
+				formatA: "Requires dedicated plugins or conversion",
+				formatB: "Universal native support (HTML5 <svg> tag)",
+			},
+			{
+				feature: "Styling & Scripting",
+				formatA: "Static parameter attributes",
+				formatB: "Full CSS styling and DOM JavaScript manipulation",
+			},
+		],
+		verdict:
+			"CGM remains a critical archival format for aerospace engineers, airlines, and defense contractors referencing legacy maintenance manuals and technical blueprints. When modernizing documentation for the web, integrating drawings into digital workflows, or collaborating with teams who lack specialized CGM viewers, converting CGM files to standard SVG delivers pixel-perfect vector fidelity and universal browser accessibility.",
+		relatedTools: [
+			"image/cgm-to-svg",
+			"document/dxf-to-svg",
+			"image/wmf-to-svg",
+		],
+	},
+	{
+		slug: "s3m-vs-wav",
+		title: "S3M vs WAV: Scream Tracker 3 Module Music vs Standard Linear PCM",
+		description:
+			"A technical comparison between Future Crew's Scream Tracker 3 (.s3m) tracker modules and standard RIFF WAV. Understand multichannel sample synthesis, pattern commands, and modern playback.",
+		formatA: "S3M",
+		formatB: "WAV",
+		category: "audio",
+		summary:
+			"Scream Tracker 3 (S3M) is a multi-channel digital music module format created in 1994 by Future Crew for MS-DOS. WAV is Microsoft and IBM's standard RIFF container storing uncompressed linear pulse-code modulation (PCM) audio universally supported by every operating system and digital audio workstation.",
+		prosA: [
+			"Extremely compact file size (typically under 500 KB for an entire multi-minute composition)",
+			"Contains raw note patterns, instrument samples, and tempo automation for study and remixing",
+			"Historical authenticity for 1990s PC DOS demoscene and video game soundtracks",
+			"Independent 16-channel digital mixing and stereo panning",
+		],
+		prosB: [
+			"Universal compatibility across all operating systems, media players, and DAWs",
+			"Zero CPU synthesis overhead or special tracker player requirements",
+			"Lossless 16-bit linear PCM fidelity preserving exact audio rendering",
+			"Standard master format for audio production, sampling, and streaming distribution",
+		],
+		specs: [
+			{
+				feature: "Audio Architecture",
+				formatA: "Channel patterns with sample synthesis",
+				formatB: "Uncompressed linear PCM stream",
+			},
+			{
+				feature: "Player Requirements",
+				formatA: "Requires tracker engine / emulator",
+				formatB: "Native hardware playback",
+			},
+			{
+				feature: "Typical Size",
+				formatA: "100 KB - 1 MB",
+				formatB: "10 MB per minute (CD quality)",
+			},
+			{
+				feature: "Channel Mixing",
+				formatA: "Real-time 16-channel software mixing",
+				formatB: "Pre-rendered stereo / multi-channel",
+			},
+			{
+				feature: "Portability",
+				formatA: "Specialist music tracking communities",
+				formatB: "Universal standard",
+			},
+		],
+		verdict:
+			"S3M is a milestone in digital audio history, encapsulating iconic video game and demoparty music from the 1990s in a few hundred kilobytes. When sharing tracker music, creating samples for modern DAWs, or archiving vintage compositions for playback on modern phones and web browsers, converting S3M modules into 16-bit linear stereo WAV delivers authentic audio reproduction without requiring legacy software.",
+		relatedTools: [
+			"audio/s3m-to-wav",
+			"audio/xm-to-wav",
+			"audio/mod-to-wav",
+			"audio/wav-to-mp3",
+		],
+	},
+	{
+		slug: "enex-vs-markdown",
+		title: "Evernote ENEX vs Markdown: Proprietary XML vs Universal Plain Text",
+		description:
+			"Compare Evernote XML Export (.enex) notebook archives with open GitHub Flavored Markdown (.md). Explore data portability, note migration, and personal knowledge management.",
+		formatA: "ENEX",
+		formatB: "Markdown",
+		category: "document",
+		summary:
+			"Evernote XML Export (ENEX) is Evernote's proprietary XML-based export format containing rich-text notes, attachments, tags, and ENML layout markup. Markdown is a lightweight, human-readable plain text formatting syntax that has become the universal standard for modern note-taking, documentation, and personal knowledge management (PKM).",
+		prosA: [
+			"Exports complete multi-note notebook archives with embedded metadata in a single file",
+			"Preserves Evernote-specific tags, creation timestamps, and note attributes",
+			"Contains embedded binary attachments and image resources within XML",
+			"Direct native export option from Evernote desktop applications",
+		],
+		prosB: [
+			"Universal plain-text readability independent of any vendor, application, or subscription",
+			"Native compatibility with modern PKM tools (Obsidian, Logseq, Notion, Bear, GitHub)",
+			"Clean YAML frontmatter metadata easily queried and indexed by note systems",
+			"Future-proof and easily tracked in standard version control repositories like Git",
+		],
+		specs: [
+			{
+				feature: "Format Standard",
+				formatA: "Proprietary XML (Evernote DTD)",
+				formatB: "CommonMark / GFM standard",
+			},
+			{
+				feature: "Vendor Independence",
+				formatA: "Tightly coupled to Evernote ecosystem",
+				formatB: "100% vendor agnostic",
+			},
+			{
+				feature: "Human Readability",
+				formatA: "Verbose XML with CDATA wrapper blocks",
+				formatB: "Clean, elegant plain text",
+			},
+			{
+				feature: "Tool Ecosystem",
+				formatA: "Specialist migration tools",
+				formatB: "Hundreds of editors, static site generators, and PKM apps",
+			},
+			{
+				feature: "Checklist Syntax",
+				formatA: "<en-todo checked='true'/>",
+				formatB: "Standard GFM - [x] task lists",
+			},
+		],
+		verdict:
+			"Evernote ENEX archives provide a convenient single-file export for backups, but proprietary ENML tags lock your data into legacy hierarchies. Converting ENEX notebook archives into clean GitHub Flavored Markdown with YAML frontmatter frees your personal journals, research, and project notes for use in modern, open-format knowledge bases like Obsidian and Notion with zero ongoing subscription costs.",
+		relatedTools: [
+			"document/enex-to-markdown",
+			"document/org-to-markdown",
+			"document/xmind-to-markdown",
+			"document/epub-to-markdown",
+		],
+	},
 ];
 
 export function getComparison(slug: string): ComparisonMeta | undefined {

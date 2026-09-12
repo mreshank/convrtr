@@ -1,0 +1,86 @@
+When patients receive CT scans, MRIs, ultrasounds, or digital X-rays on a hospital USB drive or CD-ROM, the imagery is stored in the **DICOM** (`.dcm` or `.dicom`) format. 
+
+Double-clicking a `.dcm` file on macOS or Windows typically fails—neither macOS Preview nor Windows Photos natively supports medical DICOM streams. Furthermore, uploading sensitive medical scans to unknown online cloud conversion services poses severe privacy risks and violates healthcare privacy standards (like HIPAA and GDPR).
+
+This engineering guide explains how the **DICOM Part 10** standard structures radiologic data, how raw pixel samples represent physical radiodensities in **Hounsfield Units (HU)**, how **Window/Level contrast normalization** highlights bone vs soft tissue, and how to safely convert DICOM files to PNG in your browser using [convrtr's DICOM to PNG converter](/image/dcm-to-png).
+
+## Forensic Anatomy of a DICOM Part 10 File
+
+Standard DICOM files comply with the PS 3.10 (Part 10) media storage specification. Each file consists of a 128-byte preamble, a 4-byte signature, and a sequence of Tag-Length-Value (TLV) data elements:
+
+| Byte Offset | Field Name | Type / Value | Description |
+| :--- | :--- | :--- | :--- |
+| `0x00 - 0x7F` | Preamble | 128 bytes | Reserved space (often zeros) for OS compatibility |
+| `0x80 - 0x83` | Magic Prefix | 4 ASCII chars | Always `"DICM"` (`0x44 0x49 0x43 0x4D`) |
+| `0x84 onwards`| Data Elements | TLV Sequence | Sequential metadata tags and pixel payload |
+
+### Tag-Length-Value (TLV) Data Structure
+
+DICOM represents medical parameters using 16-bit group and element pairs:
+- **Group Number** (`uint16_t`): Identifies functional category (e.g., `0x0028` for Image Presentation, `0x0010` for Patient Identification, `0x7FE0` for Pixel Data).
+- **Element Number** (`uint16_t`): Identifies the specific property within that group.
+- **Value Representation (VR)**: 2-character ASCII code in Explicit VR files specifying data type (e.g., `US` for Unsigned Short, `IS` for Integer String, `DS` for Decimal String, `OB`/`OW` for Other Byte/Word).
+- **Value Length**: 16-bit or 32-bit unsigned integer specifying payload length.
+- **Value Field**: Raw binary or ASCII data.
+
+Key metadata tags essential for image reconstruction include:
+- `(0028, 0010)` Rows: Image height in pixels.
+- `(0028, 0011)` Columns: Image width in pixels.
+- `(0028, 0100)` Bits Allocated: Typically 16 bits per pixel.
+- `(0028, 0101)` Bits Stored: Actual sample precision (e.g., 12 or 16 bits).
+- `(0028, 0102)` High Bit: Index of highest valid bit (typically `11` or `15`).
+- `(0028, 0103)` Pixel Representation: `0` = Unsigned, `1` = Two's Complement Signed.
+- `(0028, 1050)` Window Center ($C$): Center point of contrast window.
+- `(0028, 1051)` Window Width ($W$): Dynamic range width of contrast window.
+- `(0028, 1052)` Rescale Intercept ($b$): Offset for Hounsfield unit conversion.
+- `(0028, 1053)` Rescale Slope ($m$): Scale factor for Hounsfield unit conversion.
+- `(7FE0, 0010)` Pixel Data: Encapsulated raster pixel buffer.
+
+## Understanding Hounsfield Units (HU) in CT Scans
+
+In Computed Tomography (CT), pixel values directly correspond to X-ray attenuation coefficients, measured on the **Hounsfield Scale** (HU):
+- Air: `-1000 HU`
+- Lung Tissue: `-600 to -400 HU`
+- Water: `0 HU`
+- Soft Tissue / Muscle: `+20 to +40 HU`
+- Blood: `+30 to +45 HU`
+- Cancellous Bone: `+200 to +400 HU`
+- Dense Cortical Bone: `+1000 to +3000 HU`
+
+To calculate the physical Hounsfield value from a raw stored pixel integer:
+`HU = (StoredValue * RescaleSlope) + RescaleIntercept`
+
+## Window/Level (WL/WW) Contrast Normalization
+
+Standard computer monitors, PNG images, and web browsers can only display 256 shades of gray (8-bit depth, values `0` to `255`). However, a CT scan contains a dynamic range exceeding 4,096 distinct values (`-1000 HU` to `+3000 HU`). If compressed linearly, subtle differences between tumors, grey matter, and cerebrospinal fluid become completely invisible.
+
+To solve this, radiologists apply **Window/Level contrast mapping** defined by:
+- **Window Center (WC / Level)**: The midpoint of the tissue density of interest.
+- **Window Width (WW)**: The range of densities displayed around that midpoint.
+
+Given Window Center `WC` and Window Width `WW`:
+- Lower Bound: `Min = WC - (WW / 2)`
+- Upper Bound: `Max = WC + (WW / 2)`
+
+For each pixel with value `HU`:
+- If `HU <= Min`: Display value is `0` (Pure Black).
+- If `HU >= Max`: Display value is `255` (Pure White).
+- If `Min < HU < Max`: Scaled linearly:
+  `Intensity = ((HU - Min) / (Max - Min)) * 255`
+
+### Common Clinical Window Presets
+- **Soft Tissue / Abdomen**: `WC = 40`, `WW = 400` (Highlights liver, spleen, intestines).
+- **Bone Window**: `WC = 400`, `WW = 1500` (Reveals fractures and bone density).
+- **Lung Window**: `WC = -600`, `WW = 1500` (Visualizes bronchial trees and lung nodules).
+- **Brain Window**: `WC = 40`, `WW = 80` (Distinguishes white matter from gray matter).
+
+## Client-Side Conversion with Zero Patient Data Leakage
+
+Uploading private healthcare records, diagnostic scans, or MRI brain slices to cloud conversion APIs introduces dangerous security risks.
+
+[convrtr's DICOM to PNG converter](/image/dcm-to-png) runs 100% in client memory using WebAssembly and pure TypeScript:
+1. **Header Validation**: Verifies the `"DICM"` Part 10 signature.
+2. **Transfer Syntax Decoding**: Handles both Explicit VR and Implicit VR Little Endian byte streams.
+3. **Contrast Normalization**: Reads embedded Window/Level tags or applies user-selected clinical presets (Bone, Soft Tissue, Lung, Brain).
+4. **Stripping Sensitive PHI**: Eliminates patient names, hospital identifiers, and date of birth tags from the exported PNG raster, producing a clean diagnostic graphic ready for research presentations, academic papers, and consultations.
+5. **Zero Remote Transmission**: No bytes ever leave your device.

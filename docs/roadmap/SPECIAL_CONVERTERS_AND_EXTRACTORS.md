@@ -67,6 +67,9 @@
 | `.xm` | FastTracker II Extended Module Tracker | Tracker Music / Audio | Extended Module header, multi-channel pattern unpacker, and linear frequency synthesis to 16-bit stereo WAV | `SOLVED` | **SHIPPED** |
 | `.org` | Emacs Org Mode Documentation & Agenda | Productivity / Docs | Org outline tree, TODO items, checkboxes, tables, code blocks, and frontmatter to GitHub Flavored Markdown | `SOLVED` | **SHIPPED** |
 | `.dcm` / `.dicom` | DICOM Medical Diagnostic Imaging | Medical / Imaging | Part 10 explicit/implicit VR transfer syntax parser with Window/Level contrast normalization to 32-bit PNG | `SOLVED` | **SHIPPED** |
+| `.cgm` | Computer Graphics Metafile 2D Vector | CAD / Engineering | ISO/IEC 8632 binary and clear-text 2D vector elements to clean W3C SVG | `SOLVED` | **SHIPPED** |
+| `.s3m` | Scream Tracker 3 Module Tracker | Tracker Music / Audio | Future Crew 16/32-channel pattern unpacker & GUS/AdLib chiptune synthesis to 16-bit stereo WAV | `SOLVED` | **SHIPPED** |
+| `.enex` | Evernote XML Export Archive | Note-Taking / PKM | ENML note markup, attachments, tags, and timestamps to GFM Markdown | `SOLVED` | **SHIPPED** |
 
 
 ---
@@ -2224,6 +2227,50 @@
 
 ---
 
+### 100. Computer Graphics Metafile 2D Vector Exchange (.cgm)
+- **Ecosystem & Context:** ISO/IEC 8632 standard 2D vector graphics format widely used across aerospace, defense (ATA Spec 2000, MIL-PRF-28002), automotive, and technical engineering documentation. Engineers, pilots, and CAD archivists frequently encounter legacy `.cgm` diagrams and schematics that modern web browsers and desktop operating systems cannot render without proprietary legacy CAD suites.
+- **Forensic Format Architecture:**
+  - Binary Encoding: Elements are encoded as 16-bit command words: 3-bit Element Class (Delimiter, Metafile Descriptor, Picture Descriptor, Control, Graphical Primitives, Attributes, Escape), 7-bit Element ID, and 5-bit Parameter Length (with `0x1F` escape triggering a 16-bit extended length word).
+  - Clear-Text Encoding: Standardized human-readable tokens (`BEGMF`, `BEGPIC`, `VDCEXT`, `LINE`, `POLYGON`, `CIRCLE`, `RECT`, `TEXT`, `LINECOLR`, `LINEWIDTH`, `ENDPIC`, `ENDMF`).
+  - Coordinate Systems: Virtual Device Coordinates (VDC) mapped via VDC Extent rectangles (integer or real-valued) into display space.
+- **In-Browser Execution Strategy:**
+  - Employs dual-mode decoding: automatically detects binary command streams vs. clear-text token lexing.
+  - Normalizes VDC coordinates into standard SVG viewBox coordinates.
+  - Generates clean, responsive W3C SVG with semantic `<path>`, `<polyline>`, `<polygon>`, `<circle>`, `<rect>`, `<line>`, and `<text>` elements, preserving stroke widths, colors, fills, and aspect ratios.
+- **Fidelity:** `VECTOR-PERFECT GEOMETRIC TRANSLATION`.
+- **Status:** **Wave 35 Shipped (`image/cgm-to-svg`) — 100-Tool Landmark Milestone**.
+
+---
+
+### 101. Future Crew Scream Tracker 3 Module Music (.s3m)
+- **Ecosystem & Context:** Developed by Psi (Sami Tammilehto) and Future Crew for Scream Tracker 3 on PC DOS in 1994. S3M became the preeminent PC demoscene tracker format, powering legendary DOS demoscene productions and game soundtracks (e.g. *Star Control II*, *Epic Pinball*, *Silverball*) with up to 32 digital PCM channels, 16-bit panning, and AdLib FM synth integration.
+- **Forensic Format Architecture:**
+  - 0x60-byte Header: Song name, signature bytes `0x1A 0x10`, order count `ordNum`, instrument count `insNum`, pattern count `patNum`, flags, Cwt/v version, and magic signature `SCRM` at offset `0x2C`.
+  - Parapointers: 16-bit order-list-relative pointers shifted by 4 (`offset = parapointer * 16`) pointing to instrument headers and pattern bodies.
+  - Instruments: 0x50-byte instrument definitions containing sample type, DOS filename, memory parapointers, sample length, loop start/end points, volume (0–64), and C4Speed (sample playback frequency at note C-4).
+  - Patterns: Packed row byte streams where channel mask bits indicate present data (Note + Octave, Instrument number, Volume column, Command effect, and Effect parameters).
+- **In-Browser Execution Strategy:**
+  - Unpacks packed pattern rows into active channel structures, decodes 8-bit unsigned PCM sample buffers, runs tick-based multi-channel synthesis with period-to-frequency stepping, processes volume columns and tempo/speed counters, and mixes channels into an interleaved 44.1 kHz 16-bit stereo PCM RIFF WAV audio stream.
+- **Fidelity:** `CYCLE-ACCURATE MULTI-CHANNEL CHIPTUNE SYNTHESIS`.
+- **Status:** **Wave 35 Shipped (`audio/s3m-to-wav`) — Milestone Tool 101**.
+
+---
+
+### 102. Evernote XML Export Archive (.enex)
+- **Ecosystem & Context:** Evernote's universal export container (`.enex`), used by tens of millions of note-takers, researchers, and professionals to archive journals, clipped web pages, research summaries, and meeting logs. As users transition away from proprietary cloud note platforms to local-first knowledge bases (Obsidian, Logseq, Bear, Notion), converting ENEX files cleanly into standard GitHub Flavored Markdown with preserved YAML frontmatter, tags, checklists, and attachments is an indispensable migration need.
+- **Forensic Format Architecture:**
+  - XML Root: `<en-export>` container with `<note>` elements and export metadata (`export-date`, `application`, `version`).
+  - Note Structure: `<title>`, `<created>`, `<updated>`, zero or more `<tag>` tags, and `<content>` wrapping an ENML2 (Evernote Note Markup Language) XML document within `<![CDATA[...]]>`.
+  - ENML2 Grammar: Strict XML-compliant XHTML subset featuring custom elements: `<en-note>`, `<en-todo checked="true|false"/>` (checklists), and `<en-media hash="..." type="..."/>` (inline media attachments), alongside standard HTML formatting (`<div>`, `<p>`, `<b>`, `<i>`, `<s>`, `<a>`, `<table>`, `<code>`, `<pre>`).
+- **In-Browser Execution Strategy:**
+  - Robust XML extraction using browser DOMParser or regex-resilient token extraction.
+  - Normalizes ISO 8601 timestamps (`YYYYMMDDTHHmmssZ` to standard ISO format).
+  - Converts ENML tags to standard GitHub Flavored Markdown: translates `<en-todo>` into `- [x]` or `- [ ]`, maps tables to GFM pipe tables, handles preformatted code blocks and lists, and generates frontmatter containing title, creation/update dates, and tags.
+- **Fidelity:** `SEMANTIC ENML-TO-GFM MARKDOWN FIDELITY`.
+- **Status:** **Wave 35 Shipped (`document/enex-to-markdown`) — Milestone Tool 102**.
+
+---
+
 ## Roadmap Waves & Next Steps
 
 1. **Wave 1 (Shipped):**
@@ -2360,9 +2407,13 @@
     - Tool 97: `audio/xm-to-wav` (FastTracker II `.xm` extended module tracker music to 16-bit stereo WAV)
     - Tool 98: `document/org-to-markdown` (Emacs Org Mode `.org` agenda and documentation to GitHub Flavored Markdown)
     - Tool 99: `image/dcm-to-png` (DICOM `.dcm` medical diagnostic imaging to 32-bit PNG)
-35. **Wave 35 (Active Research & Next Builds):**
-    - Candidate 1: `image/cgm-to-svg` (Computer Graphics Metafile `.cgm` ISO vector graphics to clean SVG)
-    - Candidate 2: `audio/it-to-wav` (Impulse Tracker `.it` compressed module music to 16-bit stereo WAV)
-    - Candidate 3: `document/vcard-to-csv` (vCard `.vcf` electronic business cards and address books to RFC 4180 CSV)
+35. **Wave 35 (Shipped):**
+    - Tool 100: `image/cgm-to-svg` (Computer Graphics Metafile `.cgm` ISO vector graphics to clean W3C SVG) — **100-Tool Landmark Milestone**
+    - Tool 101: `audio/s3m-to-wav` (Scream Tracker 3 `.s3m` 32-channel tracker music to 16-bit stereo WAV)
+    - Tool 102: `document/enex-to-markdown` (Evernote XML Export `.enex` notes to GitHub Flavored Markdown with YAML frontmatter)
+36. **Wave 36 (Active Research & Next Builds):**
+    - Candidate 1: `audio/it-to-wav` (Impulse Tracker `.it` compressed module music to 16-bit stereo WAV)
+    - Candidate 2: `archive/sit-to-zip` (StuffIt Archive `.sit` vintage Mac compressed archive to ZIP)
+    - Candidate 3: `document/fb2-to-markdown` (FictionBook 2.0 `.fb2` e-book XML format to Markdown)
 
 

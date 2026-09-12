@@ -1,0 +1,92 @@
+In 1994, Finnish demoscene powerhouse Future Crew released *Second Reality*—widely hailed as the most influential PC demoscene production of all time. Fueling its unforgettable soundtrack by composers Jussi-Pekka Ilmari ("Purple Motion") and Peter Hajba ("Skaven") was **Scream Tracker 3** and its signature music format: `.s3m`.
+
+While Commodore Amiga tracker modules (`.mod`) were tied to the Paula sound chip's 4-channel hardware architecture and rigid PAL clock frequencies, Scream Tracker 3 broke free from Amiga limitations. Designed natively for MS-DOS PCs equipped with Sound Blaster, Gravis UltraSound, or AdLib OPL FM synth cards, the S3M format introduced support for up to 32 digital channels, 16-color panning matrices, arbitrary sample playback rates, and sophisticated volume slides.
+
+This forensic guide analyzes the internal byte structure of Scream Tracker 3 files, walks through pattern packing mechanics and 16-byte paragraph pointers, and explains how [convrtr's S3M to WAV engine](/audio/s3m-to-wav) synthesizes chiptune tracker files into pristine 16-bit PCM audio directly in your browser.
+
+## The SCRM File Header Specification
+
+Every valid `.s3m` file starts with a 96-byte primary header:
+
+| Offset (Bytes) | Field Name | Data Type | Forensic Description |
+| :--- | :--- | :--- | :--- |
+| `0x00 - 0x1B` | Song Title | 28 ASCII chars | Song name, null-padded |
+| `0x1C` | DOS EOF | 1 byte | Always `0x1A` (Stops MS-DOS `TYPE` command from spilling binary) |
+| `0x1D` | File Type | 1 byte | Tracker file type (`0x10` = S3M song) |
+| `0x1E - 0x1F` | Reserved | 2 bytes | Padding |
+| `0x20 - 0x21` | Order Count | 16-bit uint (LE) | Number of pattern order positions |
+| `0x22 - 0x23` | Instrument Count | 16-bit uint (LE) | Number of sample/instrument parapointers |
+| `0x24 - 0x25` | Pattern Count | 16-bit uint (LE) | Total unique 64-row pattern chunks |
+| `0x26 - 0x27` | Flags | 16-bit bitfield | Bit 0: `0` = Standard, Bit 4: Fast volume slides |
+| `0x28 - 0x29` | Tracker Version | 16-bit uint (LE) | Created tracker version (`0x1320` = ST 3.20) |
+| `0x2A - 0x2B` | Sample Format | 16-bit uint (LE) | `1` = Signed samples, `2` = Unsigned samples |
+| `0x2C - 0x2F` | Magic Marker | 4 ASCII chars | Constant `"SCRM"` (`0x53 0x43 0x52 0x4D`) |
+| `0x30` | Global Volume | 1 byte | Master volume (0 to 64) |
+| `0x31` | Initial Speed | 1 byte | Default tempo ticks per row (typically 6) |
+| `0x32` | Initial BPM | 1 byte | Default beats per minute (typically 125) |
+| `0x33` | Master Volume | 1 byte | Master amplification and stereo flag |
+| `0x34` | Ultraclick Removal | 1 byte | Number of channels to reserve for GUS click reduction |
+| `0x35` | Default Pan Flag | 1 byte | `252` (`0xFC`) if custom panning table is appended |
+| `0x40 - 0x5F` | Channel Map | 32 bytes | Configuration for channels 0 to 31 (`0xFF` = disabled) |
+
+### The Parapointer Addressing Mechanism
+
+To optimize file parsing on real-mode x86 processors with 64KB memory segments, Scream Tracker 3 uses **parapointers** (paragraph pointers) to reference internal data structures.
+
+A parapointer is a 16-bit little-endian integer pointing to a 16-byte aligned memory boundary. To derive the exact absolute byte offset in the file:
+`absoluteByteOffset = parapointer * 16` (or `parapointer << 4`)
+
+The header contains three consecutive parapointer arrays:
+1. **Order List**: A sequence of bytes designating which pattern index to play next. Order value `255` (`0xFF`) marks the end of the song, while `254` (`0xFE`) represents an empty skip marker.
+2. **Instrument Parapointers**: An array of `uint16` values pointing to each instrument header.
+3. **Pattern Parapointers**: An array of `uint16` values pointing to each compressed pattern block.
+
+## Instrument Headers and C4SPD Frequency
+
+Each instrument block begins with a 78-byte sample descriptor:
+- `Type`: `1` for sample instrument, `2` for AdLib FM instrument.
+- `Length`: 32-bit sample length in bytes.
+- `Loop Start` and `Loop End`: Loop boundary points for sustained notes.
+- `Volume`: Default instrument playback volume (0 to 64).
+- `Flags`: Bit 0 indicates active loop; Bit 4 indicates 16-bit sample data; Bit 5 indicates stereo sample data.
+- **C4SPD (Middle C Frequency)**: A 32-bit integer indicating the sample playback rate in Hertz when playing note C-4. While Amiga Paula chips used fixed hardware periods, S3M instruments declare dynamic playback rates (such as `8363 Hz`, `11025 Hz`, or `22050 Hz`), allowing samples to be pitched precisely across any hardware platform.
+- **Data Parapointer**: A 24-bit high-offset parapointer (`(highByte << 16) | lowWord`) multiplied by 16 to locate the raw PCM sample bytes.
+
+## Channel Compression and Pattern Unpacking
+
+S3M patterns contain 64 musical rows. To avoid wasting bytes on empty tracks, rows are compressed using channel-mask packing:
+
+Each row consists of zero or more channel tokens, terminated by a null byte (`0x00`):
+1. Read the first byte `b`:
+   - If `b == 0x00`: The current row is complete. Increment the row counter and continue to row 64.
+2. Extract the channel index:
+   - `channel = b & 0x1F` (Channels 0 to 31).
+3. Inspect the bit flags on `b`:
+   - **Bit 5 (`0x20`)**: Note and instrument data present. Read 2 bytes:
+     - Byte 1: `Note` (`0x00` to `0xDF` represents octaves 0-9; `0xFE` = Key Off, `0xFF` = Empty).
+     - Byte 2: `Instrument` (1-based instrument index).
+   - **Bit 6 (`0x40`)**: Volume byte present. Read 1 byte (`0` to `64`).
+   - **Bit 7 (`0x80`)**: Effect command present. Read 2 bytes:
+     - Byte 1: `Command` letter (e.g., `A` = Set Speed, `B` = Order Jump, `C` = Pattern Break, `D` = Volume Slide, `J` = Arpeggio).
+     - Byte 2: `Info` parameter byte.
+
+## Synthesizing S3M to 16-Bit Linear PCM
+
+Synthesizing an S3M module into standard audio requires a multi-voice digital mixer running at a fixed output sample rate (e.g., 44,100 Hz):
+
+1. **Clock Calculation**:
+   - `tickDurationInSeconds = 2.5 / BPM`
+   - `samplesPerTick = outputSampleRate * tickDurationInSeconds`
+   - Each row lasts for `Speed` ticks (default 6).
+2. **Pitch Calculation**:
+   - For a given note and C4SPD frequency:
+     `frequency = C4SPD * (2 ** ((note - 48) / 12))`
+   - The sample step increment per output frame is:
+     `step = frequency / outputSampleRate`
+3. **Stereo Mixing and Interpolation**:
+   - Voices accumulate interpolated sample samples based on channel panning (0 = hard left, 7 = center, 15 = hard right).
+   - Accumulated floats are clamped and converted to signed 16-bit little-endian words, packaged into a canonical RIFF WAV container.
+
+## Pure Client-Side Privacy
+
+Chiptune modules from demoparties, retro games, and personal mod collections can be played and rendered instantly without installing legacy MS-DOS emulators or third-party desktop utilities. Because convrtr runs the entire S3M synthesis engine directly in JavaScript within your browser tab, conversions happen locally at lightning speed with absolute privacy.

@@ -1,0 +1,79 @@
+In 1994, Swedish demoscene group Triton—led by programmer Fredrik Huss ("Mr. H") and musician Magnus Högdahl ("Vogue")—released FastTracker II for MS-DOS. It instantly revolutionized digital music creation.
+
+While Commodore Amiga ProTracker `.mod` files were limited to 4 channels and 31 rudimentary 8-bit samples, FastTracker II introduced the **Extended Module** (`.xm`) format. Supporting up to 32 discrete digital channels, multi-octave linear frequency tables, instrument volume and panning envelopes, and 16-bit delta-encoded samples, `.xm` became the premier medium for video game soundtracks (such as *Unreal* and *Deus Ex*), tracker competitions, and underground electronic releases.
+
+This technical guide dissects the forensic byte architecture of `.xm` containers, details how note patterns and delta-compressed samples are parsed, and explains how [convrtr's FastTracker XM to WAV engine](/audio/xm-to-wav) synthesizes multi-channel tracker arrangements into standard 16-bit PCM audio directly inside your browser.
+
+## The Extended Module Header Specification
+
+Every valid `.xm` file begins with an 80-byte module identification header, followed by dynamic song configuration blocks:
+
+| Offset (Bytes) | Field Name | Data Type | Forensic Description |
+| :--- | :--- | :--- | :--- |
+| `0x00 - 0x10` | Signature | 17 ASCII chars | Always `"Extended Module: "` |
+| `0x11 - 0x24` | Module Name | 20 ASCII chars | Song title, padded with null bytes (`0x00`) or spaces |
+| `0x25` | EOF Escape | 1 byte | Always `0x1A` (DOS End-Of-File marker) |
+| `0x26 - 0x39` | Tracker Name | 20 ASCII chars | Software tag (e.g., `"FastTracker v2.00   "`, `"MilkyTracker"`) |
+| `0x3A - 0x3B` | Version | 16-bit uint (LE) | Format version, typically `0x0104` (v1.04) |
+| `0x3C - 0x3F` | Header Size | 32-bit uint (LE) | Number of remaining bytes in the module header |
+| `0x40 - 0x41` | Song Length | 16-bit uint (LE) | Number of pattern order table positions (1 to 256) |
+| `0x42 - 0x43` | Restart Position | 16-bit uint (LE) | Loop restart order index |
+| `0x44 - 0x45` | Channel Count | 16-bit uint (LE) | Active channels (2, 4, 6, 8, up to 32) |
+| `0x46 - 0x47` | Pattern Count | 16-bit uint (LE) | Total unique pattern data blocks (up to 256) |
+| `0x48 - 0x49` | Instrument Count | 16-bit uint (LE) | Number of instruments and sample headers (up to 128) |
+| `0x4A - 0x4B` | Flags | 16-bit bitfield | Bit 0: `0` = Amiga frequency table, `1` = Linear frequency table |
+| `0x4C - 0x4D` | Default Speed | 16-bit uint (LE) | Default tempo in ticks per row (typically 6) |
+| `0x4E - 0x4F` | Default BPM | 16-bit uint (LE) | Default song BPM clock speed (typically 125) |
+| `0x50 onwards`| Order Table | Byte array | Order sequence array specifying pattern playback order |
+
+## Pattern Compression and Packing
+
+To conserve floppy disk space in 1994, FastTracker II implemented a bit-packed compression scheme for note rows.
+
+In an uncompressed state, each pattern cell occupies 5 bytes:
+1. `Note`: Note number (`1` to `96`, where `1` is C-0 and `96` is B-7, or `97` for Key Off).
+2. `Instrument`: 1-based instrument index (`1` to `128`).
+3. `Volume`: Volume column parameter (volume level, volume slide, tone portamento, vibrato).
+4. `Effect Type`: Effect command number (e.g., `0x0` = Arpeggio, `0x0A` = Volume Slide, `0x0B` = Order Jump).
+5. `Effect Parameter`: 8-bit effect parameter byte.
+
+When reading pattern bytes:
+- If the first byte has its high bit set (`byte & 0x80`), it is a **packing compression mask**:
+  - Bit 0 (`0x01`): Followed by `Note` byte.
+  - Bit 1 (`0x02`): Followed by `Instrument` byte.
+  - Bit 2 (`0x04`): Followed by `Volume` byte.
+  - Bit 3 (`0x08`): Followed by `Effect Type` byte.
+  - Bit 4 (`0x10`): Followed by `Effect Parameter` byte.
+- If the high bit is clear (`!(byte & 0x80)`), the byte is directly interpreted as the `Note`, and all four subsequent parameters are read sequentially.
+
+## Differential Delta Sample Decompression
+
+A hallmark innovation of the XM format was storing audio waveforms using **differential delta encoding**. Rather than storing absolute signed PCM byte values, XM stores the difference between consecutive samples:
+
+- Initial sample value starts at `0`.
+- For each subsequent sample `i`:
+  `sample[i] = (sample[i - 1] + delta[i]) mod Range`
+
+For 8-bit samples, arithmetic wraps cleanly within 8-bit two's complement `[-128, 127]`. For 16-bit samples, deltas are 16-bit little-endian words wrapping within `[-32768, 32767]`. This delta scheme concentrates sample distributions around zero, enabling dramatic size reductions when compressed with LZ or Deflate algorithms.
+
+## Linear Pitch Periods vs Amiga Tuning
+
+FastTracker II introduced **Linear Frequency Tables** (flagged in byte `0x4A`). In classic Amiga MOD files, note frequencies relied on Amiga Paula hardware clock periods:
+`Period = (AmigaClock / (2 * Frequency))`
+
+This produced non-linear pitch sliding where portamento speed varied dramatically depending on which octave was being played. In FastTracker II's linear mode, pitch is calculated directly from a continuous 16-bit linear period:
+`Period = 10 * 12 * 16 * 4 - Note * 16 * 4 - FineTune / 2`
+`Frequency = 8363 * 2^((6 * 12 * 16 * 4 - Period) / (12 * 16 * 4))`
+
+This allows pitch bends, vibratos, and portamentos to maintain exact, uniform sonic speeds across the entire 8-octave range.
+
+## Browser-Based XM Synthesis with Convrtr
+
+Historically, playing or converting `.xm` files required downloading desktop DAWs (like OpenMPT or Renoise) or tracking down legacy Winamp plugins.
+
+[convrtr's FastTracker XM to WAV converter](/audio/xm-to-wav) performs 100% in-browser audio synthesis:
+1. **Module Parsing**: Reads the 80-byte XM header, extracts order tables, and parses multi-channel pattern matrices.
+2. **Delta Decompression**: Unpacks 8-bit and 16-bit differential PCM sample banks in WebAssembly memory.
+3. **Multi-Channel Mixing**: Simulates tick-accurate channel replaying, applying volume envelopes, instrument panning, and pitch slides.
+4. **WAV Encoding**: Renders the multi-channel output buffer into a crystal-clear 16-bit 44.1 kHz stereo linear PCM WAV file.
+5. **Privacy Guarantee**: Operates completely in your browser without uploading proprietary homebrew stems or game assets to any remote server.

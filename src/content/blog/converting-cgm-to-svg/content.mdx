@@ -1,0 +1,100 @@
+In 1987, the International Organization for Standardization ratified **ISO/IEC 8632**, defining the **Computer Graphics Metafile** (`.cgm`). Designed as an open, vendor-neutral standard for 2D vector and composite raster graphics, CGM quickly became the mandatory format for high-precision technical illustrations across aerospace (ATA Specification 2000, S1000D), defense (MIL-PRF-28003 CALS), automotive engineering, and petroleum geosciences.
+
+Despite its historical importance and vast archives of technical drawings, modern operating systems and web browsers have zero native support for CGM files. Opening an aircraft maintenance schematic or piping diagram today typically demands legacy software suites or proprietary desktop plugins costing thousands of dollars per seat.
+
+This deep dive breaks down the internal forensic structure of CGM encodings, details how coordinate spaces and geometric primitives are organized, and explains how [convrtr's CGM to SVG engine](/image/cgm-to-svg) converts ISO 8632 engineering vector files into clean, responsive W3C Scalable Vector Graphics directly inside your browser.
+
+## The Dual Nature of CGM: Binary vs Clear Text
+
+The ISO/IEC 8632 specification defines three distinct serialization formats for the same underlying abstract syntax:
+1. **Binary Encoding**: Optimized for compact storage and rapid machine reading using big-endian integer/fixed-point bitfields.
+2. **Clear Text Encoding**: Human-readable ASCII representation using English command keywords (e.g., `BEGMF`, `COLRMODE`, `LINE`, `POLYGON`), widely adopted in CALS and aerospace engineering interchange.
+3. **Character Encoding**: A compressed ASCII stream optimized for low-bandwidth 7-bit telecommunication lines.
+
+Modern engineering environments primarily use Binary Encoding and Clear Text Encoding.
+
+### Binary Encoding: Command Headers and Element Classes
+
+In binary CGM streams, every graphical instruction is structured as a command header containing an **Element Class** and an **Element ID**, followed by parameter data:
+
+| Bit Range | Field Name | Description |
+| :--- | :--- | :--- |
+| `Bits 15-12` (4 bits) | Element Class | High-level category of the command |
+| `Bits 11-5` (7 bits) | Element ID | Specific operation or primitive code |
+| `Bits 4-0` (5 bits) | Parameter Length | Length in bytes (0 to 30), or `31` for extended length |
+
+When the 5-bit parameter length equals `31` (`0x1F`), the command uses an **extended header**: the next 16-bit word specifies the actual byte length, with the highest bit acting as a continuation flag for multi-kilobyte polygon and polyline payloads.
+
+The ISO standard categorizes commands into distinct functional classes:
+- **Class 0 (Delimiter Elements)**: Delimits structures, including `BEGIN METAFILE` (ID 1), `END METAFILE` (ID 2), `BEGIN PICTURE` (ID 3), `BEGIN PICTURE BODY` (ID 4), and `END PICTURE` (ID 5).
+- **Class 1 (Metafile Descriptor Elements)**: Declares file-wide attributes such as `METAFILE VERSION` (ID 1), `METAFILE DESCRIPTION` (ID 2), `VDC TYPE` (ID 3, integer or real), and `COLOR PRECISION` (ID 7).
+- **Class 2 (Picture Descriptor Elements)**: Configures individual frame viewport bounds, including `SCALING MODE` (ID 1), `COLOR SELECTION MODE` (ID 2, indexed or direct RGB), and `VDC EXTENT` (ID 6).
+- **Class 3 (Control Elements)**: Manages clipping rectangles via `CLIP RECTANGLE` (ID 1) and `CLIP INDICATOR` (ID 2).
+- **Class 4 (Graphical Primitives)**: Geometry commands such as `POLYLINE` (ID 1), `DISJOINT POLYLINE` (ID 2), `POLYGON` (ID 7), `POLYGON SET` (ID 8), `CIRCLE` (ID 12), `CIRCULAR ARC 3 POINT` (ID 13), `CIRCULAR ARC CENTRE` (ID 15), and `TEXT` (ID 4).
+- **Class 5 (Attribute Elements)**: Styling states including `LINE WIDTH` (ID 3), `LINE COLOR` (ID 4), `FILL COLOR` (ID 23), `FILL INTERIOR STYLE` (ID 22, hollow, solid, hatch), and `EDGE VISIBILITY` (ID 30).
+
+### Clear Text Encoding: Keyword-Driven Syntax
+
+Clear text CGM files replace binary bitfields with declarative ASCII statements ending in semicolons:
+
+```cgm
+BEGMF 'AIRCRAFT_HYDRAULIC_SYSTEM';
+MFVERSION 1;
+MFDESC 'S1000D Technical Illustration';
+VDCTYPE REAL;
+BEGPIC 'DIAGRAM_01';
+VDCEXT (0.0, 0.0) (1000.0, 750.0);
+BEGPICBODY;
+LINEWIDTH 1.5;
+LINECOLR (0, 45, 120);
+LINE (120.0, 450.0) (340.0, 450.0) (340.0, 200.0);
+CIRCLE (500.0, 375.0) 75.0;
+ENDPIC;
+ENDMF;
+```
+
+## Coordinate System Mapping: VDC to SVG ViewBox
+
+A core challenge in converting CGM to SVG is handling **Virtual Device Coordinates (VDC)**.
+
+In CGM, coordinates are defined in an abstract VDC plane bounded by the `VDC EXTENT` instruction:
+`VDC EXTENT: (VDCmin_x, VDCmin_y) to (VDCmax_x, VDCmax_y)`
+
+Unlike web SVG, where the origin `(0, 0)` is anchored at the top-left corner with the Y-axis extending downwards, engineering CGM files frequently anchor the origin `(0, 0)` at the bottom-left corner with the Y-axis pointing upwards, conforming to Cartesian mathematics.
+
+To map VDC space into SVG view coordinates:
+1. Parse the VDC bounding rectangle `(minX, minY)` and `(maxX, maxY)`.
+2. Compute the canvas dimensions:
+   - `width = abs(maxX - minX)`
+   - `height = abs(maxY - minY)`
+3. Normalize inverted axes: If `minY < maxY` and the illustration assumes bottom-up Cartesian coordinates, reflect the Y coordinates across the height:
+   - `svgY = maxY - vdcY`
+4. Set the SVG root attributes:
+   `<svg viewBox="0 0 width height" xmlns="http://www.w3.org/2000/svg">`
+
+## Converting Geometric Primitives to SVG
+
+Every CGM graphical primitive maps to standard SVG vector path operators:
+
+### 1. Polylines and Disjoint Polylines
+A CGM `POLYLINE` with points `(x1, y1), (x2, y2), ..., (xn, yn)` maps directly to an SVG `<polyline>` or path string:
+`<path d="M x1 y1 L x2 y2 ... L xn yn" fill="none" stroke="currentColor" />`
+
+A `DISJOINT POLYLINE` draws disconnected line segments between paired vertices, mapped by inserting `M` (MoveTo) before every odd vertex.
+
+### 2. Polygons and Polygon Sets
+Closed polygonal boundaries in CGM map to SVG `<path>` elements with the close-path command `Z`. For complex mechanical cuts and holes, CGM uses `POLYGON SET`, where individual vertex flags indicate whether an edge is visible, invisible, or closes a sub-path. These translate into compound SVG paths using the `fill-rule="evenodd"` attribute.
+
+### 3. Circular and Elliptical Arcs
+CGM defines circular arcs using center-radius-angle parameters or three-point perimeter coordinates:
+- `CIRCULAR ARC CENTRE (cx, cy) (dx_start, dy_start) (dx_end, dy_end) radius`
+- In SVG, these parameters are converted to trigonometric start and end angles, projecting the arc coordinates into SVG `<path d="M startX startY A radius radius 0 largeArcFlag sweepFlag endX endY" />`.
+
+## In-Browser Execution Without Data Leaks
+
+Aerospace blueprints, proprietary schematics, and patent illustrations carry strict confidentiality requirements. Uploading them to external cloud conversion services violates IP protection policies and defense export controls (such as ITAR or EAR).
+
+Because convrtr processes CGM files 100% inside your browser:
+- **Zero Server Telemetry**: File bytes never leave your device memory.
+- **Instant Processing**: Binary decoding and SVG serialization execute in milliseconds.
+- **Infinite Scalability**: Convert hundreds of multi-megabyte CAD metafiles offline without upload limits or subscription gates.

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ToolAppendix } from "@/components/content/ToolAppendix";
+import { JsonLd } from "@/components/seo/JsonLd";
 import { BLOG_POSTS, getPostsByTool } from "@/content/blog/registry";
 import { getComparisonsByFormat } from "@/content/compare/registry";
 import { getTool, TOOLS } from "@/core/registry";
@@ -62,13 +63,7 @@ export default async function ToolPage({
 
 	return (
 		<>
-			<script
-				type="application/ld+json"
-				// biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD requires raw script injection
-				dangerouslySetInnerHTML={{
-					__html: JSON.stringify(buildToolJsonLd(tool, `${SITE}/${tool.id}`)),
-				}}
-			/>
+			<JsonLd schema={buildToolJsonLd(tool, `${SITE}/${tool.id}`)} />
 			<ConverterPage
 				eyebrow={`${label(tool.category)} · ${rawFrom.toUpperCase()} → ${rawTo.toUpperCase()}`}
 				title={tool.seo.h1}

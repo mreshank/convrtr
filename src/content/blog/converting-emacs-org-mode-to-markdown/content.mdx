@@ -1,0 +1,122 @@
+For over two decades, GNU Emacs power users have relied on **Org Mode** (`.org`) as the ultimate personal information manager. Created in 2003 by astronomer Carsten Dominik, Org Mode began as an outline tool and evolved into an ecosystem capable of task management, project scheduling, literate programming (Org Babel), and publishing.
+
+However, sharing `.org` files outside the Emacs community is notoriously difficult. Modern knowledge bases like Obsidian, Notion, GitHub wikis, Logseq, and static site generators (Next.js, Hugo, Astro) expect **GitHub Flavored Markdown** (`.md`). 
+
+This guide details how Org Mode's hierarchical AST translates into standard CommonMark and GFM, how tasks and tables are mapped, and how to convert `.org` documents seamlessly into clean Markdown using [convrtr's Org Mode to Markdown tool](/document/org-to-markdown).
+
+## Structural Syntax Mapping: Org Mode vs Markdown
+
+While both Org Mode and Markdown are plain-text markup systems, their syntax and document object models differ significantly:
+
+| Document Element | Emacs Org Mode (`.org`) | GitHub Flavored Markdown (`.md`) |
+| :--- | :--- | :--- |
+| **Heading Level 1** | `* Heading 1` | `# Heading 1` |
+| **Heading Level 2** | `** Heading 2` | `## Heading 2` |
+| **Heading Level 3** | `*** Heading 3` | `### Heading 3` |
+| **Bold Emphasis** | `*bold text*` | `**bold text**` |
+| **Italic Emphasis** | `/italic text/` | `*italic text*` |
+| **Underline** | `_underlined text_` | `<u>underlined text</u>` |
+| **Verbatim / Code** | `~code~` or `=verbatim=` | `` `code` `` |
+| **Strikethrough** | `+strikethrough+` | `~~strikethrough~~` |
+| **Hyperlinks** | `[[https://convrtr.com][convrtr]]` | `[convrtr](https://convrtr.com)` |
+| **Raw Image Embed** | `[[file:screenshot.png]]` | `![screenshot](screenshot.png)` |
+
+## Mapping Task States, Priorities, and Checklists
+
+Org Mode's primary strength is actionable project management. Translating these features into Markdown requires mapping active state tokens into task list items:
+
+### 1. Headline Task Keywords
+In Org Mode, task headings begin with state keywords:
+```org
+* TODO Refactor audio pipeline [#A]
+* DONE Implement DICOM contrast normalization [#B]
+* WAITING Awaiting client review
+```
+
+When converted to GitHub Flavored Markdown, these translate cleanly into interactive task items with bold tags:
+```markdown
+- [ ] **TODO** `[#A]` Refactor audio pipeline
+- [x] **DONE** `[#B]` Implement DICOM contrast normalization
+- [ ] **WAITING** Awaiting client review
+```
+
+### 2. Hierarchical Checklists
+Org Mode supports multi-state list checkboxes (`[ ]`, `[X]`, `[-]` for partial completion):
+```org
+- [ ] Research WebAssembly memory pooling
+- [X] Benchmark SIMD audio synthesis
+- [-] Draft technical documentation [1/2]
+```
+These map directly to standard GFM checkboxes:
+```markdown
+- [ ] Research WebAssembly memory pooling
+- [x] Benchmark SIMD audio synthesis
+- [ ] Draft technical documentation `[1/2]`
+```
+
+## Org Tables to GFM Pipe Tables
+
+Org Mode includes a full spreadsheet computation engine (Org Calc) and flexible table formatting:
+```org
+| ID | Format | Category | Status |
+|----+--------+----------+--------|
+| 94 | AVR    | Audio    | Shipped|
+| 95 | NFO    | Document | Shipped|
+| 96 | CHR    | Image    | Shipped|
+```
+
+In standard Org Mode, horizontal separator rules use `|----+---|`. The conversion engine standardizes these separators to standard GFM table format (`|:---|:---|:---|:---|`), ensuring tables render with proper column alignment in GitHub, GitLab, and Obsidian.
+
+## Source Code Blocks and Org Babel
+
+Org Mode encapsulates code snippets and literate programming blocks in `#+BEGIN_SRC` and `#+END_SRC` tags:
+
+```org
+#+BEGIN_SRC typescript
+export function decodeHeader(buffer: ArrayBuffer): void {
+    const view = new DataView(buffer);
+    console.log("Decoding complete");
+}
+#+END_SRC
+```
+
+The converter translates these blocks into standard triple-backtick fenced blocks:
+
+```markdown
+```typescript
+export function decodeHeader(buffer: ArrayBuffer): void {
+    const view = new DataView(buffer);
+    console.log("Decoding complete");
+}
+```
+```
+
+## Frontmatter and Document Metadata
+
+Org files typically open with metadata tags:
+```org
+#+TITLE: System Architecture Guide
+#+AUTHOR: Engineering Team
+#+DATE: 2026-09-12
+#+TAGS: architecture systems compiler
+```
+
+[convrtr](/document/org-to-markdown) parses these leading tags and formats them into an industry-standard YAML frontmatter block:
+```yaml
+---
+title: System Architecture Guide
+author: Engineering Team
+date: 2026-09-12
+tags: [architecture, systems, compiler]
+---
+```
+This guarantees that converted files are immediately recognized by Obsidian metadata parsers, Hugo/Jekyll static site generators, and Astro content collections.
+
+## In-Browser Execution with Zero Server Uploads
+
+Converting notes containing sensitive business logic, proprietary meeting agendas, or confidential research requires strict privacy.
+
+[convrtr's Org Mode to Markdown converter](/document/org-to-markdown) processes documents 100% client-side in browser memory:
+- **Zero Network Transmission**: Your personal journal and task archives are never uploaded to any remote server.
+- **Batch Export**: Convert individual `.org` files or full directories into standard `.md` collections.
+- **Cross-Platform Interoperability**: Seamlessly move notes from Emacs into Obsidian, Notion, GitHub, and Roam Research.

@@ -273,6 +273,15 @@ const MIME_MAP: Record<string, string> = {
 	"audio/xm": "xm",
 	"audio/x-xm": "xm",
 	"application/x-xm": "xm",
+	"image/cgm": "cgm",
+	"image/x-cgm": "cgm",
+	"application/cgm": "cgm",
+	"application/x-cgm": "cgm",
+	"audio/s3m": "s3m",
+	"audio/x-s3m": "s3m",
+	"application/x-s3m": "s3m",
+	"application/x-evernote-enex": "enex",
+	"application/enex+xml": "enex",
 };
 
 /**

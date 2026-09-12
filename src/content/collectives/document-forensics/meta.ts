@@ -12,5 +12,8 @@ export const meta: CollectiveMeta = {
 		"document/goodnotes-to-pdf",
 		"document/bibtex-to-markdown",
 		"document/nfo-to-html",
+		"document/org-to-markdown",
+		"image/dcm-to-png",
+		"document/enex-to-markdown",
 	],
 };

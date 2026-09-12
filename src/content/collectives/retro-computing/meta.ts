@@ -18,5 +18,7 @@ export const meta: CollectiveMeta = {
 		"audio/aud-to-wav",
 		"audio/avr-to-wav",
 		"image/chr-to-png",
+		"audio/xm-to-wav",
+		"audio/s3m-to-wav",
 	],
 };

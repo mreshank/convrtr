@@ -105,8 +105,8 @@ export default function GroupsIndexPage() {
 				}}
 				grid={[
 					{ heading: "BY TYPE", items: typeGroups.map(toTypeItem) },
-					{ heading: "BY FORMAT", items: formatGroups.map(toFormatItem) },
 					{ heading: "BY TASK", items: taskGroups.map(toTaskItem) },
+					{ heading: "BY FORMAT", items: formatGroups.map(toFormatItem) },
 				]}
 			/>
 		</>

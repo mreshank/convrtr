@@ -1,0 +1,107 @@
+For over a decade, Evernote was the undisputed king of personal knowledge management (PKM). Millions of professionals, researchers, and students entrusted it with their lecture notes, travel itineraries, journal entries, code snippets, and corporate documentation.
+
+As modern, local-first note-taking platforms like Obsidian, Logseq, and Foam gained dominance, thousands of users sought to migrate their archives. However, Evernote exports notes not as standard Markdown or open text, but as **Evernote XML Export** (`.enex`) archives. Inside these XML containers lies **ENML** (Evernote Markup Language)—a specialized XHTML subset packed with custom XML entities, embedded media hashes, and proprietary attributes that desktop text editors cannot parse.
+
+This engineering guide examines the forensic XML structure of `.enex` files, explains how ENML tags and metadata are unpacked, and demonstrates how [convrtr's Evernote to Markdown engine](/document/enex-to-markdown) transforms legacy ENEX archives into clean, structured GitHub Flavored Markdown (GFM) directly inside your browser.
+
+## The ENEX Container Architecture
+
+An `.enex` export is a structured XML document enveloped by an `<en-export>` root tag declaring the export date and application version:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE en-export SYSTEM "http://xml.evernote.com/pub/evernote-export4.dtd">
+<en-export export-date="20260912T140000Z" application="Evernote" version="10.85.1">
+  <note>
+    <title>Q3 Architecture Strategy</title>
+    <content>
+      <![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+      <!DOCTYPE en-note SYSTEM "http://xml.evernote.com/pub/enml2.dtd">
+      <en-note>
+        <div>Summary of high-priority architectural objectives:</div>
+        <div><en-todo checked="true"/> Complete client-side S3M audio synthesizer</div>
+        <div><en-todo checked="false"/> Author ISO 8632 CGM vector converter</div>
+      </en-note>]]>
+    </content>
+    <created>20260901T091530Z</created>
+    <updated>20260910T164500Z</updated>
+    <tag>engineering</tag>
+    <tag>architecture</tag>
+    <note-attributes>
+      <source-url>https://internal.wiki/arch-review</source-url>
+      <author>Lead Systems Architect</author>
+    </note-attributes>
+  </note>
+</en-export>
+```
+
+### Forensic Note Elements
+
+Within each `<note>` tag, the key fields include:
+- `<title>`: Plain-text string containing the note title.
+- `<created>` / `<updated>`: ISO 8601-like timestamps formatted as `YYYYMMDDTHHMMSSZ` (e.g., `20260901T091530Z`).
+- `<tag>`: Zero or more user-defined classification tags.
+- `<note-attributes>`: Optional metadata blocks detailing geolocation (`<latitude>`, `<longitude>`, `<altitude>`), source URL, author, and reminder deadlines.
+- `<content>`: A `CDATA` block containing the full ENML document.
+
+## Demystifying ENML: Evernote Markup Language
+
+The inner content is serialized as an XML document constrained by the `enml2.dtd` specification. While ENML borrows heavily from standard XHTML (`<div>`, `<p>`, `<span>`, `<h1>`–`<h6>`, `<ul>`, `<ol>`, `<li>`, `<table>`), it introduces specialized tags and strict validation rules:
+
+### 1. The `<en-note>` Root Container
+All note content is wrapped inside `<en-note>`. It forbids script tags, style sheets, iframes, and arbitrary HTML forms.
+
+### 2. Checklists and Action Items: `<en-todo>`
+Evernote encodes interactive task checkboxes as self-closing `<en-todo>` elements:
+- `<en-todo checked="false"/> Draft specification`
+- `<en-todo checked="true"/> Verify zero-server export`
+
+In Markdown, these map directly to GitHub Flavored Markdown task list syntax:
+- `- [ ] Draft specification`
+- `- [x] Verify zero-server export`
+
+### 3. Media and Attachments: `<en-media>`
+Instead of standard `<img>` tags pointing to remote URLs, ENML represents embedded images, audio clips, and PDF attachments via `<en-media>`:
+```xml
+<en-media type="image/png" hash="d41d8cd98f00b204e9800998ecf8427e"/>
+```
+The `hash` attribute contains the MD5 hex digest of the binary payload, which is stored in a sibling `<resource>` block under the `<note>` element encoded as base64 data.
+
+## Transforming ENEX into Modern Markdown
+
+To produce notes that render seamlessly in Obsidian, Logseq, Notion, or GitHub, the converter executes a multi-stage transformation pipeline:
+
+### Stage 1: YAML Frontmatter Extraction
+Metadata from the XML envelope is parsed and formatted as YAML frontmatter at the top of the file:
+
+```markdown
+---
+title: "Q3 Architecture Strategy"
+created: 2026-09-01T09:15:30Z
+updated: 2026-09-10T16:45:00Z
+tags:
+  - engineering
+  - architecture
+source: "https://internal.wiki/arch-review"
+author: "Lead Systems Architect"
+---
+```
+
+### Stage 2: HTML Table to GFM Pipe Table Conversion
+Evernote tables (`<table>`, `<tr>`, `<th>`, `<td>`) are converted into standard GFM pipe tables:
+- Table headers are extracted to create the column definition row (`| Col 1 | Col 2 |`).
+- A separator row (`| :--- | :--- |`) is dynamically generated.
+- Multi-line cell text is trimmed and whitespace-normalized to preserve table formatting.
+
+### Stage 3: Formatting and Code Block Preservation
+- Bold (`<b>`, `<strong>`) maps to `**text**`.
+- Italics (`<i>`, `<em>`) maps to `*text*`.
+- Strikethrough (`<s>`, `<strike>`, `<del>`) maps to `~~text~~`.
+- Preformatted code blocks (`<pre><code>`) preserve syntax indentation within Markdown triple-backtick fences.
+- HTML character entities (`&amp;`, `&lt;`, `&gt;`, `&quot;`, `&apos;`, `&#39;`) are decoded into standard UTF-8 characters.
+
+## Local-First Privacy for Personal Knowledge
+
+Personal notes contain some of the most sensitive data an individual or enterprise owns: passwords, medical histories, confidential meeting minutes, and proprietary project roadmaps.
+
+Uploading gigabytes of personal note archives to unknown web servers is a massive security and privacy risk. Because convrtr's ENEX converter executes entirely client-side using native browser streaming and XML parsing, your private notes are never transmitted across the network, logged, or retained.

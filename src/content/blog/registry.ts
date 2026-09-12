@@ -5,11 +5,17 @@ import { meta as convertingAtariStAvrAudioToWav } from "./converting-atari-st-av
 import { meta as convertingAtariStDegasToPng } from "./converting-atari-st-degas-to-png/meta";
 import { meta as convertingBibtexToMarkdownTables } from "./converting-bibtex-to-markdown-tables/meta";
 import { meta as convertingC64KoalaKoaToPng } from "./converting-c64-koala-koa-to-png/meta";
+import { meta as convertingCgmToSvg } from "./converting-cgm-to-svg/meta";
 import { meta as convertingCp437NfoSceneArtToHtml } from "./converting-cp437-nfo-scene-art-to-html/meta";
+import { meta as convertingDicomMedicalImagesToPng } from "./converting-dicom-medical-images-to-png/meta";
+import { meta as convertingEmacsOrgModeToMarkdown } from "./converting-emacs-org-mode-to-markdown/meta";
+import { meta as convertingEvernoteEnexToMarkdown } from "./converting-evernote-enex-to-markdown/meta";
+import { meta as convertingFasttrackerXmModulesToWav } from "./converting-fasttracker-xm-modules-to-wav/meta";
 import { meta as convertingGedcomFamilyTreeToCsv } from "./converting-gedcom-family-tree-to-csv/meta";
 import { meta as convertingGoodnotesToPdfWithoutApp } from "./converting-goodnotes-to-pdf-without-app/meta";
 import { meta as convertingNesChrTileRomToPng } from "./converting-nes-chr-tile-rom-to-png/meta";
 import { meta as convertingPlaystationVagAudioToWav } from "./converting-playstation-vag-audio-to-wav/meta";
+import { meta as convertingScreamTrackerS3mToWav } from "./converting-scream-tracker-s3m-to-wav/meta";
 import { meta as convertingTelephonyUlawAlawToWav } from "./converting-telephony-ulaw-alaw-to-wav/meta";
 import { meta as convertingWestwoodAudAudioToWav } from "./converting-westwood-aud-audio-to-wav/meta";
 import { meta as decodingZxSpectrumScrMemoryDumps } from "./decoding-zx-spectrum-scr-memory-dumps/meta";
@@ -60,6 +66,12 @@ export const BLOG_POSTS: BlogPostMeta[] = [
 	convertingAtariStAvrAudioToWav,
 	convertingCp437NfoSceneArtToHtml,
 	convertingNesChrTileRomToPng,
+	convertingFasttrackerXmModulesToWav,
+	convertingDicomMedicalImagesToPng,
+	convertingEmacsOrgModeToMarkdown,
+	convertingCgmToSvg,
+	convertingScreamTrackerS3mToWav,
+	convertingEvernoteEnexToMarkdown,
 ];
 
 export function getPost(

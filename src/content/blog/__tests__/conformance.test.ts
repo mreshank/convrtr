@@ -34,6 +34,12 @@ const POST_SLUGS = [
 	"converting-atari-st-avr-audio-to-wav",
 	"converting-cp437-nfo-scene-art-to-html",
 	"converting-nes-chr-tile-rom-to-png",
+	"converting-fasttracker-xm-modules-to-wav",
+	"converting-dicom-medical-images-to-png",
+	"converting-emacs-org-mode-to-markdown",
+	"converting-cgm-to-svg",
+	"converting-scream-tracker-s3m-to-wav",
+	"converting-evernote-enex-to-markdown",
 ];
 
 describe("blog registry conformance", () => {
