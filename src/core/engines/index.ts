@@ -1,6 +1,8 @@
+import { sixSixNineToWavEngine } from "./669";
 import { eightSvxToWavEngine } from "./8svx";
 import { abrToPngEngine } from "./abr";
 import { abwToMarkdownEngine } from "./abw";
+import { acbmToPngEngine } from "./acbm";
 import { acoToCssEngine } from "./aco";
 import { actToCssEngine } from "./act";
 import { adxToWavEngine } from "./adx";
@@ -55,6 +57,7 @@ import { pckToZipEngine } from "./godot";
 import { goodnotesToPdfEngine } from "./goodnotes";
 import { gpxToGeoJsonEngine } from "./gpx";
 import { hdrToPngEngine } from "./hdr";
+import { hwpToMarkdownEngine } from "./hwp";
 import { icnsToPngEngine } from "./icns";
 import { icoToPngEngine } from "./ico";
 import { iffToPngEngine } from "./iff";
@@ -335,6 +338,9 @@ function buildImageEngines(): Map<string, Engine> {
 	engines.set(farToWavEngine.id, farToWavEngine);
 	engines.set(abwToMarkdownEngine.id, abwToMarkdownEngine);
 	engines.set(artStudioToPngEngine.id, artStudioToPngEngine);
+	engines.set(sixSixNineToWavEngine.id, sixSixNineToWavEngine);
+	engines.set(hwpToMarkdownEngine.id, hwpToMarkdownEngine);
+	engines.set(acbmToPngEngine.id, acbmToPngEngine);
 	{
 		const engine = createAudioLegacyEngine("opus", "mp3");
 		engines.set(engine.id, engine);
@@ -472,9 +478,11 @@ export async function selectEngine(
 	return undefined;
 }
 
+export { sixSixNineToWavEngine } from "./669";
 export { eightSvxToWavEngine } from "./8svx";
 export { abrToPngEngine } from "./abr";
 export { abwToMarkdownEngine } from "./abw";
+export { acbmToPngEngine } from "./acbm";
 export { acoToCssEngine } from "./aco";
 export { actToCssEngine } from "./act";
 export { aiffToWavEngine } from "./aiff";
@@ -508,6 +516,7 @@ export { gedcomToCsvEngine } from "./gedcom";
 export { gmlToGeoJsonEngine } from "./gml";
 export { gpxToGeoJsonEngine } from "./gpx";
 export { hdrToPngEngine } from "./hdr";
+export { hwpToMarkdownEngine } from "./hwp";
 export { icoToPngEngine } from "./ico";
 export { iffToPngEngine } from "./iff";
 export { ircamToWavEngine } from "./ircam";

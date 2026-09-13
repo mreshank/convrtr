@@ -52,6 +52,9 @@ const POST_SLUGS = [
 	"converting-farandole-composer-far-to-wav",
 	"converting-abiword-abw-to-markdown",
 	"converting-c64-art-studio-to-png",
+	"converting-composer-669-tracker-to-wav",
+	"converting-hangul-word-processor-hwp-to-markdown",
+	"converting-amiga-acbm-continuous-bitmap-to-png",
 ];
 
 describe("blog registry conformance", () => {

@@ -1,0 +1,98 @@
+In the genesis years of the IBM PC demoscene in 1992, tracker music was heavily dominated by the Commodore Amiga's 4-channel ProTracker format. However, as 386 and 486 PCs equipped with Creative Sound Blaster cards became widespread, PC demoscene composers demanded more channels, faster tempo controls, and dedicated artist metadata.
+
+Enter **Composer 669**, created in 1992 by polish programmer and demoscener Tomasz Pytel (Tran of Renaissance) alongside UNIS 669. Modules saved in this format carry the **`.669`** extension. Composer 669 established an 8-channel standard on MS-DOS, featuring 64-row pattern matrices, an embedded 108-byte text notepad, and raw 8-bit unsigned PCM sample banks.
+
+This technical guide unpacks the binary architecture of `.669` files, details how its 8-channel voice registers and playback lists function, and demonstrates how [convrtr's 669 to WAV synthesizer](/audio/669-to-wav) renders vintage DOS chiptune modules into 16-bit 44.1kHz stereo WAV audio entirely within your browser memory.
+
+## The 669 File Header Specification
+
+Every Composer 669 file starts with a fixed-format header defining global song parameters:
+
+| Offset | Size (Bytes) | Field Name | Description |
+| :--- | :--- | :--- | :--- |
+| `0x00` | 2 bytes | Signature Tag | Magic bytes `"if"` (`0x69 0x66`) or `"JN"` (`0x4A 0x4E`) |
+| `0x02` | 108 bytes | Song Message | 3 lines of 36 ASCII characters each |
+| `0x6E` | 1 byte | Sample Count | Number of active instruments (up to 64) |
+| `0x6F` | 1 byte | Pattern Count | Total unique pattern matrices (up to 128) |
+| `0x70` | 1 byte | Loop Order | Order index where song loops after completion |
+| `0x71` | 128 bytes | Order List | Pattern playback sequence (`0xFF` indicates stop) |
+| `0xF1` | 128 bytes | Tempo List | Playback speed for each order position |
+| `0x171` | 128 bytes | P-Break List | Pattern break row for early order advancement |
+
+### The "if" and "JN" Signatures
+
+Composer 669 files use two primary magic headers:
+
+- **`if` (`0x69 0x66`):** The standard signature found in original Composer 669 files created with early versions of Tomasz Pytel's tracker.
+- **`JN` (`0x4A 0x4E`):** The extended signature used by UNIS 669 and Renaissance tracker releases, introducing refined pitch calculation tables and smoother note slides.
+
+### The 108-Byte Artist Message Block
+
+Rather than hiding author information in empty sample names, Composer 669 provides three dedicated 36-character lines (`108 bytes` total). These lines were typically used for the song title, artist handle, and demogroup affiliation:
+
+```text
+Offset 0x02: "EUPHORIA IN C MINOR                 "
+Offset 0x26: "COMPOSED BY TRAN / RENAISSANCE 1992 "
+Offset 0x4A: "GREETINGS TO ALL DEMOMAKERS         "
+```
+
+Null bytes (`\0`) inside this block terminate each string, with the remainder of each line padded with ASCII spaces (`0x20`).
+
+## Sample Descriptors and Waveform Storage
+
+Directly after the p-break table at offset `0x1F1`, the file provides descriptor records for 64 instruments. Each descriptor is exactly 25 bytes in length:
+
+| Offset | Size (Bytes) | Field Name | Description |
+| :--- | :--- | :--- | :--- |
+| `+0x00` | 13 bytes | Filename | Null-terminated 8.3 DOS filename of sample |
+| `+0x0D` | 4 bytes (LE) | Sample Length | Total PCM length in bytes (up to 64KB) |
+| `+0x11` | 4 bytes (LE) | Loop Start | Byte offset where sample loop begins |
+| `+0x15` | 4 bytes (LE) | Loop End | Byte offset where loop ends (`0xFFFFFFFF` if non-looping) |
+
+### 8-Bit Unsigned PCM Audio
+
+Following all pattern matrices, the file stores raw waveform data. Unlike Amiga MOD files which use signed 8-bit PCM (where zero is represented by `0x00` and values range from `-128` to `+127`), Composer 669 samples are stored as **8-bit unsigned PCM** (where silence is `0x80`, maximum negative is `0x00`, and maximum positive is `0xFF`), matching the native DAC expectations of Sound Blaster DSP hardware.
+
+When converting 8-bit unsigned PCM to 16-bit signed audio:
+
+```typescript
+const unsignedByte = sampleData[offset];
+const signedSample = (unsignedByte - 128) << 8;
+```
+
+## Pattern Matrices: 8-Channel Polyphony
+
+Composer 669 patterns are organized into 64 rows across 8 independent polyphonic channels. Unlike formats with variable row counts, 669 patterns have a fixed size:
+
+```text
+Pattern Size = 64 rows * 8 channels * 3 bytes = 1,536 bytes
+```
+
+Each 3-byte cell represents a single channel event:
+
+```text
+Byte 0: [ N5 N4 N3 N2 N1 N0 I5 I4 ]  (6 bits Note, 2 bits Instrument MSB)
+Byte 1: [ I3 I2 I1 I0 V3 V2 V1 V0 ]  (4 bits Instrument LSB, 4 bits Volume)
+Byte 2: [ E3 E2 E1 E0 P3 P2 P1 P0 ]  (4 bits Effect command, 4 bits Parameter)
+```
+
+- **Note (6 bits):** Values `0` to `59` represent 5 octaves of musical semitones. A value of `0x3F` (`63`) indicates no note event.
+- **Instrument (6 bits):** 0 to 63 indicating the sample number to trigger.
+- **Volume (4 bits):** Direct volume setting from `0` to `15`, mapped linearly to standard `0`–`64` channel volume.
+- **Effect & Parameter:** Commands such as porta up (`1`), porta down (`2`), tone portamento (`3`), and frequency vibrato (`4`).
+
+## Real-Time Audio Synthesis in convrtr
+
+To render a `.669` file into a WAV audio file, [convrtr](/audio/669-to-wav) performs client-side software mixing:
+
+1. **Timer Resolution:** Order positions are processed using the order-specific tempo array, converting tempo ticks into exact millisecond intervals.
+2. **Channel Mixing:** For each audio frame, all 8 channels compute their current sample index based on the note's playback frequency:
+
+```text
+frequency = 8363 * Math.pow(2, (note - 24) / 12)
+```
+
+3. **Stereo Panning:** Channels 0, 2, 4, 6 pan left (70% left / 30% right), while channels 1, 3, 5, 7 pan right (30% left / 70% right), recreating classic PC stereo soundcard separation.
+4. **WAV Header Generation:** Mixed floating-point audio accumulators are clamped, converted to 16-bit signed integers, and packaged into a standard RIFF/WAVE header container.
+
+All processing runs entirely in client-side TypeScript within the browser sandbox, guaranteeing that your demoscene module archive never leaves your device.

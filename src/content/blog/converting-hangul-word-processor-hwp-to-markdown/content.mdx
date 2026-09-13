@@ -1,0 +1,85 @@
+In South Korea, word processing in the public sector, courts, school systems, and civil institutions is overwhelmingly centered around **Hancom Hangul** (formerly Hangul Word Processor). While Microsoft Word dominates most of the globe, the statutory standard in South Korea has long been the **`.hwp`** format.
+
+For security researchers, legal professionals, and digital archivists outside South Korea, opening `.hwp` files presents a formidable challenge. Legacy HWP files cannot be viewed in standard macOS or Linux environments without proprietary software or slow third-party cloud services.
+
+This deep dive breaks down the internal architecture of **HWP 5.x**, explaining how its Microsoft OLE 2.0 Compound File Binary (CFB) structure, raw Deflate stream compression, and record-based paragraph tags work. We also explain how [convrtr's HWP to Markdown extractor](/document/hwp-to-markdown) transforms complex binary HWP documents into clean, searchable GitHub Flavored Markdown with 100% client-side privacy.
+
+## The OLE 2.0 Compound File Binary (CFB) Architecture
+
+Modern HWP 5.x files do not use custom flat binary headers. Instead, they are packaged as **Microsoft OLE 2.0 Compound Documents** (the same structured storage format used by legacy `.doc` and `.xls` files).
+
+An OLE CFB file acts as a mini virtual filesystem partitioned into 512-byte sectors:
+
+```text
+[512-Byte Header] -> [FAT Sector Pointers] -> [Directory Stream] -> [Data Streams]
+```
+
+### Locating the Directory Stream
+
+The first 512 bytes contain the compound document header:
+
+1. **Magic Signature:** `0xD0 0xCF 0x11 0xE0 0xA1 0xB1 0x1A 0xE1` (identifies OLE CFB).
+2. **Sector Size:** Offset `0x1E` stores the sector shift (usually `9`, meaning $2^9 = 512$ bytes per sector).
+3. **Master Sector Allocation Table (MSAT):** Offset `0x4C` holds pointers to the sectors containing the File Allocation Table (FAT).
+4. **Directory Start Sector:** Offset `0x30` points to the first sector of the directory tree.
+
+Each directory entry is exactly 128 bytes, storing a UTF-16LE stream name, stream type (storage vs. stream), and starting sector index. In an authentic HWP 5.x file, the directory includes:
+
+- `FileHeader`: Global document properties and compression flags.
+- `DocInfo`: Document styles, fonts, and numbering schemes.
+- `BodyText`: A storage container holding stream sections: `Section0`, `Section1`, `Section2`, etc.
+
+## The FileHeader Stream
+
+The `FileHeader` stream contains metadata vital for decoding the rest of the document:
+
+| Offset | Size (Bytes) | Field Name | Description |
+| :--- | :--- | :--- | :--- |
+| `0x00` | 32 bytes | Signature | ASCII string `"HWP Document File"` |
+| `0x20` | 4 bytes | Version | Major, minor, build, and revision numbers |
+| `0x24` | 4 bytes | Document Flags | Bit 0: Compressed (`1`) or Uncompressed (`0`) |
+
+If bit 0 of the document flags is set, every subsequent section stream in the `BodyText` storage is compressed using raw **Deflate** (RFC 1951) without zlib or gzip wrapper headers.
+
+## Decompressing BodyText Sections
+
+The actual textual contents of an HWP document are split across `Section*` streams inside the `BodyText` storage directory.
+
+When reading `Section0`:
+
+1. The FAT sector chain is traversed to concatenate all sectors into a contiguous byte buffer.
+2. If `compressed === true`, the raw byte buffer is passed directly to an in-memory Deflate inflator.
+3. The decompressed output reveals a sequential stream of **HWP 5.x Records**.
+
+## HWP Record Architecture and HWPTAG_PARA_TEXT
+
+HWP 5.x organizes decompressed section data into a tag-length-value (TLV) record stream. Each record begins with a 32-bit integer header:
+
+```text
+Bits 0–9:   Tag ID (10 bits, values 0–1023)
+Bits 10–19: Hierarchical Level (10 bits)
+Bits 20–31: Record Size (12 bits)
+```
+
+If the 12-bit record size equals `0xFFF` (`4095`), the record is larger than 4KB, and the exact 32-bit byte length is stored immediately following the 4-byte header.
+
+### Decoding Paragraph Text (Tag 68)
+
+The most important record for text extraction is **Tag 68 (`HWPTAG_PARA_TEXT`)**. This record stores the text of a paragraph formatted as **UTF-16LE** characters.
+
+However, Hancom embeds proprietary inline control codes directly into the character stream:
+
+- Characters below `32` (`0x0020`) represent inline object markers, footnotes, table boundaries, or section breaks.
+- For example, character `0x000A` represents a line break, while `0x0018` denotes an inline shape or table cell.
+
+[convrtr's HWP parser](/document/hwp-to-markdown) filters out non-printable control characters, normalizes line breaks, and extracts paragraphs into clean text strings.
+
+## Converting HWP to GitHub Flavored Markdown
+
+Once raw paragraph records are extracted, [convrtr](/document/hwp-to-markdown) synthesizes them into structured Markdown:
+
+1. **YAML Frontmatter:** Generates YAML headers recording the document title, HWP version (e.g. `5.0`), section counts, and total paragraphs.
+2. **Heading Detection:** Analyzes Korean legal and bureaucratic numbering conventions (such as `"제 1 장"` or `"1."`) to assign appropriate `##` and `###` Markdown heading levels.
+3. **Zero Server Uploads:** All OLE directory tree traversal, FAT sector chaining, Deflate decompression, and UTF-16LE decoding take place 100% locally in your browser memory via TypeScript.
+
+Your confidential Korean administrative, legal, and educational files never touch an external server or API endpoint.

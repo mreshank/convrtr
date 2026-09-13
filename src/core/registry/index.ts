@@ -1,3 +1,4 @@
+import { sixSixNineToWav } from "./tools/audio/669-to-wav";
 import { eightSvxToWav } from "./tools/audio/8svx-to-wav";
 import { adxToWav } from "./tools/audio/adx-to-wav";
 import { aiffToWav } from "./tools/audio/aiff-to-wav";
@@ -61,6 +62,7 @@ import { gedcomToCsv } from "./tools/document/gedcom-to-csv";
 import { gmlToGeoJson } from "./tools/document/gml-to-geojson";
 import { goodnotesToPdf } from "./tools/document/goodnotes-to-pdf";
 import { gpxToGeoJson } from "./tools/document/gpx-to-geojson";
+import { hwpToMarkdown } from "./tools/document/hwp-to-markdown";
 import { kmlToGeoJson } from "./tools/document/kml-to-geojson";
 import { kmzToGeoJson } from "./tools/document/kmz-to-geojson";
 import { latexToMarkdown } from "./tools/document/latex-to-markdown";
@@ -91,6 +93,7 @@ import { gifFrames } from "./tools/gif-frames";
 import { heicToJpg } from "./tools/heic-to-jpg";
 import { heicToPng } from "./tools/heic-to-png";
 import { heicToWebp } from "./tools/heic-to-webp";
+import { acbmToPng } from "./tools/image/acbm-to-png";
 import { abrToPng } from "./tools/image/abr-to-png";
 import { aniToPng } from "./tools/image/ani-to-png";
 import { artToPng } from "./tools/image/art-to-png";
@@ -345,6 +348,9 @@ export const TOOLS: Tool[] = [
 	farToWav,
 	abwToMarkdown,
 	artToPng,
+	sixSixNineToWav,
+	hwpToMarkdown,
+	acbmToPng,
 ];
 
 export function getTool(id: string): Tool | undefined {

@@ -70,18 +70,19 @@ Following the 64 sample headers, the raw 8-bit signed linear PCM waveforms are s
 To convert a `.far` file into standard 16-bit stereo WAV audio without a DOS emulator, [convrtr's synthesis engine](/audio/far-to-wav) performs real-time multi-channel voice mixing in the browser:
 
 ### 1. Pitch Period Calculation
-For any note $N \in [1, 84]$, the target frequency $f$ is calculated using equal temperament relative to middle C (note 49 at 8363 Hz):
+For any note `N` from 1 to 84, the target frequency `f` is calculated using equal temperament relative to middle C (note 49 at 8363 Hz):
 
-$$f = 8363 \times 2^{\frac{N - 49}{12}}$$
-
-The per-sample playback increment step is then:
-
-$$\text{step} = \frac{f}{\text{sampleRate}}$$
+```text
+f = 8363 * Math.pow(2, (N - 49) / 12)
+step = f / sampleRate
+```
 
 ### 2. Linear Interpolation and Loop Wrapping
 When stepping through 8-bit PCM waveforms at fractional positions, linear interpolation eliminates high-frequency aliasing distortion:
 
-$$\text{sample}(t) = (1 - \text{frac}) \times \text{pcm}[\lfloor t \rfloor] + \text{frac} \times \text{pcm}[\lceil t \rceil]$$
+```text
+sample(t) = (1 - frac) * pcm[floor(t)] + frac * pcm[ceil(t)]
+```
 
 If playback reaches `loopEnd` on a looping sample, the read cursor smoothly resets to `loopStart`.
 

@@ -314,6 +314,14 @@ const MIME_MAP: Record<string, string> = {
 	"image/x-c64-art": "art",
 	"image/x-artstudio": "art",
 	"application/x-artstudio": "art",
+	"audio/669": "669",
+	"audio/x-669": "669",
+	"application/x-669": "669",
+	"application/x-hwp": "hwp",
+	"application/haansofthwp": "hwp",
+	"application/vnd.hancom.hwp": "hwp",
+	"image/x-acbm": "acbm",
+	"image/acbm": "acbm",
 };
 
 /**

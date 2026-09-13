@@ -2655,6 +2655,186 @@ export const COMPARISONS: ComparisonMeta[] = [
 			"image/zx-to-png",
 		],
 	},
+	{
+		slug: "669-vs-mod",
+		title:
+			"Composer 669 vs ProTracker MOD: 8-Channel PC vs 4-Channel Amiga Trackers",
+		description:
+			"Technical comparison between Composer 669 (.669) and Amiga ProTracker (.mod). Compare channel architecture, pattern matrix resolution, panning, and sample limits.",
+		formatA: "Composer 669 (.669)",
+		formatB: "ProTracker MOD (.mod)",
+		category: "audio",
+		summary:
+			"Composer 669 (developed by Tomasz Pytel) and Amiga ProTracker were landmark tracker formats of the early 1990s demoscene. While MOD defined 4-channel Amiga Paula tracker music, 669 brought 8-channel polyphony, custom tempos, and extended linear frequency scales to PC Sound Blaster cards.",
+		prosA: [
+			"Native 8-channel polyphony (vs 4 channels in standard ProTracker MOD)",
+			"Fixed 64-row pattern matrices with explicit per-order tempo and p-break flags",
+			"64 sample slots with 8-bit unsigned PCM playback up to 64KB per instrument",
+			"Dedicated 108-byte text message block inside the file header for artist notes",
+		],
+		prosB: [
+			"Universal demoscene and retro standard supported by virtually every media player",
+			"Extensive effect command library (arpeggios, portamento, vibrato, tremolo, volume slides)",
+			"Hardware-accelerated Amiga Paula 4-channel stereo panning (fixed 2L / 2R)",
+			"Immense cultural archive with hundreds of thousands of classic tracked modules",
+		],
+		specs: [
+			{
+				feature: "Original Creator",
+				formatA: "Tomasz Pytel / UNIS (1992)",
+				formatB: "Karsten Obarski / Lars Hamre (1987)",
+			},
+			{
+				feature: "Audio Channels",
+				formatA: "8 channels (Sound Blaster / Gravis UltraSound)",
+				formatB: "4 channels (Amiga Paula DACs)",
+			},
+			{
+				feature: "Sample Capacity",
+				formatA: "64 samples (up to 64KB per instrument)",
+				formatB: "15 or 31 samples (up to 64KB per instrument)",
+			},
+			{
+				feature: "Pattern Length",
+				formatA: "Fixed 64 rows per pattern",
+				formatB: "Fixed 64 rows per pattern",
+			},
+			{
+				feature: "Header Message",
+				formatA: "108-byte text block (3 lines of 36 characters)",
+				formatB: "Song name (20 bytes) + instrument names only",
+			},
+		],
+		verdict:
+			"ProTracker MOD remains the most iconic tracker format in computer history, but Composer 669 paved the way for multi-channel PC demoscene music on DOS. Convert both .669 and .mod tracked modules to 16-bit 44.1kHz stereo WAV for pristine preservation and streaming.",
+		relatedTools: [
+			"audio/669-to-wav",
+			"audio/mod-to-wav",
+			"audio/s3m-to-wav",
+			"audio/xm-to-wav",
+			"audio/it-to-wav",
+		],
+	},
+	{
+		slug: "hwp-vs-docx",
+		title:
+			"Hangul HWP vs Microsoft Word DOCX: South Korean Word Processing vs Global Standards",
+		description:
+			"Compare Hancom Hangul Word Processor (.hwp) and Microsoft Word OpenXML (.docx). Analyze OLE compound binary storage vs zipped XML, Korean typography, and document interoperability.",
+		formatA: "Hangul HWP (.hwp)",
+		formatB: "Word DOCX (.docx)",
+		category: "document",
+		summary:
+			"Hancom Hangul (.hwp) is the statutory standard for government, public education, and enterprise administration across South Korea, whereas Microsoft Word (.docx) is the international standard for office documentation. While DOCX relies on zipped XML, HWP 5.x utilizes an OLE Compound File Binary (CFB) container with compressed Deflate text streams.",
+		prosA: [
+			"Deep native optimization for Korean typography, Hangeul syllable composition, and vertical layouts",
+			"Statutory standard required by South Korean government agencies, courts, and universities",
+			"Comprehensive table formatting, nested cells, and document flow controls tailored for Korean civil forms",
+			"Deflate-compressed binary streams keep complex Asian language documents compact",
+		],
+		prosB: [
+			"Global standard supported natively by Microsoft 365, Google Docs, Apple Pages, and LibreOffice",
+			"Open ISO/IEC 29500 (ECMA-376) OpenXML standard accessible via standard zip/XML parsers",
+			"Extensive multi-user real-time collaboration, change tracking, and cloud synchronisation",
+			"Universal platform compatibility across Windows, macOS, Linux, iOS, Android, and web",
+		],
+		specs: [
+			{
+				feature: "Container Architecture",
+				formatA: "OLE 2.0 Compound File Binary (CFB) with Deflate streams",
+				formatB: "ZIP archive containing ISO/IEC 29500 XML files",
+			},
+			{
+				feature: "Text Encoding",
+				formatA: "UTF-16LE inside HWPTAG_PARA_TEXT records",
+				formatB: "UTF-8 in document.xml",
+			},
+			{
+				feature: "Primary Market",
+				formatA: "South Korea (public sector, enterprise, academia)",
+				formatB: "Worldwide (corporate, enterprise, consumer)",
+			},
+			{
+				feature: "Cross-Platform Support",
+				formatA: "Requires proprietary Hancom viewers or converters",
+				formatB: "Universal native reader support on all platforms",
+			},
+			{
+				feature: "Typography Strengths",
+				formatA: "Hangul stroke composition, Hanja dictionaries, cell padding",
+				formatB: "OpenType ligatures, Latin kerning, multilingual scripts",
+			},
+		],
+		verdict:
+			"While DOCX is the worldwide standard for collaborative office documents, HWP remains indispensable when interacting with South Korean public institutions. Convert legacy HWP documents to GitHub Flavored Markdown for seamless cross-platform reading, indexing, and LLM consumption.",
+		relatedTools: [
+			"document/hwp-to-markdown",
+			"document/abw-to-markdown",
+			"document/rtf-to-markdown",
+			"document/epub-to-markdown",
+			"document/pdb-to-markdown",
+		],
+	},
+	{
+		slug: "acbm-vs-ilbm",
+		title:
+			"Amiga ACBM vs IFF-ILBM: Continuous vs Interleaved Planar Bitmaps Compared",
+		description:
+			"Technical comparison between Amiga Continuous Bitmap (.acbm) and standard IFF-ILBM (.iff / .ilbm). Compare planar memory layouts, Amiga Blitter DMA performance, and chunk structures.",
+		formatA: "Amiga ACBM (.acbm)",
+		formatB: "Amiga IFF-ILBM (.iff / .ilbm)",
+		category: "image",
+		summary:
+			"Both ACBM and ILBM are raster graphics formats built upon Electronic Arts' Interchange File Format (IFF) for the Commodore Amiga. However, while ILBM interleaves bitplanes scanline-by-scanline to match Amiga copper display timing, ACBM stores each bitplane as a contiguous, uninterrupted block of memory to optimize fast Blitter DMA copying.",
+		prosA: [
+			"Continuous bitplane layout allows an entire plane to be transferred in a single Blitter DMA operation",
+			"Eliminates CPU overhead of de-interleaving scanlines when streaming graphics to chip RAM",
+			"Standardized IFF container with familiar BMHD, CMAP, and ABMP chunks",
+			"Ideal for game background tiles, sprite sheets, and raw offscreen graphics buffers",
+		],
+		prosB: [
+			"Universal Commodore Amiga standard used by Deluxe Paint and almost all commercial Amiga titles",
+			"Interleaved scanlines (row 0 plane 0, row 0 plane 1...) match display hardware fetch order directly",
+			"Full support for advanced Amiga display modes: Extra Half-Brite (EHB 64-color) and Hold-And-Modify (HAM6)",
+			"Immense demoscene and retro gaming catalog preserved across tens of thousands of disks",
+		],
+		specs: [
+			{
+				feature: "IFF Subtype ID",
+				formatA: "ACBM",
+				formatB: "ILBM or PBM",
+			},
+			{
+				feature: "Planar Organization",
+				formatA: "Continuous (all scanlines for plane 0, then plane 1...)",
+				formatB: "Interleaved (scanline 0 across all planes, then scanline 1...)",
+			},
+			{
+				feature: "Primary Image Chunk",
+				formatA: "ABMP (Amiga Continuous BitMap)",
+				formatB: "BODY",
+			},
+			{
+				feature: "Hardware Target",
+				formatA: "Amiga Blitter DMA and offscreen chip RAM buffers",
+				formatB: "Amiga Denise / AGA video display hardware",
+			},
+			{
+				feature: "Compression Algorithm",
+				formatA: "ByteRun1 RLE (or uncompressed)",
+				formatB: "ByteRun1 RLE (or uncompressed)",
+			},
+		],
+		verdict:
+			"ILBM is the quintessential Amiga graphic format for displaying art directly with Denise, while ACBM was engineered for blitting speed without scanline reorganization. Convert both ACBM and ILBM planar graphics to 32-bit RGBA PNG for flawless reproduction on modern screens.",
+		relatedTools: [
+			"image/acbm-to-png",
+			"image/iff-to-png",
+			"image/art-to-png",
+			"image/koa-to-png",
+			"image/pcx-to-png",
+		],
+	},
 ];
 
 export function getComparison(slug: string): ComparisonMeta | undefined {

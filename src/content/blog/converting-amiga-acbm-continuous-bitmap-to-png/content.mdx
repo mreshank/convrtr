@@ -1,0 +1,130 @@
+In the mid-1980s, Electronic Arts and Commodore developed the **Interchange File Format (IFF)** to standardize graphics, audio, and animations across Amiga personal computers. While the most famous raster graphics subtype was **ILBM** (InterLeaved BitMap), game developers and demoscene coders encountered a major bottleneck with ILBM: scanline interleaving.
+
+Because Amiga display chips fetched graphics scanline by scanline across all bitplanes, ILBM stored pixels as alternating rows: row 0 plane 0, row 0 plane 1, etc. However, when using the Amiga's custom hardware **Blitter** to copy sprites, background tiles, or double-buffered pages directly into chip RAM, having bitplanes interleaved across memory required expensive CPU de-interleaving routines.
+
+To solve this, Commodore and Amiga developers introduced **ACBM (Amiga Continuous BitMap)**. Modules saved in this format carry the **`.acbm`** extension.
+
+This technical guide explores the binary layout of `.acbm` files, analyzes the performance advantages of continuous planar storage, and details how [convrtr's ACBM to PNG converter](/image/acbm-to-png) extracts retro Amiga continuous bitmaps into modern 32-bit RGBA PNG files with zero server uploads.
+
+## The IFF FORM ACBM Container
+
+Like all IFF files, ACBM files begin with the 4-byte ASCII signature `"FORM"`, followed by a 32-bit big-endian payload length and the subtype identifier `"ACBM"`:
+
+| Offset | Size (Bytes) | Field Name | Description |
+| :--- | :--- | :--- | :--- |
+| `0x00` | 4 bytes | Group ID | ASCII string `"FORM"` |
+| `0x04` | 4 bytes (BE) | File Size | Length of file following this 4-byte field |
+| `0x08` | 4 bytes | Format Type | ASCII subtype identifier `"ACBM"` |
+
+Following the 12-byte header, the file contains sequential IFF data chunks, each consisting of a 4-character ID and a 32-bit big-endian length.
+
+## Essential ACBM Chunks
+
+An authentic ACBM file contains three mandatory chunks:
+
+### 1. BMHD (BitMap Header)
+
+The `BMHD` chunk occupies 20 bytes and specifies the display properties of the raster:
+
+| Offset | Size (Bytes) | Field Name | Description |
+| :--- | :--- | :--- | :--- |
+| `+0x00` | 2 bytes (BE) | Width | Image width in pixels |
+| `+0x02` | 2 bytes (BE) | Height | Image height in scanlines |
+| `+0x04` | 2 bytes (BE) | X Position | Preferred screen x coordinate |
+| `+0x06` | 2 bytes (BE) | Y Position | Preferred screen y coordinate |
+| `+0x08` | 1 byte | Number of Planes | Bitplane depth (1 to 8 for indexed, 24 for truecolor) |
+| `+0x09` | 1 byte | Masking | 0 = None, 1 = Has mask, 2 = Transparent color, 3 = Lasso |
+| `+0x0A` | 1 byte | Compression | 0 = Uncompressed, 1 = ByteRun1 RLE |
+| `+0x0B` | 1 byte | Pad | Always 0 |
+| `+0x0C` | 2 bytes (BE) | Transparent Color | Palette index treated as fully transparent |
+| `+0x0E` | 1 byte | X Aspect | Pixel aspect ratio horizontal |
+| `+0x0F` | 1 byte | Y Aspect | Pixel aspect ratio vertical |
+| `+0x10` | 2 bytes (BE) | Page Width | Source display width (e.g. 320 or 640) |
+| `+0x12` | 2 bytes (BE) | Page Height | Source display height (e.g. 200, 256, 400) |
+
+### 2. CMAP (Color Map Palette)
+
+The `CMAP` chunk defines the color table as an array of 3-byte RGB triplets (`[R, G, B]`), with values ranging from `0` to `255`. An image with $N$ bitplanes typically stores $2^N$ colors in the palette.
+
+### 3. ABMP (Amiga Continuous BitMap)
+
+The primary difference between ILBM and ACBM lies here. In ILBM, the graphic data chunk is named `BODY` and is organized as interleaved scanlines. In ACBM, the graphic data chunk is named **`ABMP`** (though some variants use `BODY`) and is stored as **continuous planar arrays**.
+
+## Continuous vs. Interleaved Planar Storage
+
+In the Amiga architecture, a scanline's byte width is always padded up to a 16-bit word boundary (2 bytes):
+
+```text
+bytesPerRow = Math.floor((width + 15) / 16) * 2;
+planeSize   = bytesPerRow * height;
+```
+
+### Interleaved Layout (ILBM)
+
+In ILBM, the file cycles through all planes for each scanline:
+
+```text
+Scanline 0, Plane 0
+Scanline 0, Plane 1
+...
+Scanline 0, Plane N-1
+Scanline 1, Plane 0
+Scanline 1, Plane 1
+```
+
+### Continuous Layout (ACBM)
+
+In ACBM, all scanlines for plane 0 are stored contiguously, followed by all scanlines for plane 1:
+
+```text
+[All Scanlines for Plane 0: bytesPerRow * height]
+[All Scanlines for Plane 1: bytesPerRow * height]
+...
+[All Scanlines for Plane N-1: bytesPerRow * height]
+[Optional Mask Plane: bytesPerRow * height]
+```
+
+This continuous layout allowed the Amiga's hardware Blitter to queue a single DMA block transfer for each plane directly into video memory without needing CPU intervention to reorder scanlines.
+
+## ByteRun1 RLE Decompression
+
+If `compression === 1` in the `BMHD` header, the data inside `ABMP` is compressed using Amiga's standard **ByteRun1 RLE** algorithm:
+
+- Read control byte `b`:
+  - If `0 <= b <= 127`: Copy the next `b + 1` bytes literally.
+  - If `129 <= b <= 255`: Replicate the next byte `257 - b` times.
+  - If `b === 128`: No-op (skip).
+
+Once decompressed, the buffer contains exactly `planeSize * (nPlanes + maskPlanes)` bytes.
+
+## 24-Bit TrueColor and Transparency Decoding
+
+When decoding pixel $(x, y)$ in an indexed ACBM image (1–8 planes):
+
+```typescript
+const byteIndex = y * bytesPerRow + (x >> 3);
+const bitMask = 1 << (7 - (x & 7));
+
+let colorIndex = 0;
+for (let p = 0; p < nPlanes; p++) {
+  const pOffset = p * planeSize + byteIndex;
+  if ((decompressedData[pOffset] & bitMask) !== 0) {
+    colorIndex |= (1 << p);
+  }
+}
+```
+
+For **24-bit TrueColor** ACBM files (24 planes):
+- Planes 0–7 store the 8 bits of the Red color channel.
+- Planes 8–15 store the 8 bits of the Green color channel.
+- Planes 16–23 store the 8 bits of the Blue color channel.
+
+If masking is enabled (`masking === 1`), a 25th bitplane encodes binary alpha (1 = opaque, 0 = transparent). If `masking === 2`, pixels whose color index matches `transparentColor` are rendered with 0 alpha.
+
+## Client-Side Conversion in convrtr
+
+With [convrtr's ACBM to PNG tool](/image/acbm-to-png), vintage Amiga Continuous Bitmap graphics are converted directly in your browser:
+
+- **100% Client-Side:** No server uploads, preserving the confidentiality of private digital assets.
+- **Fast Execution:** In-memory ByteRun1 decompression, bitplane recombination, and Deflate PNG encoding execute in milliseconds.
+- **Color Fidelity:** Accurate palette lookup and 24-bit planar reconstruction ensure vintage graphics look exactly as intended on modern high-DPI displays.

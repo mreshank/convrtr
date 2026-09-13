@@ -2678,10 +2678,14 @@
     - Tool 112: `audio/far-to-wav` (Farandole Composer `.far` 16-channel DOS module tracker to 16-bit stereo WAV) — **Shipped**
     - Tool 113: `document/abw-to-markdown` (AbiWord `.abw` XML document and formatting unpacker to GitHub Flavored Markdown) — **Shipped**
     - Tool 114: `image/art-to-png` (Commodore 64 Advanced Art Studio `.art` hires/multicolor graphics decoder to 32-bit RGBA PNG) — **Shipped**
-40. **Wave 40 (Active Wave / Proposed Candidates):**
-    - Candidate 1 / Tool 115: `audio/669-to-wav` (Composer 669 / UNIS 669 `.669` 8-channel DOS tracker module to 16-bit stereo WAV)
-    - Candidate 2 / Tool 116: `document/hwp-to-markdown` (Hangul Word Processor `.hwp` 5.x / OLE compound document text extractor to GitHub Flavored Markdown)
-    - Candidate 3 / Tool 117: `image/iff-acbm-to-png` (Amiga Continuous Bitmap `.acbm` / `.iff` non-interleaved raster decoder to 32-bit RGBA PNG)
+40. **Wave 40 (Shipped):**
+    - Tool 115: `audio/669-to-wav` (Composer 669 / UNIS 669 `.669` 8-channel DOS tracker module to 16-bit stereo WAV) — **Shipped**
+    - Tool 116: `document/hwp-to-markdown` (Hangul Word Processor `.hwp` 5.x / OLE compound document text extractor to GitHub Flavored Markdown) — **Shipped**
+    - Tool 117: `image/acbm-to-png` (Amiga Continuous Bitmap `.acbm` / `.iff` non-interleaved raster decoder to 32-bit RGBA PNG) — **Shipped**
+41. **Wave 41 (Active Wave / Proposed Candidates):**
+    - Candidate 1 / Tool 118: `audio/amf-to-wav` (Advanced Music Format / ASYLUM Music Format `.amf` 16-channel DOS tracker module to 16-bit stereo WAV)
+    - Candidate 2 / Tool 119: `document/cwk-to-markdown` (ClarisWorks / AppleWorks `.cwk` legacy word processing document extractor to GitHub Flavored Markdown)
+    - Candidate 3 / Tool 120: `image/cpc-to-png` (Amstrad CPC `.cpc` / `.scr` retro screen memory dump decoder to 32-bit RGBA PNG)
 
 
 

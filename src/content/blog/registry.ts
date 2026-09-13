@@ -2,6 +2,7 @@ import { meta as appleMacpaintRetroGraphicsDecoding } from "./apple-macpaint-ret
 import { meta as convertWhatsappWechatSilkToWavMp3 } from "./convert-whatsapp-wechat-silk-to-wav-mp3/meta";
 import { meta as convertingAbiwordAbwToMarkdown } from "./converting-abiword-abw-to-markdown/meta";
 import { meta as convertingAdobePhotoshopAcoPaletteToCss } from "./converting-adobe-photoshop-aco-palette-to-css/meta";
+import { meta as convertingAmigaAcbmContinuousBitmapToPng } from "./converting-amiga-acbm-continuous-bitmap-to-png/meta";
 import { meta as convertingAtariStAvrAudioToWav } from "./converting-atari-st-avr-audio-to-wav/meta";
 import { meta as convertingAtariStDegasToPng } from "./converting-atari-st-degas-to-png/meta";
 import { meta as convertingAtariStNeochromeToPng } from "./converting-atari-st-neochrome-to-png/meta";
@@ -9,6 +10,7 @@ import { meta as convertingBibtexToMarkdownTables } from "./converting-bibtex-to
 import { meta as convertingC64ArtStudioToPng } from "./converting-c64-art-studio-to-png/meta";
 import { meta as convertingC64KoalaKoaToPng } from "./converting-c64-koala-koa-to-png/meta";
 import { meta as convertingCgmToSvg } from "./converting-cgm-to-svg/meta";
+import { meta as convertingComposer669TrackerToWav } from "./converting-composer-669-tracker-to-wav/meta";
 import { meta as convertingCp437NfoSceneArtToHtml } from "./converting-cp437-nfo-scene-art-to-html/meta";
 import { meta as convertingDicomMedicalImagesToPng } from "./converting-dicom-medical-images-to-png/meta";
 import { meta as convertingEmacsOrgModeToMarkdown } from "./converting-emacs-org-mode-to-markdown/meta";
@@ -18,6 +20,7 @@ import { meta as convertingFasttrackerXmModulesToWav } from "./converting-fasttr
 import { meta as convertingFictionbookFb2ToMarkdown } from "./converting-fictionbook-fb2-to-markdown/meta";
 import { meta as convertingGedcomFamilyTreeToCsv } from "./converting-gedcom-family-tree-to-csv/meta";
 import { meta as convertingGoodnotesToPdfWithoutApp } from "./converting-goodnotes-to-pdf-without-app/meta";
+import { meta as convertingHangulWordProcessorHwpToMarkdown } from "./converting-hangul-word-processor-hwp-to-markdown/meta";
 import { meta as convertingImpulseTrackerItToWav } from "./converting-impulse-tracker-it-to-wav/meta";
 import { meta as convertingNesChrTileRomToPng } from "./converting-nes-chr-tile-rom-to-png/meta";
 import { meta as convertingOpenrasterOraToPng } from "./converting-openraster-ora-to-png/meta";
@@ -96,6 +99,9 @@ export const BLOG_POSTS: BlogPostMeta[] = [
 	convertingFarandoleComposerFarToWav,
 	convertingAbiwordAbwToMarkdown,
 	convertingC64ArtStudioToPng,
+	convertingComposer669TrackerToWav,
+	convertingHangulWordProcessorHwpToMarkdown,
+	convertingAmigaAcbmContinuousBitmapToPng,
 ];
 
 export function getPost(
