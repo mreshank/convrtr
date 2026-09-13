@@ -944,13 +944,13 @@ function AuthFormTabs() {
 			]
 		: PUBLISHABLE_KEY
 			? [
-					{ id: "workspace", label: "Local Workspace" },
 					{ id: "signin", label: "Sign In" },
 					{ id: "signup", label: "Create Account" },
+					{ id: "workspace", label: "Local Workspace" },
 				]
 			: [
-					{ id: "workspace", label: "Local Workspace" },
 					{ id: "architecture", label: "Zero-Upload Security" },
+					{ id: "workspace", label: "Local Workspace" },
 				];
 
 	return (
