@@ -82,6 +82,9 @@
 | `.far` | Farandole Composer Tracker Module | Tracker Music / Audio | Daniel Potter 16-channel DOS tracker unpacker & 8-bit signed PCM synthesis with panning to 16-bit stereo WAV | `SOLVED` | **SHIPPED** |
 | `.abw` / `.zabw` | AbiWord Word Processor Document | Document Forensics / Office | AbiWord XML & GZIP container parser with Dublin Core metadata, tables & styled spans to Markdown | `SOLVED` | **SHIPPED** |
 | `.art` | Commodore 64 Advanced Art Studio | Retro / 8-Bit Art | Advanced Art Studio Hires (320x200) & Multicolor (160x200) bitplane decoder with VIC-II palettes to PNG | `SOLVED` | **SHIPPED** |
+| `.669` | Composer 669 / UNIS 669 Module | Tracker Music / Audio | Tomasz Pytel 8-channel DOS tracker unpacker & 8-bit unsigned PCM synthesis to 16-bit stereo WAV | `SOLVED` | **SHIPPED** |
+| `.hwp` | Hancom Hangul Word Processor Document | Document Forensics / Office | OLE Compound Document extractor with Deflate decompression & UTF-16LE text recovery to GFM Markdown | `SOLVED` | **SHIPPED** |
+| `.acbm` | Amiga Continuous Bitmap IFF Graphic | Retro / Amiga Graphics | Continuous planar bitplane decoder with IFF BMHD, CMAP palettes & ByteRun1 decompressor to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
 
 
 
@@ -2519,6 +2522,74 @@
   - Renders the image into a 32-bit RGBA buffer and encodes to standard lossless PNG.
 - **Fidelity:** `CYCLE-ACCURATE VIC-II BITPLANE DECODING & PALETTE EMULATION`.
 - **Status:** **Wave 39 Shipped (`image/art-to-png`) — Milestone Tool 114**.
+
+---
+
+### 115. Composer 669 / UNIS 669 Module (.669)
+- **Ecosystem & Context:** Created in 1992 by Tomasz Pytel (Tran of Renaissance) and popularized by UNIS, Composer 669 (`.669`) was one of the very first PC trackers to expand beyond the standard Amiga 4-channel constraint, providing 8 independent audio channels on early Sound Blaster hardware. Scores of seminal demoscene productions and early DOS game soundtracks were composed in 669.
+- **Forensic Format Architecture:**
+  - Header (495 bytes):
+    - Magic Signature (2 bytes): ASCII `"if"` (`0x69, 0x66`, Composer 669) or `"JN"` (`0x4A, 0x4E`, UNIS 669 extended).
+    - Artist Message (108 bytes): 3 lines of 36 ASCII characters each, historically containing track titles, greeting lists, and technical credits.
+    - Sample Count (1 byte at offset 108): 1 to 64 samples.
+    - Pattern Count (1 byte at offset 109): 1 to 128 patterns.
+    - Loop Order (1 byte at offset 110): Restart order index.
+    - Order Table (128 bytes at offset 111..238): Pattern order indices terminated by `0xFF`.
+    - Tempo Table (128 bytes at offset 239..366): Per-order tempo tick settings.
+    - P-Break Table (128 bytes at offset 367..494): Per-order pattern row length breaks (0..63).
+  - Sample Descriptors:
+    - Up to 64 25-byte instrument headers: 13-byte ASCII filename, 4-byte little-endian sample length (up to 64KB), 4-byte loop start offset, and 4-byte loop end offset.
+  - Pattern Data:
+    - Each pattern contains exactly 64 rows across 8 channels (1,536 bytes per pattern, 3 bytes per channel cell: note & instrument, volume & frequency, and command & argument).
+  - Sample Data:
+    - Raw 8-bit unsigned PCM audio waveforms stored contiguously.
+- **In-Browser Execution Strategy:**
+  - Validates the `"if"` or `"JN"` magic signature, extracts the 108-byte message block into song metadata, and parses order/tempo/break tables.
+  - Mixes 8 concurrent voice channels at 44.1 kHz stereo, resolving equal-temperament tuning frequencies, fractional sample increments, volume attenuation, and sample loop wrapping.
+  - Synthesizes the mixed audio buffer into standard 16-bit linear PCM RIFF WAV format.
+- **Fidelity:** `CYCLE-ACCURATE 8-CHANNEL MIXDOWN TO STEREO WAV`.
+- **Status:** **Wave 40 Shipped (`audio/669-to-wav`) — Milestone Tool 115**.
+
+---
+
+### 116. Hancom Hangul Word Processor Document (.hwp)
+- **Ecosystem & Context:** Hangul Word Processor (`.hwp`) by Hancom is the official, statutory standard document format for the South Korean government, public sector, judicial system, and universities. Legacy HWP 5.x files use a proprietary compound document structure that modern international office suites cannot view natively without proprietary Hancom viewers or third-party cloud converters that risk uploading confidential civil records.
+- **Forensic Format Architecture:**
+  - Container Architecture: Microsoft OLE 2.0 Compound File Binary (CFB) container (`D0 CF 11 E0 A1 B1 1A E1` header).
+  - Stream Directory:
+    - `FileHeader`: 256-byte header containing the signature `"HWP Document File"`, 4-byte version number (`5.0`..`5.1`), and document property flags (bit 0 indicates Deflate compression).
+    - `DocInfo`: Document layout, font faces, char shapes, and style definitions.
+    - `BodyText/Section0..SectionN`: Sequential document body streams containing text, tables, and sections.
+  - Stream Compression: Sections are compressed with standard ZLIB/Deflate streams.
+  - Record Hierarchy:
+    - 4-byte record header: 10-bit Tag ID, 10-bit Level, and 12-bit Size (extended with a 32-bit integer if size equals `0xFFF`).
+    - Tag 68 (`HWPTAG_PARA_TEXT`): Text content encoded in 16-bit little-endian Unicode (UTF-16LE) with control character escapes (table anchors, image bounds, inline formatting).
+- **In-Browser Execution Strategy:**
+  - Custom client-side OLE CFB directory parser parses MSAT, FAT, and MiniFAT tables to extract internal streams.
+  - Decompresses `BodyText/Section*` streams in browser memory using `fflate.inflateSync`.
+  - Walks the HWP record tree, decodes UTF-16LE characters from `HWPTAG_PARA_TEXT` records, filters inline control codes, and emits structured GitHub Flavored Markdown with document metadata.
+- **Fidelity:** `AIR-GAPPED UTF-16LE TEXT & STRUCTURE EXTRACTION`.
+- **Status:** **Wave 40 Shipped (`document/hwp-to-markdown`) — Milestone Tool 116**.
+
+---
+
+### 117. Amiga Continuous Bitmap IFF Graphic (.acbm)
+- **Ecosystem & Context:** While standard Amiga IFF-ILBM graphics interleave bitplane scanlines for display timing compatibility with the Amiga Denise video chip, the Amiga Continuous Bitmap (`.acbm`) format was developed to store each bitplane as a contiguous block of memory. This architecture was designed for blitting operations, fast offscreen animation buffers, and hardware DMA streaming without scanline de-interleaving overhead.
+- **Forensic Format Architecture:**
+  - Container: Electronic Arts Interchange File Format (IFF) container (`FORM` signature at offset 0).
+  - Subtype ID: Four-character ASCII code `"ACBM"` at offset 8.
+  - Chunk Structure:
+    - `BMHD` (BitMap Header, 20 bytes): Width, height, coordinate offsets, bitplane count `nPlanes` (1 to 8), masking mode, and ByteRun1 compression flag.
+    - `CMAP` (Color Map): 3 bytes per color entry (8-bit Red, Green, Blue) defining the Amiga hardware palette.
+    - `ABMP` (Amiga Continuous BitMap) or `BODY`: Continuous planar bitmap data. Unlike ILBM where each row has plane 0, plane 1, etc., in ACBM all rows for Plane 0 are stored sequentially, followed by all rows for Plane 1, up to Plane `N-1`.
+  - Decompression: Uncompressed or ByteRun1 RLE byte decompression.
+- **In-Browser Execution Strategy:**
+  - Validates the IFF `FORM` container and verifies the `"ACBM"` subtype ID.
+  - Parses `BMHD` dimensions and `CMAP` color entries into an RGB palette table.
+  - Calculates row bytes `Math.ceil(width / 16) * 2` and plane size `rowBytes * height`.
+  - Samples each bitplane simultaneously across contiguous memory blocks to compute the exact color index for each pixel (x, y), mapping through the color palette to standard 32-bit RGBA PNG.
+- **Fidelity:** `CYCLE-ACCURATE AMIGA CONTINUOUS BITPLANE RENDERING`.
+- **Status:** **Wave 40 Shipped (`image/acbm-to-png`) — Milestone Tool 117**.
 
 ---
 

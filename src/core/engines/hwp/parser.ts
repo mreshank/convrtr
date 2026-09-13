@@ -383,6 +383,6 @@ export function convertHwpToMarkdown(
 
 	return {
 		metadata,
-		markdown: markdown.trim() + "\n",
+		markdown: `${markdown.trim()}\n`,
 	};
 }
