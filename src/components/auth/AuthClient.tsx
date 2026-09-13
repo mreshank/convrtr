@@ -4,6 +4,7 @@ import { SignIn, SignUp, useUser } from "@clerk/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useId, useState } from "react";
+import { AuthErrorBoundary } from "./AuthErrorBoundary";
 import { clerkAppearance } from "./clerk-theme";
 
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
@@ -639,19 +640,101 @@ function CapabilitiesStrip() {
 	);
 }
 
+function CloudAuthFallback({
+	onSwitchToLocal,
+}: {
+	onSwitchToLocal: () => void;
+}) {
+	return (
+		<div
+			style={{
+				display: "flex",
+				flexDirection: "column",
+				gap: "var(--space-base)",
+				padding: "var(--gap-md)",
+				backgroundColor: "var(--surface)",
+				borderWidth: "var(--rule-width)",
+				borderStyle: "solid",
+				borderColor: "var(--rule)",
+				maxWidth: "calc(var(--section-pad) * 2)",
+				width: "100%",
+				textAlign: "center",
+			}}
+		>
+			<p
+				className="meta"
+				style={{
+					color: "var(--accent)",
+					marginBottom: 0,
+					fontSize: "var(--mono-size)",
+				}}
+			>
+				CLOUD AUTH SERVICE UNREACHABLE
+			</p>
+			<h4
+				style={{
+					fontSize: "var(--headline-size)",
+					letterSpacing: "var(--headline-tracking)",
+					fontWeight: 400,
+					margin: 0,
+				}}
+			>
+				Third-Party Endpoint Connection Failed
+			</h4>
+			<p
+				style={{
+					color: "var(--ink-muted)",
+					fontSize: "var(--body-size)",
+					margin: 0,
+				}}
+			>
+				The external authentication service is currently unreachable or its
+				domain is not configured. Your private local workspace is fully active
+				with zero server uploads.
+			</p>
+			<button
+				type="button"
+				onClick={onSwitchToLocal}
+				style={{
+					marginTop: "var(--space-base)",
+					alignSelf: "center",
+					padding: "var(--space-base) var(--gap-sm)",
+					borderRadius: "var(--radius-pill)",
+					backgroundColor: "var(--ink)",
+					color: "var(--ground)",
+					fontFamily: "var(--font-mono)",
+					fontSize: "var(--mono-size)",
+					fontWeight: 600,
+					textTransform: "uppercase",
+					letterSpacing: "0.08em",
+					border: "none",
+					cursor: "pointer",
+				}}
+			>
+				Use Local Workspace
+			</button>
+		</div>
+	);
+}
+
 function AuthFormTabs() {
 	const searchParams = useSearchParams();
 	const mode = searchParams.get("mode");
-	const [activeTab, setActiveTab] = useState<string>(
-		PUBLISHABLE_KEY ? (mode === "signup" ? "signup" : "signin") : "workspace",
-	);
+	const defaultTab = PUBLISHABLE_KEY
+		? mode === "signup"
+			? "signup"
+			: mode === "signin"
+				? "signin"
+				: "workspace"
+		: "workspace";
+	const [activeTab, setActiveTab] = useState<string>(defaultTab);
 
 	const baseId = useId();
 	const tabList = PUBLISHABLE_KEY
 		? [
+				{ id: "workspace", label: "Local Workspace" },
 				{ id: "signin", label: "Sign In" },
 				{ id: "signup", label: "Create Account" },
-				{ id: "workspace", label: "Local Workspace" },
 			]
 		: [
 				{ id: "workspace", label: "Local Workspace" },
@@ -745,12 +828,20 @@ function AuthFormTabs() {
 								width: "100%",
 							}}
 						>
-							<SignIn
-								routing="hash"
-								appearance={clerkAppearance}
-								signUpUrl="/auth#signup"
-								forceRedirectUrl="/history"
-							/>
+							<AuthErrorBoundary
+								fallback={
+									<CloudAuthFallback
+										onSwitchToLocal={() => setActiveTab("workspace")}
+									/>
+								}
+							>
+								<SignIn
+									routing="hash"
+									appearance={clerkAppearance}
+									signUpUrl="/auth#signup"
+									forceRedirectUrl="/history"
+								/>
+							</AuthErrorBoundary>
 						</div>
 						<div
 							id={`${baseId}-panel-signup`}
@@ -763,12 +854,20 @@ function AuthFormTabs() {
 								width: "100%",
 							}}
 						>
-							<SignUp
-								routing="hash"
-								appearance={clerkAppearance}
-								signInUrl="/auth#signin"
-								forceRedirectUrl="/history"
-							/>
+							<AuthErrorBoundary
+								fallback={
+									<CloudAuthFallback
+										onSwitchToLocal={() => setActiveTab("workspace")}
+									/>
+								}
+							>
+								<SignUp
+									routing="hash"
+									appearance={clerkAppearance}
+									signInUrl="/auth#signin"
+									forceRedirectUrl="/history"
+								/>
+							</AuthErrorBoundary>
 						</div>
 					</>
 				)}
@@ -808,7 +907,11 @@ function AuthFormTabs() {
 export function AuthClient() {
 	return (
 		<Suspense fallback={null}>
-			{PUBLISHABLE_KEY && <AuthenticatedClerkSession />}
+			{PUBLISHABLE_KEY && (
+				<AuthErrorBoundary fallback={null}>
+					<AuthenticatedClerkSession />
+				</AuthErrorBoundary>
+			)}
 			<AuthFormTabs />
 		</Suspense>
 	);

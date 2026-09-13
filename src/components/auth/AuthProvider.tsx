@@ -1,7 +1,8 @@
 "use client";
 
-import { ClerkProvider, GoogleOneTap } from "@clerk/react";
+import { ClerkProvider } from "@clerk/react";
 import type { ReactNode } from "react";
+import { AuthErrorBoundary } from "./AuthErrorBoundary";
 import { clerkAppearance } from "./clerk-theme";
 
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
@@ -18,12 +19,13 @@ export function AuthProvider({ children }: Props) {
 	}
 
 	return (
-		<ClerkProvider
-			publishableKey={PUBLISHABLE_KEY}
-			appearance={clerkAppearance}
-		>
-			<GoogleOneTap cancelOnTapOutside={true} />
-			{children}
-		</ClerkProvider>
+		<AuthErrorBoundary fallback={children}>
+			<ClerkProvider
+				publishableKey={PUBLISHABLE_KEY}
+				appearance={clerkAppearance}
+			>
+				{children}
+			</ClerkProvider>
+		</AuthErrorBoundary>
 	);
 }

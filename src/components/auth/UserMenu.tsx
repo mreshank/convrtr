@@ -4,6 +4,7 @@ import { UserButton, useUser } from "@clerk/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Tooltip } from "@/design/primitives/Tooltip";
+import { AuthErrorBoundary } from "./AuthErrorBoundary";
 import { clerkAppearance } from "./clerk-theme";
 
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
@@ -149,5 +150,11 @@ export function UserMenu() {
 		return <AuthIconButton hasSession={hasLocalSession} />;
 	}
 
-	return <AuthenticatedMenu />;
+	return (
+		<AuthErrorBoundary
+			fallback={<AuthIconButton hasSession={hasLocalSession} />}
+		>
+			<AuthenticatedMenu />
+		</AuthErrorBoundary>
+	);
 }
