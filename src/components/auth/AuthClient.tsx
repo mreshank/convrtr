@@ -294,7 +294,7 @@ function LocalWorkspaceCard() {
 			<div
 				style={{
 					display: "grid",
-					gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+					gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
 					gap: "var(--space-base)",
 					backgroundColor: "var(--ground)",
 					padding: "var(--gap-sm)",
@@ -631,7 +631,7 @@ function CapabilitiesStrip() {
 			<div
 				style={{
 					display: "grid",
-					gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+					gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
 					gap: "var(--space-base)",
 					backgroundColor: "var(--ground)",
 					padding: "var(--gap-sm)",

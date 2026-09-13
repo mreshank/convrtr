@@ -8,6 +8,8 @@ type Props = {
 	/** The instrument itself. */
 	children: ReactNode;
 	related?: ReactNode;
+	/** When true, expands the working measure to `--max-width` (1600px) instead of `--converter-width` (896px). */
+	wide?: boolean;
 };
 
 /**
@@ -45,7 +47,9 @@ export function ConverterPage({
 	lede,
 	children,
 	related,
+	wide = false,
 }: Props) {
+	const measureAttr = wide ? "wide" : "";
 	return (
 		<div
 			data-converter
@@ -58,7 +62,7 @@ export function ConverterPage({
 		>
 			<p
 				data-eyebrow
-				data-converter-measure
+				data-converter-measure={measureAttr}
 				className="meta"
 				style={{ color: "var(--ink-muted)" }}
 			>
@@ -66,7 +70,7 @@ export function ConverterPage({
 			</p>
 
 			<h1
-				data-converter-measure
+				data-converter-measure={measureAttr}
 				style={{
 					fontSize: "var(--headline-size)",
 					fontWeight: 400,
@@ -79,7 +83,7 @@ export function ConverterPage({
 			</h1>
 
 			<p
-				data-converter-measure
+				data-converter-measure={measureAttr}
 				style={{
 					color: "var(--ink-muted)",
 					fontSize: "var(--body-size)",
@@ -89,7 +93,7 @@ export function ConverterPage({
 				{lede}
 			</p>
 
-			<div data-converter-measure>{children}</div>
+			<div data-converter-measure={measureAttr}>{children}</div>
 
 			{related ? <div data-related>{related}</div> : null}
 		</div>

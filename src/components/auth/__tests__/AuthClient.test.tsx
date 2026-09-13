@@ -106,10 +106,10 @@ describe("AuthClient component", () => {
 		fireEvent.keyDown(archTab, { key: "ArrowLeft" });
 		expect(workspaceTab.getAttribute("aria-selected")).toBe("true");
 
-		fireEvent.keyDown(workspaceTab, { key: "End" });
-		expect(archTab.getAttribute("aria-selected")).toBe("true");
-
-		fireEvent.keyDown(archTab, { key: "Home" });
+		fireEvent.keyDown(archTab, { key: "End" });
 		expect(workspaceTab.getAttribute("aria-selected")).toBe("true");
+
+		fireEvent.keyDown(workspaceTab, { key: "Home" });
+		expect(archTab.getAttribute("aria-selected")).toBe("true");
 	});
 });

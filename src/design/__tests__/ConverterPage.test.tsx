@@ -70,4 +70,16 @@ describe("ConverterPage", () => {
 			true,
 		);
 	});
+
+	it("applies the wide measure when wide={true}", () => {
+		const { container } = render(
+			<ConverterPage eyebrow="x" title="y" lede="z" wide>
+				<div data-testid="instrument" />
+			</ConverterPage>,
+		);
+		const measured = container.querySelectorAll(
+			'[data-converter-measure="wide"]',
+		);
+		expect(measured.length).toBe(4);
+	});
 });
