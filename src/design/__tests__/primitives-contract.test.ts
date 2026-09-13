@@ -193,6 +193,8 @@ const CLIENT_COMPONENT_ALLOWLIST = new Set([
 	"BlogGrid.tsx",
 	// `CollectiveGrid` holds interactive search query state.
 	"CollectiveGrid.tsx",
+	// `Tooltip` holds open/closed state, timeouts, and hover/focus/Escape handlers.
+	"Tooltip.tsx",
 ]);
 
 function filesDeclaringUseClient(dir: string): string[] {

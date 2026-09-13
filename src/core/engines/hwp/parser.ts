@@ -5,9 +5,7 @@ import type {
 	HwpMetadata,
 } from "./types";
 
-const OLE_SIGNATURE = [
-	0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1,
-];
+const OLE_SIGNATURE = [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1];
 
 interface CfbEntry {
 	name: string;
@@ -19,9 +17,11 @@ interface CfbEntry {
 /**
  * Parses an OLE 2.0 Compound File Binary (CFB) stream directory.
  */
-function parseCfbDirectory(
-	bytes: Uint8Array,
-): { entries: CfbEntry[]; sectorSize: number; fat: number[] } {
+function parseCfbDirectory(bytes: Uint8Array): {
+	entries: CfbEntry[];
+	sectorSize: number;
+	fat: number[];
+} {
 	const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 
 	// Sector size: offset 30 is sector shift (usually 9 -> 512 bytes)
@@ -90,11 +90,12 @@ function parseCfbDirectory(
 		const rawNameBytes = dirBytes.subarray(eOffset, eOffset + nameLen - 2);
 		let name = "";
 		for (let c = 0; c < rawNameBytes.length; c += 2) {
-			const charCode = (rawNameBytes[c]! | (rawNameBytes[c + 1]! << 8));
+			const charCode =
+				(rawNameBytes[c] ?? 0) | ((rawNameBytes[c + 1] ?? 0) << 8);
 			if (charCode > 0) name += String.fromCharCode(charCode);
 		}
 
-		const type = dirBytes[eOffset + 66]!;
+		const type = dirBytes[eOffset + 66] ?? 0;
 		const startSector = dirView.getUint32(eOffset + 116, true);
 		const size = dirView.getUint32(eOffset + 120, true);
 
@@ -228,14 +229,14 @@ export function convertHwpToMarkdown(
 
 		// Flags at offset 36 (bit 0 = 1 if compressed)
 		if (headerData.length > 36) {
-			const flags = headerData[36]!;
+			const flags = headerData[36] ?? 0;
 			isCompressed = (flags & 1) !== 0;
 		}
 
 		// Version at offset 32 (4 bytes: major.minor.build.revision)
 		if (headerData.length >= 36) {
-			const major = headerData[35]!;
-			const minor = headerData[34]!;
+			const major = headerData[35] ?? 5;
+			const minor = headerData[34] ?? 0;
 			version = `${major}.${minor}`;
 		}
 	}
@@ -258,7 +259,8 @@ export function convertHwpToMarkdown(
 	const paragraphs: string[] = [];
 
 	for (let sIdx = 0; sIdx < sectionEntries.length; sIdx++) {
-		const sEntry = sectionEntries[sIdx]!;
+		const sEntry = sectionEntries[sIdx];
+		if (!sEntry) continue;
 		const rawSection = readStreamPayload(
 			bytes,
 			sEntry.startSector,
@@ -318,7 +320,8 @@ export function convertHwpToMarkdown(
 				// UTF-16LE text payload
 				let rawText = "";
 				for (let c = 0; c < recordPayload.length - 1; c += 2) {
-					const code = (recordPayload[c]! | (recordPayload[c + 1]! << 8));
+					const code =
+						(recordPayload[c] ?? 0) | ((recordPayload[c + 1] ?? 0) << 8);
 					rawText += String.fromCharCode(code);
 				}
 
@@ -353,12 +356,13 @@ export function convertHwpToMarkdown(
 
 	// Format paragraphs
 	for (let i = 0; i < paragraphs.length; i++) {
-		const p = paragraphs[i]!;
+		const p = paragraphs[i];
+		if (!p) continue;
 		if (p === title && i === 0) continue;
 
 		// If paragraph is short and looks like a chapter/section heading
 		if (p.length < 60 && !p.endsWith(".") && !p.includes("\n")) {
-			if (/^[0-9]+[\.\s]|^[I|V|X]+[\.\s]|제\s*[0-9]+\s*장/.test(p)) {
+			if (/^[0-9]+[.\s]|^[I|V|X]+[.\s]|제\s*[0-9]+\s*장/.test(p)) {
 				markdown += `## ${p}\n\n`;
 				continue;
 			}

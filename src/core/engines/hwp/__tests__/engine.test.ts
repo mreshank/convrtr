@@ -84,7 +84,7 @@ function createSyntheticHwp(options: {
 	// OLE CFB Header (512 bytes)
 	const oleSig = [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1];
 	for (let i = 0; i < 8; i++) {
-		file[i] = oleSig[i]!;
+		file[i] = oleSig[i] ?? 0;
 	}
 	view.setUint16(30, 9, true); // sector shift = 9 (512 bytes)
 	view.setUint32(44, 1, true); // 1 FAT sector
@@ -177,9 +177,7 @@ describe("Hangul Word Processor (.hwp 5.x) document engine", () => {
 		expect(result.metadata.sectionCount).toBe(1);
 		expect(result.metadata.paragraphCount).toBe(4);
 
-		expect(result.markdown).toContain(
-			'title: "Hangul Specification Overview"',
-		);
+		expect(result.markdown).toContain('title: "Hangul Specification Overview"');
 		expect(result.markdown).toContain(
 			'format: "Hangul Word Processor (HWP 5.1)"',
 		);

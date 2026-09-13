@@ -191,7 +191,24 @@ body.has-custom-cursor:has(a:hover, button:hover) [data-cursor] {
 
 @media (prefers-reduced-motion: reduce) {
 	[data-separator-runner],
-	[data-separator-beacon] {
+	[data-separator-beacon],
+	[data-tooltip-bubble] {
 		animation: none;
+	}
+}
+
+/*
+ * Tooltip: WAI-ARIA accessible floating label with subtle fade.
+ */
+[data-tooltip-bubble] {
+	animation: tooltip-fade-in var(--dur-fade) var(--ease) both;
+}
+
+@keyframes tooltip-fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
 	}
 }

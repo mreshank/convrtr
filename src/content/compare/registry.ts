@@ -2807,7 +2807,8 @@ export const COMPARISONS: ComparisonMeta[] = [
 			{
 				feature: "Planar Organization",
 				formatA: "Continuous (all scanlines for plane 0, then plane 1...)",
-				formatB: "Interleaved (scanline 0 across all planes, then scanline 1...)",
+				formatB:
+					"Interleaved (scanline 0 across all planes, then scanline 1...)",
 			},
 			{
 				feature: "Primary Image Chunk",

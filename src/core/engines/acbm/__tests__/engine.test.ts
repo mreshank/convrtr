@@ -147,7 +147,7 @@ describe("Commodore Amiga Continuous Bitmap (ACBM) Engine", () => {
 		const height = 2;
 		const nPlanes = 1;
 		const bytesPerRow = 2;
-		const planeSize = bytesPerRow * height; // 4 bytes
+		const _planeSize = bytesPerRow * height; // 4 bytes
 
 		// ByteRun1 compressed stream for 4 bytes of 0xFF:
 		// b = 257 - 4 = 253, followed by 0xFF

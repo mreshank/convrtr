@@ -131,11 +131,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 			className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
 		>
 			<body className="min-h-full flex flex-col">
+				<a href="#main-content" className="skip-link">
+					Skip to content
+				</a>
 				<AuthProvider>
 					<ServiceWorkerRegistration />
 					<DifferenceCursor />
 					<SiteHeader links={NAV} cta={CTA} authSlot={<UserMenu />} />
-					<main className="flex-1">{children}</main>
+					<main id="main-content" className="flex-1">
+						{children}
+					</main>
 					<RouteAwareFooter
 						bio={TAGLINE}
 						socials={SOCIALS}

@@ -27,7 +27,7 @@ interface ChannelState {
 function get669Frequency(note: number): number {
 	const middleC = 8363.0;
 	// 12 semitones per octave, note 24 is C-4
-	return middleC * Math.pow(2.0, (note - 24) / 12.0);
+	return middleC * 2.0 ** ((note - 24) / 12.0);
 }
 
 function cleanAscii(bytes: Uint8Array): string {
@@ -59,8 +59,8 @@ export function convert669ToWav(
 	const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 
 	// 1. Check Magic: "if" (0x69, 0x66) or "JN" (0x4A, 0x4E)
-	const m0 = String.fromCharCode(bytes[0]!);
-	const m1 = String.fromCharCode(bytes[1]!);
+	const m0 = String.fromCharCode(bytes[0] ?? 0);
+	const m1 = String.fromCharCode(bytes[1] ?? 0);
 	const magicStr = `${m0}${m1}`;
 	if (magicStr !== "if" && magicStr !== "JN") {
 		throw new Error(
@@ -79,9 +79,9 @@ export function convert669ToWav(
 	const artistMessage = [line1, line2, line3].filter((l) => l.length > 0);
 
 	// Header fields at offsets 108, 109, 110
-	const numSamples = bytes[108]!;
-	const numPatterns = bytes[109]!;
-	const loopOrder = bytes[110]!;
+	const numSamples = bytes[108] ?? 0;
+	const numPatterns = bytes[109] ?? 0;
+	const loopOrder = bytes[110] ?? 0;
 
 	if (numSamples < 1 || numSamples > 64) {
 		throw new Error(
@@ -97,7 +97,7 @@ export function convert669ToWav(
 	// Order table (128 bytes at 111..238)
 	const orders: number[] = [];
 	for (let i = 0; i < 128; i++) {
-		const ord = bytes[111 + i]!;
+		const ord = bytes[111 + i] ?? 0xff;
 		if (ord < 128 && ord < numPatterns) {
 			orders.push(ord);
 		} else if (ord === 0xff) {
@@ -108,13 +108,13 @@ export function convert669ToWav(
 	// Tempo table (128 bytes at 239..366)
 	const tempos: number[] = [];
 	for (let i = 0; i < 128; i++) {
-		tempos.push(bytes[239 + i]!);
+		tempos.push(bytes[239 + i] ?? 78);
 	}
 
 	// P-Break table (128 bytes at 367..494)
 	const pbreaks: number[] = [];
 	for (let i = 0; i < 128; i++) {
-		pbreaks.push(bytes[367 + i]!);
+		pbreaks.push(bytes[367 + i] ?? 63);
 	}
 
 	onProgress?.(0.2, "READ_SAMPLES");
@@ -129,15 +129,15 @@ export function convert669ToWav(
 		let fnEnd = ptr;
 		while (fnEnd < ptr + 13 && bytes[fnEnd] !== 0) fnEnd++;
 		const fileName =
-			new TextDecoder("ascii")
-				.decode(bytes.subarray(ptr, fnEnd))
-				.trim() || `Sample ${s + 1}`;
+			new TextDecoder("ascii").decode(bytes.subarray(ptr, fnEnd)).trim() ||
+			`Sample ${s + 1}`;
 
 		const length = view.getUint32(ptr + 13, true);
 		const loopStart = view.getUint32(ptr + 17, true);
 		const loopEnd = view.getUint32(ptr + 21, true);
 
-		const hasLoop = loopEnd > loopStart && loopEnd <= length && loopEnd < 0xfffff;
+		const hasLoop =
+			loopEnd > loopStart && loopEnd <= length && loopEnd < 0xfffff;
 
 		sampleInfos.push({
 			index: s + 1,
@@ -171,7 +171,7 @@ export function convert669ToWav(
 			const pcmFloats = new Float32Array(sLen);
 			for (let i = 0; i < sLen; i++) {
 				// 669 uses 8-bit unsigned PCM (0..255, 128 = silence)
-				pcmFloats[i] = (rawPcm[i]! - 128) / 128.0;
+				pcmFloats[i] = ((rawPcm[i] ?? 128) - 128) / 128.0;
 			}
 			internalSamples.push({
 				info: sInfo,
@@ -214,7 +214,7 @@ export function convert669ToWav(
 	for (let ordIdx = 0; ordIdx < patternsToPlay.length; ordIdx++) {
 		if (currentFrame >= maxTotalFrames) break;
 
-		const patIdx = patternsToPlay[ordIdx]!;
+		const patIdx = patternsToPlay[ordIdx] ?? 0;
 		const tempoVal = tempos[ordIdx] || 78;
 		const maxRow = Math.min(63, pbreaks[ordIdx] ?? 63);
 
@@ -236,8 +236,8 @@ export function convert669ToWav(
 			if (rowOffset + 24 <= bytes.length) {
 				for (let ch = 0; ch < 8; ch++) {
 					const cellOffset = rowOffset + ch * 3;
-					const b0 = bytes[cellOffset]!;
-					const b1 = bytes[cellOffset + 1]!;
+					const b0 = bytes[cellOffset] ?? 0;
+					const b1 = bytes[cellOffset + 1] ?? 0;
 
 					const rawNote = (b0 >> 2) & 0x3f;
 					const inst = ((b0 & 0x03) << 4) | ((b1 >> 4) & 0x0f);
@@ -263,7 +263,10 @@ export function convert669ToWav(
 			}
 
 			// Render audio frames for this row
-			const rowEndFrame = Math.min(currentFrame + samplesPerRow, maxTotalFrames);
+			const rowEndFrame = Math.min(
+				currentFrame + samplesPerRow,
+				maxTotalFrames,
+			);
 			while (currentFrame < rowEndFrame) {
 				let mixL = 0;
 				let mixR = 0;

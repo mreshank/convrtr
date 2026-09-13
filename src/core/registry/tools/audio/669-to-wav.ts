@@ -43,8 +43,7 @@ export const sixSixNineToWav: Tool = {
 		],
 	},
 	seo: {
-		title:
-			"669 to WAV — Convert Composer 669 (.669) to WAV Online | convrtr",
+		title: "669 to WAV — Convert Composer 669 (.669) to WAV Online | convrtr",
 		h1: "Convert Composer 669 (.669) to WAV",
 		intent:
 			"Convert vintage Composer 669 and UNIS 669 tracker modules (.669) into high-fidelity 16-bit 44.1kHz stereo WAV audio directly in your browser. 100% private client-side synthesis with zero server uploads.",

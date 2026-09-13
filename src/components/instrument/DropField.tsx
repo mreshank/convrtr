@@ -27,6 +27,7 @@ export function DropField({ accept, formats, onFiles }: Props) {
 			data-testid="drop-field"
 			data-active={active}
 			role="button"
+			aria-label="Drop files here or click to browse"
 			tabIndex={0}
 			onDragOver={(event) => {
 				event.preventDefault();
@@ -76,6 +77,7 @@ export function DropField({ accept, formats, onFiles }: Props) {
 				type="file"
 				multiple
 				hidden
+				aria-label="Upload files"
 				accept={[...accept.mime, ...accept.ext.map((ext) => `.${ext}`)].join(
 					",",
 				)}

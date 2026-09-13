@@ -1,5 +1,5 @@
-import { sixSixNineToWavEngine } from "./669";
 import { eightSvxToWavEngine } from "./8svx";
+import { sixSixNineToWavEngine } from "./669";
 import { abrToPngEngine } from "./abr";
 import { abwToMarkdownEngine } from "./abw";
 import { acbmToPngEngine } from "./acbm";
@@ -478,8 +478,8 @@ export async function selectEngine(
 	return undefined;
 }
 
-export { sixSixNineToWavEngine } from "./669";
 export { eightSvxToWavEngine } from "./8svx";
+export { sixSixNineToWavEngine } from "./669";
 export { abrToPngEngine } from "./abr";
 export { abwToMarkdownEngine } from "./abw";
 export { acbmToPngEngine } from "./acbm";

@@ -14,7 +14,8 @@ function createMock669(options: {
 	// Total size: header (495) + sample headers (25 * numSamples) + patterns (numPatterns * 64 * 8 * 3) + sample PCM data
 	const patternBytes = numPatterns * 64 * 8 * 3;
 	const samplePcmLen = 256;
-	const totalSize = 495 + numSamples * 25 + patternBytes + numSamples * samplePcmLen + 100;
+	const totalSize =
+		495 + numSamples * 25 + patternBytes + numSamples * samplePcmLen + 100;
 
 	const buffer = new Uint8Array(totalSize);
 	const view = new DataView(buffer.buffer);
@@ -57,7 +58,8 @@ function createMock669(options: {
 		// Fill PCM data with sine/saw wave
 		const pcmOffset = pcmDataStart + s * samplePcmLen;
 		for (let i = 0; i < samplePcmLen; i++) {
-			buffer[pcmOffset + i] = 128 + Math.round(Math.sin((i / samplePcmLen) * Math.PI * 2) * 100);
+			buffer[pcmOffset + i] =
+				128 + Math.round(Math.sin((i / samplePcmLen) * Math.PI * 2) * 100);
 		}
 	}
 

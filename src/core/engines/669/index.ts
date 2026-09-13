@@ -27,7 +27,8 @@ export const sixSixNineToWavEngine: Engine = {
 				: Number.parseInt(String(params.sampleRate ?? "44100"), 10);
 
 		const options: SixSixNineConversionOptions = {
-			sampleRate: Number.isNaN(sampleRate) || sampleRate <= 0 ? 44100 : sampleRate,
+			sampleRate:
+				Number.isNaN(sampleRate) || sampleRate <= 0 ? 44100 : sampleRate,
 		};
 
 		const result = convert669ToWav(input, options, onProgress);
