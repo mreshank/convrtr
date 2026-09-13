@@ -36,7 +36,7 @@ export default function AuthPage() {
 			<ConverterPage
 				eyebrow="AUTHENTICATION // OPTIONAL WORKSPACE SESSION"
 				title="Sign In or Create Account"
-				lede="Sign in with Google Quick One Tap or Email to synchronize your conversion audit history across devices, save custom quality presets, and run high-volume batches."
+				lede="Sign in with Google or Email to synchronize your conversion audit history across devices, save custom quality presets, and run high-volume batches. Zero files are ever uploaded."
 			>
 				<AuthClient />
 			</ConverterPage>

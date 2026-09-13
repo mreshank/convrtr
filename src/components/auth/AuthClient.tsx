@@ -15,7 +15,11 @@ interface LocalWorkspaceData {
 	createdAt: number;
 }
 
-function AuthenticatedClerkSession() {
+function AuthenticatedClerkSession({
+	onSwitchToLocal,
+}: {
+	onSwitchToLocal?: () => void;
+}) {
 	const { isSignedIn, user } = useUser();
 
 	if (!isSignedIn || !user) return null;
@@ -25,15 +29,13 @@ function AuthenticatedClerkSession() {
 			style={{
 				borderWidth: "var(--rule-width)",
 				borderStyle: "solid",
-				borderColor: "var(--rule-strong)",
+				borderColor: "var(--rule)",
 				backgroundColor: "var(--surface)",
 				padding: "var(--gap-md)",
 				display: "flex",
 				flexDirection: "column",
 				gap: "var(--gap-md)",
 				width: "100%",
-				maxWidth: "calc(var(--section-pad) * 2)",
-				margin: "0 auto",
 			}}
 		>
 			<div>
@@ -41,32 +43,42 @@ function AuthenticatedClerkSession() {
 					className="meta"
 					style={{
 						color: "var(--accent)",
+						fontSize: "var(--mono-size)",
+						letterSpacing: "0.1em",
+						textTransform: "uppercase",
 						marginBottom: "calc(var(--space-base) / 2)",
 					}}
 				>
 					CLOUD SESSION ACTIVE
 				</p>
-				<h2
+				<h3
 					style={{
 						fontSize: "var(--headline-size)",
 						letterSpacing: "var(--headline-tracking)",
 						fontWeight: 400,
+						margin: 0,
 					}}
 				>
 					Signed in as{" "}
 					{user.primaryEmailAddress?.emailAddress ?? user.fullName ?? "User"}
-				</h2>
+				</h3>
 				<p
-					style={{ color: "var(--ink-muted)", marginTop: "var(--space-base)" }}
+					style={{
+						color: "var(--ink-muted)",
+						fontSize: "var(--body-size)",
+						marginTop: "var(--space-base)",
+						marginBottom: 0,
+					}}
 				>
-					Your cloud account is active. Cross-device conversion history and
-					saved presets are automatically synchronized.
+					Your cloud account is active. Cross-device conversion audit history
+					and custom presets are automatically synchronized across all your
+					devices.
 				</p>
 			</div>
 
 			<div style={{ display: "flex", gap: "var(--gap-sm)", flexWrap: "wrap" }}>
 				<Link
-					href="/history"
+					href="/convert"
 					style={{
 						display: "inline-flex",
 						alignItems: "center",
@@ -82,10 +94,10 @@ function AuthenticatedClerkSession() {
 						textDecoration: "none",
 					}}
 				>
-					View History
+					Start Converting
 				</Link>
 				<Link
-					href="/convert"
+					href="/history"
 					style={{
 						display: "inline-flex",
 						alignItems: "center",
@@ -102,8 +114,32 @@ function AuthenticatedClerkSession() {
 						textDecoration: "none",
 					}}
 				>
-					Start Converting
+					View History
 				</Link>
+				{onSwitchToLocal && (
+					<button
+						type="button"
+						onClick={onSwitchToLocal}
+						style={{
+							display: "inline-flex",
+							alignItems: "center",
+							padding: "var(--space-base) var(--gap-sm)",
+							borderRadius: "var(--radius-pill)",
+							borderWidth: "var(--rule-width)",
+							borderStyle: "solid",
+							borderColor: "var(--rule)",
+							backgroundColor: "transparent",
+							color: "var(--ink-muted)",
+							fontFamily: "var(--font-mono)",
+							fontSize: "var(--mono-size)",
+							textTransform: "uppercase",
+							letterSpacing: "0.08em",
+							cursor: "pointer",
+						}}
+					>
+						Local Workspace
+					</button>
+				)}
 			</div>
 		</div>
 	);
@@ -258,7 +294,7 @@ function LocalWorkspaceCard() {
 			<div
 				style={{
 					display: "grid",
-					gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+					gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
 					gap: "var(--space-base)",
 					backgroundColor: "var(--ground)",
 					padding: "var(--gap-sm)",
@@ -549,20 +585,132 @@ function CapabilitiesStrip() {
 				borderColor: "var(--rule)",
 				backgroundColor: "var(--surface)",
 				padding: "var(--gap-md)",
+				display: "flex",
+				flexDirection: "column",
+				gap: "var(--gap-md)",
 			}}
 		>
-			<p
-				className="meta"
+			<div>
+				<p
+					className="meta"
+					style={{
+						color: "var(--accent)",
+						fontSize: "var(--mono-size)",
+						letterSpacing: "0.1em",
+						textTransform: "uppercase",
+						marginBottom: "calc(var(--space-base) / 2)",
+					}}
+				>
+					WORKSPACE CAPABILITIES & PRIVACY GUARANTEE
+				</p>
+				<h3
+					style={{
+						fontSize: "var(--headline-size)",
+						letterSpacing: "var(--headline-tracking)",
+						fontWeight: 400,
+						margin: 0,
+					}}
+				>
+					Air-Gapped In-Browser Processing
+				</h3>
+				<p
+					style={{
+						color: "var(--ink-muted)",
+						fontSize: "var(--body-size)",
+						marginTop: "var(--space-base)",
+						marginBottom: 0,
+					}}
+				>
+					convrtr compiles native C, Rust, and C++ parsing engines directly to
+					WebAssembly. Processing executes strictly inside sandboxed browser
+					worker threads with zero server uploads.
+				</p>
+			</div>
+
+			{/* Runtime Telemetry Status Bar */}
+			<div
 				style={{
-					color: "var(--accent)",
-					fontSize: "var(--mono-size)",
-					letterSpacing: "0.1em",
-					textTransform: "uppercase",
-					marginBottom: "var(--gap-sm)",
+					display: "grid",
+					gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+					gap: "var(--space-base)",
+					backgroundColor: "var(--ground)",
+					padding: "var(--gap-sm)",
+					borderWidth: "var(--rule-width)",
+					borderStyle: "solid",
+					borderColor: "var(--rule)",
 				}}
 			>
-				WORKSPACE CAPABILITIES & PRIVACY GUARANTEE
-			</p>
+				<div>
+					<div
+						className="meta"
+						style={{
+							color: "var(--ink-muted)",
+							fontSize: "var(--mono-size)",
+						}}
+					>
+						WASM SANDBOX
+					</div>
+					<div
+						className="mono"
+						style={{ color: "var(--accent)", fontWeight: 600 }}
+					>
+						Active Isolated
+					</div>
+				</div>
+				<div>
+					<div
+						className="meta"
+						style={{
+							color: "var(--ink-muted)",
+							fontSize: "var(--mono-size)",
+						}}
+					>
+						SERVER INGESTION
+					</div>
+					<div
+						className="mono"
+						style={{ color: "var(--ink)", fontWeight: 600 }}
+					>
+						0 Bytes (Strict)
+					</div>
+				</div>
+				<div>
+					<div
+						className="meta"
+						style={{
+							color: "var(--ink-muted)",
+							fontSize: "var(--mono-size)",
+						}}
+					>
+						OFFLINE OPERATION
+					</div>
+					<div
+						className="mono"
+						style={{ color: "var(--accent)", fontWeight: 600 }}
+					>
+						Verified Ready
+					</div>
+				</div>
+				<div>
+					<div
+						className="meta"
+						style={{
+							color: "var(--ink-muted)",
+							fontSize: "var(--mono-size)",
+						}}
+					>
+						CLIENT CRYPTO
+					</div>
+					<div
+						className="mono"
+						style={{ color: "var(--ink)", fontWeight: 600 }}
+					>
+						SHA-256 Digest
+					</div>
+				</div>
+			</div>
+
+			{/* Architectural Trust Points */}
 			<ul
 				style={{
 					display: "flex",
@@ -593,6 +741,44 @@ function CapabilitiesStrip() {
 						</strong>{" "}
 						Conversions always execute 100% inside your browser. Zero bytes
 						uploaded.
+					</span>
+				</li>
+				<li
+					style={{
+						display: "flex",
+						alignItems: "baseline",
+						gap: "var(--space-base)",
+					}}
+				>
+					<span
+						style={{ color: "var(--accent)", fontFamily: "var(--font-mono)" }}
+					>
+						[+]
+					</span>
+					<span>
+						<strong style={{ color: "var(--ink)" }}>
+							Zero Network Ingestion:
+						</strong>{" "}
+						File buffers never touch network sockets or third-party cloud
+						servers.
+					</span>
+				</li>
+				<li
+					style={{
+						display: "flex",
+						alignItems: "baseline",
+						gap: "var(--space-base)",
+					}}
+				>
+					<span
+						style={{ color: "var(--accent)", fontFamily: "var(--font-mono)" }}
+					>
+						[+]
+					</span>
+					<span>
+						<strong style={{ color: "var(--ink)" }}>Memory Safety:</strong> All
+						temporary byte streams and buffers are freed as soon as conversion
+						completes.
 					</span>
 				</li>
 				<li
@@ -656,7 +842,6 @@ function CloudAuthFallback({
 				borderWidth: "var(--rule-width)",
 				borderStyle: "solid",
 				borderColor: "var(--rule)",
-				maxWidth: "calc(var(--section-pad) * 2)",
 				width: "100%",
 				textAlign: "center",
 			}}
@@ -720,185 +905,254 @@ function CloudAuthFallback({
 function AuthFormTabs() {
 	const searchParams = useSearchParams();
 	const mode = searchParams.get("mode");
-	const defaultTab = PUBLISHABLE_KEY
-		? mode === "signup"
-			? "signup"
-			: mode === "signin"
-				? "signin"
-				: "workspace"
-		: "workspace";
+	const { isSignedIn } = useUser();
+
+	const defaultTab = isSignedIn
+		? "account"
+		: PUBLISHABLE_KEY
+			? mode === "signup"
+				? "signup"
+				: mode === "signin"
+					? "signin"
+					: "workspace"
+			: "workspace";
+
 	const [activeTab, setActiveTab] = useState<string>(defaultTab);
 
+	useEffect(() => {
+		if (typeof window !== "undefined") {
+			const hash = window.location.hash.replace("#", "");
+			if (hash === "signin" || hash === "signup" || hash === "workspace") {
+				if (!isSignedIn) {
+					setActiveTab(hash);
+				}
+			}
+		}
+	}, [isSignedIn]);
+
+	useEffect(() => {
+		if (isSignedIn) {
+			setActiveTab("account");
+		}
+	}, [isSignedIn]);
+
 	const baseId = useId();
-	const tabList = PUBLISHABLE_KEY
+	const tabList = isSignedIn
 		? [
+				{ id: "account", label: "Cloud Account" },
 				{ id: "workspace", label: "Local Workspace" },
-				{ id: "signin", label: "Sign In" },
-				{ id: "signup", label: "Create Account" },
 			]
-		: [
-				{ id: "workspace", label: "Local Workspace" },
-				{ id: "architecture", label: "Zero-Upload Security" },
-			];
+		: PUBLISHABLE_KEY
+			? [
+					{ id: "workspace", label: "Local Workspace" },
+					{ id: "signin", label: "Sign In" },
+					{ id: "signup", label: "Create Account" },
+				]
+			: [
+					{ id: "workspace", label: "Local Workspace" },
+					{ id: "architecture", label: "Zero-Upload Security" },
+				];
 
 	return (
-		<div
-			style={{
-				display: "flex",
-				flexDirection: "column",
-				gap: "var(--gap-md)",
-				maxWidth: "calc(var(--section-pad) * 2)",
-				margin: "0 auto",
-				width: "100%",
-			}}
-		>
-			<CapabilitiesStrip />
-
-			{/* Accessible Tab List */}
-			<div
-				role="tablist"
-				aria-label="Authentication and Workspace Modes"
-				style={{
-					display: "flex",
-					borderWidth: "var(--rule-width)",
-					borderStyle: "solid",
-					borderColor: "var(--rule)",
-					backgroundColor: "var(--ground)",
-				}}
-			>
-				{tabList.map((item, idx) => {
-					const isSelected = activeTab === item.id;
-					return (
-						<button
-							key={item.id}
-							id={`${baseId}-tab-${item.id}`}
-							type="button"
-							role="tab"
-							aria-selected={isSelected}
-							aria-controls={`${baseId}-panel-${item.id}`}
-							tabIndex={isSelected ? 0 : -1}
-							onClick={() => setActiveTab(item.id)}
-							onKeyDown={(e) => {
-								if (e.key === "ArrowRight") {
-									const next = tabList[(idx + 1) % tabList.length];
-									if (next) setActiveTab(next.id);
-								} else if (e.key === "ArrowLeft") {
-									const prev =
-										tabList[(idx - 1 + tabList.length) % tabList.length];
-									if (prev) setActiveTab(prev.id);
-								}
-							}}
-							style={{
-								flex: 1,
-								padding: "var(--space-base) var(--gap-sm)",
-								backgroundColor: isSelected ? "var(--surface)" : "transparent",
-								color: isSelected ? "var(--ink)" : "var(--ink-muted)",
-								border: "none",
-								fontFamily: "var(--font-mono)",
-								fontSize: "var(--mono-size)",
-								textTransform: "uppercase",
-								letterSpacing: "0.08em",
-								cursor: "pointer",
-								borderRight:
-									idx < tabList.length - 1
-										? "var(--rule-width) solid var(--rule)"
-										: "none",
-								transition:
-									"background-color var(--dur-hover) var(--ease), color var(--dur-hover) var(--ease)",
-							}}
-						>
-							{item.label}
-						</button>
-					);
-				})}
+		<div data-auth-grid>
+			{/* Left Column on Desktop: Capabilities Strip */}
+			<div data-auth-aside>
+				<CapabilitiesStrip />
 			</div>
 
-			{/* Tab Panels */}
-			<div style={{ width: "100%" }}>
-				{PUBLISHABLE_KEY && (
-					<>
-						<div
-							id={`${baseId}-panel-signin`}
-							role="tabpanel"
-							aria-labelledby={`${baseId}-tab-signin`}
-							hidden={activeTab !== "signin"}
-							style={{
-								display: activeTab === "signin" ? "flex" : "none",
-								justifyContent: "center",
-								width: "100%",
-							}}
-						>
-							<AuthErrorBoundary
-								fallback={
-									<CloudAuthFallback
-										onSwitchToLocal={() => setActiveTab("workspace")}
-									/>
-								}
-							>
-								<SignIn
-									routing="hash"
-									appearance={clerkAppearance}
-									signUpUrl="/auth#signup"
-									forceRedirectUrl="/history"
-								/>
-							</AuthErrorBoundary>
-						</div>
-						<div
-							id={`${baseId}-panel-signup`}
-							role="tabpanel"
-							aria-labelledby={`${baseId}-tab-signup`}
-							hidden={activeTab !== "signup"}
-							style={{
-								display: activeTab === "signup" ? "flex" : "none",
-								justifyContent: "center",
-								width: "100%",
-							}}
-						>
-							<AuthErrorBoundary
-								fallback={
-									<CloudAuthFallback
-										onSwitchToLocal={() => setActiveTab("workspace")}
-									/>
-								}
-							>
-								<SignUp
-									routing="hash"
-									appearance={clerkAppearance}
-									signInUrl="/auth#signin"
-									forceRedirectUrl="/history"
-								/>
-							</AuthErrorBoundary>
-						</div>
-					</>
-				)}
-
+			{/* Right Column on Desktop: Tab list and Active Tab Panels */}
+			<div data-auth-main>
+				{/* Accessible Tab List */}
 				<div
-					id={`${baseId}-panel-workspace`}
-					role="tabpanel"
-					aria-labelledby={`${baseId}-tab-workspace`}
-					hidden={activeTab !== "workspace"}
+					role="tablist"
+					aria-label="Authentication and Workspace Modes"
 					style={{
-						display: activeTab === "workspace" ? "block" : "none",
-						width: "100%",
+						display: "flex",
+						borderWidth: "var(--rule-width)",
+						borderStyle: "solid",
+						borderColor: "var(--rule)",
+						backgroundColor: "var(--ground)",
 					}}
 				>
-					<LocalWorkspaceCard />
+					{tabList.map((item, idx) => {
+						const isSelected = activeTab === item.id;
+						return (
+							<button
+								key={item.id}
+								id={`${baseId}-tab-${item.id}`}
+								type="button"
+								role="tab"
+								aria-selected={isSelected}
+								aria-controls={`${baseId}-panel-${item.id}`}
+								tabIndex={isSelected ? 0 : -1}
+								onClick={() => setActiveTab(item.id)}
+								onKeyDown={(e) => {
+									if (e.key === "ArrowRight") {
+										const next = tabList[(idx + 1) % tabList.length];
+										if (next) {
+											setActiveTab(next.id);
+											document
+												.getElementById(`${baseId}-tab-${next.id}`)
+												?.focus();
+										}
+									} else if (e.key === "ArrowLeft") {
+										const prev =
+											tabList[(idx - 1 + tabList.length) % tabList.length];
+										if (prev) {
+											setActiveTab(prev.id);
+											document
+												.getElementById(`${baseId}-tab-${prev.id}`)
+												?.focus();
+										}
+									} else if (e.key === "Home") {
+										const first = tabList[0];
+										if (first) {
+											setActiveTab(first.id);
+											document
+												.getElementById(`${baseId}-tab-${first.id}`)
+												?.focus();
+										}
+									} else if (e.key === "End") {
+										const last = tabList[tabList.length - 1];
+										if (last) {
+											setActiveTab(last.id);
+											document
+												.getElementById(`${baseId}-tab-${last.id}`)
+												?.focus();
+										}
+									}
+								}}
+								style={{
+									flex: 1,
+									padding: "var(--space-base) var(--gap-sm)",
+									backgroundColor: isSelected
+										? "var(--surface)"
+										: "transparent",
+									color: isSelected ? "var(--ink)" : "var(--ink-muted)",
+									border: "none",
+									fontFamily: "var(--font-mono)",
+									fontSize: "var(--mono-size)",
+									textTransform: "uppercase",
+									letterSpacing: "0.08em",
+									cursor: "pointer",
+									borderRight:
+										idx < tabList.length - 1
+											? "var(--rule-width) solid var(--rule)"
+											: "none",
+									transition:
+										"background-color var(--dur-hover) var(--ease), color var(--dur-hover) var(--ease)",
+								}}
+							>
+								{item.label}
+							</button>
+						);
+					})}
 				</div>
 
-				{!PUBLISHABLE_KEY && (
+				{/* Tab Panels */}
+				<div style={{ width: "100%" }}>
+					{isSignedIn && (
+						<div
+							id={`${baseId}-panel-account`}
+							role="tabpanel"
+							aria-labelledby={`${baseId}-tab-account`}
+							hidden={activeTab !== "account"}
+							style={{
+								display: activeTab === "account" ? "block" : "none",
+								width: "100%",
+							}}
+						>
+							<AuthenticatedClerkSession
+								onSwitchToLocal={() => setActiveTab("workspace")}
+							/>
+						</div>
+					)}
+
+					{PUBLISHABLE_KEY && !isSignedIn && (
+						<>
+							<div
+								id={`${baseId}-panel-signin`}
+								role="tabpanel"
+								aria-labelledby={`${baseId}-tab-signin`}
+								hidden={activeTab !== "signin"}
+								style={{
+									display: activeTab === "signin" ? "flex" : "none",
+									justifyContent: "center",
+									width: "100%",
+								}}
+							>
+								<AuthErrorBoundary
+									fallback={
+										<CloudAuthFallback
+											onSwitchToLocal={() => setActiveTab("workspace")}
+										/>
+									}
+								>
+									<SignIn
+										routing="hash"
+										appearance={clerkAppearance}
+										signUpUrl="/auth#signup"
+										forceRedirectUrl="/history"
+									/>
+								</AuthErrorBoundary>
+							</div>
+							<div
+								id={`${baseId}-panel-signup`}
+								role="tabpanel"
+								aria-labelledby={`${baseId}-tab-signup`}
+								hidden={activeTab !== "signup"}
+								style={{
+									display: activeTab === "signup" ? "flex" : "none",
+									justifyContent: "center",
+									width: "100%",
+								}}
+							>
+								<AuthErrorBoundary
+									fallback={
+										<CloudAuthFallback
+											onSwitchToLocal={() => setActiveTab("workspace")}
+										/>
+									}
+								>
+									<SignUp
+										routing="hash"
+										appearance={clerkAppearance}
+										signInUrl="/auth#signin"
+										forceRedirectUrl="/history"
+									/>
+								</AuthErrorBoundary>
+							</div>
+						</>
+					)}
+
 					<div
-						id={`${baseId}-panel-architecture`}
+						id={`${baseId}-panel-workspace`}
 						role="tabpanel"
-						aria-labelledby={`${baseId}-tab-architecture`}
-						hidden={activeTab !== "architecture"}
+						aria-labelledby={`${baseId}-tab-workspace`}
+						hidden={activeTab !== "workspace"}
 						style={{
-							display: activeTab === "architecture" ? "block" : "none",
+							display: activeTab === "workspace" ? "block" : "none",
 							width: "100%",
 						}}
 					>
-						<PrivacyArchitecturePanel />
+						<LocalWorkspaceCard />
 					</div>
-				)}
+
+					{!PUBLISHABLE_KEY && (
+						<div
+							id={`${baseId}-panel-architecture`}
+							role="tabpanel"
+							aria-labelledby={`${baseId}-tab-architecture`}
+							hidden={activeTab !== "architecture"}
+							style={{
+								display: activeTab === "architecture" ? "block" : "none",
+								width: "100%",
+							}}
+						>
+							<PrivacyArchitecturePanel />
+						</div>
+					)}
+				</div>
 			</div>
 		</div>
 	);
@@ -907,11 +1161,6 @@ function AuthFormTabs() {
 export function AuthClient() {
 	return (
 		<Suspense fallback={null}>
-			{PUBLISHABLE_KEY && (
-				<AuthErrorBoundary fallback={null}>
-					<AuthenticatedClerkSession />
-				</AuthErrorBoundary>
-			)}
 			<AuthFormTabs />
 		</Suspense>
 	);

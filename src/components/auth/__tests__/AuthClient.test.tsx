@@ -72,4 +72,44 @@ describe("AuthClient component", () => {
 		expect(screen.queryByText("LOCAL SESSION ACTIVE")).toBeNull();
 		expect(screen.getByLabelText("Workspace Label")).toBeDefined();
 	});
+
+	it("renders 2-column auth grid with capabilities on left and tabs/panels on right", () => {
+		const { container } = render(<AuthClient />);
+
+		const grid = container.querySelector("[data-auth-grid]");
+		expect(grid).toBeDefined();
+
+		const aside = container.querySelector("[data-auth-aside]");
+		expect(aside).toBeDefined();
+		expect(aside?.textContent).toContain(
+			"WORKSPACE CAPABILITIES & PRIVACY GUARANTEE",
+		);
+		expect(aside?.textContent).toContain("Air-Gapped In-Browser Processing");
+		expect(aside?.textContent).toContain("WASM SANDBOX");
+
+		const main = container.querySelector("[data-auth-main]");
+		expect(main).toBeDefined();
+		expect(main?.querySelector('[role="tablist"]')).toBeDefined();
+		expect(main?.querySelector('[role="tabpanel"]')).toBeDefined();
+	});
+
+	it("supports keyboard navigation across tabs with Arrow keys", () => {
+		render(<AuthClient />);
+
+		const workspaceTab = screen.getByRole("tab", { name: "Local Workspace" });
+		workspaceTab.focus();
+
+		fireEvent.keyDown(workspaceTab, { key: "ArrowRight" });
+		const archTab = screen.getByRole("tab", { name: "Zero-Upload Security" });
+		expect(archTab.getAttribute("aria-selected")).toBe("true");
+
+		fireEvent.keyDown(archTab, { key: "ArrowLeft" });
+		expect(workspaceTab.getAttribute("aria-selected")).toBe("true");
+
+		fireEvent.keyDown(workspaceTab, { key: "End" });
+		expect(archTab.getAttribute("aria-selected")).toBe("true");
+
+		fireEvent.keyDown(archTab, { key: "Home" });
+		expect(workspaceTab.getAttribute("aria-selected")).toBe("true");
+	});
 });
