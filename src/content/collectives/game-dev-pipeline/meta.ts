@@ -21,5 +21,6 @@ export const meta: CollectiveMeta = {
 		"image/hdr-to-png",
 		"image/bpg-to-png",
 		"image/blp-to-png",
+		"image/vda-to-png",
 	],
 };

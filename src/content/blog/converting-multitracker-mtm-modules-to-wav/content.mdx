@@ -1,0 +1,61 @@
+# Converting MultiTracker (MTM) Modules to WAV: 32-Channel Track Matrix Synthesis
+
+In 1993, **Daniel Gold** (known as **SubSonic** in the demoscene group **Renaissance**) released **MultiTracker Editor** for MS-DOS. At a time when tracker formats like ProTracker MOD were confined to 4 channels and Scream Tracker 3 S3M stored rigid channel rows, MTM introduced a modular track-matrix architecture supporting up to 32 concurrent channels.
+
+In this technical breakdown, we explore the internal mechanics of the `.mtm` binary format and how convrtr emulates 32-channel software mixing into uncompressed 16-bit 44.1kHz stereo WAV audio entirely offline.
+
+---
+
+## 1. The MultiTracker File Architecture
+
+An MTM module begins with a 66-byte master header identifying the song and setting hardware channel parameters:
+
+| Offset | Size | Description |
+|---|---|---|
+| `0x00` | 4 bytes | Magic identification: `0x4D 0x54 0x4D 0x10` (`MTM\x10`) |
+| `0x04` | 20 bytes | Song title (ASCII null-terminated) |
+| `0x18` | uint16 LE | Number of saved track blocks |
+| `0x1A` | uint8 | Index of last pattern (total patterns = LastPattern + 1) |
+| `0x1B` | uint8 | Index of last order (total orders = LastOrder + 1) |
+| `0x1C` | uint16 LE | Length of optional embedded ASCII song comments |
+| `0x1E` | uint8 | Number of sample instruments (up to 32) |
+| `0x21` | uint8 | Active playback channel count (up to 32) |
+| `0x22` | 32 bytes | Per-channel stereo panning table (0 = left, 15 = right, 7 = center) |
+
+Following the header, sample metadata headers, arrangement order lists, track matrices, pattern indices, comments, and raw PCM sample waveforms are stored sequentially.
+
+---
+
+## 2. The Modular Track-Matrix Innovation
+
+Traditional tracker formats duplicate note events across channels even when identical musical figures repeat. MultiTracker solved this by decoupling patterns from tracks:
+
+1. **Tracks:** Independent 64-row monophonic sequences of 3-byte note cells.
+2. **Patterns:** A 32-entry lookup table pointing to track numbers.
+
+A pattern simply references track numbers for channels 0 through 31. If channel 3 and channel 7 play the same bassline or arpeggio, both reference the same track index. Track index 0 represents silence, eliminating empty row overhead.
+
+---
+
+## 3. Resampling and Stereo Panning
+
+Each note event contains pitch, sample number, and effect data. The note period determines pitch frequency:
+
+```
+Frequency (Hz) = 3546895 / Period
+```
+
+convrtr resamples 8-bit unsigned PCM waveforms to linear 16-bit samples using linear interpolation:
+
+```ts
+const step = freq / sampleRate;
+voice.samplePos += step;
+```
+
+Each voice is positioned in the stereo field using the song's channel panning table, blended across left and right output channels, and clamped to avoid digital distortion.
+
+---
+
+## 4. 100% Client-Side Private Synthesis
+
+All binary unpacking, track matrix indexing, sample resampling, and RIFF WAVE encoding execute directly within your browser's local sandbox. No data is ever sent to external cloud servers.

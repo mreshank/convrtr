@@ -3545,6 +3545,182 @@ export const COMPARISONS: ComparisonMeta[] = [
 			"image/tga-to-png",
 		],
 	},
+	{
+		slug: "mtm-vs-xm",
+		title: "MTM vs XM: MultiTracker Module vs FastTracker 2 Extended Module",
+		description:
+			"Compare 32-channel PC DOS tracker formats: MultiTracker MTM track sequencing matrix against FastTracker 2 XM instrument envelopes and multisampling.",
+		formatA: "MTM",
+		formatB: "XM",
+		category: "audio",
+		summary:
+			"MTM and XM are landmark 32-channel MS-DOS tracker formats. MTM pioneered a track-sequencing matrix where patterns reference shared track blocks, while FastTracker 2's XM format introduced multi-sampled instruments with custom volume and panning envelopes.",
+		prosA: [
+			"Extremely compact pattern storage through reusable track matrix architecture",
+			"Dedicated channel panning control tables (0 to 15)",
+			"Lightweight memory footprint on vintage MS-DOS sound hardware",
+			"Pioneered early 32-channel PC tracking in the demoscene",
+		],
+		prosB: [
+			"Full multi-sampled instruments with up to 16 samples per instrument",
+			"Graphical volume and panning envelope curves with sustain and loop points",
+			"Support for both linear and Amiga frequency period slide calculations",
+			"Ubiquitous player and editor support across modern and retro platforms",
+		],
+		specs: [
+			{
+				feature: "Max Channels",
+				formatA: "32 channels",
+				formatB: "32 channels",
+			},
+			{
+				feature: "Pattern Architecture",
+				formatA: "Reusable Track Matrix",
+				formatB: "Linear Channel Patterns",
+			},
+			{
+				feature: "Envelope Curves",
+				formatA: "No (Linear volume only)",
+				formatB: "Yes (Volume & Pan Envelopes)",
+			},
+			{
+				feature: "Multisampling",
+				formatA: "1 sample per instrument",
+				formatB: "Up to 16 samples per instrument",
+			},
+			{
+				feature: "Developer",
+				formatA: "Daniel Gold (Renaissance)",
+				formatB: "Triton (Fredrik Huss & Magnus Högdahl)",
+			},
+		],
+		verdict:
+			"XM became the demoscene's favorite production format due to rich envelopes, but MTM remains an architectural marvel of space-efficient track sequencing. convrtr synthesizes both formats offline into modern 16-bit 44.1kHz stereo WAV audio.",
+		relatedTools: [
+			"audio/mtm-to-wav",
+			"audio/xm-to-wav",
+			"audio/mod-to-wav",
+			"audio/s3m-to-wav",
+		],
+	},
+	{
+		slug: "rtfd-vs-rtf",
+		title:
+			"RTFD vs RTF: Apple Rich Text Bundle with Attachments vs Standard Microsoft RTF",
+		description:
+			"Compare Apple's RTFD directory package format against standard Microsoft RTF: multimedia graphic attachments, bundle directory structure, and cross-platform compatibility.",
+		formatA: "RTFD",
+		formatB: "RTF",
+		category: "document",
+		summary:
+			"RTFD is Apple's macOS compound document bundle format that packages a Rich Text Format file (TXT.rtf) alongside embedded image and attachment files, whereas standard RTF is a single plain text file where images must be hex-encoded inline.",
+		prosA: [
+			"Stores embedded images as raw, pristine image files (PNG, JPEG, TIFF) without quality loss",
+			"Significantly smaller file size than RTF with large hex-encoded inline graphics",
+			"Modular directory package allows extracting attachments directly",
+			"Native rich document format across macOS TextEdit, Apple Mail, and Pages",
+		],
+		prosB: [
+			"Single-file document easily attached and emailed across Windows, Linux, and web clients",
+			"Universal word processor compatibility (MS Word, LibreOffice, Google Docs)",
+			"Avoids multi-file folder confusion when transferring to non-Apple operating systems",
+			"Supported by legacy document indexing engines and enterprise search systems",
+		],
+		specs: [
+			{
+				feature: "File Structure",
+				formatA: "Directory Bundle / ZIP Package",
+				formatB: "Single Plain Text File",
+			},
+			{
+				feature: "Embedded Media",
+				formatA: "Discrete external image files",
+				formatB: "Hex-encoded inline strings",
+			},
+			{
+				feature: "Primary OS",
+				formatA: "Apple macOS / NeXTSTEP",
+				formatB: "Cross-Platform (Windows, Mac, Linux)",
+			},
+			{
+				feature: "Text Encoding",
+				formatA: "Rich Text Format (TXT.rtf)",
+				formatB: "Rich Text Format (.rtf)",
+			},
+			{
+				feature: "Attachment Extraction",
+				formatA: "Instant (Native files)",
+				formatB: "Requires Hex decoding",
+			},
+		],
+		verdict:
+			"RTFD is superior for macOS workflows with rich graphical attachments, while RTF is best for universal document exchange. convrtr converts both formats directly into clean GitHub Flavored Markdown in your browser.",
+		relatedTools: [
+			"document/rtfd-to-markdown",
+			"document/rtf-to-markdown",
+			"document/cwk-to-markdown",
+			"document/abw-to-markdown",
+		],
+	},
+	{
+		slug: "vda-vs-tga",
+		title:
+			"VDA vs TGA: Truevision Video Display Adapter vs Standard TARGA Image",
+		description:
+			"Compare Truevision's historical VDA (Video Display Adapter) file extension with standard TGA (TARGA): hardware origins, color depths, and file headers.",
+		formatA: "VDA",
+		formatB: "TGA",
+		category: "image",
+		summary:
+			"VDA and TGA are two naming variants of the Truevision raster graphics standard created in 1984. While VDA was explicitly tied to Truevision's original Video Display Adapter hardware board, TGA became the universal industry standard extension across 3D game engines and graphics software.",
+		prosA: [
+			"Authentic preservation of vintage 1980s Truevision Video Display Adapter graphic assets",
+			"Identical 18-byte Truevision binary header with lossless RLE and color-map support",
+			"Historical significance in early PC video capture and computer vision systems",
+			"Directly convertible to modern PNG without image degradation",
+		],
+		prosB: [
+			"Universal file extension recognized by virtually all 3D engines, Photoshop, and GIMP",
+			"Supported by modern game asset pipelines (Unreal, Unity, Godot, Source)",
+			"Extensive community tooling, command-line converters, and thumbnail extensions",
+			"Supports 32-bit RGBA alpha channels for UI sprites and texture mapping",
+		],
+		specs: [
+			{
+				feature: "Originating Hardware",
+				formatA: "Truevision VDA Board",
+				formatB: "Truevision TARGA Boards",
+			},
+			{
+				feature: "Header Structure",
+				formatA: "18-byte Truevision Header",
+				formatB: "18-byte Truevision Header",
+			},
+			{
+				feature: "Pixel Depths",
+				formatA: "8, 16, 24, 32 bpp",
+				formatB: "8, 16, 24, 32 bpp",
+			},
+			{
+				feature: "Compression",
+				formatA: "Uncompressed & RLE",
+				formatB: "Uncompressed & RLE",
+			},
+			{
+				feature: "Modern Software Support",
+				formatA: "Extremely Rare",
+				formatB: "Ubiquitous in Game Dev",
+			},
+		],
+		verdict:
+			"TGA is the ubiquitous game texture format, while VDA is a rare vintage treasure. convrtr transparently decodes both formats into transparent 32-bit RGBA PNG images 100% offline.",
+		relatedTools: [
+			"image/vda-to-png",
+			"image/tga-to-png",
+			"image/pcx-to-png",
+			"image/dds-to-png",
+		],
+	},
 ];
 
 export function getComparison(slug: string): ComparisonMeta | undefined {

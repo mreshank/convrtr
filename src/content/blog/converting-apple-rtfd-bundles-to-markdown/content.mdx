@@ -1,0 +1,52 @@
+# Converting Apple RTFD Bundles to Markdown: Rich Text & Attachment Extraction
+
+In macOS and NeXTSTEP, **Apple TextEdit**, **Pages**, and **Apple Mail** utilize a document format known as **RTFD (Rich Text Format Directory)**. When users insert images, diagrams, or file attachments into a rich text document on a Mac, TextEdit converts the document from a single `.rtf` file into an `.rtfd` package folder.
+
+Because non-Apple operating systems (Windows, Linux, Android) and web browsers cannot open or parse RTFD directory packages directly, converting them into clean **GitHub Flavored Markdown (GFM)** with linked attachments is essential for cross-platform sharing and publishing.
+
+---
+
+## 1. The Anatomy of an RTFD Bundle
+
+On macOS filesystems, an `.rtfd` document appears as a single unified document icon, but it is actually a directory package:
+
+```
+Document.rtfd/
+  ├── TXT.rtf         # Core styled rich text stream
+  ├── figure1.png     # Embedded raster illustration
+  ├── chart.pdf       # Vector graphic attachment
+  └── diagram.tiff    # Legacy image scan
+```
+
+When uploaded or shared outside macOS, the folder is typically zipped into an archive. convrtr transparently unpacks both zipped archives and raw streams in browser memory.
+
+---
+
+## 2. Parsing Rich Text Streams (TXT.rtf)
+
+The primary text content resides in `TXT.rtf`. convrtr parses the RTF control words using a stack-based state machine:
+
+- **Typography:** Bold (`\b`), italic (`\i`), strikethrough (`\strike`), and monospace fonts (`\f0`) map to standard Markdown markdown tokens (`**`, `*`, `~~`, `` ` ``).
+- **Headings:** Font sizes scaled above standard body text (such as 18pt or 24pt) are promoted to ATX headings (`#`, `##`, `###`).
+- **Lists & Paragraphs:** Control words like `\par` and bullet lists format into clean semantic paragraph blocks and list items.
+
+---
+
+## 3. Resolving and Linking Graphic Attachments
+
+In RTFD documents, embedded images are referenced either via NeXT graphic control words (`\NeXTGraphic filename`) or by inspecting the bundle directory for attached image assets.
+
+convrtr catalogs all media files within the archive:
+
+1. **Images (`.png`, `.jpg`, `.webp`, `.svg`, `.tiff`):** Inserted into the Markdown flow as standard Markdown images:
+   ```markdown
+   ![figure1.png](figure1.png)
+   ```
+2. **Other Attachments:** Listed in an appendix section as downloadable hyperlinks.
+3. **YAML Frontmatter:** Attachment filenames and document metadata are cataloged in clean YAML headers.
+
+---
+
+## 4. Complete Client-Side Confidentiality
+
+All RTFD package extraction, RTF parsing, and Markdown generation occur strictly inside your web browser. Confidential notes, legal agreements, and proprietary diagrams never leave your machine.

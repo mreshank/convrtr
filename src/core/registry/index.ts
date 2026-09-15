@@ -19,6 +19,7 @@ import { itToWav } from "./tools/audio/it-to-wav";
 import { modToWav } from "./tools/audio/mod-to-wav";
 import { coverArtMP3 } from "./tools/audio/mp3-cover-art";
 import { mp4ToM4a } from "./tools/audio/mp4-to-m4a";
+import { mtmToWav } from "./tools/audio/mtm-to-wav";
 import { nistToWav } from "./tools/audio/nist-to-wav";
 import { normaliseFLAC } from "./tools/audio/normalise-flac";
 import { normaliseWAV } from "./tools/audio/normalise-wav";
@@ -82,6 +83,7 @@ import { pckToZip } from "./tools/document/pck-to-zip";
 import { pdbToMarkdown } from "./tools/document/pdb-to-markdown";
 import { rpaToZip } from "./tools/document/rpa-to-zip";
 import { rtfToMarkdown } from "./tools/document/rtf-to-markdown";
+import { rtfdToMarkdown } from "./tools/document/rtfd-to-markdown";
 import { scormToZip } from "./tools/document/scorm-to-zip";
 import { sdwToMarkdown } from "./tools/document/sdw-to-markdown";
 import { smiToSrt } from "./tools/document/smi-to-srt";
@@ -139,6 +141,7 @@ import { svgzToSvg } from "./tools/image/svgz-to-svg";
 import { tgaToPng } from "./tools/image/tga-to-png";
 import { tgsToJson } from "./tools/image/tgs-to-json";
 import { timToPng } from "./tools/image/tim-to-png";
+import { vdaToPng } from "./tools/image/vda-to-png";
 import { vtfToPng } from "./tools/image/vtf-to-png";
 import { wmfToSvg } from "./tools/image/wmf-to-svg";
 import { xbmToPng } from "./tools/image/xbm-to-png";
@@ -375,6 +378,9 @@ export const TOOLS: Tool[] = [
 	oktToWav,
 	zabwToMarkdown,
 	blpToPng,
+	mtmToWav,
+	rtfdToMarkdown,
+	vdaToPng,
 ];
 
 export function getTool(id: string): Tool | undefined {
