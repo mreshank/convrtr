@@ -97,6 +97,9 @@
 | `.okt` | Amiga Oktalyzer Module | Tracker Music / Chiptune | 8-channel Paula software-mixed Amiga tracker synthesis to 16-bit stereo WAV | `SOLVED` | **SHIPPED** |
 | `.zabw` | Compressed AbiWord Document | Document Forensics / Office | In-memory Gzip AWML XML decompressor & document structure parser to GFM Markdown | `SOLVED` | **SHIPPED** |
 | `.blp` | Blizzard Picture Game Texture | Game Dev / Modding | Warcraft III & WoW 256-color paletted & DXT1/5 texture decompressor to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
+| `.mtm` | MultiTracker Module | Tracker Music / DOS | 32-channel track matrix sequencer & 8-bit PCM software mixer to 16-bit stereo WAV | `SOLVED` | **SHIPPED** |
+| `.rtfd` | Apple Rich Text Directory Bundle | Document Forensics / Apple | macOS compound document unzipper, RTF parser & attachment linker to GFM Markdown | `SOLVED` | **SHIPPED** |
+| `.vda` / `.icb` / `.vst` | Truevision Video Display Adapter | Retro / Graphics | Historical Truevision 18-byte header & RLE truecolor raster decoder to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
 
 
 
@@ -2791,6 +2794,50 @@
 
 ---
 
+### 130. MultiTracker Module (.mtm)
+- **Ecosystem & Context:** MultiTracker was Daniel Gold's (Renaissance) 1993 32-channel PC DOS tracker editor that introduced modular track matrices, allowing patterns to reference shared track sequences to maximize space efficiency.
+- **Forensic Format Architecture:**
+  - Magic Bytes: `MTM\x10` (4 bytes at offset 0).
+  - Header: 66 bytes containing title, track count, last pattern, last order, comment length, sample count, channel count, and a 32-byte channel stereo panning table.
+  - Track Matrix: 64 rows x 3 bytes per track (note, instrument, and effect columns). Patterns store 32 track lookup pointers.
+  - Audio Payload: 8-bit unsigned linear PCM samples.
+- **In-Browser Execution Strategy:**
+  - Emulates 32-channel track matrix playback and note triggers.
+  - Linear interpolation sample resampling to target sample rate (44.1 kHz).
+  - Authentic per-channel stereo panning table mixing into uncompressed 16-bit stereo WAV.
+- **Fidelity:** `ACCURATE 32-CHANNEL TRACK-MATRIX SYNTHESIS TO 16-BIT STEREO WAV`.
+- **Status:** **Wave 45 Shipped (`audio/mtm-to-wav`) — Milestone Tool 130**.
+
+---
+
+### 131. Apple Rich Text Format Directory (.rtfd)
+- **Ecosystem & Context:** RTFD is Apple's compound document bundle format used across macOS TextEdit, Apple Mail, and Pages to store Rich Text Format documents alongside embedded raster and vector attachments.
+- **Forensic Format Architecture:**
+  - Bundle Architecture: Directory package or ZIP archive containing `TXT.rtf` (core rich text document) and discrete attachment files (`.png`, `.jpg`, `.pdf`, `.tiff`).
+  - Text Stream: Standard RTF control words with NeXT graphic attachment references (`\NeXTGraphic`).
+- **In-Browser Execution Strategy:**
+  - In-memory ZIP package decompression and attachment discovery.
+  - Full RTF lexing and typography translation to GFM Markdown.
+  - Resolves and links embedded graphic attachments as Markdown images.
+- **Fidelity:** `ZERO-LEAKAGE RTFD BUNDLE PARSING & ATTACHMENT EXTRACTION TO GFM MARKDOWN`.
+- **Status:** **Wave 45 Shipped (`document/rtfd-to-markdown`) — Milestone Tool 131**.
+
+---
+
+### 132. Truevision Video Display Adapter Raster (.vda)
+- **Ecosystem & Context:** VDA, ICB, and VST are the original raster image formats created by Truevision in 1984 for their pioneering PC video capture and display adapter hardware boards, sharing the foundational Truevision TARGA specification.
+- **Forensic Format Architecture:**
+  - Header: 18-byte Truevision header defining image type (uncompressed, RLE, paletted), width, height, pixel depth (8, 15, 16, 24, 32 bpp), and vertical orientation.
+  - Color Depths: 8-bit indexed palette, 15/16-bit highcolor, 24-bit RGB, and 32-bit RGBA.
+- **In-Browser Execution Strategy:**
+  - Binary header validation and color map unpacking.
+  - Uncompressed and RLE packet decompression with scanline orientation adjustment.
+  - Encodes decoded 32-bit RGBA pixels into standard transparent PNG.
+- **Fidelity:** `LOSSLESS TRUEVISION TARGA RASTER DECODING TO 32-BIT RGBA PNG`.
+- **Status:** **Wave 45 Shipped (`image/vda-to-png`) — Milestone Tool 132**.
+
+---
+
 ## Roadmap Waves & Next Steps
 
 1. **Wave 1 (Shipped):**
@@ -2967,10 +3014,10 @@
     - Tool 127: `audio/okt-to-wav` (Oktalyzer `.okt` Amiga 8-channel tracker module to 16-bit stereo WAV) — **Shipped**
     - Tool 128: `document/zabw-to-markdown` (Gzip-compressed AbiWord `.zabw` archive to GitHub Flavored Markdown) — **Shipped**
     - Tool 129: `image/blp-to-png` (Blizzard Texture `.blp` Warcraft III / WoW texture format to 32-bit RGBA PNG) — **Shipped**
-45. **Wave 45:**
-    - Tool 130: `audio/mtm-to-wav` (MultiTracker Module `.mtm` 32-channel DOS tracker to 16-bit stereo WAV)
-    - Tool 131: `document/rtfd-to-markdown` (Apple RTFD Rich Text Format with Attachments bundle to GitHub Flavored Markdown)
-    - Tool 132: `image/vda-to-png` (Truevision TGA VDA/ICB/VST TARGA variant to 32-bit RGBA PNG)
+45. **Wave 45 (Shipped):**
+    - Tool 130: `audio/mtm-to-wav` (MultiTracker Module `.mtm` 32-channel DOS tracker to 16-bit stereo WAV) — **Shipped**
+    - Tool 131: `document/rtfd-to-markdown` (Apple RTFD Rich Text Format with Attachments bundle to GitHub Flavored Markdown) — **Shipped**
+    - Tool 132: `image/vda-to-png` (Truevision TGA VDA/ICB/VST TARGA variant to 32-bit RGBA PNG) — **Shipped**
 46. **Wave 46:**
     - Tool 133: `audio/amr-to-wav` (Adaptive Multi-Rate `.amr` mobile speech audio to 16-bit linear PCM WAV)
     - Tool 134: `document/nb-to-markdown` (Wolfram Mathematica Notebook `.nb` expression tree to GitHub Flavored Markdown)

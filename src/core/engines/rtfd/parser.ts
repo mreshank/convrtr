@@ -45,7 +45,10 @@ export function convertRtfdToMarkdown(
 			const cleanName = filename.replace(/^.*[/\\]/, "");
 			if (!cleanName || cleanName.startsWith(".")) continue;
 
-			if (cleanName.toLowerCase() === "txt.rtf" || cleanName.toLowerCase().endsWith(".rtf")) {
+			if (
+				cleanName.toLowerCase() === "txt.rtf" ||
+				cleanName.toLowerCase().endsWith(".rtf")
+			) {
 				rtfBytes = fileData;
 			} else {
 				attachments.push(cleanName);
@@ -108,7 +111,9 @@ export function convertRtfdToMarkdown(
 		if (metadata.author) fmLines.push(`author: "${metadata.author}"`);
 		if (metadata.generator) fmLines.push(`generator: "${metadata.generator}"`);
 		if (attachments.length > 0) {
-			fmLines.push(`attachments: [${attachments.map((a) => `"${a}"`).join(", ")}]`);
+			fmLines.push(
+				`attachments: [${attachments.map((a) => `"${a}"`).join(", ")}]`,
+			);
 		}
 		if (fmLines.length > 0) {
 			lines.push("---", ...fmLines, "---", "");

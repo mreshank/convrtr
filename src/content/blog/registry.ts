@@ -5,6 +5,7 @@ import { meta as convertingAdobePhotoshopAcoPaletteToCss } from "./converting-ad
 import { meta as convertingAmfTrackerModulesToWav } from "./converting-amf-tracker-modules-to-wav/meta";
 import { meta as convertingAmigaAcbmContinuousBitmapToPng } from "./converting-amiga-acbm-continuous-bitmap-to-png/meta";
 import { meta as convertingAmstradCpcScreenDumpsToPng } from "./converting-amstrad-cpc-screen-dumps-to-png/meta";
+import { meta as convertingAppleRtfdBundlesToMarkdown } from "./converting-apple-rtfd-bundles-to-markdown/meta";
 import { meta as convertingAtariStAvrAudioToWav } from "./converting-atari-st-avr-audio-to-wav/meta";
 import { meta as convertingAtariStDegasToPng } from "./converting-atari-st-degas-to-png/meta";
 import { meta as convertingAtariStNeochromeToPng } from "./converting-atari-st-neochrome-to-png/meta";
@@ -29,6 +30,7 @@ import { meta as convertingGedcomFamilyTreeToCsv } from "./converting-gedcom-fam
 import { meta as convertingGoodnotesToPdfWithoutApp } from "./converting-goodnotes-to-pdf-without-app/meta";
 import { meta as convertingHangulWordProcessorHwpToMarkdown } from "./converting-hangul-word-processor-hwp-to-markdown/meta";
 import { meta as convertingImpulseTrackerItToWav } from "./converting-impulse-tracker-it-to-wav/meta";
+import { meta as convertingMultitrackerMtmModulesToWav } from "./converting-multitracker-mtm-modules-to-wav/meta";
 import { meta as convertingNesChrTileRomToPng } from "./converting-nes-chr-tile-rom-to-png/meta";
 import { meta as convertingOktalyzerOktModulesToWav } from "./converting-oktalyzer-okt-modules-to-wav/meta";
 import { meta as convertingOpenofficeSxwToMarkdown } from "./converting-openoffice-sxw-to-markdown/meta";
@@ -43,6 +45,7 @@ import { meta as convertingRealityAdlibTrackerRadToWav } from "./converting-real
 import { meta as convertingScreamTrackerS3mToWav } from "./converting-scream-tracker-s3m-to-wav/meta";
 import { meta as convertingStarofficeStarwriterSdwToMarkdown } from "./converting-staroffice-starwriter-sdw-to-markdown/meta";
 import { meta as convertingTelephonyUlawAlawToWav } from "./converting-telephony-ulaw-alaw-to-wav/meta";
+import { meta as convertingTruevisionVdaTargaToPng } from "./converting-truevision-vda-targa-to-png/meta";
 import { meta as convertingWestwoodAudAudioToWav } from "./converting-westwood-aud-audio-to-wav/meta";
 import { meta as convertingX11XcurCursorsToPng } from "./converting-x11-xcur-cursors-to-png/meta";
 import { meta as decodingZxSpectrumScrMemoryDumps } from "./decoding-zx-spectrum-scr-memory-dumps/meta";
@@ -126,6 +129,9 @@ export const BLOG_POSTS: BlogPostMeta[] = [
 	convertingOktalyzerOktModulesToWav,
 	convertingCompressedAbiwordZabwToMarkdown,
 	convertingBlizzardBlpTexturesToPng,
+	convertingMultitrackerMtmModulesToWav,
+	convertingAppleRtfdBundlesToMarkdown,
+	convertingTruevisionVdaTargaToPng,
 ];
 
 export function getPost(

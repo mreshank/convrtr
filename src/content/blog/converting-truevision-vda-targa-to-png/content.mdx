@@ -1,0 +1,49 @@
+# Converting Truevision VDA to PNG: Historical TARGA Video Graphics Decoding
+
+In 1984, AT&T and Truevision introduced the world's first truecolor video capture and display hardware for IBM PC compatibles. Alongside the famous **TARGA (Truevision Advanced Raster Graphics Adapter)** standard, Truevision shipped specialized imaging boards named **VDA (Video Display Adapter)**, **ICB (Image Capture Board)**, and **VST (Video Solid State)**.
+
+Each hardware product used its own file extension (`.vda`, `.icb`, `.vst`), though they all conformed to the foundational 18-byte Truevision binary header specification. Because modern photo viewers and web browsers rarely recognize the `.vda` or `.icb` extensions, converting them into standard transparent 32-bit RGBA PNG files is critical for retro preservation and game modding.
+
+---
+
+## 1. The Truevision 18-Byte Header Specification
+
+All Truevision raster formats share an identical 18-byte header:
+
+| Offset | Field | Description |
+|---|---|---|
+| `0x00` | ID Length | Length of arbitrary text metadata preceding the image pixels |
+| `0x01` | Color Map Type | `0` = No palette, `1` = Indexed color palette present |
+| `0x02` | Image Type | `1` = Colormapped, `2` = Truecolor RGB, `3` = Grayscale, `9/10/11` = RLE compressed |
+| `0x03` | Color Map Spec | 5 bytes: start index, palette length, and palette bit depth |
+| `0x08` | Image Spec | 10 bytes: X/Y origin, width, height, pixel depth, and image descriptor |
+
+---
+
+## 2. Supported Color Depths and Orientations
+
+Truevision images store pixels in little-endian order across diverse color configurations:
+
+1. **8-bit Indexed:** 256 color map palette entries in 15-bit, 24-bit, or 32-bit formats.
+2. **15-bit & 16-bit Highcolor:** 5 bits per RGB component plus 1 overlay or alpha bit.
+3. **24-bit Truecolor:** Raw Blue-Green-Red (BGR) byte triplets.
+4. **32-bit RGBA:** BGR channels accompanied by an 8-bit linear alpha channel.
+
+The image descriptor byte at offset 17 flags whether scanlines are ordered bottom-up (the traditional Truevision hardware convention) or top-down. convrtr transparently flips bottom-up rasters to match standard PNG scanline coordinates.
+
+---
+
+## 3. Run-Length Encoding (RLE) Decompression
+
+For compressed types (`9`, `10`, and `11`), pixels are encoded using byte-oriented packets:
+
+- **Run-Length Packet (Bit 7 = 1):** Repeat the following pixel `(count & 0x7F) + 1` times.
+- **Raw Packet (Bit 7 = 0):** Read the next `count + 1` distinct pixels uncompressed.
+
+convrtr inflates RLE runs directly into a continuous 32-bit RGBA pixel array before encoding with its pure in-browser PNG encoder.
+
+---
+
+## 4. Zero-Server Private Conversion
+
+All Truevision header inspection, color map indexing, RLE decompression, and PNG compression occur 100% locally within your browser sandbox. No graphics or sensitive video frames ever leave your device.

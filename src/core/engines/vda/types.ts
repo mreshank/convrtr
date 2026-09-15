@@ -1,5 +1,5 @@
 export interface VdaConversionOptions {
-	// Options placeholder if needed
+	extractMetadataOnly?: boolean;
 }
 
 export interface VdaMetadata {

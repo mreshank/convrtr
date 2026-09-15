@@ -1,8 +1,5 @@
 import { writeWav } from "../audio/wav";
-import type {
-	MtmConversionOptions,
-	MtmConversionResult,
-} from "./types";
+import type { MtmConversionOptions, MtmConversionResult } from "./types";
 
 interface MtmSample {
 	name: string;
@@ -68,9 +65,7 @@ export function convertMtmToWav(
 	const version = bytes[3] ?? 0;
 
 	if (magic !== "MTM" || version !== 0x10) {
-		throw new Error(
-			"Invalid MTM file: Missing 'MTM\\x10' format signature.",
-		);
+		throw new Error("Invalid MTM file: Missing 'MTM\\x10' format signature.");
 	}
 
 	const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
@@ -98,7 +93,8 @@ export function convertMtmToWav(
 	for (let i = 0; i < numSamples; i++) {
 		if (offset + 37 > bytes.length) break;
 
-		const sName = cleanAscii(bytes.subarray(offset, offset + 22)) || `Sample ${i + 1}`;
+		const sName =
+			cleanAscii(bytes.subarray(offset, offset + 22)) || `Sample ${i + 1}`;
 		const sLength = view.getUint32(offset + 22, true);
 		const loopStart = view.getUint32(offset + 26, true);
 		const loopEnd = view.getUint32(offset + 30, true);
@@ -188,10 +184,8 @@ export function convertMtmToWav(
 	onProgress?.(0.5, "MIX_AUDIO");
 
 	const sampleRate = options.sampleRate ?? 44100;
-	const stereoSep = Math.max(
-		0,
-		Math.min(100, options.stereoSeparation ?? 70),
-	) / 100;
+	const stereoSep =
+		Math.max(0, Math.min(100, options.stereoSeparation ?? 70)) / 100;
 
 	const speed = 6;
 	const bpm = 125;
@@ -276,8 +270,7 @@ export function convertMtmToWav(
 						const loopLen = smp.loopEnd - smp.loopStart;
 						if (loopLen > 2) {
 							voice.samplePos =
-								smp.loopStart +
-								((voice.samplePos - smp.loopStart) % loopLen);
+								smp.loopStart + ((voice.samplePos - smp.loopStart) % loopLen);
 						} else {
 							voices[ch] = null;
 						}
