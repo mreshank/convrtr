@@ -15,6 +15,7 @@ import { farToWav } from "./tools/audio/far-to-wav";
 import { coverArtFLAC } from "./tools/audio/flac-cover-art";
 import { flacToWav } from "./tools/audio/flac-to-wav";
 import { waveformFLAC } from "./tools/audio/flac-waveform";
+import { hmiToWav } from "./tools/audio/hmi-to-wav";
 import { imfToWav } from "./tools/audio/imf-to-wav";
 import { ircamToWav } from "./tools/audio/ircam-to-wav";
 import { itToWav } from "./tools/audio/it-to-wav";
@@ -95,6 +96,7 @@ import { srtToVtt } from "./tools/document/srt-to-vtt";
 import { subToSrt } from "./tools/document/sub-to-srt";
 import { sxwToMarkdown } from "./tools/document/sxw-to-markdown";
 import { tcxToGeoJson } from "./tools/document/tcx-to-geojson";
+import { texinfoToMarkdown } from "./tools/document/texinfo-to-markdown";
 import { vcfToCsv } from "./tools/document/vcf-to-csv";
 import { vntToTxt } from "./tools/document/vnt-to-txt";
 import { vttToSrt } from "./tools/document/vtt-to-srt";
@@ -131,6 +133,7 @@ import { icoToPng } from "./tools/image/ico-to-png";
 import { iffToPng } from "./tools/image/iff-to-png";
 import { koaToPng } from "./tools/image/koa-to-png";
 import { macpaintToPng } from "./tools/image/macpaint-to-png";
+import { mngToPng } from "./tools/image/mng-to-png";
 import { neoToPng } from "./tools/image/neo-to-png";
 import { oraToPng } from "./tools/image/ora-to-png";
 import { pcxToPng } from "./tools/image/pcx-to-png";
@@ -393,6 +396,9 @@ export const TOOLS: Tool[] = [
 	imfToWav,
 	lyxToMarkdown,
 	srfToPng,
+	hmiToWav,
+	texinfoToMarkdown,
+	mngToPng,
 ];
 
 export function getTool(id: string): Tool | undefined {

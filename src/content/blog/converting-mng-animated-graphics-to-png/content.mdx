@@ -1,0 +1,36 @@
+# Converting MNG Animated Graphics to PNG: Unpacking Multi-Image PNG Containers
+
+When the Portable Network Graphics (PNG) specification was finalized in 1996, it intentionally omitted multi-frame animation support to keep the decoder simple, lightweight, and focused on replacing patent-encumbered GIFs for static web images.
+
+To address animated content, the PNG Development Group created **Multiple-image Network Graphics (MNG)** in 2001. Designed as a comprehensive multimedia standard, MNG offered 24-bit truecolor animation, 8-bit alpha transparency, sub-frame loops, delta compression, and embedded JPEG streams.
+
+While APNG and animated WebP eventually became the mainstream web standards, millions of classic open-source animations, video game assets, and software UI graphics remain encoded in `.mng` containers.
+
+---
+
+## 1. The Structure of an MNG Stream
+
+An MNG file shares the same 4-byte chunk framing mechanism as PNG:
+
+- **MNG Signature:** 8 bytes: `\x8AMNG\r\n\x1a\n` (`0x8A 0x4D 0x4E 0x47 0x0D 0x0A 0x1A 0x0A`).
+- **MHDR (MNG Header):** 28 bytes specifying nominal frame width, height, ticks per second, layer counts, and frame playback times.
+- **Embedded PNG Frames:** Contains encapsulated standard PNG chunk streams (`IHDR`, `PLTE`, `IDAT`, `IEND`) defining individual animation frames.
+- **Animation Control Chunks:** Chunks like `FRAM`, `DEFI`, `MOVE`, `CLIP`, and `SHOW` control frame transitions, screen positioning, and layer blitting.
+- **MEND (MNG End):** Marks the termination of the animation stream.
+
+---
+
+## 2. Extracting Frames to Standalone PNGs
+
+Because modern web browsers removed native MNG support, extracting animation frames into standard standalone 32-bit RGBA PNG files is the most effective way to recover and reuse these assets:
+
+1. **Chunk Stream Parsing:** Reads through the MNG container, separating global metadata (`MHDR`) from image stream chunks (`IHDR`, `IDAT`, `IEND`).
+2. **Frame Reassembly:** Concatenates standard PNG chunk payloads with verified CRC-32 checksums and prepends the standard PNG signature (`\x89PNG\r\n\x1a\n`).
+3. **Selected Frame Export:** Allows selecting the primary first frame or subsequent animation frames.
+4. **Zero Recompression Generation Loss:** Extracted frames retain their exact original pixel data and alpha channel transparency without recompression artifacts.
+
+---
+
+## 3. Client-Side Offline Privacy
+
+convrtr extracts PNG frames from MNG files directly in your web browser. No animation files or image assets are ever sent to remote cloud conversion servers.

@@ -1,0 +1,33 @@
+# Converting HMI DOS Game Audio to WAV: Emulating 1990s PC Soundtracks
+
+In the golden era of 1990s MS-DOS gaming, developing reliable audio drivers for hundreds of competing sound cards—from AdLib and Sound Blaster Pro to the Gravis UltraSound and Roland Sound Canvas—was an immense technical hurdle.
+
+To solve this, many top game studios (including Interplay, Blizzard Entertainment, Parallax Software, and Midway) turned to the **Human Machine Interfaces (HMI) Sound Operating System**. HMI `.hmi` (and `.hmp`) music files provided a unified multi-track sequence container that powered the unforgettable soundtracks of *Descent*, *Descent II*, *Warcraft II: Tides of Darkness*, *Mortal Kombat*, *Shattered Steel*, and *Battle Arena Toshinden*.
+
+---
+
+## 1. The Architecture of an HMI File
+
+An HMI file is an extended, optimized MIDI container designed for real-time interrupt-driven game playback:
+
+- **Signature Header:** Begins with ASCII string `HMI-MIDIFILE0115` or `HMI-MIDISONG0615` in the first 32 bytes.
+- **Track Table & Offsets:** Stores track count, division (typically 120 ticks per quarter note), and offsets to individual channel track streams.
+- **Track Stream Packets:** Encapsulates standard MIDI messages (Note On `0x90`, Note Off `0x80`, Program Change `0xC0`, Control Change `0xB0`) preceded by variable-length delta tick intervals.
+- **Multi-Track Voice Priority:** Allowed game engines to dynamically reprioritize music channels when intense combat sound effects were triggered.
+
+---
+
+## 2. In-Browser Multi-Voice Synthesis
+
+Because modern operating systems and mobile devices do not include vintage HMI sound drivers, playback requires decoding the sequence events and synthesizing the instrument voices into a standard digital audio stream:
+
+1. **Delta-Time Scheduling:** Maps tick durations against tempo markings (BPM) to construct a high-precision audio timeline.
+2. **Harmonic Voice Generation:** Emulates multi-channel synthesizer instruments with parameterized attack, decay, sustain, and release (ADSR) amplitude envelopes.
+3. **Stereo Spatialization:** Applies channel pan controllers (`CC 10`) and master volume (`CC 7`) to preserve the wide dynamic stereo mix.
+4. **16-bit Linear PCM WAV Encoding:** Emits standard uncompressed RIFF WAV files that play seamlessly on any modern phone, browser, or media player.
+
+---
+
+## 3. Pure Offline In-Memory Conversion
+
+Preserving retro video game music should never require sending files to untrusted cloud servers. convrtr synthesizes `.hmi` and `.hmp` files 100% client-side inside your browser sandbox. Zero data ever leaves your device.

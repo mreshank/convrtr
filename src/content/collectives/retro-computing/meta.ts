@@ -36,5 +36,6 @@ export const meta: CollectiveMeta = {
 		"audio/amr-to-wav",
 		"audio/imf-to-wav",
 		"image/srf-to-png",
+		"audio/hmi-to-wav",
 	],
 };

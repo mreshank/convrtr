@@ -1,0 +1,47 @@
+# Converting GNU Texinfo to Markdown: Modernizing Free Software Manuals
+
+For nearly four decades, **GNU Texinfo** has served as the official documentation standard of the GNU Operating System. Developed by Richard Stallman and Robert Chassell in 1986, Texinfo solved a fundamental publishing dilemma: how to maintain a single comprehensive technical manual that could generate both publication-quality printed books (via TeX) and interactive hypertext terminal manuals (via GNU Info).
+
+Today, Texinfo documents the foundational tools of modern software engineering: the **GNU Compiler Collection (GCC)**, **GNU Emacs**, **Bash**, **Make**, **Coreutils**, and **GDB**.
+
+However, modern developers expect documentation in **GitHub Flavored Markdown (GFM)** for publishing on GitHub Wikis, README files, static documentation engines (Docusaurus, VitePress, Nextra), and modern note systems.
+
+---
+
+## 1. Texinfo Syntax and Macro Directives
+
+A Texinfo source file uses line-oriented directives and macro tags beginning with the `@` character:
+
+```text
+\input texinfo
+@settitle The GNU Sample Guide
+@chapter Introduction to Sample
+This manual explains how to use @command{sample}.
+@example
+sample --input=data.bin --threads=4
+@end example
+@section Key Flags
+@table @samp
+@item -v
+Enable verbose diagnostic output.
+@end table
+```
+
+---
+
+## 2. Converting Semantic Constructs to Markdown
+
+A high-fidelity Texinfo-to-Markdown converter translates the semantic richness of Texinfo into readable Markdown:
+
+- **Sectioning:** Maps `@top`, `@chapter`, and `@majorheading` to `#`, `@section` to `##`, and `@subsection` to `###`.
+- **Code Fences:** Converts `@example`, `@smallexample`, and `@lisp` blocks into clean triple-backtick Markdown code blocks.
+- **Lists & Enumerate:** Translates `@itemize @bullet` into `-` bullet points and `@enumerate` into numbered lists (`1.`, `2.`).
+- **Definition Tables:** Maps `@table @samp` definitions into bold definition bullets or GFM table layouts.
+- **Semantic Inline Tags:** Unpacks `@code{...}`, `@var{...}`, `@file{...}`, and `@command{...}` into backticked inline code, and maps `@uref{url, text}` to standard `[text](url)` links.
+- **Stripping Info Navigation:** Safely removes terminal-only navigation constructs such as `@menu`, `@node`, and `@c` comment blocks.
+
+---
+
+## 3. 100% Client-Side In-Browser Execution
+
+convrtr parses GNU Texinfo files directly in your web browser using pure TypeScript. No compiler toolchains, Perl scripts, or TeX installations are required. Your technical documentation stays strictly on your local machine with zero cloud uploads.

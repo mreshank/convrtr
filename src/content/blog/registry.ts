@@ -28,12 +28,15 @@ import { meta as convertingFarandoleComposerFarToWav } from "./converting-farand
 import { meta as convertingFasttrackerXmModulesToWav } from "./converting-fasttracker-xm-modules-to-wav/meta";
 import { meta as convertingFictionbookFb2ToMarkdown } from "./converting-fictionbook-fb2-to-markdown/meta";
 import { meta as convertingGedcomFamilyTreeToCsv } from "./converting-gedcom-family-tree-to-csv/meta";
+import { meta as convertingGnuTexinfoToMarkdown } from "./converting-gnu-texinfo-to-markdown/meta";
 import { meta as convertingGoodnotesToPdfWithoutApp } from "./converting-goodnotes-to-pdf-without-app/meta";
 import { meta as convertingHangulWordProcessorHwpToMarkdown } from "./converting-hangul-word-processor-hwp-to-markdown/meta";
+import { meta as convertingHmiDosGameAudioToWav } from "./converting-hmi-dos-game-audio-to-wav/meta";
 import { meta as convertingIdSoftwareImfAudioToWav } from "./converting-id-software-imf-audio-to-wav/meta";
 import { meta as convertingImpulseTrackerItToWav } from "./converting-impulse-tracker-it-to-wav/meta";
 import { meta as convertingLyxDocumentsToMarkdown } from "./converting-lyx-documents-to-markdown/meta";
 import { meta as convertingMathematicaNbNotebooksToMarkdown } from "./converting-mathematica-nb-notebooks-to-markdown/meta";
+import { meta as convertingMngAnimatedGraphicsToPng } from "./converting-mng-animated-graphics-to-png/meta";
 import { meta as convertingMultitrackerMtmModulesToWav } from "./converting-multitracker-mtm-modules-to-wav/meta";
 import { meta as convertingNesChrTileRomToPng } from "./converting-nes-chr-tile-rom-to-png/meta";
 import { meta as convertingOktalyzerOktModulesToWav } from "./converting-oktalyzer-okt-modules-to-wav/meta";
@@ -144,6 +147,9 @@ export const BLOG_POSTS: BlogPostMeta[] = [
 	convertingIdSoftwareImfAudioToWav,
 	convertingLyxDocumentsToMarkdown,
 	convertingSonySrfRawToPng,
+	convertingHmiDosGameAudioToWav,
+	convertingGnuTexinfoToMarkdown,
+	convertingMngAnimatedGraphicsToPng,
 ];
 
 export function getPost(

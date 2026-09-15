@@ -23,5 +23,6 @@ export const meta: CollectiveMeta = {
 		"image/blp-to-png",
 		"image/vda-to-png",
 		"image/wal-to-png",
+		"image/mng-to-png",
 	],
 };

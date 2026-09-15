@@ -382,6 +382,14 @@ const MIME_MAP: Record<string, string> = {
 	"image/x-sony-srf": "srf",
 	"image/x-sony-sr2": "srf",
 	"image/x-sony-arw": "srf",
+	"audio/x-hmi": "hmi",
+	"audio/hmi": "hmi",
+	"application/x-hmi": "hmi",
+	"application/x-texinfo": "texi",
+	"text/x-texinfo": "texi",
+	"video/x-mng": "mng",
+	"image/x-mng": "mng",
+	"image/mng": "mng",
 };
 
 /**

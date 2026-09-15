@@ -2929,6 +2929,48 @@
 
 ---
 
+### 139. Human Machine Interfaces MIDI (.hmi)
+- **Ecosystem & Context:** HMI is the extended multi-track MIDI format created by Human Machine Interfaces, Inc. for 1990s MS-DOS PC games including Descent, Descent II, Warcraft II, Mortal Kombat, and Shattered Steel.
+- **Forensic Format Architecture:**
+  - Header: 32-byte ASCII signature (`HMI-MIDIFILE0115` or `HMI-MIDISONG0615`) with track count, division (ticks per quarter note), and track chunk offsets.
+  - Events: Standard MIDI message streams (Note On, Note Off, Program Change, Control Change, Pitch Bend) with variable-length delta times.
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript event stream parser and chronological delta scheduler.
+  - Multi-voice polyphonic synthesis with dynamic ADSR envelope generators and stereo panning.
+  - Synthesizes 16-bit 44.1 kHz stereo linear PCM WAV.
+- **Fidelity:** `ACCURATE HMI MULTI-TRACK MIDI SYNTHESIS TO 16-BIT STEREO WAV`.
+- **Status:** **Wave 48 Shipped (`audio/hmi-to-wav`) — Milestone Tool 139**.
+
+---
+
+### 140. GNU Texinfo Technical Manual (.texi)
+- **Ecosystem & Context:** GNU Texinfo is the official documentation system of the GNU Project, designed to generate both printed books and online terminal manuals from a single source. Used across GCC, Emacs, Bash, Make, and Coreutils.
+- **Forensic Format Architecture:**
+  - Structure: Line-oriented directives beginning with `@` (`@chapter`, `@section`, `@example`, `@itemize`, `@table`, `@multitable`).
+  - Inline Macros: `@code{...}`, `@var{...}`, `@samp{...}`, `@uref{...}`, `@strong{...}`, `@emph{...}`.
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript line-oriented state machine and macro parser.
+  - Maps chapters and sections to Markdown headings (`#`, `##`, `###`).
+  - Converts code environments to fenced Markdown code blocks and unescapes Texinfo special characters.
+- **Fidelity:** `ACCURATE GNU TEXINFO MANUAL EXTRACTION TO GFM MARKDOWN`.
+- **Status:** **Wave 48 Shipped (`document/texinfo-to-markdown`) — Milestone Tool 140**.
+
+---
+
+### 141. Multiple-image Network Graphics (.mng)
+- **Ecosystem & Context:** MNG is the open-source animated graphics container developed in 2001 by the PNG Development Group to support 24-bit truecolor animation and 8-bit alpha transparency.
+- **Forensic Format Architecture:**
+  - Signature: 8-byte signature `0x8A 0x4D 0x4E 0x47 0x0D 0x0A 0x1A 0x0A`.
+  - Chunks: 4-byte length, 4-byte ASCII type (`MHDR`, `IHDR`, `PLTE`, `IDAT`, `IEND`, `MEND`), chunk payload, and 4-byte CRC-32 checksum.
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript chunk stream parser.
+  - Extracts the selected frame's PNG chunk sequence (`IHDR`, `IDAT`, `IEND`) and prepends standard PNG signature with verified CRCs.
+  - Emits standalone 32-bit transparent RGBA PNG image.
+- **Fidelity:** `LOSSLESS MNG FRAME EXTRACTION TO 32-BIT RGBA PNG`.
+- **Status:** **Wave 48 Shipped (`image/mng-to-png`) — Milestone Tool 141**.
+
+---
+
 ## Roadmap Waves & Next Steps
 
 1. **Wave 1 (Shipped):**
@@ -3117,10 +3159,10 @@
     - Tool 136: `audio/imf-to-wav` (id Software Music Format `.imf` Commander Keen / Wolfenstein 3D OPL2 sound to 16-bit WAV) — **Shipped**
     - Tool 137: `document/lyx-to-markdown` (LyX document processor `.lyx` LaTeX-like document to GitHub Flavored Markdown) — **Shipped**
     - Tool 138: `image/srf-to-png` (Sony Alpha RAW `.srf` thumbnail and preview extractor to 32-bit RGBA PNG) — **Shipped**
-48. **Wave 48:**
-    - Tool 139: `audio/hmi-to-wav` (Human Machine Interfaces MIDI `.hmi` MS-DOS game music to 16-bit stereo WAV)
-    - Tool 140: `document/texinfo-to-markdown` (GNU Texinfo `.texi` technical manual to GitHub Flavored Markdown)
-    - Tool 141: `image/mng-to-png` (Multiple-image Network Graphics `.mng` animation frames to PNG)
+48. **Wave 48 (Shipped):**
+    - Tool 139: `audio/hmi-to-wav` (Human Machine Interfaces MIDI `.hmi` MS-DOS game music to 16-bit stereo WAV) — **Shipped**
+    - Tool 140: `document/texinfo-to-markdown` (GNU Texinfo `.texi` technical manual to GitHub Flavored Markdown) — **Shipped**
+    - Tool 141: `image/mng-to-png` (Multiple-image Network Graphics `.mng` animation frames to PNG) — **Shipped**
 49. **Wave 49:**
     - Tool 142: `audio/rol-to-wav` (AdLib Visual Composer `.rol` FM synthesis song to 16-bit stereo WAV)
     - Tool 143: `document/man-to-markdown` (UNIX roff / troff manual page `.1`..`.8` to GitHub Flavored Markdown)

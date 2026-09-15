@@ -4075,6 +4075,183 @@ export const COMPARISONS: ComparisonMeta[] = [
 			"image/hdr-to-png",
 		],
 	},
+	{
+		slug: "hmi-vs-mid",
+		title:
+			"HMI vs MIDI: Human Machine Interfaces Multi-Track Audio vs Standard MIDI",
+		description:
+			"Compare Human Machine Interfaces (HMI) game audio with standard MIDI: driver architecture, multi-track playback, and sound hardware support.",
+		formatA: "HMI",
+		formatB: "MIDI",
+		category: "audio",
+		summary:
+			"Human Machine Interfaces (HMI) audio was the premiere licensed sound system for 1990s MS-DOS PC gaming (Descent, Warcraft II, Mortal Kombat). Standard MIDI is the universal hardware-agnostic musical specification. HMI bundled proprietary sound card driver routing, digital audio mixing, and multi-track sequence management.",
+		prosA: [
+			"Tailored hardware driver routing for Sound Blaster, Roland RAP-10, and Gravis UltraSound",
+			"Combined multi-track sequence management and voice prioritization",
+			"Powers iconic 1990s PC gaming soundtracks including Descent and Warcraft II",
+			"Low-latency playback optimized for real-time MS-DOS action gaming",
+		],
+		prosB: [
+			"Universal music standard supported across every modern operating system and DAW",
+			"Broad ecosystem of hardware synthesizers and software soundfonts",
+			"Direct editing of notes, velocity curves, and tempo changes",
+			"Cross-platform format independence",
+		],
+		specs: [
+			{
+				feature: "Primary Use Case",
+				formatA: "1990s MS-DOS PC game music",
+				formatB: "Universal music production & playback",
+			},
+			{
+				feature: "Driver Architecture",
+				formatA: "Human Machine Interfaces Sound Driver",
+				formatB: "Standard MIDI Interface (MPU-401)",
+			},
+			{
+				feature: "Sound Generation",
+				formatA: "Multi-voice synthesizer / FM / wavetable",
+				formatB: "External synthesizer / SoundFont",
+			},
+			{
+				feature: "Sequence Structure",
+				formatA: "Custom multi-track HMI chunk header",
+				formatB: "Standard MIDI File (SMF 0/1)",
+			},
+			{
+				feature: "Modern Compatibility",
+				formatA: "Requires specialized emulator / player",
+				formatB: "Every digital audio workstation",
+			},
+		],
+		verdict:
+			"MIDI is the immortal standard of electronic music, but HMI was the sound of golden-age 1990s MS-DOS gaming. convrtr synthesizes vintage HMI game audio files directly into studio-quality 16-bit stereo WAV in your browser.",
+		relatedTools: [
+			"audio/hmi-to-wav",
+			"audio/imf-to-wav",
+			"audio/rad-to-wav",
+			"audio/mod-to-wav",
+		],
+	},
+	{
+		slug: "texinfo-vs-markdown",
+		title:
+			"Texinfo vs Markdown: GNU Multi-Output Technical Publishing vs Lightweight Web Markup",
+		description:
+			"Compare GNU Texinfo with Markdown: single-source multi-format documentation, semantic markup directives, and web publishing.",
+		formatA: "Texinfo",
+		formatB: "Markdown",
+		category: "document",
+		summary:
+			"GNU Texinfo is a comprehensive documentation language engineered so that a single source file can produce printed books, online hypertext, and terminal manuals. Markdown is the ubiquitous human-readable web markup language powering GitHub, documentation portals, and static site generators.",
+		prosA: [
+			"Single source generates printed PDF/DVI, online Info, HTML, and man pages",
+			"Extensive semantic markup for commands, variables, keys, and file paths",
+			"Built-in indexing, two-pass cross-referencing, and multi-table matrices",
+			"Official documentation standard for GCC, Emacs, Bash, and the GNU Project",
+		],
+		prosB: [
+			"Extreme human readability even without formatting tools or viewers",
+			"Native rendering on GitHub, GitLab, Reddit, Discord, and Slack",
+			"Supported by every modern static site generator (Next.js, VitePress, Hugo)",
+			"Zero learning curve for everyday developers and writers",
+		],
+		specs: [
+			{
+				feature: "Created By",
+				formatA: "Richard Stallman / GNU Project (1986)",
+				formatB: "John Gruber / Aaron Swartz (2004)",
+			},
+			{
+				feature: "Primary Output Target",
+				formatA: "Print manuals, Info terminal, and HTML",
+				formatB: "Web pages, GitHub repos, and notes",
+			},
+			{
+				feature: "Formatting Syntax",
+				formatA: "@-commands (@chapter, @code, @var)",
+				formatB: "Punctuation (#, *, `, [text](url))",
+			},
+			{
+				feature: "Indexing & Cross-References",
+				formatA: "Comprehensive multi-level indices",
+				formatB: "Basic anchor links",
+			},
+			{
+				feature: "Ecosystem Ubiquity",
+				formatA: "Free Software / GNU utilities",
+				formatB: "Universal web developer ecosystem",
+			},
+		],
+		verdict:
+			"Texinfo reigns supreme for monumental technical manuals, but Markdown is the lingua franca of modern developer communication. convrtr converts GNU Texinfo documents into clean, elegant GitHub Flavored Markdown.",
+		relatedTools: [
+			"document/texinfo-to-markdown",
+			"document/lyx-to-markdown",
+			"document/latex-to-markdown",
+			"document/org-to-markdown",
+		],
+	},
+	{
+		slug: "mng-vs-apng",
+		title:
+			"MNG vs APNG: Full-Featured Animation Architecture vs Lightweight Animated PNG",
+		description:
+			"Compare Multiple-image Network Graphics (MNG) with Animated PNG (APNG): chunk architecture, alpha channels, and browser adoption.",
+		formatA: "MNG",
+		formatB: "APNG",
+		category: "image",
+		summary:
+			"MNG was developed in 2001 by the PNG Group as an ambitious animated media container supporting nested frames, delta-encoding, and scripting. APNG was created in 2004 as a streamlined backwards-compatible extension that displays as a static PNG in legacy viewers while animating in modern browsers.",
+		prosA: [
+			"Comprehensive animation control with sub-frame loops, layers, and clipping",
+			"Delta-frame compression reducing repeated background redundancy",
+			"Rich multimedia specification designed for complex vector-like animations",
+			"Preserves historic early-2000s open-source animations",
+		],
+		prosB: [
+			"100% backwards-compatible: renders first frame as standard PNG in any viewer",
+			"Universal modern browser support (Chrome, Safari, Firefox, Edge)",
+			"Lightweight parser overhead without complex MNG scripting logic",
+			"Widely supported in modern sticker packs and web messaging apps",
+		],
+		specs: [
+			{
+				feature: "First Released",
+				formatA: "2001 (PNG Development Group)",
+				formatB: "2004 (Mozilla Developers)",
+			},
+			{
+				feature: "Backwards Compatibility",
+				formatA: "Requires dedicated MNG decoder",
+				formatB: "Opens as standard PNG in all viewers",
+			},
+			{
+				feature: "Color & Alpha Support",
+				formatA: "Full 24-bit RGB + 8-bit alpha",
+				formatB: "Full 24-bit RGB + 8-bit alpha",
+			},
+			{
+				feature: "Complexity Level",
+				formatA: "High (Loops, defines, delta frames)",
+				formatB: "Low (Sequential animated chunks)",
+			},
+			{
+				feature: "Browser Support",
+				formatA: "Deprecated in modern web browsers",
+				formatB: "Universal (>96% global support)",
+			},
+		],
+		verdict:
+			"APNG won the web adoption battle, but countless classic animations remain archived in .mng files. convrtr extracts individual frames from MNG animations and exports them to crisp 32-bit RGBA PNG images directly in your browser.",
+		relatedTools: [
+			"image/mng-to-png",
+			"image/gif-to-frames",
+			"image/tga-to-png",
+			"image/wal-to-png",
+		],
+	},
 ];
 
 export function getComparison(slug: string): ComparisonMeta | undefined {
