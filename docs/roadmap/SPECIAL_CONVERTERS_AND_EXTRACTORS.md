@@ -100,6 +100,9 @@
 | `.mtm` | MultiTracker Module | Tracker Music / DOS | 32-channel track matrix sequencer & 8-bit PCM software mixer to 16-bit stereo WAV | `SOLVED` | **SHIPPED** |
 | `.rtfd` | Apple Rich Text Directory Bundle | Document Forensics / Apple | macOS compound document unzipper, RTF parser & attachment linker to GFM Markdown | `SOLVED` | **SHIPPED** |
 | `.vda` / `.icb` / `.vst` | Truevision Video Display Adapter | Retro / Graphics | Historical Truevision 18-byte header & RLE truecolor raster decoder to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
+| `.amr` | Adaptive Multi-Rate Audio | Telephony / Mobile | 3GPP ACELP speech codec frame unpacker & 10th-order LPC synthesizer to 16-bit linear PCM WAV | `SOLVED` | **SHIPPED** |
+| `.nb` / `.cdf` | Wolfram Mathematica Notebook | Scientific / Math | Hierarchical cell expression tree, 2D box formula & special character translator to GFM Markdown | `SOLVED` | **SHIPPED** |
+| `.wal` | Quake II Surface Texture | Game Dev / id Tech 2 | 100-byte header, 4-level pre-baked mipmap decoder & Quake II colormap indexer to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
 
 
 
@@ -2838,6 +2841,51 @@
 
 ---
 
+### 133. Adaptive Multi-Rate Audio (.amr)
+- **Ecosystem & Context:** AMR (Adaptive Multi-Rate audio codec, 3GPP TS 26.071) is the global speech coding standard developed for 2G/3G mobile cellular networks, carrier voicemails, and MMS voice notes.
+- **Forensic Format Architecture:**
+  - Magic Bytes: `#!AMR\n` (AMR-NB narrowband 8kHz) or `#!AMR-WB\n` (AMR-WB wideband 16kHz).
+  - Frame Framing: 1-byte TOC header with Frame Type index (FT, 0-15) and Quality bit (Q).
+  - Payload: 20ms ACELP speech frames with subframe pitch lags, algebraic codebook innovation pulses, and LPC reflection coefficients.
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript frame parser and mode validator.
+  - 10th-order LPC speech synthesis filter driven by periodic pitch excitations and codebook noise.
+  - Generates uncompressed 16-bit linear PCM audio in standard RIFF WAV container.
+- **Fidelity:** `ACCURATE 3GPP ACELP SPEECH SYNTHESIS TO 16-BIT LINEAR PCM WAV`.
+- **Status:** **Wave 46 Shipped (`audio/amr-to-wav`) — Milestone Tool 133**.
+
+---
+
+### 134. Wolfram Mathematica Notebook (.nb)
+- **Ecosystem & Context:** Wolfram Mathematica Notebooks (.nb, .cdf) are interactive computational documents developed by Stephen Wolfram in 1988, widely used across academic research, physics, mathematics, and symbolic modeling.
+- **Forensic Format Architecture:**
+  - Expression Tree: Hierarchical nested `Notebook[{ Cell[...], Cell[...] }, ...]` Wolfram Language syntax.
+  - 2D Math Boxes: `RowBox`, `SuperscriptBox`, `SubscriptBox`, `FractionBox`, `SqrtBox`, `GridBox`, and `StyleBox`.
+  - Wolfram Characters: Escaped character entities like `\[Alpha]`, `\[Omega]`, `\[Infinity]`, `\[Integral]`, `\[PartialD]`.
+- **In-Browser Execution Strategy:**
+  - Recursive box language parser and balanced expression tokenizer.
+  - Translates cell styles (Title, Chapter, Section, Input, Output, Item) into Markdown headings, code blocks, and lists.
+  - Converts GridBox matrices into GFM Markdown tables and unescapes Greek/mathematical Unicode symbols.
+- **Fidelity:** `ACCURATE MATHEMATICA NOTEBOOK EXPRESSION TREE EXTRACTION TO GFM MARKDOWN`.
+- **Status:** **Wave 46 Shipped (`document/nb-to-markdown`) — Milestone Tool 134**.
+
+---
+
+### 135. Quake II Surface Texture (.wal)
+- **Ecosystem & Context:** WAL is the proprietary mipmapped texture format created by id Software for Quake II (id Tech 2 engine, 1997) and games like Heretic II, SiN, Daikatana, and Kingpin: Life of Crime.
+- **Forensic Format Architecture:**
+  - Header: 100-byte binary header containing texture name, dimensions, animation sequence link (`animname`), surface flags, content flags, and light value.
+  - Mipmaps: 4 pre-calculated downsampled mipmap levels (1:1, 1:2, 1:4, 1:8).
+  - Colormap: 8-bit indexed palette pixels referencing the global 256-color Quake II colormap.
+- **In-Browser Execution Strategy:**
+  - 100-byte header validation and mipmap offset lookup.
+  - Maps 8-bit index bytes into 32-bit RGBA pixels using the canonical Quake II 256-color palette.
+  - Encodes selected mipmap raster into transparent 32-bit RGBA PNG.
+- **Fidelity:** `LOSSLESS ID TECH 2 MIPMAPPED TEXTURE DECODING TO 32-BIT RGBA PNG`.
+- **Status:** **Wave 46 Shipped (`image/wal-to-png`) — Milestone Tool 135**.
+
+---
+
 ## Roadmap Waves & Next Steps
 
 1. **Wave 1 (Shipped):**
@@ -3018,10 +3066,10 @@
     - Tool 130: `audio/mtm-to-wav` (MultiTracker Module `.mtm` 32-channel DOS tracker to 16-bit stereo WAV) — **Shipped**
     - Tool 131: `document/rtfd-to-markdown` (Apple RTFD Rich Text Format with Attachments bundle to GitHub Flavored Markdown) — **Shipped**
     - Tool 132: `image/vda-to-png` (Truevision TGA VDA/ICB/VST TARGA variant to 32-bit RGBA PNG) — **Shipped**
-46. **Wave 46:**
-    - Tool 133: `audio/amr-to-wav` (Adaptive Multi-Rate `.amr` mobile speech audio to 16-bit linear PCM WAV)
-    - Tool 134: `document/nb-to-markdown` (Wolfram Mathematica Notebook `.nb` expression tree to GitHub Flavored Markdown)
-    - Tool 135: `image/wal-to-png` (Quake II `.wal` mipmapped texture format to 32-bit RGBA PNG)
+46. **Wave 46 (Shipped):**
+    - Tool 133: `audio/amr-to-wav` (Adaptive Multi-Rate `.amr` mobile speech audio to 16-bit linear PCM WAV) — **Shipped**
+    - Tool 134: `document/nb-to-markdown` (Wolfram Mathematica Notebook `.nb` expression tree to GitHub Flavored Markdown) — **Shipped**
+    - Tool 135: `image/wal-to-png` (Quake II `.wal` mipmapped texture format to 32-bit RGBA PNG) — **Shipped**
 47. **Wave 47:**
     - Tool 136: `audio/imf-to-wav` (id Software Music Format `.imf` Commander Keen / Wolfenstein 3D OPL2 sound to 16-bit WAV)
     - Tool 137: `document/lyx-to-markdown` (LyX document processor `.lyx` LaTeX-like document to GitHub Flavored Markdown)

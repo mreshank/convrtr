@@ -1,0 +1,45 @@
+# Converting AMR to WAV: Decoding 3GPP Mobile Speech Audio in the Browser
+
+For over two decades, the **Adaptive Multi-Rate (AMR)** speech codec has served as the backbone of digital cellular telephony across GSM, UMTS, and LTE networks. From carrier voicemails and 3G video calls to MMS audio clips and mobile voice recorder apps, billions of speech recordings have been saved in the `.amr` container.
+
+However, modern desktop operating systems and HTML5 web browsers have steadily deprecated native AMR playback. Converting these legacy mobile recordings into standard 16-bit linear PCM WAV files ensures universal compatibility across all audio players, speech-to-text models, and digital audio workstations.
+
+---
+
+## 1. The AMR Format Family: Narrowband vs Wideband
+
+The 3GPP AMR standard consists of two major codec profiles:
+
+1. **AMR-NB (Narrowband):** Operates at an 8,000 Hz sampling rate over an acoustic bandwidth of 300 to 3,400 Hz. Designed for classical 2G GSM cellular voice channels, it dynamically switches between eight speech bitrates from 4.75 kbps to 12.2 kbps.
+2. **AMR-WB (Wideband / G.722.2):** Operates at a 16,000 Hz sampling rate over an expanded 50 to 7,000 Hz bandwidth. Introduced for "HD Voice" mobile calling, it spans bitrates from 6.60 kbps to 23.85 kbps.
+
+Each file begins with a distinct ASCII magic header:
+- AMR-NB: `#!AMR\n` (6 bytes)
+- AMR-WB: `#!AMR-WB\n` (9 bytes)
+
+---
+
+## 2. Speech Frame Structure and ACELP Synthesis
+
+Following the file header, the audio stream is packed into continuous 20-millisecond speech frames (160 samples per frame at 8 kHz):
+
+- **Table of Contents (TOC) Byte:** Contains the Frame Type index (FT, bits 3 to 6) declaring the transmission bitrate mode, and the Quality bit (Q, bit 2) indicating packet corruption status.
+- **Algebraic Code-Excited Linear Prediction (ACELP):** Rather than storing raw audio wave cycles, AMR models the human vocal tract as a time-varying 10th-order linear predictive filter driven by periodic pitch excitations and algebraic noise codebooks.
+- **Line Spectral Pairs (LSP):** Vocal tract resonance formants are efficiently quantized as spectral frequencies, allowing speech reconstruction at bitrates under 12 kbps.
+
+---
+
+## 3. convrtr's Client-Side Speech Synthesizer
+
+When you drop an `.amr` file into convrtr, decoding occurs entirely in your browser sandbox:
+
+1. **Header Identification:** Detects narrowband vs wideband format signatures.
+2. **Frame Mode Parsing:** Steps through the TOC byte stream, validating frame lengths and accumulating bitrate statistics.
+3. **LPC Synthesis:** Converts reflection coefficients and adaptive pitch delays into continuous 16-bit linear PCM speech waveforms.
+4. **WAV Encoding:** Writes a RIFF WAVE audio container with standard 44-byte format chunk headers.
+
+---
+
+## 4. Zero-Server Private Conversion
+
+Cellular voicemails and personal voice notes often carry deeply confidential conversations. convrtr executes 100% locally in JavaScript and WebAssembly on your device: no audio bytes or voice recordings are ever uploaded to cloud servers.

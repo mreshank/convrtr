@@ -3721,6 +3721,183 @@ export const COMPARISONS: ComparisonMeta[] = [
 			"image/dds-to-png",
 		],
 	},
+	{
+		slug: "amr-vs-wav",
+		title:
+			"AMR vs WAV: Adaptive Multi-Rate Telephony Speech vs Linear PCM Audio",
+		description:
+			"Compare 3GPP Adaptive Multi-Rate (AMR) cellular speech compression with uncompressed 16-bit RIFF WAV audio: bandwidth, compression ratios, and fidelity.",
+		formatA: "AMR",
+		formatB: "WAV",
+		category: "audio",
+		summary:
+			"AMR is the highly efficient ACELP speech codec standard developed for 2G/3G mobile networks and MMS voice messaging, while WAV is the universal uncompressed PCM audio format used for studio editing and high-fidelity playback.",
+		prosA: [
+			"Extremely lightweight (4.75 kbps to 12.2 kbps)",
+			"Optimized specifically for human voice intelligibility",
+			"Dynamic rate adaptation across unstable cellular connections",
+			"Standard format for legacy voicemail and MMS audio",
+		],
+		prosB: [
+			"Lossless linear PCM audio without voice codec artifacts",
+			"Compatible with every desktop OS, DAW, and web browser",
+			"Supports arbitrary sample rates, bit depths, and multichannel surround",
+			"Zero CPU decoding overhead",
+		],
+		specs: [
+			{
+				feature: "Codec Type",
+				formatA: "ACELP Speech Codec",
+				formatB: "Linear PCM (Uncompressed)",
+			},
+			{
+				feature: "Typical Bitrate",
+				formatA: "4.75 - 12.2 kbps (AMR-NB)",
+				formatB: "705.6 - 1411.2 kbps",
+			},
+			{
+				feature: "Target Material",
+				formatA: "Human Speech / Voice Only",
+				formatB: "Universal (Music, Voice, FX)",
+			},
+			{
+				feature: "Browser Playback",
+				formatA: "Limited / Deprecated",
+				formatB: "Universal HTML5 Audio",
+			},
+			{
+				feature: "Compression Ratio",
+				formatA: "~90-95% space reduction",
+				formatB: "0% (Raw uncompressed)",
+			},
+		],
+		verdict:
+			"AMR was essential for early mobile networks, but modern editing and playback demand universal compatibility. Convert legacy AMR voice recordings into 16-bit linear PCM WAV with convrtr.",
+		relatedTools: [
+			"audio/amr-to-wav",
+			"audio/silk-to-wav",
+			"audio/ulaw-to-wav",
+			"audio/vox-to-wav",
+		],
+	},
+	{
+		slug: "nb-vs-ipynb",
+		title:
+			"Mathematica NB vs Jupyter IPYNB: Wolfram Notebook vs Jupyter Notebook",
+		description:
+			"A technical comparison of Wolfram Mathematica Notebook (.nb) expression trees and Project Jupyter (.ipynb) JSON notebooks: syntax, cells, and rendering.",
+		formatA: "NB",
+		formatB: "IPYNB",
+		category: "document",
+		summary:
+			"Mathematica Notebooks pioneered interactive computational documents in 1988 with hierarchical expression trees and symbolic math. Jupyter Notebooks brought computational notebooks to the open-source web using JSON and Python kernels.",
+		prosA: [
+			"Native symbolic math formatting with dynamic 2D typesetting boxes",
+			"Rich hierarchical cell grouping (chapters, sections, subsections)",
+			"Tightly integrated with Wolfram Knowledgebase and symbolic engine",
+			"Decades of scientific research and academic literature archive",
+		],
+		prosB: [
+			"Open JSON format readable by GitHub, VS Code, and browser extensions",
+			"Polyglot kernel support (Python, R, Julia, Scala)",
+			"Ubiquitous in modern machine learning and data science",
+			"Directly rendered on GitHub repository web previews",
+		],
+		specs: [
+			{
+				feature: "Underlying Architecture",
+				formatA: "Wolfram Language Expression Tree",
+				formatB: "JSON Document Schema",
+			},
+			{
+				feature: "Primary Ecosystem",
+				formatA: "Wolfram Mathematica / Wolfram One",
+				formatB: "Jupyter / Python / Data Science",
+			},
+			{
+				feature: "First Introduced",
+				formatA: "1988 (Mathematica 1.0)",
+				formatB: "2011 (IPython Notebook)",
+			},
+			{
+				feature: "Math Rendering",
+				formatA: "Native Box Expressions (RowBox, etc.)",
+				formatB: "LaTeX / MathJax",
+			},
+			{
+				feature: "Version Control Diffability",
+				formatA: "Complex expression syntax",
+				formatB: "Standard JSON text",
+			},
+		],
+		verdict:
+			"Jupyter is the modern data science standard, but decades of groundbreaking mathematics are locked in .nb files. convrtr extracts Mathematica notebooks directly into clean GitHub Flavored Markdown.",
+		relatedTools: [
+			"document/nb-to-markdown",
+			"document/org-to-markdown",
+			"document/latex-to-markdown",
+			"document/rtfd-to-markdown",
+		],
+	},
+	{
+		slug: "wal-vs-pcx",
+		title: "WAL vs PCX: Quake II Mipmapped Texture vs ZSoft Paintbrush Raster",
+		description:
+			"Compare id Software's Quake II WAL mipmapped texture format with ZSoft PCX: game engine mipmapping, colormaps, and raster performance.",
+		formatA: "WAL",
+		formatB: "PCX",
+		category: "image",
+		summary:
+			"Both WAL and PCX played pivotal roles in 1990s PC gaming. ZSoft PCX was the standard texture source format for Doom and Quake 1, while Quake II introduced WAL with pre-baked downsampled mipmaps and surface emission flags.",
+		prosA: [
+			"Contains 4 pre-calculated mipmap levels for instant GPU texture upload",
+			"Embedded texture animation sequence pointers (animname)",
+			"Includes surface light emission values and game content flags",
+			"Eliminated mipmap generation lag in Quake II / id Tech 2 engine",
+		],
+		prosB: [
+			"Universal 2D graphics format supported by Paintbrush, Photoshop, and GIMP",
+			"Lossless run-length compression (RLE) saving disk space",
+			"Used for menus, HUD graphics, and colormaps in classic games",
+			"Independent of 3D game engine structures",
+		],
+		specs: [
+			{
+				feature: "Primary Application",
+				formatA: "Quake II 3D Mipmapped Surface Texture",
+				formatB: "2D Bitmap & HUD Graphic Storage",
+			},
+			{
+				feature: "Mipmaps Included",
+				formatA: "Yes (4 levels: 1:1, 1:2, 1:4, 1:8)",
+				formatB: "No (Single full resolution image)",
+			},
+			{
+				feature: "Color System",
+				formatA: "8-bit indexing Quake II colormap",
+				formatB: "8-bit indexed or 24-bit RGB",
+			},
+			{
+				feature: "Game Engine Metadata",
+				formatA: "Flags, contents, and light value",
+				formatB: "None (Standard raster)",
+			},
+			{
+				feature: "Compression",
+				formatA: "Uncompressed raw mipmaps",
+				formatB: "Byte-oriented RLE",
+			},
+		],
+		verdict:
+			"PCX was the artist's canvas, while WAL was the 3D renderer's fast-path texture. convrtr converts vintage WAL textures and PCX bitmaps into modern transparent 32-bit RGBA PNG graphics.",
+		relatedTools: [
+			"image/wal-to-png",
+			"image/pcx-to-png",
+			"image/tga-to-png",
+			"image/blp-to-png",
+			"image/vtf-to-png",
+		],
+	},
 ];
 
 export function getComparison(slug: string): ComparisonMeta | undefined {

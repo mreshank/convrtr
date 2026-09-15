@@ -1,6 +1,7 @@
 import { meta as appleMacpaintRetroGraphicsDecoding } from "./apple-macpaint-retro-graphics-decoding/meta";
 import { meta as convertWhatsappWechatSilkToWavMp3 } from "./convert-whatsapp-wechat-silk-to-wav-mp3/meta";
 import { meta as convertingAbiwordAbwToMarkdown } from "./converting-abiword-abw-to-markdown/meta";
+import { meta as convertingAdaptiveMultiRateAmrToWav } from "./converting-adaptive-multi-rate-amr-to-wav/meta";
 import { meta as convertingAdobePhotoshopAcoPaletteToCss } from "./converting-adobe-photoshop-aco-palette-to-css/meta";
 import { meta as convertingAmfTrackerModulesToWav } from "./converting-amf-tracker-modules-to-wav/meta";
 import { meta as convertingAmigaAcbmContinuousBitmapToPng } from "./converting-amiga-acbm-continuous-bitmap-to-png/meta";
@@ -30,6 +31,7 @@ import { meta as convertingGedcomFamilyTreeToCsv } from "./converting-gedcom-fam
 import { meta as convertingGoodnotesToPdfWithoutApp } from "./converting-goodnotes-to-pdf-without-app/meta";
 import { meta as convertingHangulWordProcessorHwpToMarkdown } from "./converting-hangul-word-processor-hwp-to-markdown/meta";
 import { meta as convertingImpulseTrackerItToWav } from "./converting-impulse-tracker-it-to-wav/meta";
+import { meta as convertingMathematicaNbNotebooksToMarkdown } from "./converting-mathematica-nb-notebooks-to-markdown/meta";
 import { meta as convertingMultitrackerMtmModulesToWav } from "./converting-multitracker-mtm-modules-to-wav/meta";
 import { meta as convertingNesChrTileRomToPng } from "./converting-nes-chr-tile-rom-to-png/meta";
 import { meta as convertingOktalyzerOktModulesToWav } from "./converting-oktalyzer-okt-modules-to-wav/meta";
@@ -39,6 +41,7 @@ import { meta as convertingOpmlOutlinesToMarkdown } from "./converting-opml-outl
 import { meta as convertingPalmdocPdbToMarkdown } from "./converting-palmdoc-pdb-to-markdown/meta";
 import { meta as convertingPlaystationVagAudioToWav } from "./converting-playstation-vag-audio-to-wav/meta";
 import { meta as convertingPolytrackerPtmToWav } from "./converting-polytracker-ptm-to-wav/meta";
+import { meta as convertingQuake2WalTexturesToPng } from "./converting-quake-2-wal-textures-to-png/meta";
 import { meta as convertingQuiteOkImageQoiToPng } from "./converting-quite-ok-image-qoi-to-png/meta";
 import { meta as convertingRadianceHdrRgbeToPng } from "./converting-radiance-hdr-rgbe-to-png/meta";
 import { meta as convertingRealityAdlibTrackerRadToWav } from "./converting-reality-adlib-tracker-rad-to-wav/meta";
@@ -132,6 +135,9 @@ export const BLOG_POSTS: BlogPostMeta[] = [
 	convertingMultitrackerMtmModulesToWav,
 	convertingAppleRtfdBundlesToMarkdown,
 	convertingTruevisionVdaTargaToPng,
+	convertingAdaptiveMultiRateAmrToWav,
+	convertingMathematicaNbNotebooksToMarkdown,
+	convertingQuake2WalTexturesToPng,
 ];
 
 export function getPost(

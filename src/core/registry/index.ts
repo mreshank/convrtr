@@ -3,6 +3,7 @@ import { sixSixNineToWav } from "./tools/audio/669-to-wav";
 import { adxToWav } from "./tools/audio/adx-to-wav";
 import { aiffToWav } from "./tools/audio/aiff-to-wav";
 import { amfToWav } from "./tools/audio/amf-to-wav";
+import { amrToWav } from "./tools/audio/amr-to-wav";
 import { auToWav } from "./tools/audio/au-to-wav";
 import { audToWav } from "./tools/audio/aud-to-wav";
 import { avrToWav } from "./tools/audio/avr-to-wav";
@@ -74,6 +75,7 @@ import { kmzToGeoJson } from "./tools/document/kmz-to-geojson";
 import { latexToMarkdown } from "./tools/document/latex-to-markdown";
 import { mhtmlToHtml } from "./tools/document/mhtml-to-html";
 import { msgToEml } from "./tools/document/msg-to-eml";
+import { nbToMarkdown } from "./tools/document/nb-to-markdown";
 import { nfoToHtml } from "./tools/document/nfo-to-html";
 import { opmlToMarkdown } from "./tools/document/opml-to-markdown";
 import { orgToMarkdown } from "./tools/document/org-to-markdown";
@@ -143,6 +145,7 @@ import { tgsToJson } from "./tools/image/tgs-to-json";
 import { timToPng } from "./tools/image/tim-to-png";
 import { vdaToPng } from "./tools/image/vda-to-png";
 import { vtfToPng } from "./tools/image/vtf-to-png";
+import { walToPng } from "./tools/image/wal-to-png";
 import { wmfToSvg } from "./tools/image/wmf-to-svg";
 import { xbmToPng } from "./tools/image/xbm-to-png";
 import { xcurToPng } from "./tools/image/xcur-to-png";
@@ -381,6 +384,9 @@ export const TOOLS: Tool[] = [
 	mtmToWav,
 	rtfdToMarkdown,
 	vdaToPng,
+	amrToWav,
+	nbToMarkdown,
+	walToPng,
 ];
 
 export function getTool(id: string): Tool | undefined {

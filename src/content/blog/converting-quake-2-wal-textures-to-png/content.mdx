@@ -1,0 +1,47 @@
+# Converting Quake II WAL Textures to PNG: id Tech 2 Mipmapped Raster Decoding
+
+Released in December 1997, id Software's **Quake II** set new benchmarks for 3D game engines. Powered by the **id Tech 2** engine, Quake II powered legendary titles including *Heretic II*, *SiN*, *Kingpin: Life of Crime*, *Daikatana*, and *Anachronox*.
+
+At the core of the id Tech 2 rendering pipeline was the **WAL** texture format. Unlike standard image files of the era, a WAL file encapsulated four pre-generated mipmap levels along with surface animation and lighting metadata. Because modern game development engines (Unreal, Unity, Godot, Blender) cannot read `.wal` files directly, converting them into standard 32-bit RGBA PNG files is essential for modding, level design, and retro game preservation.
+
+---
+
+## 1. The 100-Byte WAL Header Architecture
+
+Every Quake II WAL texture begins with a strict 100-byte binary header:
+
+| Offset | Size | Type | Description |
+|---|---|---|---|
+| `0x00` | 32 B | ASCII | Null-terminated texture path (e.g. `e1u1/metal1`) |
+| `0x20` | 4 B | uint32 LE | Texture width in pixels (power of two) |
+| `0x24` | 4 B | uint32 LE | Texture height in pixels (power of two) |
+| `0x28` | 16 B | uint32[4] | Offsets to mipmap levels 0, 1, 2, and 3 |
+| `0x38` | 32 B | ASCII | Next texture name in animation sequence (`animname`) |
+| `0x58` | 4 B | uint32 LE | Surface flags (e.g. sky, warp, flowing water) |
+| `0x5C` | 4 B | uint32 LE | Content flags (e.g. solid, window, lava, slime) |
+| `0x60` | 4 B | uint32 LE | Surface light emission value |
+
+---
+
+## 2. Four-Level Pre-Baked Mipmaps
+
+To avoid mipmap generation latency during runtime level loading, id Tech 2 stored pre-downsampled textures directly in the file:
+
+- **Mipmap 0:** Full resolution base texture ($W \times H$).
+- **Mipmap 1:** Half resolution ($W/2 \times H/2$).
+- **Mipmap 2:** Quarter resolution ($W/4 \times H/4$).
+- **Mipmap 3:** Eighth resolution ($W/8 \times H/8$).
+
+convrtr allows you to choose which mipmap level to export or defaults to the highest-fidelity Level 0 base texture.
+
+---
+
+## 3. The Quake II 256-Color Palette
+
+WAL textures store raw 8-bit color index bytes that reference the global Quake II `colormap.pcx` palette. convrtr bundles the canonical 256-color Quake II colormap, mapping each index byte into full 32-bit RGBA pixels before encoding into standard transparent PNG format.
+
+---
+
+## 4. 100% Client-Side In-Browser Conversion
+
+All binary header parsing, mipmap extraction, palette lookup, and PNG encoding execute strictly in your browser using pure TypeScript. No game assets or texture files ever leave your machine.

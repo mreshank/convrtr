@@ -25,5 +25,6 @@ export const meta: CollectiveMeta = {
 		"document/sdw-to-markdown",
 		"document/zabw-to-markdown",
 		"document/rtfd-to-markdown",
+		"document/nb-to-markdown",
 	],
 };

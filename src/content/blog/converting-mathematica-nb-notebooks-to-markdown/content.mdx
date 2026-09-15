@@ -1,0 +1,44 @@
+# Converting Wolfram Mathematica Notebooks (.nb) to Markdown: Hierarchical Expression Tree Extraction
+
+Since its inception in 1988 by Stephen Wolfram, **Mathematica** has shaped modern computational science. Long before Jupyter Notebooks or Google Colab emerged, researchers, physicists, and engineers documented mathematical proofs, differential equations, and data visualizations using **Mathematica Notebooks (`.nb`)**.
+
+While Mathematica's native document format provides unprecedented 2D mathematical typesetting, viewing `.nb` files requires specialized proprietary software like Mathematica or Wolfram Player. Converting Mathematica notebooks into clean, readable **GitHub Flavored Markdown (GFM)** makes academic research, computational proofs, and algorithms universally accessible across developer docs, git repositories, and static websites.
+
+---
+
+## 1. The Structure of a Mathematica Notebook
+
+Unlike JSON-based Jupyter notebooks, a `.nb` file is written entirely in the **Wolfram Language expression format**:
+
+- **Preamble Comments:** Header lines identifying format version and generation system.
+- **Notebook Container:** An outer expression enclosing an ordered list of cell items.
+- **Cell Hierarchy:** Each cell specifies its content, stylistic role (such as Title, Section, Subsection, Input, Output, Text), and optional display properties.
+
+---
+
+## 2. Parsing the Wolfram Box Language
+
+Within computational cells, formulas and formatted typography are rendered using Mathematica's **Box Language**:
+
+1. **RowBox:** Concatenates horizontal sequences of expressions, variables, and operators.
+2. **SuperscriptBox & SubscriptBox:** Formats mathematical powers and tensor indices.
+3. **FractionBox:** Typesets numerator over denominator fractions.
+4. **SqrtBox:** Formats radical roots.
+5. **GridBox:** Represents multi-dimensional matrices and data tables, which convrtr converts into standard GFM Markdown tables.
+6. **StyleBox:** Dictates bold, italic, and inline code formatting.
+
+---
+
+## 3. Wolfram Special Character Decoding
+
+Mathematica documents frequently contain proprietary escaped entity names for Greek letters, calculus symbols, and logic operators. convrtr maps these entities directly to universal Unicode equivalents:
+
+- `\[Alpha]` to `α`, `\[Beta]` to `β`, `\[Pi]` to `π`
+- `\[Infinity]` to `∞`, `\[Integral]` to `∫`, `\[PartialD]` to `∂`
+- `\[Rule]` to `->`, `\[Equal]` to `==`
+
+---
+
+## 4. Zero-Server Private Execution
+
+Academic discoveries, financial algorithms, and scientific datasets must remain strictly confidential. convrtr operates entirely on the client side using pure TypeScript. Your notebooks never touch external servers or cloud processors.

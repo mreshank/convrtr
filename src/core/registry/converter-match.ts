@@ -366,6 +366,13 @@ const MIME_MAP: Record<string, string> = {
 	"application/rtfd": "rtfd",
 	"image/x-vda": "vda",
 	"image/vda": "vda",
+	"audio/amr": "amr",
+	"audio/amr-wb": "amr",
+	"application/mathematica": "nb",
+	"application/vnd.wolfram.mathematica": "nb",
+	"image/x-wal": "wal",
+	"image/wal": "wal",
+	"application/x-quake2-wal": "wal",
 };
 
 /**
