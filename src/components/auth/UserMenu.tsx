@@ -47,15 +47,18 @@ function HistoryIcon() {
 	);
 }
 
-function AuthIconButton({ hasSession = false }: { hasSession?: boolean }) {
+function AuthIconButton({ sessionName }: { sessionName?: string | null }) {
+	const hasSession = Boolean(sessionName);
+	const tooltipText = sessionName
+		? `Workspace Active: ${sessionName}`
+		: "Sign In";
+	const ariaLabel = hasSession ? "Manage active workspace session" : "Sign In";
+
 	return (
-		<Tooltip
-			content={hasSession ? "Workspace Active — Manage Session" : "Sign In"}
-			position="bottom"
-		>
+		<Tooltip content={tooltipText} position="bottom">
 			<Link
 				href="/auth"
-				aria-label={hasSession ? "Manage active workspace session" : "Sign In"}
+				aria-label={ariaLabel}
 				style={{
 					position: "relative",
 					display: "inline-flex",
@@ -94,11 +97,11 @@ function AuthIconButton({ hasSession = false }: { hasSession?: boolean }) {
 	);
 }
 
-function AuthenticatedMenu() {
+function AuthenticatedMenu({ sessionName }: { sessionName?: string | null }) {
 	const { isSignedIn } = useUser();
 
 	if (!isSignedIn) {
-		return <AuthIconButton />;
+		return <AuthIconButton sessionName={sessionName} />;
 	}
 
 	return (
@@ -135,26 +138,31 @@ function AuthenticatedMenu() {
 }
 
 export function UserMenu() {
-	const [hasLocalSession, setHasLocalSession] = useState(false);
+	const [sessionName, setSessionName] = useState<string | null>(null);
 
 	useEffect(() => {
 		try {
 			const session = localStorage.getItem("convrtr_workspace_session");
-			if (session) setHasLocalSession(true);
+			if (session) {
+				const parsed = JSON.parse(session);
+				if (parsed && typeof parsed.name === "string") {
+					setSessionName(parsed.name);
+				} else {
+					setSessionName("Local");
+				}
+			}
 		} catch {
 			// Storage access error or unavailable in sandboxed frames
 		}
 	}, []);
 
 	if (!PUBLISHABLE_KEY) {
-		return <AuthIconButton hasSession={hasLocalSession} />;
+		return <AuthIconButton sessionName={sessionName} />;
 	}
 
 	return (
-		<AuthErrorBoundary
-			fallback={<AuthIconButton hasSession={hasLocalSession} />}
-		>
-			<AuthenticatedMenu />
+		<AuthErrorBoundary fallback={<AuthIconButton sessionName={sessionName} />}>
+			<AuthenticatedMenu sessionName={sessionName} />
 		</AuthErrorBoundary>
 	);
 }

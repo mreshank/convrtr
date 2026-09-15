@@ -1,0 +1,55 @@
+In the early 1990s, the IBM PC demoscene was undergoing a dramatic sonic renaissance. While the Commodore Amiga's hardware audio chipset was strictly limited to four 8-bit digital sound channels, PC sound cards like the Gravis UltraSound and Creative Sound Blaster 16 unlocked multi-channel polyphony. 
+
+Finnish demoscene programmer and musician **Otto Chrons** developed the **Digital Sound & Music Interface (DSMI)** library and the **Advanced Module Format (AMF)**. AMF powered legendary PC music tracker programs including **ASYLUM Music Format Tracker** and was chosen by game developers for soundtracks like *Star Control II*.
+
+Files encoded in this tracker format carry the **`.amf`** extension.
+
+This technical guide unpacks the binary structure of AMF revisions (v1.0 through v1.4 and ASYLUM 1.0), details the packed pattern track architecture, and explains how [convrtr's AMF to WAV converter](/audio/amf-to-wav) synthesizes authentic 16-channel DOS module soundtracks into studio-quality 16-bit stereo WAV files entirely within your web browser.
+
+## The AMF File Header
+
+An AMF file begins with a distinct multi-byte signature identifying its format version:
+
+| Magic Bytes | Version | Description |
+| :--- | :--- | :--- |
+| `"AMF"` (`0x01` to `0x0E`) | AMF v1.0–v1.4 | Otto Chrons DSMI tracker format |
+| `"ASYLUM "` (`0x20`) | ASYLUM 1.0 | ASYLUM Music Format tracker |
+
+Following the magic signature, the header stores global playback parameters:
+
+- **Song Title**: 32 ASCII characters describing the track name.
+- **Sample Count**: Number of digital PCM audio instruments (up to 64).
+- **Order Count**: Total sequence entries determining pattern progression.
+- **Track / Channel Count**: Number of simultaneous playback channels (up to 16).
+- **Initial Tempo & BPM**: Default playback speed and ticks per row.
+
+## Sample Headers and Audio Memory
+
+Each digital sample is defined by a structured header table specifying its memory footprint and loop behavior:
+
+- **Sample Type**: Unsigned or signed 8-bit PCM samples.
+- **Sample Length**: Length in bytes of the raw waveform data.
+- **Loop Start & End**: Sample offsets for sustained notes and looping pads.
+- **Volume & Finetune**: Base playback amplitude (0–64) and frequency tuning adjustments.
+
+Unlike Amiga MOD files where samples were limited to 64KB, AMF allowed samples to span arbitrary memory buffers suitable for PC extended memory (XMS).
+
+## Channel Track Packing
+
+AMF achieved superior compression compared to uncompressed MOD files through its independent track structure. Rather than storing empty rows across all channels in a global matrix, AMF decomposes patterns into reusable column tracks:
+
+```text
+Pattern Matrix = [Channel 0 Track Index, Channel 1 Track Index, ..., Channel N Track Index]
+```
+
+Within each track, events are encoded as compact byte streams:
+1. **Note and Octave**: 1–83 semitones mapped to standard ProTracker frequency tables.
+2. **Instrument Index**: Reference to the sample header.
+3. **Volume and Effect Commands**: Arpeggio, portamento, vibrato, and volume slides.
+4. **Empty Row Compression**: Consecutive silent rows are stored as single repeat codes.
+
+## Client-Side In-Browser Synthesis
+
+convrtr's AMF audio engine parses the module header, decodes all packed channel tracks, and executes an authentic 16-channel software mixer running at 44.1 kHz. Each channel interpolates 8-bit PCM waveforms using linear resampling, adjusts stereo panning, and generates a lossless 16-bit stereo WAV buffer.
+
+No plugins, command-line utilities, or cloud uploads are required. All synthesis runs in pure client-side TypeScript inside your browser.

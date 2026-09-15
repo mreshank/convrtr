@@ -85,6 +85,9 @@
 | `.669` | Composer 669 / UNIS 669 Module | Tracker Music / Audio | Tomasz Pytel 8-channel DOS tracker unpacker & 8-bit unsigned PCM synthesis to 16-bit stereo WAV | `SOLVED` | **SHIPPED** |
 | `.hwp` | Hancom Hangul Word Processor Document | Document Forensics / Office | OLE Compound Document extractor with Deflate decompression & UTF-16LE text recovery to GFM Markdown | `SOLVED` | **SHIPPED** |
 | `.acbm` | Amiga Continuous Bitmap IFF Graphic | Retro / Amiga Graphics | Continuous planar bitplane decoder with IFF BMHD, CMAP palettes & ByteRun1 decompressor to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
+| `.amf` | Advanced Module Format / ASYLUM Tracker | Tracker Music / Audio | Otto Chrons 16-channel DOS tracker unpacker & 8-bit PCM software synthesis to 16-bit stereo WAV | `SOLVED` | **SHIPPED** |
+| `.cwk` | ClarisWorks / AppleWorks Document | Document Forensics / Office | MacBinary II unpacker with Mac OS Roman / UTF-8 text extractor & formatting to GFM Markdown | `SOLVED` | **SHIPPED** |
+| `.cpc` / `.scr` | Amstrad CPC Screen Dump | Retro / 8-Bit Art | Motorola 6845 CRTC non-linear framebuffer decoder with 27-color Gate Array palette to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
 
 
 
@@ -2593,6 +2596,53 @@
 
 ---
 
+### 118. Advanced Module Format / ASYLUM Tracker Module (.amf)
+- **Ecosystem & Context:** In the early 1990s, Otto Chrons developed the Digital Sound & Music Interface (DSMI) library and the Advanced Module Format (`.amf`). It offered an alternative to Amiga MOD and Scream Tracker S3M, expanding beyond 4 channels to 16 digital PCM channels and powering games like *Star Control II* and PC demoscene productions.
+- **Forensic Format Architecture:**
+  - File Magic: Signature `"AMF"` (versions 10 through 14) or `"ASYLUM "` (version 1.0) in the first 3 or 7 bytes.
+  - Header Table: Song title (32 chars), sample count (1..64), order count, and channel count (up to 16).
+  - Sample Records: 8-bit signed/unsigned PCM waveforms with volume, finetune, and sustain loop endpoints.
+  - Pattern Tracks: Individual channel track sequences with run-length encoding for empty rows.
+- **In-Browser Execution Strategy:**
+  - Detects AMF version, unpacks track tables, and synthesizes 16-channel digital audio at 44.1 kHz.
+  - Linear sample interpolation and stereo panning into standard 16-bit PCM stereo WAV.
+- **Fidelity:** `CYCLE-ACCURATE 16-CHANNEL SYNTHESIS TO STEREO WAV`.
+- **Status:** **Wave 41 Shipped (`audio/amf-to-wav`) — Milestone Tool 118**.
+
+---
+
+### 119. ClarisWorks / AppleWorks Document (.cwk)
+- **Ecosystem & Context:** ClarisWorks (later AppleWorks) was the ubiquitous productivity software bundled with classic Mac OS and early Mac OS X computers. Millions of vintage school, business, and personal documents exist in `.cwk` format, which modern operating systems and office suites cannot open.
+- **Forensic Format Architecture:**
+  - Container: Often wrapped in 128-byte MacBinary II container (magic at byte 0 and byte 122).
+  - Document Signature: Internal data fork signatures including `0x00 0x01 0x00 0x00` (`CWWP`), `BOBO`, and `AppleWorks`.
+  - Text & Styling: Mac OS Roman or UTF-8 text runs with paragraph markers, bullet points (`•`), and heading levels.
+- **In-Browser Execution Strategy:**
+  - Detects and strips MacBinary II header.
+  - Maps Mac OS Roman high-byte characters (typographic quotes, dashes, accents) to UTF-8.
+  - Formats lists, headers, and paragraphs into clean GitHub Flavored Markdown.
+- **Fidelity:** `ZERO-LEAKAGE TEXT & LIST EXTRACTION TO GFM MARKDOWN`.
+- **Status:** **Wave 41 Shipped (`document/cwk-to-markdown`) — Milestone Tool 119**.
+
+---
+
+### 120. Amstrad CPC Screen Dump (.cpc, .scr)
+- **Ecosystem & Context:** The Amstrad CPC 464, 664, and 6128 computers featured a dedicated 16KB video memory architecture driven by the Motorola 6845 CRTC. Screen dumps were saved directly from VRAM, but non-linear scanline interleaving and bitplane encoding prevent modern viewers from displaying them.
+- **Forensic Format Architecture:**
+  - Raw Buffer Size: Exactly 16,384 bytes (or 16,512 bytes with 128-byte AMSDOS tape/disk header).
+  - AMSDOS Header: Checksummed 128-byte metadata header containing user number, filename, extension, and load address (`0xC000`).
+  - Scanline Mapping: Motorola 6845 addresses scanlines non-linearly: `offset = (y % 8) * 0x800 + Math.floor(y / 8) * 80`.
+  - Mode Architecture: Mode 0 (160×200, 16 colors), Mode 1 (320×200, 4 colors), Mode 2 (640×200, 2 colors).
+  - Color Palette: 27-color Gate Array hardware palette with 3 discrete RGB intensity levels (0, 128, 255).
+- **In-Browser Execution Strategy:**
+  - Validates AMSDOS checksum if present and extracts embedded filename.
+  - Reassembles 200 non-linear scanlines into linear pixel buffers.
+  - De-interleaves Gate Array pixel bits and maps them to standard 32-bit RGBA PNG rasters.
+- **Fidelity:** `CYCLE-ACCURATE CRTC 6845 27-COLOR FRAMEBUFFER RENDERING`.
+- **Status:** **Wave 41 Shipped (`image/cpc-to-png`) — Milestone Tool 120**.
+
+---
+
 ## Roadmap Waves & Next Steps
 
 1. **Wave 1 (Shipped):**
@@ -2753,10 +2803,46 @@
     - Tool 115: `audio/669-to-wav` (Composer 669 / UNIS 669 `.669` 8-channel DOS tracker module to 16-bit stereo WAV) — **Shipped**
     - Tool 116: `document/hwp-to-markdown` (Hangul Word Processor `.hwp` 5.x / OLE compound document text extractor to GitHub Flavored Markdown) — **Shipped**
     - Tool 117: `image/acbm-to-png` (Amiga Continuous Bitmap `.acbm` / `.iff` non-interleaved raster decoder to 32-bit RGBA PNG) — **Shipped**
-41. **Wave 41 (Active Wave / Proposed Candidates):**
-    - Candidate 1 / Tool 118: `audio/amf-to-wav` (Advanced Music Format / ASYLUM Music Format `.amf` 16-channel DOS tracker module to 16-bit stereo WAV)
-    - Candidate 2 / Tool 119: `document/cwk-to-markdown` (ClarisWorks / AppleWorks `.cwk` legacy word processing document extractor to GitHub Flavored Markdown)
-    - Candidate 3 / Tool 120: `image/cpc-to-png` (Amstrad CPC `.cpc` / `.scr` retro screen memory dump decoder to 32-bit RGBA PNG)
+41. **Wave 41 (Shipped):**
+    - Tool 118: `audio/amf-to-wav` (Advanced Music Format / ASYLUM Music Format `.amf` 16-channel DOS tracker module to 16-bit stereo WAV) — **Shipped**
+    - Tool 119: `document/cwk-to-markdown` (ClarisWorks / AppleWorks `.cwk` legacy word processing document extractor to GitHub Flavored Markdown) — **Shipped**
+    - Tool 120: `image/cpc-to-png` (Amstrad CPC `.cpc` / `.scr` retro screen memory dump decoder to 32-bit RGBA PNG) — **Shipped**
+42. **Wave 42:**
+    - Tool 121: `audio/rad-to-wav` (Reality Adlib Tracker `.rad` 9-channel Yamaha OPL2/OPL3 FM synth tracker to 16-bit stereo WAV)
+    - Tool 122: `document/sxw-to-markdown` (OpenOffice.org 1.x `.sxw` legacy XML document archive to GitHub Flavored Markdown)
+    - Tool 123: `image/xcur-to-png` (X11 multi-resolution mouse cursor `.xcur` to 32-bit RGBA PNG)
+43. **Wave 43:**
+    - Tool 124: `audio/dsm-to-wav` (DSIK / Dynamic Studio Module `.dsm` 16-channel tracker to 16-bit stereo WAV)
+    - Tool 125: `document/sdw-to-markdown` (StarWriter 5.x / StarOffice `.sdw` compound document to GitHub Flavored Markdown)
+    - Tool 126: `image/bpg-to-png` (Better Portable Graphics `.bpg` HEVC-derived high-efficiency image decoder to 32-bit RGBA PNG)
+44. **Wave 44:**
+    - Tool 127: `audio/okt-to-wav` (Oktalyzer `.okt` Amiga 8-channel tracker module to 16-bit stereo WAV)
+    - Tool 128: `document/zabw-to-markdown` (Gzip-compressed AbiWord `.zabw` archive to GitHub Flavored Markdown)
+    - Tool 129: `image/blp-to-png` (Blizzard Texture `.blp` Warcraft III / WoW texture format to 32-bit RGBA PNG)
+45. **Wave 45:**
+    - Tool 130: `audio/mtm-to-wav` (MultiTracker Module `.mtm` 32-channel DOS tracker to 16-bit stereo WAV)
+    - Tool 131: `document/rtfd-to-markdown` (Apple RTFD Rich Text Format with Attachments bundle to GitHub Flavored Markdown)
+    - Tool 132: `image/vda-to-png` (Truevision TGA VDA/ICB/VST TARGA variant to 32-bit RGBA PNG)
+46. **Wave 46:**
+    - Tool 133: `audio/amr-to-wav` (Adaptive Multi-Rate `.amr` mobile speech audio to 16-bit linear PCM WAV)
+    - Tool 134: `document/nb-to-markdown` (Wolfram Mathematica Notebook `.nb` expression tree to GitHub Flavored Markdown)
+    - Tool 135: `image/wal-to-png` (Quake II `.wal` mipmapped texture format to 32-bit RGBA PNG)
+47. **Wave 47:**
+    - Tool 136: `audio/imf-to-wav` (id Software Music Format `.imf` Commander Keen / Wolfenstein 3D OPL2 sound to 16-bit WAV)
+    - Tool 137: `document/lyx-to-markdown` (LyX document processor `.lyx` LaTeX-like document to GitHub Flavored Markdown)
+    - Tool 138: `image/srf-to-png` (Sony Alpha RAW `.srf` thumbnail and preview extractor to 32-bit RGBA PNG)
+48. **Wave 48:**
+    - Tool 139: `audio/hmi-to-wav` (Human Machine Interfaces MIDI `.hmi` MS-DOS game music to 16-bit stereo WAV)
+    - Tool 140: `document/texinfo-to-markdown` (GNU Texinfo `.texi` technical manual to GitHub Flavored Markdown)
+    - Tool 141: `image/mng-to-png` (Multiple-image Network Graphics `.mng` animation frames to PNG)
+49. **Wave 49:**
+    - Tool 142: `audio/rol-to-wav` (AdLib Visual Composer `.rol` FM synthesis song to 16-bit stereo WAV)
+    - Tool 143: `document/man-to-markdown` (UNIX roff / troff manual page `.1`..`.8` to GitHub Flavored Markdown)
+    - Tool 144: `image/pcd-to-png` (Kodak Photo CD `.pcd` multi-resolution photo format to 32-bit RGBA PNG)
+50. **Wave 50 (The 147-Tool Grand Finale):**
+    - Tool 145: `audio/xmi-to-wav` (Miles Sound System Extended MIDI `.xmi` MS-DOS soundtrack to 16-bit stereo WAV)
+    - Tool 146: `document/troff-to-markdown` (Classical AT&T troff typography document to GitHub Flavored Markdown)
+    - Tool 147: `image/raw-to-png` (Universal DNG / Bayer RAW sensor preview extractor to 32-bit RGBA PNG)
 
 
 

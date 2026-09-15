@@ -112,4 +112,54 @@ describe("AuthClient component", () => {
 		fireEvent.keyDown(workspaceTab, { key: "Home" });
 		expect(archTab.getAttribute("aria-selected")).toBe("true");
 	});
+
+	it("renders offline presets and allows toggling settings", () => {
+		render(<AuthClient />);
+
+		expect(screen.getByText("OFFLINE CONVERSION PRESETS")).toBeDefined();
+
+		// Concurrency buttons
+		const fourX = screen.getByRole("button", { name: "4x" });
+		fireEvent.click(fourX);
+
+		const autoDownloadBtn = screen.getByRole("button", {
+			name: /Disabled \(Manual\)/i,
+		});
+		fireEvent.click(autoDownloadBtn);
+		expect(screen.getByText(/Enabled \(Instant\)/i)).toBeDefined();
+	});
+
+	it("allows exporting workspace backup", () => {
+		render(<AuthClient />);
+
+		const exportBtn = screen.getByRole("button", {
+			name: "Export Backup (.json)",
+		});
+		expect(exportBtn).toBeDefined();
+		fireEvent.click(exportBtn);
+
+		expect(
+			screen.getByText("Workspace backup exported successfully."),
+		).toBeDefined();
+	});
+
+	it("purges history when confirmation button is clicked", () => {
+		localStorage.setItem(
+			"convrtr_history",
+			JSON.stringify([{ id: "conv-1", file: "test.png" }]),
+		);
+
+		render(<AuthClient />);
+
+		const clearBtn = screen.getByRole("button", { name: "Clear History" });
+		fireEvent.click(clearBtn);
+
+		const confirmBtn = screen.getByRole("button", {
+			name: "Confirm Clear History?",
+		});
+		fireEvent.click(confirmBtn);
+
+		expect(screen.getByText("Local audit history purged.")).toBeDefined();
+		expect(localStorage.getItem("convrtr_history")).toBeNull();
+	});
 });

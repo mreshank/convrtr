@@ -2836,6 +2836,184 @@ export const COMPARISONS: ComparisonMeta[] = [
 			"image/pcx-to-png",
 		],
 	},
+	{
+		slug: "amf-vs-s3m",
+		title: "AMF vs S3M: Advanced Module Format vs Scream Tracker 3",
+		description:
+			"A detailed technical comparison of Otto Chrons' Advanced Module Format (AMF) and Future Crew's Scream Tracker 3 (S3M) 16-channel DOS module tracker architectures.",
+		formatA: "AMF",
+		formatB: "S3M",
+		category: "audio",
+		summary:
+			"Both AMF and S3M revolutionized PC tracker music in the early 1990s by expanding beyond the Amiga's 4-channel hardware limit to 16 digital audio channels. AMF focuses on compact pattern memory packing and ASYLUM tracker features, while S3M became the de facto standard for PC demoscene compositions.",
+		prosA: [
+			"Highly compact pattern packing with run-length encoding",
+			"Native support for DSMI (Digital Sound & Music Interface)",
+			"Built-in volume envelopes and finetune tables optimized for 386/486 CPUs",
+			"Authentic sound format of vintage MS-DOS games like Star Control II",
+		],
+		prosB: [
+			"Ubiquitous format support across nearly all modern tracker players",
+			"Extensive panning and command set (S commands, volume slides, vibrato)",
+			"Support for up to 32 logical channels (16 digital PCM + 16 AdLib FM channels)",
+			"Massive library of classic demoscene soundtracks from Future Crew and beyond",
+		],
+		specs: [
+			{
+				feature: "Origin / Creator",
+				formatA: "Otto Chrons (Digital Sound & Music Interface / DSMI)",
+				formatB: "Future Crew / Psi (Scream Tracker 3)",
+			},
+			{
+				feature: "Maximum Digital Channels",
+				formatA: "16 PCM channels",
+				formatB: "16 digital channels (plus 16 AdLib channels)",
+			},
+			{
+				feature: "Sample Resolution",
+				formatA: "8-bit signed / unsigned PCM",
+				formatB: "8-bit signed / unsigned PCM",
+			},
+			{
+				feature: "Header Magic Identifier",
+				formatA: "AMF (v1.0–1.4) / ASYLUM (v1.0)",
+				formatB: "SCRM (at offset 0x2C)",
+			},
+			{
+				feature: "Pattern Storage",
+				formatA: "Packed track table with individual channel streams",
+				formatB: "Packed row events with channel and command masks",
+			},
+		],
+		verdict:
+			"S3M is widely celebrated in demoscene history, but AMF represents an ingenious, high-performance milestone in early PC gaming audio. convrtr synthesizes both vintage formats into studio-quality 16-bit stereo WAV entirely within your browser.",
+		relatedTools: [
+			"audio/amf-to-wav",
+			"audio/s3m-to-wav",
+			"audio/xm-to-wav",
+			"audio/mod-to-wav",
+			"audio/it-to-wav",
+		],
+	},
+	{
+		slug: "cwk-vs-rtf",
+		title: "CWK vs RTF: ClarisWorks / AppleWorks vs Rich Text Format",
+		description:
+			"Compare Apple's proprietary ClarisWorks / AppleWorks (.cwk) integrated office format with Microsoft's cross-platform Rich Text Format (.rtf).",
+		formatA: "CWK",
+		formatB: "RTF",
+		category: "document",
+		summary:
+			"ClarisWorks / AppleWorks (.cwk) was the beloved all-in-one productivity suite for classic Mac OS and Windows throughout the 1990s and early 2000s, bundling word processing, spreadsheets, and databases. RTF is a text-based interchange standard supported across virtually every text editor in existence.",
+		prosA: [
+			"Seamless integration of text, vector graphics, spreadsheets, and databases in a single document",
+			"High typographic fidelity on classic Mac OS with QuickDraw fonts",
+			"MacBinary encapsulation preserved Mac OS Roman resource and data forks",
+			"Compact binary serialization optimized for early Macintosh hardware",
+		],
+		prosB: [
+			"Human-readable ASCII/Unicode control-word syntax",
+			"Universal interoperability across Windows, macOS, Linux, and mobile",
+			"Open specification with widespread converter and library support",
+			"Zero dependency on obsolete proprietary binary runtime frameworks",
+		],
+		specs: [
+			{
+				feature: "Format Type",
+				formatA: "Compound binary document / MacBinary container",
+				formatB: "Plain text control-word markup",
+			},
+			{
+				feature: "Original Developer",
+				formatA: "Claris Corporation / Apple Inc.",
+				formatB: "Microsoft Corporation",
+			},
+			{
+				feature: "First Released",
+				formatA: "1991 (ClarisWorks 1.0)",
+				formatB: "1987 (RTF 1.0)",
+			},
+			{
+				feature: "Platform Affinity",
+				formatA: "Classic Mac OS, Mac OS X, Windows",
+				formatB: "Universal / Cross-platform",
+			},
+			{
+				feature: "Character Encoding",
+				formatA: "Mac OS Roman (legacy) or UTF-8 (AppleWorks 6)",
+				formatB: "ASCII with \\u and \\' ANSI escape sequences",
+			},
+		],
+		verdict:
+			"RTF remains the premier document interchange standard, while CWK documents hold decades of irreplaceable legacy Mac archives. convrtr recovers text, lists, and formatting from both formats into clean GitHub Flavored Markdown locally with zero cloud exposure.",
+		relatedTools: [
+			"document/cwk-to-markdown",
+			"document/rtf-to-markdown",
+			"document/abw-to-markdown",
+			"document/hwp-to-markdown",
+			"document/enex-to-markdown",
+		],
+	},
+	{
+		slug: "cpc-vs-zx",
+		title:
+			"Amstrad CPC vs Sinclair ZX Spectrum: 8-Bit Screen Architecture Compared",
+		description:
+			"Compare the video display hardware, memory mapping, and graphics capabilities of the Amstrad CPC (CRTC 6845) and Sinclair ZX Spectrum (ULA).",
+		formatA: "CPC",
+		formatB: "ZX Spectrum",
+		category: "image",
+		summary:
+			"The Amstrad CPC and Sinclair ZX Spectrum were fierce 8-bit rivals in Europe throughout the 1980s. The CPC featured 16KB of video RAM powered by the Motorola 6845 and Gate Array with flexible 160×200, 320×200, and 640×200 modes, while the ZX Spectrum used an iconic 6,912-byte 256×192 display with 8×8 color attribute clash.",
+		prosA: [
+			"Flexible graphics modes: Mode 0 (16 colors), Mode 1 (4 colors), Mode 2 (monochrome 640x200)",
+			"No attribute clash: every pixel has its own dedicated color bits",
+			"Rich 27-color Gate Array hardware palette with pastel shades",
+			"16KB dedicated video buffer with hardware scrolling support",
+		],
+		prosB: [
+			"Extremely compact 6,912-byte screen footprint (6,144 bytes bitmap + 768 bytes attributes)",
+			"Higher default horizontal resolution (256 pixels vs CPC Mode 0's 160 pixels)",
+			"Massive game software library and vibrant modern homebrew scene",
+			"Instant loading and low CPU overhead on Z80 processors",
+		],
+		specs: [
+			{
+				feature: "Video Display Controller",
+				formatA: "Motorola 6845 CRTC + Amstrad Gate Array",
+				formatB: "Sinclair Custom ULA (Uncommitted Logic Array)",
+			},
+			{
+				feature: "VRAM Buffer Size",
+				formatA: "16,384 bytes (16 KB)",
+				formatB: "6,912 bytes (6.75 KB)",
+			},
+			{
+				feature: "Standard Resolutions",
+				formatA: "160×200 (Mode 0), 320×200 (Mode 1), 640×200 (Mode 2)",
+				formatB: "256×192",
+			},
+			{
+				feature: "Hardware Color Palette",
+				formatA: "27 discrete colors (3 levels per RGB channel)",
+				formatB: "16 colors (8 normal + 8 bright intensity)",
+			},
+			{
+				feature: "Color Artifacts",
+				formatA: "None (individual bitplane pixels)",
+				formatB: "Attribute clash (max 2 colors per 8×8 pixel cell)",
+			},
+		],
+		verdict:
+			"Both systems defined a generation of 1980s British computing. convrtr decodes both Amstrad CPC CRTC screen dumps and Sinclair ZX Spectrum VRAM snapshots into pixel-accurate, lossless 32-bit RGBA PNG graphics directly in your browser.",
+		relatedTools: [
+			"image/cpc-to-png",
+			"image/zx-to-png",
+			"image/art-to-png",
+			"image/koa-to-png",
+			"image/iff-to-png",
+		],
+	},
 ];
 
 export function getComparison(slug: string): ComparisonMeta | undefined {

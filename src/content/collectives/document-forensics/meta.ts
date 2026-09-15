@@ -20,5 +20,6 @@ export const meta: CollectiveMeta = {
 		"document/pdb-to-markdown",
 		"document/abw-to-markdown",
 		"document/hwp-to-markdown",
+		"document/cwk-to-markdown",
 	],
 };

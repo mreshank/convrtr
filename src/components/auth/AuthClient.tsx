@@ -3,17 +3,25 @@
 import { SignIn, SignUp, useUser } from "@clerk/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useId, useState } from "react";
+import { Suspense, useEffect, useId, useRef, useState } from "react";
+import {
+	clearWorkspaceSession,
+	DEFAULT_PRESETS,
+	exportWorkspaceBackup,
+	getStorageQuotaEstimate,
+	getWorkspacePresets,
+	getWorkspaceSession,
+	importWorkspaceBackup,
+	saveWorkspacePresets,
+	saveWorkspaceSession,
+	triggerDownloadBackup,
+	type WorkspacePresets,
+	type WorkspaceSession,
+} from "@/lib/workspace-storage";
 import { AuthErrorBoundary } from "./AuthErrorBoundary";
 import { clerkAppearance } from "./clerk-theme";
 
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
-
-interface LocalWorkspaceData {
-	id: string;
-	name: string;
-	createdAt: number;
-}
 
 function AuthenticatedClerkSession({
 	onSwitchToLocal,
@@ -146,22 +154,34 @@ function AuthenticatedClerkSession({
 }
 
 function LocalWorkspaceCard() {
-	const [session, setSession] = useState<LocalWorkspaceData | null>(null);
+	const [session, setSession] = useState<WorkspaceSession | null>(null);
 	const [workspaceName, setWorkspaceName] = useState("");
 	const [historyCount, setHistoryCount] = useState<number | null>(null);
 	const [specs, setSpecs] = useState<{ cores: number; memory: string }>({
 		cores: 4,
 		memory: "Available",
 	});
+	const [storageEstimate, setStorageEstimate] = useState<{
+		used: string;
+		quota: string;
+		percent: number;
+	} | null>(null);
+	const [presets, setPresets] = useState<WorkspacePresets>(DEFAULT_PRESETS);
+	const [statusMessage, setStatusMessage] = useState<{
+		text: string;
+		type: "success" | "error";
+	} | null>(null);
+	const [confirmAction, setConfirmAction] = useState<
+		"clearHistory" | "resetSession" | null
+	>(null);
+	const fileInputRef = useRef<HTMLInputElement>(null);
 
 	useEffect(() => {
-		try {
-			const stored = localStorage.getItem("convrtr_workspace_session");
-			if (stored) {
-				setSession(JSON.parse(stored));
-			}
+		setSession(getWorkspaceSession());
+		setPresets(getWorkspacePresets());
 
-			// Estimate local history entries
+		// Estimate local history entries
+		try {
 			const historyRaw = localStorage.getItem("convrtr_history");
 			if (historyRaw) {
 				const parsed = JSON.parse(historyRaw);
@@ -169,48 +189,122 @@ function LocalWorkspaceCard() {
 			} else {
 				setHistoryCount(0);
 			}
-
-			if (typeof navigator !== "undefined") {
-				const cores = navigator.hardwareConcurrency || 4;
-				const mem = (navigator as unknown as { deviceMemory?: number })
-					.deviceMemory;
-				setSpecs({
-					cores,
-					memory: mem ? `${mem} GB` : "Standard",
-				});
-			}
 		} catch {
-			// LocalStorage unavailable in restricted context
+			setHistoryCount(0);
 		}
+
+		if (typeof navigator !== "undefined") {
+			const cores = navigator.hardwareConcurrency || 4;
+			const mem = (navigator as unknown as { deviceMemory?: number })
+				.deviceMemory;
+			setSpecs({
+				cores,
+				memory: mem ? `${mem} GB` : "Standard",
+			});
+		}
+
+		getStorageQuotaEstimate().then((res) => {
+			if (res) setStorageEstimate(res);
+		});
 	}, []);
 
 	const handleActivate = (e: React.FormEvent) => {
 		e.preventDefault();
 		const name = workspaceName.trim() || "Anonymous Researcher";
-		const newSession: LocalWorkspaceData = {
+		const newSession: WorkspaceSession = {
 			id: `ws-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
 			name,
 			createdAt: Date.now(),
 		};
-		try {
-			localStorage.setItem(
-				"convrtr_workspace_session",
-				JSON.stringify(newSession),
-			);
-			setSession(newSession);
-		} catch {
-			// Storage error
-		}
+		saveWorkspaceSession(newSession);
+		setSession(newSession);
+		setStatusMessage({
+			text: `Local workspace "${name}" activated.`,
+			type: "success",
+		});
 	};
 
 	const handleReset = () => {
-		try {
-			localStorage.removeItem("convrtr_workspace_session");
-			setSession(null);
-			setWorkspaceName("");
-		} catch {
-			// Storage error
+		clearWorkspaceSession();
+		setSession(null);
+		setWorkspaceName("");
+		setStatusMessage({
+			text: "Workspace session reset to default.",
+			type: "success",
+		});
+	};
+
+	const handleClearHistory = () => {
+		if (confirmAction !== "clearHistory") {
+			setConfirmAction("clearHistory");
+			return;
 		}
+		try {
+			localStorage.removeItem("convrtr_history");
+			setHistoryCount(0);
+			setConfirmAction(null);
+			setStatusMessage({
+				text: "Local audit history purged.",
+				type: "success",
+			});
+		} catch {
+			setStatusMessage({
+				text: "Failed to clear history.",
+				type: "error",
+			});
+		}
+	};
+
+	const handleExport = () => {
+		try {
+			const backup = exportWorkspaceBackup();
+			triggerDownloadBackup(backup);
+			setStatusMessage({
+				text: "Workspace backup exported successfully.",
+				type: "success",
+			});
+		} catch {
+			setStatusMessage({
+				text: "Export failed. Please check browser permissions.",
+				type: "error",
+			});
+		}
+	};
+
+	const handleImportClick = () => {
+		fileInputRef.current?.click();
+	};
+
+	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const file = e.target.files?.[0];
+		if (!file) return;
+		const reader = new FileReader();
+		reader.onload = (event) => {
+			const content = event.target?.result;
+			if (typeof content === "string") {
+				const result = importWorkspaceBackup(content);
+				if (result.success) {
+					if (result.session !== undefined) setSession(result.session);
+					if (result.presets !== undefined) setPresets(result.presets);
+					if (result.historyCount !== undefined)
+						setHistoryCount(result.historyCount);
+					setStatusMessage({ text: result.message, type: "success" });
+				} else {
+					setStatusMessage({ text: result.message, type: "error" });
+				}
+			}
+		};
+		reader.readAsText(file);
+		e.target.value = "";
+	};
+
+	const updatePreset = (updates: Partial<WorkspacePresets>) => {
+		const next = saveWorkspacePresets(updates);
+		setPresets(next);
+		setStatusMessage({
+			text: "Conversion quality preset updated.",
+			type: "success",
+		});
 	};
 
 	return (
@@ -227,6 +321,7 @@ function LocalWorkspaceCard() {
 				padding: "var(--gap-md)",
 			}}
 		>
+			{/* Top Header */}
 			<div
 				style={{
 					display: "flex",
@@ -277,6 +372,48 @@ function LocalWorkspaceCard() {
 					</span>
 				)}
 			</div>
+
+			{/* Status Feedback Banner */}
+			{statusMessage && (
+				<div
+					role="status"
+					aria-live="polite"
+					style={{
+						padding: "calc(var(--space-base) / 2) var(--gap-sm)",
+						backgroundColor: "var(--ground)",
+						borderWidth: "var(--rule-width)",
+						borderStyle: "solid",
+						borderColor:
+							statusMessage.type === "success"
+								? "var(--accent)"
+								: "var(--rule-strong)",
+						color:
+							statusMessage.type === "success" ? "var(--accent)" : "var(--ink)",
+						fontFamily: "var(--font-mono)",
+						fontSize: "var(--mono-size)",
+						display: "flex",
+						justifyContent: "space-between",
+						alignItems: "center",
+					}}
+				>
+					<span>{statusMessage.text}</span>
+					<button
+						type="button"
+						onClick={() => setStatusMessage(null)}
+						aria-label="Dismiss status notification"
+						style={{
+							background: "transparent",
+							border: "none",
+							color: "var(--ink-muted)",
+							cursor: "pointer",
+							fontFamily: "var(--font-mono)",
+							fontSize: "var(--mono-size)",
+						}}
+					>
+						[dismiss]
+					</button>
+				</div>
+			)}
 
 			<p
 				style={{
@@ -365,24 +502,286 @@ function LocalWorkspaceCard() {
 							fontSize: "var(--mono-size)",
 						}}
 					>
-						STORAGE ENGINE
+						BROWSER STORAGE
 					</div>
 					<div
 						className="mono"
 						style={{ color: "var(--ink)", fontWeight: 600 }}
 					>
-						Client IndexedDB
+						{storageEstimate
+							? `${storageEstimate.used} (~${storageEstimate.quota})`
+							: "Client IndexedDB"}
 					</div>
 				</div>
 			</div>
 
-			{session ? (
+			{/* Custom Conversion Presets */}
+			<div
+				style={{
+					borderWidth: "var(--rule-width)",
+					borderStyle: "solid",
+					borderColor: "var(--rule)",
+					padding: "var(--gap-sm)",
+					display: "flex",
+					flexDirection: "column",
+					gap: "var(--space-base)",
+				}}
+			>
+				<p
+					className="meta"
+					style={{
+						color: "var(--accent)",
+						fontSize: "var(--mono-size)",
+						letterSpacing: "0.08em",
+						textTransform: "uppercase",
+						margin: 0,
+					}}
+				>
+					OFFLINE CONVERSION PRESETS
+				</p>
+
+				{/* Concurrency Selector */}
+				<div
+					style={{
+						display: "flex",
+						justifyContent: "space-between",
+						alignItems: "center",
+						flexWrap: "wrap",
+						gap: "calc(var(--space-base) / 2)",
+					}}
+				>
+					<span
+						style={{
+							color: "var(--ink)",
+							fontSize: "var(--mono-size)",
+							fontFamily: "var(--font-mono)",
+						}}
+					>
+						Concurrency:
+					</span>
+					<fieldset
+						aria-label="Worker concurrency preset"
+						style={{
+							display: "flex",
+							gap: "calc(var(--space-base) / 2)",
+							border: "none",
+							padding: 0,
+							margin: 0,
+						}}
+					>
+						{(["auto", 2, 4, 8] as const).map((val) => {
+							const isSelected = presets.concurrency === val;
+							return (
+								<button
+									key={String(val)}
+									type="button"
+									onClick={() => updatePreset({ concurrency: val })}
+									style={{
+										padding: "calc(var(--space-base) / 4) var(--space-base)",
+										borderRadius: "var(--radius-pill)",
+										borderWidth: "var(--rule-width)",
+										borderStyle: "solid",
+										borderColor: isSelected
+											? "var(--rule-strong)"
+											: "var(--rule)",
+										backgroundColor: isSelected ? "var(--ink)" : "transparent",
+										color: isSelected ? "var(--ground)" : "var(--ink-muted)",
+										fontFamily: "var(--font-mono)",
+										fontSize: "var(--mono-size)",
+										cursor: "pointer",
+									}}
+								>
+									{val === "auto" ? "Auto" : `${val}x`}
+								</button>
+							);
+						})}
+					</fieldset>
+				</div>
+
+				{/* Auto-Download Toggle */}
+				<div
+					style={{
+						display: "flex",
+						justifyContent: "space-between",
+						alignItems: "center",
+						flexWrap: "wrap",
+						gap: "calc(var(--space-base) / 2)",
+					}}
+				>
+					<span
+						style={{
+							color: "var(--ink)",
+							fontSize: "var(--mono-size)",
+							fontFamily: "var(--font-mono)",
+						}}
+					>
+						Auto-Download:
+					</span>
+					<button
+						type="button"
+						aria-pressed={presets.autoDownload}
+						onClick={() =>
+							updatePreset({ autoDownload: !presets.autoDownload })
+						}
+						style={{
+							padding: "calc(var(--space-base) / 4) var(--space-base)",
+							borderRadius: "var(--radius-pill)",
+							borderWidth: "var(--rule-width)",
+							borderStyle: "solid",
+							borderColor: presets.autoDownload
+								? "var(--rule-strong)"
+								: "var(--rule)",
+							backgroundColor: presets.autoDownload
+								? "var(--ink)"
+								: "transparent",
+							color: presets.autoDownload
+								? "var(--ground)"
+								: "var(--ink-muted)",
+							fontFamily: "var(--font-mono)",
+							fontSize: "var(--mono-size)",
+							cursor: "pointer",
+						}}
+					>
+						{presets.autoDownload ? "Enabled (Instant)" : "Disabled (Manual)"}
+					</button>
+				</div>
+
+				{/* Image Quality Preset */}
+				<div
+					style={{
+						display: "flex",
+						justifyContent: "space-between",
+						alignItems: "center",
+						flexWrap: "wrap",
+						gap: "calc(var(--space-base) / 2)",
+					}}
+				>
+					<span
+						style={{
+							color: "var(--ink)",
+							fontSize: "var(--mono-size)",
+							fontFamily: "var(--font-mono)",
+						}}
+					>
+						Image Compression:
+					</span>
+					<fieldset
+						aria-label="Image compression preset"
+						style={{
+							display: "flex",
+							gap: "calc(var(--space-base) / 2)",
+							border: "none",
+							padding: 0,
+							margin: 0,
+						}}
+					>
+						{(["lossless", "balanced", "compact"] as const).map((val) => {
+							const isSelected = presets.imageQuality === val;
+							return (
+								<button
+									key={val}
+									type="button"
+									onClick={() => updatePreset({ imageQuality: val })}
+									style={{
+										padding: "calc(var(--space-base) / 4) var(--space-base)",
+										borderRadius: "var(--radius-pill)",
+										borderWidth: "var(--rule-width)",
+										borderStyle: "solid",
+										borderColor: isSelected
+											? "var(--rule-strong)"
+											: "var(--rule)",
+										backgroundColor: isSelected ? "var(--ink)" : "transparent",
+										color: isSelected ? "var(--ground)" : "var(--ink-muted)",
+										fontFamily: "var(--font-mono)",
+										fontSize: "var(--mono-size)",
+										cursor: "pointer",
+										textTransform: "capitalize",
+									}}
+								>
+									{val}
+								</button>
+							);
+						})}
+					</fieldset>
+				</div>
+
+				{/* Audio Resampling Preset */}
+				<div
+					style={{
+						display: "flex",
+						justifyContent: "space-between",
+						alignItems: "center",
+						flexWrap: "wrap",
+						gap: "calc(var(--space-base) / 2)",
+					}}
+				>
+					<span
+						style={{
+							color: "var(--ink)",
+							fontSize: "var(--mono-size)",
+							fontFamily: "var(--font-mono)",
+						}}
+					>
+						Audio Sample Rate:
+					</span>
+					<fieldset
+						aria-label="Audio sample rate preset"
+						style={{
+							display: "flex",
+							gap: "calc(var(--space-base) / 2)",
+							border: "none",
+							padding: 0,
+							margin: 0,
+						}}
+					>
+						{(["original", "44100", "48000"] as const).map((val) => {
+							const isSelected = presets.audioResample === val;
+							return (
+								<button
+									key={val}
+									type="button"
+									onClick={() => updatePreset({ audioResample: val })}
+									style={{
+										padding: "calc(var(--space-base) / 4) var(--space-base)",
+										borderRadius: "var(--radius-pill)",
+										borderWidth: "var(--rule-width)",
+										borderStyle: "solid",
+										borderColor: isSelected
+											? "var(--rule-strong)"
+											: "var(--rule)",
+										backgroundColor: isSelected ? "var(--ink)" : "transparent",
+										color: isSelected ? "var(--ground)" : "var(--ink-muted)",
+										fontFamily: "var(--font-mono)",
+										fontSize: "var(--mono-size)",
+										cursor: "pointer",
+									}}
+								>
+									{val === "original"
+										? "Original"
+										: val === "44100"
+											? "44.1 kHz"
+											: "48 kHz"}
+								</button>
+							);
+						})}
+					</fieldset>
+				</div>
+			</div>
+
+			{/* Primary Actions & Data Portability */}
+			<div
+				style={{
+					display: "flex",
+					flexDirection: "column",
+					gap: "var(--space-base)",
+				}}
+			>
+				{/* Navigation Shortcuts */}
 				<div
 					style={{
 						display: "flex",
 						gap: "var(--gap-sm)",
 						flexWrap: "wrap",
-						marginTop: "var(--space-base)",
 					}}
 				>
 					<Link
@@ -424,9 +823,28 @@ function LocalWorkspaceCard() {
 					>
 						View History
 					</Link>
+				</div>
+
+				{/* Data Backup & Portability Controls */}
+				<div
+					style={{
+						display: "flex",
+						gap: "var(--gap-sm)",
+						flexWrap: "wrap",
+						alignItems: "center",
+					}}
+				>
+					<input
+						ref={fileInputRef}
+						type="file"
+						accept=".json,application/json"
+						onChange={handleFileChange}
+						style={{ display: "none" }}
+						aria-label="Import workspace backup file"
+					/>
 					<button
 						type="button"
-						onClick={handleReset}
+						onClick={handleExport}
 						style={{
 							display: "inline-flex",
 							alignItems: "center",
@@ -436,7 +854,7 @@ function LocalWorkspaceCard() {
 							borderStyle: "solid",
 							borderColor: "var(--rule)",
 							backgroundColor: "transparent",
-							color: "var(--ink-muted)",
+							color: "var(--ink)",
 							fontFamily: "var(--font-mono)",
 							fontSize: "var(--mono-size)",
 							textTransform: "uppercase",
@@ -444,10 +862,95 @@ function LocalWorkspaceCard() {
 							cursor: "pointer",
 						}}
 					>
-						Reset Session
+						Export Backup (.json)
 					</button>
+					<button
+						type="button"
+						onClick={handleImportClick}
+						style={{
+							display: "inline-flex",
+							alignItems: "center",
+							padding: "var(--space-base) var(--gap-sm)",
+							borderRadius: "var(--radius-pill)",
+							borderWidth: "var(--rule-width)",
+							borderStyle: "solid",
+							borderColor: "var(--rule)",
+							backgroundColor: "transparent",
+							color: "var(--ink)",
+							fontFamily: "var(--font-mono)",
+							fontSize: "var(--mono-size)",
+							textTransform: "uppercase",
+							letterSpacing: "0.08em",
+							cursor: "pointer",
+						}}
+					>
+						Import Backup
+					</button>
+
+					{/* Clear History Button */}
+					{(historyCount ?? 0) > 0 && (
+						<button
+							type="button"
+							onClick={handleClearHistory}
+							style={{
+								display: "inline-flex",
+								alignItems: "center",
+								padding: "var(--space-base) var(--gap-sm)",
+								borderRadius: "var(--radius-pill)",
+								borderWidth: "var(--rule-width)",
+								borderStyle: "solid",
+								borderColor:
+									confirmAction === "clearHistory"
+										? "var(--accent)"
+										: "var(--rule)",
+								backgroundColor: "transparent",
+								color:
+									confirmAction === "clearHistory"
+										? "var(--accent)"
+										: "var(--ink-muted)",
+								fontFamily: "var(--font-mono)",
+								fontSize: "var(--mono-size)",
+								textTransform: "uppercase",
+								letterSpacing: "0.08em",
+								cursor: "pointer",
+							}}
+						>
+							{confirmAction === "clearHistory"
+								? "Confirm Clear History?"
+								: "Clear History"}
+						</button>
+					)}
+
+					{/* Reset Session Button */}
+					{session && (
+						<button
+							type="button"
+							onClick={handleReset}
+							style={{
+								display: "inline-flex",
+								alignItems: "center",
+								padding: "var(--space-base) var(--gap-sm)",
+								borderRadius: "var(--radius-pill)",
+								borderWidth: "var(--rule-width)",
+								borderStyle: "solid",
+								borderColor: "var(--rule)",
+								backgroundColor: "transparent",
+								color: "var(--ink-muted)",
+								fontFamily: "var(--font-mono)",
+								fontSize: "var(--mono-size)",
+								textTransform: "uppercase",
+								letterSpacing: "0.08em",
+								cursor: "pointer",
+							}}
+						>
+							Reset Session
+						</button>
+					)}
 				</div>
-			) : (
+			</div>
+
+			{/* Session Activation Form (when no active session exists) */}
+			{!session && (
 				<form
 					onSubmit={handleActivate}
 					style={{

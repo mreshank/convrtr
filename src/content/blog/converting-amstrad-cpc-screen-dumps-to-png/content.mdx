@@ -1,0 +1,65 @@
+Throughout the 1980s and early 1990s, the **Amstrad CPC 464, 664, and 6128** microcomputers were among the most popular home computers across Britain, France, Spain, and Germany. Known for their colorful games and vibrant demoscene, Amstrad computers featured a distinctive video display architecture driven by the **Motorola 6845 Cathode Ray Tube Controller (CRTC)** and the custom Amstrad **Gate Array**.
+
+Art files, game title screens, and loading images were dumped from memory as 16KB binary buffers ending in **`.cpc`** or **`.scr`**.
+
+Because the CPC's display hardware organizes pixels in a non-linear scanline layout and interleaves color bits within every byte, modern image software cannot directly display raw CPC files.
+
+This technical guide reveals the memory addressing of the CRTC 6845, details the bitplane mapping of CPC graphics Modes 0, 1, and 2, and explains how [convrtr's CPC to PNG converter](/image/cpc-to-png) renders retro Amstrad screens into crystal-clear 32-bit RGBA PNG images in your browser.
+
+## The 16KB Video RAM and AMSDOS Header
+
+An authentic Amstrad CPC screen dump is exactly 16,384 bytes (16 KB), representing the entire video RAM typically mapped from `0xC000` to `0xFFFF`.
+
+When saved onto Amstrad AMSDOS floppy disks or cassette tapes, the file is prefixed by a **128-byte AMSDOS header** (resulting in a 16,512-byte file):
+
+- **Byte `0`**: User number (typically `0`).
+- **Bytes `1`–`8`**: Filename (ASCII padded with spaces).
+- **Bytes `9`–`11`**: Extension (e.g., `BIN` or `SCR`).
+- **Byte `18`**: File type (`2` denotes a screen memory dump).
+- **Bytes `21`–`22`**: Load address (`0xC000` in little-endian).
+- **Bytes `24`–`25`**: File length (`0x4000` = 16,384 bytes).
+- **Bytes `67`–`68`**: 16-bit checksum of bytes 0 through 66.
+
+convrtr verifies the AMSDOS header checksum, extracts the original retro filename, and jumps directly to the framebuffer memory offset.
+
+## The CRTC 6845 Non-Linear Scanline Addressing
+
+Unlike modern graphics framebuffers where scanlines are contiguous arrays in memory, the Motorola 6845 addresses the screen as character rows divided into character scanline slices:
+
+```text
+lineInCharacter = y % 8;
+characterRow    = Math.floor(y / 8);
+memoryOffset    = (lineInCharacter * 0x800) + (characterRow * 80);
+```
+
+Each horizontal line is 80 bytes wide. The 8 scanlines of a character row are spaced 2,048 bytes (`0x800`) apart in RAM, meaning that adjacent scanlines on your monitor reside in completely different 2KB memory blocks.
+
+## Graphics Modes and Bitplane Interleaving
+
+The Amstrad CPC Gate Array generates three standard graphics modes from the 80-byte scanlines:
+
+### Mode 0: 160 × 200 (16 Colors)
+Mode 0 produces colorful, chunky pixel art. Each byte stores 2 pixels (4 bits per pixel). However, the bits are interleaved across the byte:
+```text
+Pixel 0 = Bit7 | (Bit3 << 1) | (Bit5 << 2) | (Bit1 << 3)
+Pixel 1 = Bit6 | (Bit2 << 1) | (Bit4 << 2) | (Bit0 << 3)
+```
+Because Mode 0 pixels are rectangular (2:1 aspect ratio on a 4:3 CRT), convrtr applies automatic aspect correction by rendering each pixel 2 pixels wide (320 × 200 output).
+
+### Mode 1: 320 × 200 (4 Colors)
+Mode 1 provides sharp 4-color graphics. Each byte stores 4 pixels (2 bits per pixel):
+```text
+Pixel 0 = Bit7 | (Bit3 << 1)
+Pixel 1 = Bit6 | (Bit2 << 1)
+Pixel 2 = Bit5 | (Bit1 << 1)
+Pixel 3 = Bit4 | (Bit0 << 1)
+```
+
+### Mode 2: 640 × 200 (2 Colors)
+Mode 2 is high-resolution monochrome. Each byte stores 8 single-bit pixels from MSB (left) to LSB (right).
+
+## The 27-Color Gate Array Palette
+
+The Amstrad Gate Array produces analog RGB signals with 3 discrete intensity levels per channel: 0%, 50%, and 100%. This yields a unique 27-color palette featuring vibrant primaries and distinctive pastel shades.
+
+convrtr maps each pen index to its corresponding Gate Array RGB color, outputting an authentic 32-bit RGBA PNG image with zero blur and zero compression artifacts.

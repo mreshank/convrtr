@@ -27,5 +27,7 @@ export const meta: CollectiveMeta = {
 		"image/art-to-png",
 		"audio/669-to-wav",
 		"image/acbm-to-png",
+		"audio/amf-to-wav",
+		"image/cpc-to-png",
 	],
 };

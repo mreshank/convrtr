@@ -7,6 +7,23 @@
 
 html {
 	font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	text-rendering: optimizeLegibility;
+	-webkit-tap-highlight-color: transparent;
+	scrollbar-color: var(--rule-strong) var(--ground);
+	scrollbar-width: thin;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	html {
+		scroll-behavior: smooth;
+	}
+}
+
+::selection {
+	background-color: var(--accent);
+	color: var(--ground);
 }
 
 /*

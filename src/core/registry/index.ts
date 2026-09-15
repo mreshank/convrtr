@@ -2,6 +2,7 @@ import { eightSvxToWav } from "./tools/audio/8svx-to-wav";
 import { sixSixNineToWav } from "./tools/audio/669-to-wav";
 import { adxToWav } from "./tools/audio/adx-to-wav";
 import { aiffToWav } from "./tools/audio/aiff-to-wav";
+import { amfToWav } from "./tools/audio/amf-to-wav";
 import { auToWav } from "./tools/audio/au-to-wav";
 import { audToWav } from "./tools/audio/aud-to-wav";
 import { avrToWav } from "./tools/audio/avr-to-wav";
@@ -53,6 +54,7 @@ import { bspToZip } from "./tools/document/bsp-to-zip";
 import { cbzToPdf } from "./tools/document/cbz-to-pdf";
 import { chmToZip } from "./tools/document/chm-to-zip";
 import { cueToJson } from "./tools/document/cue-to-json";
+import { cwkToMarkdown } from "./tools/document/cwk-to-markdown";
 import { dxfToSvg } from "./tools/document/dxf-to-svg";
 import { enexToMarkdown } from "./tools/document/enex-to-markdown";
 import { epubToMarkdown } from "./tools/document/epub-to-markdown";
@@ -102,6 +104,7 @@ import { cdrToPng } from "./tools/image/cdr-to-png";
 import { cgmToSvg } from "./tools/image/cgm-to-svg";
 import { chrToPng } from "./tools/image/chr-to-png";
 import { clipToPng } from "./tools/image/clip-to-png";
+import { cpcToPng } from "./tools/image/cpc-to-png";
 import { curToPng } from "./tools/image/cur-to-png";
 import { dcmToPng } from "./tools/image/dcm-to-png";
 import { ddsToPng } from "./tools/image/dds-to-png";
@@ -351,6 +354,9 @@ export const TOOLS: Tool[] = [
 	sixSixNineToWav,
 	hwpToMarkdown,
 	acbmToPng,
+	amfToWav,
+	cwkToMarkdown,
+	cpcToPng,
 ];
 
 export function getTool(id: string): Tool | undefined {

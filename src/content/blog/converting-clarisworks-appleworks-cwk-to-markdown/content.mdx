@@ -1,0 +1,48 @@
+Throughout the 1990s and early 2000s, **ClarisWorks** (later rebranded by Apple as **AppleWorks**) was the premier integrated office suite bundled with Macintosh computers, iMacs, and PowerBooks. It seamlessly integrated word processing, spreadsheets, databases, presentations, and vector drawing into single compound documents ending in **`.cwk`**.
+
+Millions of family histories, legal records, university dissertations, and creative writing projects were authored in ClarisWorks. However, when Apple transitioned from Motorola 68k and PowerPC architectures to Intel and eventually Apple Silicon, AppleWorks was discontinued and left unsupported.
+
+Modern macOS and Windows systems cannot natively open `.cwk` files.
+
+This technical guide analyzes the ClarisWorks / AppleWorks binary container, explains how MacBinary II encapsulation and Mac OS Roman typography work, and demonstrates how [convrtr's CWK to Markdown converter](/document/cwk-to-markdown) resurrects your text into modern, portable Markdown files directly in your web browser.
+
+## The MacBinary II Encapsulation
+
+When vintage Mac files were archived, emailed, or transferred to non-HFS filesystems, they were often wrapped in a **MacBinary II** 128-byte container. The MacBinary header preserves vital Macintosh filesystem metadata:
+
+- **Offset `0x00`**: Format version check (`0x00`).
+- **Offset `0x01`–`0x40`**: Original Macintosh filename (Pascal string).
+- **Offset `0x41`–`0x44`**: File Type code (e.g., `"CWWP"` for ClarisWorks Word Processing).
+- **Offset `0x45`–`0x48`**: Creator code (e.g., `"BOBO"` for ClarisWorks).
+- **Offset `0x53`–`0x56`**: Length of the Data Fork in bytes.
+- **Offset `0x7A`–`0x7B`**: Format secondary check signature (`"mB"`).
+
+convrtr automatically detects and strips MacBinary II headers, locating the start of the ClarisWorks document payload without requiring third-party unarchivers.
+
+## ClarisWorks Document Identification
+
+Inside the data fork, ClarisWorks and AppleWorks documents begin with signature magic sequences identifying the component type:
+
+| File Signature | Document Environment | Application |
+| :--- | :--- | :--- |
+| `0x00 0x01 0x00 0x00` | Word Processing (`CWWP`) | ClarisWorks 1.0–5.0 |
+| `0x00 0x02 0x00 0x00` | Drawing (`CWGR`) | ClarisWorks |
+| `"BOBO"` | Proprietary Resource Map | ClarisWorks Suite |
+| `"AppleWorks"` | AppleWorks XML/Binary | AppleWorks 6 |
+
+## Typography and Mac OS Roman Decoding
+
+Unlike modern UTF-8 documents, vintage ClarisWorks documents were encoded in **Mac OS Roman**. Special typography like curly quotes (`“` `”`), em dashes (`—`), and accented vowels (`é`, `ü`) use vintage character mappings:
+
+- `0xD2` / `0xD3`: Left and right double quotation marks (`“` and `”`).
+- `0xD4` / `0xD5`: Left and right single quotation marks (`‘` and `’`).
+- `0xD1`: Em dash (`—`).
+- `0xA5`: Bullet point (`•`).
+
+convrtr's engine maps all Mac OS Roman codepoints accurately to standard Unicode, ensuring that quotes and foreign language accents appear crisp and readable.
+
+## Conversion to GitHub Flavored Markdown
+
+The extraction engine analyzes paragraph breaks, line lengths, and list indicators. Bullet symbols (`•`) are formatted into clean Markdown lists (`- item`), title lines are converted into semantic headers (`# Title`, `## Subheading`), and consecutive whitespace is neatly normalized.
+
+The resulting Markdown file can be opened in Obsidian, Notion, GitHub, or any modern markdown editor with zero loss of content and complete privacy.

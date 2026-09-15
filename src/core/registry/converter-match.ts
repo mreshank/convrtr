@@ -322,6 +322,16 @@ const MIME_MAP: Record<string, string> = {
 	"application/vnd.hancom.hwp": "hwp",
 	"image/x-acbm": "acbm",
 	"image/acbm": "acbm",
+	"audio/x-amf": "amf",
+	"audio/amf": "amf",
+	"application/x-amf": "amf",
+	"application/x-clarisworks": "cwk",
+	"application/clarisworks": "cwk",
+	"application/x-appleworks": "cwk",
+	"application/cwk": "cwk",
+	"image/x-cpc": "cpc",
+	"image/x-cpc-screen": "cpc",
+	"application/x-cpc-screen": "cpc",
 };
 
 /**

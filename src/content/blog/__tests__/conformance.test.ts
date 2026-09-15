@@ -55,6 +55,9 @@ const POST_SLUGS = [
 	"converting-composer-669-tracker-to-wav",
 	"converting-hangul-word-processor-hwp-to-markdown",
 	"converting-amiga-acbm-continuous-bitmap-to-png",
+	"converting-amf-tracker-modules-to-wav",
+	"converting-clarisworks-appleworks-cwk-to-markdown",
+	"converting-amstrad-cpc-screen-dumps-to-png",
 ];
 
 describe("blog registry conformance", () => {
