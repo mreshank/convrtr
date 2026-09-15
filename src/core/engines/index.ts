@@ -101,6 +101,8 @@ import { orgToMarkdownEngine } from "./org";
 import { osmToGeoJsonEngine } from "./osm";
 import { pakToZipEngine } from "./pak";
 import { palmdocToMarkdownEngine } from "./palmdoc";
+import { manToMarkdownEngine } from "./man";
+import { pcdToPngEngine } from "./pcd";
 import { pcxToPngEngine } from "./pcx";
 import { imageToPdfEngine } from "./pdf/image-to-pdf";
 import { createPdfMergeEngine } from "./pdf/merge";
@@ -113,6 +115,7 @@ import { qoiToPngEngine } from "./qoi";
 import { radToWavEngine } from "./rad";
 import { rasToPngEngine } from "./ras";
 import { rpaToZipEngine } from "./renpy";
+import { rolToWavEngine } from "./rol";
 import {
 	rpgmvmToM4aEngine,
 	rpgmvoToOggEngine,
@@ -389,6 +392,9 @@ function buildImageEngines(): Map<string, Engine> {
 	engines.set(hmiToWavEngine.id, hmiToWavEngine);
 	engines.set(texinfoToMarkdownEngine.id, texinfoToMarkdownEngine);
 	engines.set(mngToPngEngine.id, mngToPngEngine);
+	engines.set(rolToWavEngine.id, rolToWavEngine);
+	engines.set(manToMarkdownEngine.id, manToMarkdownEngine);
+	engines.set(pcdToPngEngine.id, pcdToPngEngine);
 	{
 		const engine = createAudioLegacyEngine("opus", "mp3");
 		engines.set(engine.id, engine);
@@ -582,6 +588,7 @@ export { kmlToGeoJsonEngine } from "./kml";
 export { kmzToGeoJsonEngine } from "./kmz";
 export { koaToPngEngine } from "./koa";
 export { lyxToMarkdownEngine } from "./lyx";
+export { manToMarkdownEngine } from "./man";
 export { microDvdToSrtEngine } from "./microdvd";
 export { mngToPngEngine } from "./mng";
 export { modToWavEngine } from "./mod";
@@ -596,12 +603,14 @@ export { oraToPngEngine } from "./ora";
 export { orgToMarkdownEngine } from "./org";
 export { osmToGeoJsonEngine } from "./osm";
 export { palmdocToMarkdownEngine } from "./palmdoc";
+export { pcdToPngEngine } from "./pcd";
 export { pcxToPngEngine } from "./pcx";
 export { ppmToPngEngine } from "./ppm";
 export { ptmToWavEngine } from "./ptm";
 export { qoiToPngEngine } from "./qoi";
 export { radToWavEngine } from "./rad";
 export { rasToPngEngine } from "./ras";
+export { rolToWavEngine } from "./rol";
 export { rtfdToMarkdownEngine } from "./rtfd";
 export { s3mToWavEngine } from "./s3m";
 export { smiToSrtEngine } from "./sami";

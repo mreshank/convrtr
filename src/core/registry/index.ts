@@ -32,6 +32,7 @@ import { ptmToWav } from "./tools/audio/ptm-to-wav";
 import { radToWav } from "./tools/audio/rad-to-wav";
 import { removeTagsFlac } from "./tools/audio/remove-tags-flac";
 import { removeTagsMp3 } from "./tools/audio/remove-tags-mp3";
+import { rolToWav } from "./tools/audio/rol-to-wav";
 import { rpgmvmToM4a } from "./tools/audio/rpgmvm-to-m4a";
 import { rpgmvoToOgg } from "./tools/audio/rpgmvo-to-ogg";
 import { s3mToWav } from "./tools/audio/s3m-to-wav";
@@ -76,6 +77,7 @@ import { kmlToGeoJson } from "./tools/document/kml-to-geojson";
 import { kmzToGeoJson } from "./tools/document/kmz-to-geojson";
 import { latexToMarkdown } from "./tools/document/latex-to-markdown";
 import { lyxToMarkdown } from "./tools/document/lyx-to-markdown";
+import { manToMarkdown } from "./tools/document/man-to-markdown";
 import { mhtmlToHtml } from "./tools/document/mhtml-to-html";
 import { msgToEml } from "./tools/document/msg-to-eml";
 import { nbToMarkdown } from "./tools/document/nb-to-markdown";
@@ -136,6 +138,7 @@ import { macpaintToPng } from "./tools/image/macpaint-to-png";
 import { mngToPng } from "./tools/image/mng-to-png";
 import { neoToPng } from "./tools/image/neo-to-png";
 import { oraToPng } from "./tools/image/ora-to-png";
+import { pcdToPng } from "./tools/image/pcd-to-png";
 import { pcxToPng } from "./tools/image/pcx-to-png";
 import { ppmToPng } from "./tools/image/ppm-to-png";
 import { procreateToPng } from "./tools/image/procreate-to-png";
@@ -399,6 +402,9 @@ export const TOOLS: Tool[] = [
 	hmiToWav,
 	texinfoToMarkdown,
 	mngToPng,
+	rolToWav,
+	manToMarkdown,
+	pcdToPng,
 ];
 
 export function getTool(id: string): Tool | undefined {

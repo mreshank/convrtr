@@ -2,6 +2,7 @@ import { meta as appleMacpaintRetroGraphicsDecoding } from "./apple-macpaint-ret
 import { meta as convertWhatsappWechatSilkToWavMp3 } from "./convert-whatsapp-wechat-silk-to-wav-mp3/meta";
 import { meta as convertingAbiwordAbwToMarkdown } from "./converting-abiword-abw-to-markdown/meta";
 import { meta as convertingAdaptiveMultiRateAmrToWav } from "./converting-adaptive-multi-rate-amr-to-wav/meta";
+import { meta as convertingAdlibRolMusicToWav } from "./converting-adlib-rol-music-to-wav/meta";
 import { meta as convertingAdobePhotoshopAcoPaletteToCss } from "./converting-adobe-photoshop-aco-palette-to-css/meta";
 import { meta as convertingAmfTrackerModulesToWav } from "./converting-amf-tracker-modules-to-wav/meta";
 import { meta as convertingAmigaAcbmContinuousBitmapToPng } from "./converting-amiga-acbm-continuous-bitmap-to-png/meta";
@@ -34,6 +35,7 @@ import { meta as convertingHangulWordProcessorHwpToMarkdown } from "./converting
 import { meta as convertingHmiDosGameAudioToWav } from "./converting-hmi-dos-game-audio-to-wav/meta";
 import { meta as convertingIdSoftwareImfAudioToWav } from "./converting-id-software-imf-audio-to-wav/meta";
 import { meta as convertingImpulseTrackerItToWav } from "./converting-impulse-tracker-it-to-wav/meta";
+import { meta as convertingKodakPhotoCdToPng } from "./converting-kodak-photo-cd-to-png/meta";
 import { meta as convertingLyxDocumentsToMarkdown } from "./converting-lyx-documents-to-markdown/meta";
 import { meta as convertingMathematicaNbNotebooksToMarkdown } from "./converting-mathematica-nb-notebooks-to-markdown/meta";
 import { meta as convertingMngAnimatedGraphicsToPng } from "./converting-mng-animated-graphics-to-png/meta";
@@ -55,6 +57,7 @@ import { meta as convertingSonySrfRawToPng } from "./converting-sony-srf-raw-to-
 import { meta as convertingStarofficeStarwriterSdwToMarkdown } from "./converting-staroffice-starwriter-sdw-to-markdown/meta";
 import { meta as convertingTelephonyUlawAlawToWav } from "./converting-telephony-ulaw-alaw-to-wav/meta";
 import { meta as convertingTruevisionVdaTargaToPng } from "./converting-truevision-vda-targa-to-png/meta";
+import { meta as convertingUnixManPagesToMarkdown } from "./converting-unix-man-pages-to-markdown/meta";
 import { meta as convertingWestwoodAudAudioToWav } from "./converting-westwood-aud-audio-to-wav/meta";
 import { meta as convertingX11XcurCursorsToPng } from "./converting-x11-xcur-cursors-to-png/meta";
 import { meta as decodingZxSpectrumScrMemoryDumps } from "./decoding-zx-spectrum-scr-memory-dumps/meta";
@@ -150,6 +153,9 @@ export const BLOG_POSTS: BlogPostMeta[] = [
 	convertingHmiDosGameAudioToWav,
 	convertingGnuTexinfoToMarkdown,
 	convertingMngAnimatedGraphicsToPng,
+	convertingAdlibRolMusicToWav,
+	convertingUnixManPagesToMarkdown,
+	convertingKodakPhotoCdToPng,
 ];
 
 export function getPost(

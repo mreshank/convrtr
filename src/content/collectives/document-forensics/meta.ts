@@ -28,5 +28,6 @@ export const meta: CollectiveMeta = {
 		"document/nb-to-markdown",
 		"document/lyx-to-markdown",
 		"document/texinfo-to-markdown",
+		"document/man-to-markdown",
 	],
 };

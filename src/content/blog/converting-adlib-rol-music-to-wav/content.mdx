@@ -1,0 +1,33 @@
+# Converting AdLib ROL Music to WAV: Emulating 1980s PC FM Synthesis
+
+Before the Sound Blaster became the household name for PC multimedia, there was the **AdLib Music Synthesizer Card**. Released in 1987 by Ad Lib Inc. of Quebec, Canada, this ISA expansion card revolutionized IBM PC audio by replacing the abrasive single-frequency internal PC speaker with the **Yamaha YM3812 (OPL2)** sound chip.
+
+To compose music for this groundbreaking hardware, AdLib provided the **Visual Composer** software, which saved songs in the proprietary **.rol** format.
+
+---
+
+## 1. The Structure of an AdLib ROL File
+
+An AdLib ROL file stores musical arrangement instructions tailored to the 9-channel FM synthesis hardware:
+
+- **Header Block:** Stores major/minor file format version identifiers, timing resolution (ticks per beat, default 120), beats per measure, and nominal playback tempo.
+- **Instrument Mapping:** Defines which AdLib BNK or standard FM instrument timbre applies to each of the 9 melodic voices.
+- **Track Event Streams:** Sequential event records describing channel assignments, MIDI pitch note indices (0..96), duration counts in clock ticks, and volume velocity parameters.
+- **Rhythm Mode:** Optional configuration toggling 6 melodic channels plus 5 percussion channels (bass drum, snare, tom-tom, top cymbal, hi-hat).
+
+---
+
+## 2. Emulating 2-Operator FM Synthesis in Modern Web Browsers
+
+Because modern operating systems lack physical Yamaha YM3812 sound hardware, convrtr performs authentic 2-operator FM synthesis directly in client-side TypeScript:
+
+1. **Carrier and Modulator Oscillators:** Simulates phase modulation where the output of operator 1 (the modulator) dynamically modulates the instantaneous phase of operator 2 (the carrier).
+2. **Frequency Calculations:** Accurately derives pitch frequencies using standard equal-temperament tuning curves referenced against 440 Hz standard pitch.
+3. **ADSR Envelope Shaping:** Generates authentic linear attack, decay, sustain, and exponential release envelope curves for each active voice.
+4. **16-bit Stereo PCM Export:** Renders the combined 9-channel mix into studio-standard 44.1 kHz or 48 kHz 16-bit WAV audio via `writeWav`.
+
+---
+
+## 3. Pure Client-Side Privacy and Preservation
+
+Retro computing preservation should never depend on cloud services or external servers. With convrtr, your vintage AdLib `.rol` music archives are synthesized 100% inside your web browser sandbox with zero network requests.

@@ -4252,6 +4252,177 @@ export const COMPARISONS: ComparisonMeta[] = [
 			"image/wal-to-png",
 		],
 	},
+	{
+		slug: "rol-vs-mid",
+		title: "ROL vs MID: AdLib Visual Composer Music vs Standard MIDI Files",
+		description:
+			"A technical comparison between AdLib Visual Composer (.rol) songs and Standard MIDI Files (.mid). Understand Yamaha YM3812 FM synthesis versus hardware-agnostic MIDI note events.",
+		formatA: "ROL",
+		formatB: "MIDI",
+		category: "audio",
+		summary:
+			"AdLib Visual Composer (.rol) is a vintage music sequence format created by AdLib Inc. in 1987 specifically for the Yamaha YM3812 (OPL2) FM synthesis chip on early PC sound cards. Standard MIDI Files (.mid) represent a universal, hardware-independent sequence protocol specifying pitch, velocity, and timing events sent to external sound modules, wavetable synthesizers, or soundfonts.",
+		prosA: [
+			"Crafted specifically for the 9-channel FM synthesis timbre of the Yamaha YM3812 chip",
+			"Includes native AdLib instrument definitions and custom timbre parameter blocks",
+			"Lightweight compact structure tuned for real-time interrupt playback in MS-DOS",
+			"Authentic 1980s and 1990s retro PC gaming and multimedia soundtrack preservation",
+		],
+		prosB: [
+			"Universal playback support across every operating system, DAW, and web browser",
+			"Hardware-agnostic note architecture easily re-orchestrated with modern soundfonts",
+			"Supports up to 16 MIDI channels with rich controller modulation and pitch bend curves",
+			"Global industry standard for music composition, scoring, and electronic instruments",
+		],
+		specs: [
+			{
+				feature: "Original Creator",
+				formatA: "AdLib Inc. (1987)",
+				formatB: "Dave Smith & MIDI Manufacturers (1983)",
+			},
+			{
+				feature: "Audio Architecture",
+				formatA: "Yamaha YM3812 (OPL2) FM Synthesis",
+				formatB: "Abstract MIDI Event Protocol",
+			},
+			{
+				feature: "Sound Generation",
+				formatA: "Dedicated FM Operator Parameters",
+				formatB: "Dependent on Playback Device / SoundFont",
+			},
+			{
+				feature: "Melodic Channels",
+				formatA: "9 FM Channels (or 6 melodic + 5 rhythm)",
+				formatB: "16 Logical MIDI Channels",
+			},
+			{
+				feature: "Modern DAW Compatibility",
+				formatA: "Requires dedicated emulator or converter",
+				formatB: "Universal native import/export",
+			},
+		],
+		verdict:
+			"Standard MIDI remains the universal music protocol, but vintage AdLib ROL music captures the authentic spirit of early PC soundcards. convrtr emulates the Yamaha YM3812 OPL2 chip to synthesize ROL files into studio-quality 16-bit stereo WAV audio directly in your browser.",
+		relatedTools: [
+			"audio/rol-to-wav",
+			"audio/hmi-to-wav",
+			"audio/imf-to-wav",
+		],
+	},
+	{
+		slug: "man-vs-markdown",
+		title: "MAN vs Markdown: Unix Roff Documentation vs GitHub Flavored Markdown",
+		description:
+			"A technical comparison between Unix manual pages (roff / man / mdoc) and GitHub Flavored Markdown (GFM). Discover formatting conventions, macro directives, and modern web documentation.",
+		formatA: "MAN",
+		formatB: "Markdown",
+		category: "document",
+		summary:
+			"Unix manual pages (roff/man/mdoc) were created in the 1970s by AT&T Bell Labs for terminal-based technical documentation using typesetting macros (.TH, .SH, .TP). Markdown, created in 2004 by John Gruber and standardized as CommonMark and GitHub Flavored Markdown (GFM), provides lightweight human-readable plain text formatting designed for modern web publishing, code hosting, and documentation wikis.",
+		prosA: [
+			"Built directly into the Unix/Linux operating system via the universal 'man' command",
+			"Rigid semantic conventions for command synopses, option flags, and system exit codes",
+			"Rich typesetting macro capabilities through troff, groff, and BSD mdoc packages",
+			"Decades of battle-tested standard technical reference literature across Unix and POSIX",
+		],
+		prosB: [
+			"Instantly readable and editable as plain text without specialized rendering software",
+			"Native rendering across GitHub, GitLab, modern documentation generators, and browsers",
+			"Simple intuitive formatting syntax for bold, italics, tables, and fenced code blocks",
+			"Effortlessly converts to HTML, PDF, EPUB, and static documentation websites",
+		],
+		specs: [
+			{
+				feature: "Original Creator",
+				formatA: "Joe Ossanna / Bell Labs (1970s)",
+				formatB: "John Gruber / Aaron Swartz (2004)",
+			},
+			{
+				feature: "Formatting Engine",
+				formatA: "roff / groff / mandoc typesetting compiler",
+				formatB: "CommonMark / GFM Markdown parsers",
+			},
+			{
+				feature: "Terminal Integration",
+				formatA: "Native integration via `man` and less pagers",
+				formatB: "Requires CLI markdown viewers or terminal renderers",
+			},
+			{
+				feature: "Web Ecosystem Support",
+				formatA: "Limited without HTML/roff conversion pipeline",
+				formatB: "Universal across all developer tooling and platforms",
+			},
+			{
+				feature: "Syntax Complexity",
+				formatA: "High (Cryptic escape codes and macro registers)",
+				formatB: "Extremely low (Intuitive markdown characters)",
+			},
+		],
+		verdict:
+			"Unix man pages established the gold standard for CLI documentation, but Markdown is the undisputed format of the modern web. convrtr parses roff and mdoc manual pages into clean GitHub Flavored Markdown with preserved headers, flags, and code blocks 100% offline.",
+		relatedTools: [
+			"document/man-to-markdown",
+			"document/texinfo-to-markdown",
+			"document/lyx-to-markdown",
+		],
+	},
+	{
+		slug: "pcd-vs-jpg",
+		title: "PCD vs JPEG: Kodak Photo CD Image Pac vs Standard JPEG Images",
+		description:
+			"A technical comparison between Kodak Photo CD (.pcd) Image Pac archives and standard JPEG (.jpg) images. Understand PhotoYCC color space, multi-resolution pyramids, and modern digital archiving.",
+		formatA: "PCD",
+		formatB: "JPEG",
+		category: "image",
+		summary:
+			"Kodak Photo CD (.pcd) was launched in 1992 by Eastman Kodak as an archival film scanning solution storing multi-resolution image hierarchies (Base/16 to 16Base) in the proprietary 24-bit PhotoYCC color space. JPEG (Joint Photographic Experts Group) is the universal DCT-based lossy photographic format used across the internet, smartphones, digital cameras, and web applications.",
+		prosA: [
+			"Stores multiple hierarchical resolution planes (Base/16, Base/4, Base) in a single file",
+			"Proprietary PhotoYCC color space preserves broad film dynamic range and highlight detail",
+			"Designed specifically for high-fidelity scanning of 35mm film negatives and slides",
+			"Historic archival format holding millions of 1990s digital photo collections",
+		],
+		prosB: [
+			"Universal image format natively supported by every computer, phone, and web browser",
+			"Efficient lossy DCT compression provides compact file sizes with adjustable quality",
+			"Standard sRGB and display P3 color space profiles universally rendered without conversion",
+			"Ubiquitously supported by all photo editing suites, social media platforms, and cloud storage",
+		],
+		specs: [
+			{
+				feature: "Introduced By",
+				formatA: "Eastman Kodak (1992)",
+				formatB: "Joint Photographic Experts Group (1992)",
+			},
+			{
+				feature: "Color Space",
+				formatA: "PhotoYCC (Nonlinear Luma/Chroma)",
+				formatB: "YCbCr / sRGB / Adobe RGB",
+			},
+			{
+				feature: "Resolution Architecture",
+				formatA: "Multi-resolution pyramid (Image Pac)",
+				formatB: "Single raster resolution",
+			},
+			{
+				feature: "Compression Scheme",
+				formatA: "Uncompressed planes + Huffman residuals",
+				formatB: "Discrete Cosine Transform (DCT) lossy compression",
+			},
+			{
+				feature: "Modern Software Support",
+				formatA: "Discontinued / requires specialized decoders",
+				formatB: "Universal native support (>99.9% of devices)",
+			},
+		],
+		verdict:
+			"Kodak Photo CD pioneered digital photo archiving, but proprietary formats become difficult to view over time. convrtr extracts Kodak Photo CD Image Pac files and translates PhotoYCC to standard sRGB 32-bit RGBA PNG images directly in your browser with zero data leakage.",
+		relatedTools: [
+			"image/pcd-to-png",
+			"image/srf-to-png",
+			"image/tga-to-png",
+		],
+	},
 ];
 
 export function getComparison(slug: string): ComparisonMeta | undefined {

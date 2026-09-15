@@ -390,6 +390,15 @@ const MIME_MAP: Record<string, string> = {
 	"video/x-mng": "mng",
 	"image/x-mng": "mng",
 	"image/mng": "mng",
+	"audio/x-rol": "rol",
+	"audio/rol": "rol",
+	"application/x-rol": "rol",
+	"application/x-troff-man": "man",
+	"text/troff": "man",
+	"text/x-troff": "man",
+	"image/x-photo-cd": "pcd",
+	"image/x-pcd": "pcd",
+	"image/pcd": "pcd",
 };
 
 /**

@@ -1,0 +1,35 @@
+# Converting Unix Man Pages to Markdown: Modernizing Terminal Documentation
+
+Since the dawn of Research Unix at AT&T Bell Laboratories in November 1971, the manual page (`man`) has served as the definitive standard for command-line documentation, system call references, and library function descriptions across Unix, Linux, and BSD operating systems.
+
+However, viewing and publishing raw roff man pages (`.1` through `.8`) outside terminal pagers like `less` or `groff` has traditionally required cumbersome command-line toolchains.
+
+---
+
+## 1. The Syntax of Roff and Mdoc Manual Pages
+
+Unix manual pages are written using line-oriented macro packages that instruct a typesetting engine how to lay out text:
+
+- **Section Titles (`.TH` / `.Dt`):** Defines the document title, manual section number (e.g. 1 for user commands, 2 for system calls, 3 for C library functions), revision date, software source, and manual category.
+- **Section Headers (`.SH` / `.Sh`):** Standard top-level headings such as `NAME`, `SYNOPSIS`, `DESCRIPTION`, `OPTIONS`, `EXIT STATUS`, and `SEE ALSO`.
+- **Indented Definitions (`.TP` / `.IP`):** Pairs command-line option flags with explanatory parameter documentation.
+- **Font Switches (`.B`, `.I`, `.BI`, `.BR`):** Alternates typography between bold monospace identifiers and italic argument names.
+- **Verbatim Code Fences (`.nf` / `.fi`):** Disables automatic line wrapping to preserve literal terminal commands and configuration snippets.
+- **BSD Mdoc Semantic Tags (`.Nm`, `.Nd`, `.Fl`, `.Ar`, `.Op`):** Semantic macros representing command names, descriptions, flags, arguments, and optional parameters.
+
+---
+
+## 2. In-Browser Translation to GitHub Flavored Markdown
+
+convrtr translates roff typesetting primitives into modern, readable GitHub Flavored Markdown:
+
+1. **Escape Sequence Resolution:** Translates cryptic roff escapes like `\-` (hyphens), `\(em` (em-dashes), `\e` (backslashes), and font change controls `\fB...\fR` into standard Markdown markup.
+2. **Structural Mapping:** Maps `.TH` to `# Title(Section)`, `.SH` to `## Header`, and `.SS` to `### Subtitle`.
+3. **Definition Lists and Tables:** Re-aligns `.TP` option descriptions into structured Markdown definition lists or bullet items.
+4. **Code Fencing:** Encloses `.nf` / `.EX` preformatted blocks within clean triple-backtick Markdown code fences.
+
+---
+
+## 3. 100% Offline Client-Side Execution
+
+Proprietary software documentation, internal CLI scripts, and system configurations should never be uploaded to remote cloud APIs. convrtr parses and converts Unix manual pages 100% locally in your browser sandbox with zero network requests.

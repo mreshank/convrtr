@@ -1,0 +1,35 @@
+# Converting Kodak Photo CD PCD to PNG: Rescuing 1990s Film Scans
+
+In 1992, Eastman Kodak unveiled the **Photo CD** system—a pioneering commercial technology that allowed consumers and professional photographers to bring exposed 35mm film negatives and color slides to photo labs and receive a CD-ROM containing high-resolution digital scans.
+
+The heart of the Photo CD system was the **Image Pac (.pcd)** file, a proprietary multi-resolution hierarchical raster container designed to accommodate everything from low-resolution CRT television displays to high-resolution prepress four-color printing presses.
+
+---
+
+## 1. The Multi-Resolution Image Pac Architecture
+
+Each Kodak Photo CD Image Pac stores five distinct resolution tiers without needing to duplicate the full image data:
+
+- **Base/16 (192 × 128):** Uncompressed contact sheet thumbnail for fast indexing.
+- **Base/4 (384 × 256):** Medium-resolution preview for television and multimedia CD-ROM titles.
+- **Base (768 × 512):** Standard TV and monitor resolution.
+- **4Base (1536 × 1024):** High-resolution photo print tier stored as compressed Huffman residual differences added to the interpolated Base image.
+- **16Base (3072 × 2048):** Professional archival tier capable of 300 DPI photographic reproductions.
+
+---
+
+## 2. The PhotoYCC Color Space
+
+Rather than storing standard RGB or CMYK values, Kodak engineered **PhotoYCC**, a color space derived from television broadcasting standards (CCIR 601) and optimized for negative film dynamic range:
+
+- **Luma Channel ($Y$):** Represents overall luminance with 100% diffuse white calibrated to code value 188, leaving values 189..255 for specular highlight detail and film shoulder latitude.
+- **Chroma Channels ($C_1, C_2$):** Color difference channels subsampled 2:1 horizontally and vertically (4:2:0 format) to conserve disc space.
+- **sRGB Color Matrix Transformation:** Converting PhotoYCC back into sRGB requires applying nonlinear matrix operations that align chroma offsets (`C1 - 156`, `C2 - 137`) and scale luma intensity to fill modern 8-bit dynamic range without color clipping.
+
+---
+
+## 3. Preserving Film Memories in the Browser
+
+Opening vintage Kodak Photo CD archives on modern computers often fails because operating systems and photo editors dropped native PCD support decades ago.
+
+convrtr restores access to your family archives and historical film scans by decoding Kodak Photo CD files directly into 32-bit RGBA PNG images inside your web browser. 100% offline, private, and secure.
