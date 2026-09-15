@@ -1,0 +1,33 @@
+# Converting Sony SRF RAW to PNG: Unpacking Early Alpha Digital Photography
+
+In 2005 and 2006, Sony entered high-end enthusiast and digital SLR photography with the ground-breaking **Sony Cyber-shot DSC-R1** and the first-generation **Sony Alpha DSLR-A100**. Before standardizing on the modern Sony Alpha Raw (`.arw`) format, these cameras recorded uncompressed sensor data in the **Sony Raw Format (SRF)**.
+
+While modern operating systems and mobile devices seamlessly display JPEGs, HEIC, and newer raw formats, legacy `.srf` files frequently appear as broken icons or unsupported files in contemporary image viewers.
+
+---
+
+## 1. The Anatomy of an SRF Container
+
+Sony built the SRF file format upon the foundation of **TIFF 6.0** with specific Sony-proprietary Image File Directory (IFD) tags:
+
+- **TIFF Byte Order & Magic Header:** Begins with `II` (little-endian, `0x49 0x49`) or `MM` (big-endian, `0x4D 0x4D`) followed by magic constant `42` (`0x002A`) and the primary IFD offset.
+- **Image Metadata Tags:** Includes EXIF tags for camera make (`0x010F`), camera model (`0x0110`), image width (`0x0100`), image height (`0x0101`), and exposure metadata.
+- **Embedded Preview Streams:** Tag `0x0201` (`JPEGInterchangeFormat`) and `0x0202` (`JPEGInterchangeFormatLength`) point to high-resolution embedded preview JPEGs rendered by the camera's BIONZ image processor.
+- **Raw Sensor Bayer Data:** Encapsulates the uncompressed 12-bit sensor array recorded directly from the camera sensor.
+
+---
+
+## 2. Lossless Embedded Preview Extraction
+
+Extracting the camera's high-resolution embedded preview stream provides significant advantages:
+1. **Accurate Color Calibration:** Uses the camera's original white balance, tone curve, and proprietary sensor color matrix.
+2. **Instant Rendering:** Avoids slow, CPU-intensive software demosaicing and chromatic aberration correction.
+3. **Lossless Quality Retention:** Converts directly into a 32-bit RGBA PNG image without generational compression artifacts.
+
+convrtr parses the TIFF IFDs, locates the embedded stream or reconstructs the image array, and emits standard 32-bit transparent PNG files.
+
+---
+
+## 3. Total Privacy for Personal Photography
+
+Your personal photo archives and family memories should never be uploaded to remote cloud conversion services. convrtr processes Sony SRF raw files entirely client-side inside your browser sandbox. No photo bytes or EXIF location data ever leave your computer.

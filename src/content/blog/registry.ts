@@ -30,7 +30,9 @@ import { meta as convertingFictionbookFb2ToMarkdown } from "./converting-fiction
 import { meta as convertingGedcomFamilyTreeToCsv } from "./converting-gedcom-family-tree-to-csv/meta";
 import { meta as convertingGoodnotesToPdfWithoutApp } from "./converting-goodnotes-to-pdf-without-app/meta";
 import { meta as convertingHangulWordProcessorHwpToMarkdown } from "./converting-hangul-word-processor-hwp-to-markdown/meta";
+import { meta as convertingIdSoftwareImfAudioToWav } from "./converting-id-software-imf-audio-to-wav/meta";
 import { meta as convertingImpulseTrackerItToWav } from "./converting-impulse-tracker-it-to-wav/meta";
+import { meta as convertingLyxDocumentsToMarkdown } from "./converting-lyx-documents-to-markdown/meta";
 import { meta as convertingMathematicaNbNotebooksToMarkdown } from "./converting-mathematica-nb-notebooks-to-markdown/meta";
 import { meta as convertingMultitrackerMtmModulesToWav } from "./converting-multitracker-mtm-modules-to-wav/meta";
 import { meta as convertingNesChrTileRomToPng } from "./converting-nes-chr-tile-rom-to-png/meta";
@@ -46,6 +48,7 @@ import { meta as convertingQuiteOkImageQoiToPng } from "./converting-quite-ok-im
 import { meta as convertingRadianceHdrRgbeToPng } from "./converting-radiance-hdr-rgbe-to-png/meta";
 import { meta as convertingRealityAdlibTrackerRadToWav } from "./converting-reality-adlib-tracker-rad-to-wav/meta";
 import { meta as convertingScreamTrackerS3mToWav } from "./converting-scream-tracker-s3m-to-wav/meta";
+import { meta as convertingSonySrfRawToPng } from "./converting-sony-srf-raw-to-png/meta";
 import { meta as convertingStarofficeStarwriterSdwToMarkdown } from "./converting-staroffice-starwriter-sdw-to-markdown/meta";
 import { meta as convertingTelephonyUlawAlawToWav } from "./converting-telephony-ulaw-alaw-to-wav/meta";
 import { meta as convertingTruevisionVdaTargaToPng } from "./converting-truevision-vda-targa-to-png/meta";
@@ -138,6 +141,9 @@ export const BLOG_POSTS: BlogPostMeta[] = [
 	convertingAdaptiveMultiRateAmrToWav,
 	convertingMathematicaNbNotebooksToMarkdown,
 	convertingQuake2WalTexturesToPng,
+	convertingIdSoftwareImfAudioToWav,
+	convertingLyxDocumentsToMarkdown,
+	convertingSonySrfRawToPng,
 ];
 
 export function getPost(

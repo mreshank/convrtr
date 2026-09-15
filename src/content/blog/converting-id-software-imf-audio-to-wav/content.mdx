@@ -1,0 +1,44 @@
+# Converting id Software IMF Audio to WAV: Yamaha OPL2 FM Synthesis in the Browser
+
+Before digital audio CD tracks and general MIDI wavetable synthesis dominated PC gaming in the mid-1990s, the **AdLib** and **Sound Blaster** sound cards reigned supreme. At their beating heart was the **Yamaha YM3812** (commonly known as the **OPL2**)—a dedicated frequency modulation (FM) synthesis sound chip capable of producing nine simultaneous melodic channels.
+
+To bring fast, low-overhead music to early 286 and 386 MS-DOS machines, id Software founders and legendary game composer Bobby Prince created the **id Software Music Format (IMF)**. IMF powered the unforgettable soundtracks of *Commander Keen 4–6*, *Wolfenstein 3D*, *Spear of Destiny*, *Bio Menace*, *Blake Stone*, and *Corridor 7*.
+
+---
+
+## 1. The Structure of an IMF File
+
+Unlike tracker modules (MOD, S3M) or MIDI files, an IMF file contains no note abstractions, instruments, or waveform samples. Instead, it is a sequential stream of hardware register commands written directly to the Yamaha YM3812 chip:
+
+- **Register (1 byte):** The OPL2 register index (e.g. `0x20` for operator characteristics, `0x40` for total level/attenuation, `0xA0` for frequency number low).
+- **Data (1 byte):** The value byte to write into the specified register.
+- **Delay / Ticks (2 bytes LE):** The number of timer interrupt ticks to wait before executing the next register-data command.
+
+A 4-byte command packet is thus represented as:
+```text
+[Reg: 1 byte] [Data: 1 byte] [Ticks: 2 bytes Little-Endian]
+```
+
+---
+
+## 2. The Game Clock Rates: 560 Hz vs 700 Hz
+
+A common mystery for retro audio enthusiasts is why Wolfenstein 3D music played too fast or too slow when played in different source ports. The answer lies in the MS-DOS programmable interval timer (PIT):
+
+1. **Wolfenstein 3D & Spear of Destiny:** The game loop hooked the timer interrupt at **560 Hz** (each tick $\approx 1.786$ ms).
+2. **Commander Keen (Goodbye Galaxy & Aliens Ate My Babysitter):** The music driver ran at **700 Hz** (each tick $\approx 1.428$ ms).
+3. **Duke Nukem II:** Used a slower timer tick rate of **280 Hz**.
+
+convrtr provides customizable clock rate presets so you can synthesize songs at their authentic intended tempos.
+
+---
+
+## 3. Pure In-Browser Yamaha OPL2 Emulation
+
+convrtr emulates the Yamaha YM3812 OPL2 architecture directly in TypeScript:
+- **Phase Generators & Sine Wave Transforms:** Computes carrier and modulator frequencies from frequency number and octave blocks.
+- **Operator Envelope Generators:** Models Attack, Decay, Sustain, and Release (ADSR) state machines for 2-operator FM pairs.
+- **Feedback & Feedback Modulation:** Simulates self-feedback loops on operator 1 for rich brass and percussion textures.
+- **16-bit Stereo PCM WAV Rendering:** Blends the channels and encodes clean, lossless 44.1 kHz stereo audio.
+
+All synthesis happens 100% client-side in your browser with zero external servers.

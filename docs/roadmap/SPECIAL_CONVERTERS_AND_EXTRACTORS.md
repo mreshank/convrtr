@@ -2886,6 +2886,49 @@
 
 ---
 
+### 136. id Software Music Format (.imf)
+- **Ecosystem & Context:** IMF is the classic AdLib/OPL2 soundtrack format created by id Software in 1991 for Commander Keen (episodes 4–6), Wolfenstein 3D, Spear of Destiny, Bio Menace, and Blake Stone.
+- **Forensic Format Architecture:**
+  - Stream: Sequence of 4-byte packets: `[Register: 1 byte] [Data: 1 byte] [Delay Ticks: 2 bytes Little-Endian]`.
+  - Timer Clock Rates: 560 Hz (Wolfenstein 3D) vs 700 Hz (Commander Keen).
+  - Chip Hardware: Yamaha YM3812 (OPL2) FM synthesis chip with 9 melodic channels or 6 melodic + 5 percussion channels.
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript Yamaha YM3812 emulator with operator phase accumulators, ADSR envelope generators, and 2-operator FM synthesis.
+  - Synthesizes authentic FM audio into 16-bit 44.1 kHz stereo linear PCM WAV.
+- **Fidelity:** `ACCURATE YAMAHA YM3812 OPL2 FM SYNTHESIS TO 16-BIT STEREO WAV`.
+- **Status:** **Wave 47 Shipped (`audio/imf-to-wav`) — Milestone Tool 136**.
+
+---
+
+### 137. LyX Document Processor (.lyx)
+- **Ecosystem & Context:** LyX is a widely used academic WYSIWYM (What You See Is What You Mean) document processor combining the typographical power of LaTeX with a graphical editing interface.
+- **Forensic Format Architecture:**
+  - Container: Structured text outline format starting with `#LyX <version> created this file`.
+  - Layout Blocks: `\begin_layout Section`, `Subsection`, `Itemize`, `Enumerate`, `Standard`, etc.
+  - Insets: Embedded formula insets (`\begin_inset Formula $...$`), tabular matrices (`\begin_inset Tabular`), graphics, and hyperlink insets.
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript line-oriented state machine parser.
+  - Maps semantic layout trees into GFM Markdown headings, blockquotes, and lists.
+  - Converts mathematical formula insets into inline `$...$` and display `$$...$$` MathJax-compatible blocks, and tabular insets into Markdown tables.
+- **Fidelity:** `ACCURATE LYX WYSIWYM DOCUMENT PARSING TO GFM MARKDOWN`.
+- **Status:** **Wave 47 Shipped (`document/lyx-to-markdown`) — Milestone Tool 137**.
+
+---
+
+### 138. Sony Alpha RAW (.srf)
+- **Ecosystem & Context:** Sony Raw Format (SRF) was used in early Sony digital bridge cameras (e.g. Cyber-shot DSC-R1) and initial Alpha DSLRs (e.g. DSLR-A100) before standardizing on the ARW format.
+- **Forensic Format Architecture:**
+  - Container: TIFF 6.0 structure with little-endian (`II`) or big-endian (`MM`) header and magic constant `42`.
+  - EXIF & IFD Tags: `ImageWidth` (0x0100), `ImageLength` (0x0101), `Make` (0x010F), `Model` (0x0110), `JPEGInterchangeFormat` (0x0201), `JPEGInterchangeFormatLength` (0x0202).
+  - Stream: High-resolution embedded camera-processed JPEG preview or raw Bayer sensor data.
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript TIFF IFD parser extracts EXIF tags and preview stream offsets.
+  - Decodes embedded JPEG preview via `@jsquash/jpeg/decode` and encodes directly to transparent 32-bit RGBA PNG.
+- **Fidelity:** `LOSSLESS EMBEDDED PREVIEW EXTRACTION TO 32-BIT RGBA PNG`.
+- **Status:** **Wave 47 Shipped (`image/srf-to-png`) — Milestone Tool 138**.
+
+---
+
 ## Roadmap Waves & Next Steps
 
 1. **Wave 1 (Shipped):**
@@ -3070,10 +3113,10 @@
     - Tool 133: `audio/amr-to-wav` (Adaptive Multi-Rate `.amr` mobile speech audio to 16-bit linear PCM WAV) — **Shipped**
     - Tool 134: `document/nb-to-markdown` (Wolfram Mathematica Notebook `.nb` expression tree to GitHub Flavored Markdown) — **Shipped**
     - Tool 135: `image/wal-to-png` (Quake II `.wal` mipmapped texture format to 32-bit RGBA PNG) — **Shipped**
-47. **Wave 47:**
-    - Tool 136: `audio/imf-to-wav` (id Software Music Format `.imf` Commander Keen / Wolfenstein 3D OPL2 sound to 16-bit WAV)
-    - Tool 137: `document/lyx-to-markdown` (LyX document processor `.lyx` LaTeX-like document to GitHub Flavored Markdown)
-    - Tool 138: `image/srf-to-png` (Sony Alpha RAW `.srf` thumbnail and preview extractor to 32-bit RGBA PNG)
+47. **Wave 47 (Shipped):**
+    - Tool 136: `audio/imf-to-wav` (id Software Music Format `.imf` Commander Keen / Wolfenstein 3D OPL2 sound to 16-bit WAV) — **Shipped**
+    - Tool 137: `document/lyx-to-markdown` (LyX document processor `.lyx` LaTeX-like document to GitHub Flavored Markdown) — **Shipped**
+    - Tool 138: `image/srf-to-png` (Sony Alpha RAW `.srf` thumbnail and preview extractor to 32-bit RGBA PNG) — **Shipped**
 48. **Wave 48:**
     - Tool 139: `audio/hmi-to-wav` (Human Machine Interfaces MIDI `.hmi` MS-DOS game music to 16-bit stereo WAV)
     - Tool 140: `document/texinfo-to-markdown` (GNU Texinfo `.texi` technical manual to GitHub Flavored Markdown)

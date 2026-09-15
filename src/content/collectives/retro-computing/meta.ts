@@ -34,5 +34,7 @@ export const meta: CollectiveMeta = {
 		"audio/okt-to-wav",
 		"audio/mtm-to-wav",
 		"audio/amr-to-wav",
+		"audio/imf-to-wav",
+		"image/srf-to-png",
 	],
 };

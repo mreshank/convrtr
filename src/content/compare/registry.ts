@@ -3898,6 +3898,183 @@ export const COMPARISONS: ComparisonMeta[] = [
 			"image/vtf-to-png",
 		],
 	},
+	{
+		slug: "imf-vs-mid",
+		title:
+			"IMF vs MIDI: id Software AdLib OPL2 Register Stream vs Standard MIDI",
+		description:
+			"Compare id Software's IMF music format with standard MIDI: Yamaha YM3812 FM register commands, tick timing, and soundcard hardware emulation.",
+		formatA: "IMF",
+		formatB: "MIDI",
+		category: "audio",
+		summary:
+			"IMF directly stores raw byte pairs written to the PC's AdLib/Sound Blaster Yamaha YM3812 (OPL2) FM synthesis chip at fixed timer intervals, whereas MIDI transmits abstract musical notes, velocities, and instrument patch commands meant for general synthesizers.",
+		prosA: [
+			"Exact reproduction of authentic 1990s MS-DOS FM synthesizer instruments",
+			"Bit-exact AdLib timbre without reliance on generic SoundFont soundbanks",
+			"Extremely low CPU and memory footprint for early 286/386 PC gaming",
+			"Native soundtrack format for Wolfenstein 3D, Commander Keen, and Duke Nukem II",
+		],
+		prosB: [
+			"Universal music standard supported by modern digital audio workstations (DAWs)",
+			"Instrument patch independence (General MIDI soundbanks, Roland SC-55, Yamaha MU)",
+			"Direct editing of notes, pitches, velocities, and tempo tracks",
+			"Wide hardware synth and software soundfont ecosystem",
+		],
+		specs: [
+			{
+				feature: "Sound Generation",
+				formatA: "Hardware OPL2 register-data writes",
+				formatB: "Abstract note & control change events",
+			},
+			{
+				feature: "Synthesizer Hardware",
+				formatA: "Yamaha YM3812 (OPL2 FM Synthesis)",
+				formatB: "Any synthesizer / SoundFont / WaveTable",
+			},
+			{
+				feature: "Tick Rate",
+				formatA: "560 Hz (Wolf3D) or 700 Hz (Keen)",
+				formatB: "PPQ (Pulses Per Quarter Note)",
+			},
+			{
+				feature: "File Size",
+				formatA: "Extremely compact (few kilobytes)",
+				formatB: "Compact (few kilobytes)",
+			},
+			{
+				feature: "Hardware Independence",
+				formatA: "Tied directly to AdLib FM architecture",
+				formatB: "Platform and hardware agnostic",
+			},
+		],
+		verdict:
+			"MIDI is the universal composition standard, but IMF captures the exact nostalgic FM synthesis timbre of classic id Software PC games. convrtr emulates the Yamaha YM3812 OPL2 chip in-browser to render IMF files directly to 16-bit stereo WAV.",
+		relatedTools: [
+			"audio/imf-to-wav",
+			"audio/rad-to-wav",
+			"audio/mod-to-wav",
+			"audio/s3m-to-wav",
+		],
+	},
+	{
+		slug: "lyx-vs-latex",
+		title:
+			"LyX vs LaTeX: Visual WYSIWYM Document Processor vs Direct TeX Source Code",
+		description:
+			"Compare LyX and LaTeX: What You See Is What You Mean (WYSIWYM) visual editing, mathematical formula layout, and exporting to GFM Markdown.",
+		formatA: "LyX",
+		formatB: "LaTeX",
+		category: "document",
+		summary:
+			"LyX provides a What-You-See-Is-What-You-Mean (WYSIWYM) graphical interface that lets authors focus on document structure without writing raw TeX markup syntax. LaTeX gives typesetting purists complete source-level programmatic control over micro-typography and layout packages.",
+		prosA: [
+			"Visual editing of complex mathematical equations without syntax errors",
+			"WYSIWYM interface separates semantic structure from visual presentation",
+			"Built-in spell check, change tracking, and bibliography management",
+			"Eliminates cryptic TeX compilation syntax errors for researchers and writers",
+		],
+		prosB: [
+			"Universal academic preprint standard for arXiv and major scientific publishers",
+			"Direct access to thousands of CTAN packages and custom macro programming",
+			"Plain text file format with seamless git diff and merge resolution",
+			"Complete typographical and micro-layout control over every glyph",
+		],
+		specs: [
+			{
+				feature: "Editing Philosophy",
+				formatA: "WYSIWYM (Visual Semantic Editing)",
+				formatB: "Code Typesetting (Plain Text Markup)",
+			},
+			{
+				feature: "Equation Input",
+				formatA: "Interactive visual formula editor",
+				formatB: "Raw LaTeX math mode ($...$, $$...$$)",
+			},
+			{
+				feature: "Underlying Format",
+				formatA: "LyX structured outline text format",
+				formatB: "Standard TeX source (.tex)",
+			},
+			{
+				feature: "Learning Curve",
+				formatA: "Gentle (Word-processor-like interface)",
+				formatB: "Steep (Programming-like typesetting language)",
+			},
+			{
+				feature: "Publishing Standard",
+				formatA: "Generates LaTeX output for publishing",
+				formatB: "Direct standard for journals and preprints",
+			},
+		],
+		verdict:
+			"LyX offers the ideal visual environment for authors who want LaTeX-grade typography without TeX syntax overhead. convrtr parses LyX document trees, insets, and formulas directly into clean GitHub Flavored Markdown.",
+		relatedTools: [
+			"document/lyx-to-markdown",
+			"document/latex-to-markdown",
+			"document/org-to-markdown",
+			"document/bibtex-to-markdown",
+		],
+	},
+	{
+		slug: "srf-vs-arw",
+		title:
+			"Sony SRF vs ARW: Early Cyber-shot/Alpha RAW vs Modern Sony Raw Format",
+		description:
+			"Compare Sony's early SRF format with modern Sony ARW: sensor color filters, embedded preview streams, and browser raw extraction.",
+		formatA: "SRF",
+		formatB: "ARW",
+		category: "image",
+		summary:
+			"Sony SRF (Sony Raw Format) was used in early bridge cameras and initial Alpha DSLRs (e.g. DSC-R1, DSLR-A100) before Sony standardized on Sony Alpha Raw (ARW). Both wrap raw Bayer sensor data in TIFF IFD containers alongside high-resolution preview streams.",
+		prosA: [
+			"Preserves historic original photographs from early Sony digital cameras",
+			"Uncompressed or lightly packed sensor color filter array data",
+			"Standard TIFF-compatible container with embedded preview JPEGs",
+			"Direct insight into early CCD and CMOS sensor evolution",
+		],
+		prosB: [
+			"Modern Sony digital camera standard across all Alpha mirrorless bodies",
+			"Advanced 14-bit uncompressed and lossless compressed raw options",
+			"Universal support in Lightroom, Capture One, and Apple Photos",
+			"Embedded lens aberration correction and dynamic range optimization profiles",
+		],
+		specs: [
+			{
+				feature: "Primary Cameras",
+				formatA: "Sony Cyber-shot DSC-R1, DSLR-A100",
+				formatB: "Sony Alpha a7, a9, a1, a6000 series",
+			},
+			{
+				feature: "Container Architecture",
+				formatA: "TIFF 6.0 with Sony IFD tags",
+				formatB: "TIFF/EP with Sony MakerNotes",
+			},
+			{
+				feature: "Bit Depth",
+				formatA: "12-bit raw sensor data",
+				formatB: "14-bit lossless or uncompressed raw",
+			},
+			{
+				feature: "Embedded Preview",
+				formatA: "JPEGInterchangeFormat stream",
+				formatB: "Multi-resolution JPEG preview streams",
+			},
+			{
+				feature: "Current Software Support",
+				formatA: "Legacy / specialized raw converters",
+				formatB: "Every modern photo editing tool",
+			},
+		],
+		verdict:
+			"ARW is the reigning standard for Sony Alpha mirrorless photographers, but millions of precious family and archival photographs remain stored in .srf files. convrtr extracts lossless embedded preview frames from SRF files to PNG directly in your browser.",
+		relatedTools: [
+			"image/srf-to-png",
+			"image/fits-to-png",
+			"image/dcm-to-png",
+			"image/hdr-to-png",
+		],
+	},
 ];
 
 export function getComparison(slug: string): ComparisonMeta | undefined {

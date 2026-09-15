@@ -373,6 +373,15 @@ const MIME_MAP: Record<string, string> = {
 	"image/x-wal": "wal",
 	"image/wal": "wal",
 	"application/x-quake2-wal": "wal",
+	"audio/x-imf": "imf",
+	"audio/imf": "imf",
+	"application/x-imf": "imf",
+	"application/x-lyx": "lyx",
+	"text/x-lyx": "lyx",
+	"application/lyx": "lyx",
+	"image/x-sony-srf": "srf",
+	"image/x-sony-sr2": "srf",
+	"image/x-sony-arw": "srf",
 };
 
 /**

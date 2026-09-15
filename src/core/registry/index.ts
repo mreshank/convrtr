@@ -15,6 +15,7 @@ import { farToWav } from "./tools/audio/far-to-wav";
 import { coverArtFLAC } from "./tools/audio/flac-cover-art";
 import { flacToWav } from "./tools/audio/flac-to-wav";
 import { waveformFLAC } from "./tools/audio/flac-waveform";
+import { imfToWav } from "./tools/audio/imf-to-wav";
 import { ircamToWav } from "./tools/audio/ircam-to-wav";
 import { itToWav } from "./tools/audio/it-to-wav";
 import { modToWav } from "./tools/audio/mod-to-wav";
@@ -73,6 +74,7 @@ import { hwpToMarkdown } from "./tools/document/hwp-to-markdown";
 import { kmlToGeoJson } from "./tools/document/kml-to-geojson";
 import { kmzToGeoJson } from "./tools/document/kmz-to-geojson";
 import { latexToMarkdown } from "./tools/document/latex-to-markdown";
+import { lyxToMarkdown } from "./tools/document/lyx-to-markdown";
 import { mhtmlToHtml } from "./tools/document/mhtml-to-html";
 import { msgToEml } from "./tools/document/msg-to-eml";
 import { nbToMarkdown } from "./tools/document/nb-to-markdown";
@@ -138,6 +140,7 @@ import { qoiToPng } from "./tools/image/qoi-to-png";
 import { rasToPng } from "./tools/image/ras-to-png";
 import { rpgmvpToPng } from "./tools/image/rpgmvp-to-png";
 import { sgiToPng } from "./tools/image/sgi-to-png";
+import { srfToPng } from "./tools/image/srf-to-png";
 import { studio3ToSvg } from "./tools/image/studio3-to-svg";
 import { svgzToSvg } from "./tools/image/svgz-to-svg";
 import { tgaToPng } from "./tools/image/tga-to-png";
@@ -387,6 +390,9 @@ export const TOOLS: Tool[] = [
 	amrToWav,
 	nbToMarkdown,
 	walToPng,
+	imfToWav,
+	lyxToMarkdown,
+	srfToPng,
 ];
 
 export function getTool(id: string): Tool | undefined {
