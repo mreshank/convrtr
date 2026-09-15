@@ -1,0 +1,64 @@
+# Converting Reality Adlib Tracker (RAD) to WAV: 9-Channel OPL2 FM Synthesis
+
+In the mid-1990s, when PC soundcards were shifting toward sample playback, MS-DOS demoscene musicians celebrated the raw mathematical purity of frequency modulation chiptunes. The **Reality Adlib Tracker (RAD)**, written by Reality (Jan Kiszka), was one of the most revered tools for composing multi-channel songs using the legendary Yamaha YM3812 (OPL2) sound chip.
+
+Today, RAD modules are historical artifacts of computer music history. In this guide, we analyze the binary structure of `.rad` files and how convrtr emulates 9-channel 2-operator FM synthesis directly in your browser to render 16-bit stereo WAV audio.
+
+---
+
+## 1. The AdLib YM3812 (OPL2) FM Sound Architecture
+
+Unlike sample-based formats like MOD or XM that rely on pre-recorded PCM audio data, RAD songs store zero audio samples. Instead, all sounds are synthesized mathematically in real time by modulating carrier sine waves with modulator sine waves:
+
+```
+s(t) = Ac(t) * sin(2 * PI * fc * t + Im(t) * sin(2 * PI * fm * t))
+```
+
+Where:
+- `fc` is the carrier frequency calculated from musical pitch.
+- `fm` is the modulator frequency determined by the harmonic multiplier.
+- `Ac(t)` is the carrier amplitude governed by an ADSR volume envelope.
+- `Im(t)` is the modulation index controlling timbral brightness and harmonic richness.
+
+Because only register numbers and note events are stored, a complete three-minute song typically occupies just 4 KB to 12 KB on disk.
+
+---
+
+## 2. RAD Binary File Layout
+
+A valid `.rad` file starts with a 16-byte ASCII signature followed by global playback parameters and instrument tables:
+
+| Offset | Length | Description |
+|---|---|---|
+| `0x00` | 16 bytes | Magic string (`RAD by REALITY` or `RAD by Reality!!`) |
+| `0x10` | 1 byte | Format version (`0x10`, `0x11`, `0x20`, `0x21`) |
+| `0x11` | 1 byte | Default speed (ticks per row, typically 6) |
+| `0x12` | 1 byte | Number of instruments (1 to 64) |
+| `0x13` | Variable | Instrument definitions (11 bytes OPL2 registers + optional name) |
+| Next | 1 byte | Number of orders in playback sequence |
+| Next | Variable | Order list (pattern indices) |
+| Next | Variable | Pattern event stream (64 rows x 9 channels) |
+
+---
+
+## 3. Emulating OPL2 FM Synthesis in Pure TypeScript
+
+To convert `.rad` into standard PCM WAV audio in the browser without plugins or native binaries, convrtr runs a lightweight OPL2 digital signal processing loop:
+
+1. **Pitch Calculation:** Converts tracker note semitones into frequency in Hertz using standard equal temperament:
+   ```ts
+   const freq = 440 * Math.pow(2, (midiNote - 69) / 12);
+   ```
+2. **ADSR Envelope Generator:** Computes instantaneous attack, decay, sustain, and release levels for each operator on every audio sample.
+3. **Phase Accumulator:** Advances carrier and modulator phases by angular frequency step `(2 * PI * f) / sampleRate`.
+4. **Channel Panning & Soft Clipping:** Pans the 9 independent FM voices across a wide stereo field and maps floating-point amplitudes into 16-bit signed linear PCM values (`-32768` to `+32767`).
+
+---
+
+## 4. Converting RAD to WAV Online with Zero Uploads
+
+With convrtr, you can listen to and preserve your vintage AdLib chiptunes instantly:
+
+1. Drag your `.rad` file onto **RAD to WAV**.
+2. Customize the output sample rate (up to 48,000 Hz) and stereo separation percentage.
+3. convrtr synthesizes all 9 OPL2 channels in memory and generates an uncompressed 16-bit WAV file ready for playback and archival.

@@ -8,6 +8,7 @@ import { meta as convertingAmstradCpcScreenDumpsToPng } from "./converting-amstr
 import { meta as convertingAtariStAvrAudioToWav } from "./converting-atari-st-avr-audio-to-wav/meta";
 import { meta as convertingAtariStDegasToPng } from "./converting-atari-st-degas-to-png/meta";
 import { meta as convertingAtariStNeochromeToPng } from "./converting-atari-st-neochrome-to-png/meta";
+import { meta as convertingBetterPortableGraphicsBpgToPng } from "./converting-better-portable-graphics-bpg-to-png/meta";
 import { meta as convertingBibtexToMarkdownTables } from "./converting-bibtex-to-markdown-tables/meta";
 import { meta as convertingC64ArtStudioToPng } from "./converting-c64-art-studio-to-png/meta";
 import { meta as convertingC64KoalaKoaToPng } from "./converting-c64-koala-koa-to-png/meta";
@@ -35,7 +36,9 @@ import { meta as convertingPlaystationVagAudioToWav } from "./converting-playsta
 import { meta as convertingPolytrackerPtmToWav } from "./converting-polytracker-ptm-to-wav/meta";
 import { meta as convertingQuiteOkImageQoiToPng } from "./converting-quite-ok-image-qoi-to-png/meta";
 import { meta as convertingRadianceHdrRgbeToPng } from "./converting-radiance-hdr-rgbe-to-png/meta";
+import { meta as convertingRealityAdlibTrackerRadToWav } from "./converting-reality-adlib-tracker-rad-to-wav/meta";
 import { meta as convertingScreamTrackerS3mToWav } from "./converting-scream-tracker-s3m-to-wav/meta";
+import { meta as convertingStarofficeStarwriterSdwToMarkdown } from "./converting-staroffice-starwriter-sdw-to-markdown/meta";
 import { meta as convertingTelephonyUlawAlawToWav } from "./converting-telephony-ulaw-alaw-to-wav/meta";
 import { meta as convertingWestwoodAudAudioToWav } from "./converting-westwood-aud-audio-to-wav/meta";
 import { meta as convertingX11XcurCursorsToPng } from "./converting-x11-xcur-cursors-to-png/meta";
@@ -114,6 +117,9 @@ export const BLOG_POSTS: BlogPostMeta[] = [
 	convertingDsmTrackerModulesToWav,
 	convertingOpenofficeSxwToMarkdown,
 	convertingX11XcurCursorsToPng,
+	convertingRealityAdlibTrackerRadToWav,
+	convertingStarofficeStarwriterSdwToMarkdown,
+	convertingBetterPortableGraphicsBpgToPng,
 ];
 
 export function getPost(

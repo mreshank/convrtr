@@ -341,6 +341,16 @@ const MIME_MAP: Record<string, string> = {
 	"image/x-xcursor": "xcur",
 	"application/x-xcursor": "xcur",
 	"image/xcur": "xcur",
+	"audio/x-rad": "rad",
+	"audio/rad": "rad",
+	"application/x-rad": "rad",
+	"application/x-starwriter": "sdw",
+	"application/vnd.stardivision.writer": "sdw",
+	"application/x-sdw": "sdw",
+	"application/sdw": "sdw",
+	"image/bpg": "bpg",
+	"image/x-bpg": "bpg",
+	"application/x-bpg": "bpg",
 };
 
 /**

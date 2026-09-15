@@ -24,6 +24,7 @@ import { normaliseFLAC } from "./tools/audio/normalise-flac";
 import { normaliseWAV } from "./tools/audio/normalise-wav";
 import { opusToMp3 } from "./tools/audio/opus-to-mp3";
 import { ptmToWav } from "./tools/audio/ptm-to-wav";
+import { radToWav } from "./tools/audio/rad-to-wav";
 import { removeTagsFlac } from "./tools/audio/remove-tags-flac";
 import { removeTagsMp3 } from "./tools/audio/remove-tags-mp3";
 import { rpgmvmToM4a } from "./tools/audio/rpgmvm-to-m4a";
@@ -81,6 +82,7 @@ import { pdbToMarkdown } from "./tools/document/pdb-to-markdown";
 import { rpaToZip } from "./tools/document/rpa-to-zip";
 import { rtfToMarkdown } from "./tools/document/rtf-to-markdown";
 import { scormToZip } from "./tools/document/scorm-to-zip";
+import { sdwToMarkdown } from "./tools/document/sdw-to-markdown";
 import { smiToSrt } from "./tools/document/smi-to-srt";
 import { srtToVtt } from "./tools/document/srt-to-vtt";
 import { subToSrt } from "./tools/document/sub-to-srt";
@@ -102,6 +104,7 @@ import { acbmToPng } from "./tools/image/acbm-to-png";
 import { aniToPng } from "./tools/image/ani-to-png";
 import { artToPng } from "./tools/image/art-to-png";
 import { asepriteToPng } from "./tools/image/aseprite-to-png";
+import { bpgToPng } from "./tools/image/bpg-to-png";
 import { cdrToPng } from "./tools/image/cdr-to-png";
 import { cgmToSvg } from "./tools/image/cgm-to-svg";
 import { chrToPng } from "./tools/image/chr-to-png";
@@ -363,6 +366,9 @@ export const TOOLS: Tool[] = [
 	dsmToWav,
 	sxwToMarkdown,
 	xcurToPng,
+	radToWav,
+	sdwToMarkdown,
+	bpgToPng,
 ];
 
 export function getTool(id: string): Tool | undefined {

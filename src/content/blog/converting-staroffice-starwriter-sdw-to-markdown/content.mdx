@@ -1,0 +1,38 @@
+# Converting StarOffice & StarWriter (SDW) to Markdown: OLE Compound Binary Forensics
+
+Before LibreOffice and Apache OpenOffice became household names, Star Division (and later Sun Microsystems) produced **StarOffice**, one of the earliest cross-platform office suites for Windows, Linux, and Solaris. Its word processor, **StarWriter**, saved documents with the `.sdw` extension.
+
+Decades later, millions of government, legal, and academic documents from the late 1990s remain locked in `.sdw` files. Modern office suites have dropped support for older StarWriter filters. In this article, we examine how `.sdw` compound files work and how convrtr extracts clean GitHub Flavored Markdown (GFM) directly in your browser.
+
+---
+
+## 1. The OLE 2.0 Compound File Binary (CFB) Architecture
+
+StarWriter 5.x documents are built on Microsoft's OLE 2.0 Compound File Binary format (magic bytes `0xD0 0xCF 0x11 0xE0 0xA1 0xB1 0x1A 0xE1`). The file acts like a miniature filesystem inside a single file:
+
+1. **Header:** 512 bytes containing sector size parameters, FAT sector locations, and directory pointers.
+2. **FAT Sectors:** Sector allocation chains mapping multi-sector streams.
+3. **Directory Stream:** 128-byte entries defining root, storages, and streams.
+4. **Data Streams:**
+   - `StarWriterDocument`: The primary binary document payload containing formatted paragraphs, tables, and styles.
+   - `\x05SummaryInformation`: Standard OLE property set holding document title, author name, subject, page count, and word count.
+
+---
+
+## 2. Text Run Extraction and Control Code Sanitization
+
+Inside `StarWriterDocument`, textual paragraphs are stored in sequential binary chunks delimited by control words, formatting tokens, and font markers. 
+
+To convert this data to clean Markdown:
+1. **FAT Traversal:** Reads the sector chain starting at the directory pointer to assemble the complete stream in memory.
+2. **Metadata Recovery:** Reads `\x05SummaryInformation` to extract properties like title (Property 2) and author (Property 4) for YAML frontmatter.
+3. **Run Filtering:** Traverses byte buffers to extract printable ASCII and Latin-1 text runs while discarding font table definitions and binary formatting codes.
+4. **Structure Recognition:** Detects headings based on line length and case, parses bullet characters (`*`, `-`, `1.`), and structures the output into valid Markdown.
+
+---
+
+## 3. How to Convert SDW to Markdown Online
+
+1. Drag and drop your `.sdw` file into **SDW to Markdown**.
+2. convrtr parses the compound directory, decodes property streams, and reconstructs the document body into Markdown in milliseconds.
+3. Download your clean `.md` file or copy the Markdown directly into Obsidian, Notion, or GitHub.

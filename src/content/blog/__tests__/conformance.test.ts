@@ -61,6 +61,9 @@ const POST_SLUGS = [
 	"converting-dsm-tracker-modules-to-wav",
 	"converting-openoffice-sxw-to-markdown",
 	"converting-x11-xcur-cursors-to-png",
+	"converting-reality-adlib-tracker-rad-to-wav",
+	"converting-staroffice-starwriter-sdw-to-markdown",
+	"converting-better-portable-graphics-bpg-to-png",
 ];
 
 describe("blog registry conformance", () => {

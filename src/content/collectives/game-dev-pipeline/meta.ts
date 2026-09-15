@@ -19,5 +19,6 @@ export const meta: CollectiveMeta = {
 		"image/ora-to-png",
 		"image/qoi-to-png",
 		"image/hdr-to-png",
+		"image/bpg-to-png",
 	],
 };

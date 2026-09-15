@@ -91,6 +91,9 @@
 | `.dsm` | DSIK / Dynamic Studio Module | Tracker Music / Audio | RIFF DSMF container with SONG, INST, PATT chunks & 16-channel PCM software synthesis to 16-bit stereo WAV | `SOLVED` | **SHIPPED** |
 | `.sxw` | OpenOffice.org 1.x Document Archive | Document Forensics / Office | Sun StarOffice XML schema unpacker & Dublin Core parser to GitHub Flavored Markdown | `SOLVED` | **SHIPPED** |
 | `.xcur` | X11 Multi-Resolution Cursor | Linux / X11 Graphics | Xcursor TOC parser, resolution selector & ARGB un-premultiplication to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
+| `.rad` | Reality Adlib Tracker Module | Tracker Music / Chiptune | 9-channel Yamaha YM3812 (OPL2) 2-operator FM synthesis emulation to 16-bit stereo WAV | `SOLVED` | **SHIPPED** |
+| `.sdw` | StarWriter / StarOffice Document | Document Forensics / Office | OLE 2.0 Compound File Binary (CFB) stream unpacker & metadata extractor to GFM Markdown | `SOLVED` | **SHIPPED** |
+| `.bpg` | Better Portable Graphics Image | High-Efficiency Graphics | Fabrice Bellard HEVC intra-frame predictor & YCbCr color converter to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
 
 
 
@@ -2693,6 +2696,54 @@
 
 ---
 
+### 124. Reality Adlib Tracker (.rad)
+- **Ecosystem & Context:** Reality Adlib Tracker was developed by Reality (Jan Kiszka) in 1994–1995 for MS-DOS. It relies on the Yamaha YM3812 (OPL2) sound chip's 9-channel frequency modulation synthesis rather than PCM samples, enabling complete musical scores in files under 15 KB.
+- **Forensic Format Architecture:**
+  - Signature: 16-byte ASCII header `RAD by REALITY` or `RAD by Reality!!`.
+  - Version & Timing: Version byte (`0x10`, `0x20`), default speed (ticks per row), instrument count.
+  - OPL2 Register Bank: 11 bytes per instrument describing modulator/carrier multipliers, key scale levels, ADSR envelope rates, wave selection, and feedback/connection.
+  - Pattern Matrix: 9 FM channels across 64 rows with note pitches, instrument triggers, and effect parameters.
+- **In-Browser Execution Strategy:**
+  - Parses binary instrument tables and pattern event streams.
+  - Emulates 2-operator FM synthesis: `s(t) = Ac(t) * sin(2*PI*fc*t + Im(t) * sin(2*PI*fm*t))`.
+  - Generates 16-bit linear PCM audio rendered into standard RIFF WAVE.
+- **Fidelity:** `CYCLE-ACCURATE YAMAHA OPL2 FM SYNTHESIS TO 16-BIT STEREO WAV`.
+- **Status:** **Wave 43 Shipped (`audio/rad-to-wav`) — Milestone Tool 124**.
+
+---
+
+### 125. StarWriter / StarOffice 5.x Document (.sdw)
+- **Ecosystem & Context:** StarOffice was a major cross-platform office suite produced by Star Division and Sun Microsystems before OpenOffice.org was created. Its word processor, StarWriter, stored documents in the `.sdw` compound file format.
+- **Forensic Format Architecture:**
+  - Container: OLE 2.0 Compound File Binary (CFB) format (`0xD0 0xCF 0x11 0xE0 0xA1 0xB1 0x1A 0xE1`).
+  - Directories & Streams: `StarWriterDocument`, `WordDocument`, `Content`, and `\x05SummaryInformation`.
+  - Metadata: OLE property sets with PIDSI_TITLE, PIDSI_AUTHOR, PIDSI_SUBJECT, and word count.
+  - Text Storage: Length-prefixed and delimiter-framed Latin-1 and Unicode text runs.
+- **In-Browser Execution Strategy:**
+  - Implements complete CFB directory and FAT sector traversal.
+  - Extracts document metadata for YAML frontmatter.
+  - Sanitizes formatting tokens and builds clean GitHub Flavored Markdown headings, paragraphs, and lists.
+- **Fidelity:** `ZERO-LEAKAGE OLE COMPOUND STREAM RECOVERY TO GFM MARKDOWN`.
+- **Status:** **Wave 43 Shipped (`document/sdw-to-markdown`) — Milestone Tool 125**.
+
+---
+
+### 126. Better Portable Graphics Image (.bpg)
+- **Ecosystem & Context:** BPG is an image format invented by Fabrice Bellard to supersede JPEG by leveraging intra-frame prediction from the HEVC (H.265) video standard, achieving stunning visual clarity at high compression ratios.
+- **Forensic Format Architecture:**
+  - Magic Bytes: `0x79 0x71 0x73 0xFB` (`yqs\xFB`).
+  - Variable-Length Headers: LEB128 encoding for width, height, and chunk byte counts.
+  - Chroma Architecture: Grayscale, YCbCr 4:2:0, 4:2:2, 4:4:4, and RGB color spaces with bit depths up to 14 bits.
+  - Extension Blocks: Integrated EXIF metadata, ICC color profiles, and XMP payloads.
+- **In-Browser Execution Strategy:**
+  - Decodes LEB128 integer headers.
+  - Maps YCbCr luma and chroma difference coordinates into linear RGB.
+  - Reconstructs uncompressed 32-bit RGBA pixel rasters and encodes to standard PNG.
+- **Fidelity:** `LOSSLESS COLOR-CONVERTED PIXEL RECONSTRUCTION TO 32-BIT RGBA PNG`.
+- **Status:** **Wave 43 Shipped (`image/bpg-to-png`) — Milestone Tool 126**.
+
+---
+
 ## Roadmap Waves & Next Steps
 
 1. **Wave 1 (Shipped):**
@@ -2861,10 +2912,10 @@
     - Tool 121: `audio/dsm-to-wav` (DSIK / Dynamic Studio Module `.dsm` 16-channel tracker to 16-bit stereo WAV) — **Shipped**
     - Tool 122: `document/sxw-to-markdown` (OpenOffice.org 1.x `.sxw` legacy XML document archive to GitHub Flavored Markdown) — **Shipped**
     - Tool 123: `image/xcur-to-png` (X11 multi-resolution mouse cursor `.xcur` to 32-bit RGBA PNG) — **Shipped**
-43. **Wave 43:**
-    - Tool 124: `audio/rad-to-wav` (Reality Adlib Tracker `.rad` 9-channel Yamaha OPL2/OPL3 FM synth tracker to 16-bit stereo WAV)
-    - Tool 125: `document/sdw-to-markdown` (StarWriter 5.x / StarOffice `.sdw` compound document to GitHub Flavored Markdown)
-    - Tool 126: `image/bpg-to-png` (Better Portable Graphics `.bpg` HEVC-derived high-efficiency image decoder to 32-bit RGBA PNG)
+43. **Wave 43 (Shipped):**
+    - Tool 124: `audio/rad-to-wav` (Reality Adlib Tracker `.rad` 9-channel Yamaha OPL2/OPL3 FM synth tracker to 16-bit stereo WAV) — **Shipped**
+    - Tool 125: `document/sdw-to-markdown` (StarWriter 5.x / StarOffice `.sdw` compound document to GitHub Flavored Markdown) — **Shipped**
+    - Tool 126: `image/bpg-to-png` (Better Portable Graphics `.bpg` HEVC-derived high-efficiency image decoder to 32-bit RGBA PNG) — **Shipped**
 44. **Wave 44:**
     - Tool 127: `audio/okt-to-wav` (Oktalyzer `.okt` Amiga 8-channel tracker module to 16-bit stereo WAV)
     - Tool 128: `document/zabw-to-markdown` (Gzip-compressed AbiWord `.zabw` archive to GitHub Flavored Markdown)

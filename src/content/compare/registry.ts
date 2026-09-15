@@ -3191,6 +3191,184 @@ export const COMPARISONS: ComparisonMeta[] = [
 			"image/ico-to-png",
 		],
 	},
+	{
+		slug: "rad-vs-mod",
+		title: "RAD vs MOD: AdLib FM Synthesis vs PCM Sample-Based Music Tracking",
+		description:
+			"Compare Reality Adlib Tracker (.rad) 9-channel Yamaha OPL2 FM synthesis with Amiga ProTracker (.mod) 8-bit digital linear PCM sample tracking.",
+		formatA: "RAD",
+		formatB: "MOD",
+		category: "audio",
+		summary:
+			"RAD uses Yamaha OPL2/OPL3 frequency modulation synthesis where sounds are generated algorithmically by 2-operator sine wave oscillators in real time. MOD uses digital PCM acoustic samples recorded from real instruments and played back with pitch shifting across 4 to 32 channels.",
+		prosA: [
+			"Extremely tiny file sizes (typically under 10 KB per complete multi-minute song)",
+			"Unique authentic retro chiptune and FM synthesizer character of 1990s PC gaming",
+			"Real-time harmonic manipulation via FM modulator multipliers and feedback loops",
+			"Zero digital sample quantization noise or memory overhead",
+		],
+		prosB: [
+			"Can play any recorded acoustic, vocal, or synthesized sound with natural realism",
+			"Universal tracker standard supported by hundreds of players and DAW software",
+			"Independent of sound hardware chips; sounds identical on any soundcard",
+			"Broad channel support from classic 4-channel Amiga to 32-channel PC tracker formats",
+		],
+		specs: [
+			{
+				feature: "Sound Generation",
+				formatA: "Yamaha YM3812 (OPL2) FM Synthesis",
+				formatB: "Digital Linear PCM Sample Playback",
+			},
+			{
+				feature: "Typical File Size",
+				formatA: "2 KB – 20 KB",
+				formatB: "100 KB – 2 MB",
+			},
+			{
+				feature: "Channel Count",
+				formatA: "9 FM Channels",
+				formatB: "4 to 32 Sample Channels",
+			},
+			{
+				feature: "Hardware Emulation",
+				formatA: "Requires OPL2/OPL3 synthesizer engine",
+				formatB: "Standard PCM software mixer",
+			},
+			{
+				feature: "Primary Ecosystem",
+				formatA: "MS-DOS Demoscene & Adlib Chiptunes",
+				formatB: "Commodore Amiga & PC Tracker Scene",
+			},
+		],
+		verdict:
+			"RAD is ideal for authentic AdLib FM chiptune compositions with minimal storage footprint, whereas MOD offers flexible acoustic and multi-sampled tracking. convrtr synthesizes both formats into CD-quality 16-bit stereo WAV files entirely in your browser.",
+		relatedTools: [
+			"audio/rad-to-wav",
+			"audio/mod-to-wav",
+			"audio/s3m-to-wav",
+			"audio/xm-to-wav",
+			"audio/it-to-wav",
+		],
+	},
+	{
+		slug: "sdw-vs-sxw",
+		title: "SDW vs SXW: StarWriter Compound Binary vs OpenOffice XML Archive",
+		description:
+			"Compare StarOffice StarWriter 5.x (.sdw) OLE 2.0 compound documents with OpenOffice.org 1.x (.sxw) XML ZIP archives.",
+		formatA: "SDW",
+		formatB: "SXW",
+		category: "document",
+		summary:
+			"SDW is the vintage proprietary OLE 2.0 compound document format used by StarWriter and StarOffice 3.x–5.x. SXW was the pioneering open XML format introduced in OpenOffice.org 1.x, which later evolved into the OASIS OpenDocument Standard (ODT).",
+		prosA: [
+			"Compact binary serialization with embedded OLE stream tables",
+			"Direct compatibility with StarOffice 5.x productivity suites",
+			"Contains structured Microsoft OLE property sets (SummaryInformation)",
+			"Historical archive format of European corporate and government documents",
+		],
+		prosB: [
+			"Open human-readable XML schemas inside standard ZIP packaging",
+			"Direct ancestor and bridge to modern ISO/IEC 26300 OpenDocument Text (ODT)",
+			"Easier programmatic recovery without specialized OLE FAT decoders",
+			"Clean separation of content.xml, styles.xml, and meta.xml",
+		],
+		specs: [
+			{
+				feature: "Container Architecture",
+				formatA: "OLE 2.0 Compound File Binary (CFB)",
+				formatB: "PKZIP (.zip) Compressed Package",
+			},
+			{
+				feature: "Content Representation",
+				formatA: "Binary stream records with length prefixes",
+				formatB: "Sun XML Writer schema (content.xml)",
+			},
+			{
+				feature: "Metadata Standard",
+				formatA: "OLE Property Set Streams (VT_LPSTR / VT_I4)",
+				formatB: "Dublin Core XML elements (<dc:title>, etc.)",
+			},
+			{
+				feature: "Standardization",
+				formatA: "Proprietary Star Division / Sun Microsystems",
+				formatB: "OpenOffice.org open XML (pre-ODF standard)",
+			},
+			{
+				feature: "Modern Reader Support",
+				formatA: "Very rare; deprecated in modern LibreOffice",
+				formatB: "Supported in LibreOffice, Calibre, and converters",
+			},
+		],
+		verdict:
+			"SXW paved the way for modern open office formats, while SDW represents an older generation of OLE compound documents. convrtr extracts text, lists, and metadata from both formats into clean GitHub Flavored Markdown locally with zero privacy leakage.",
+		relatedTools: [
+			"document/sdw-to-markdown",
+			"document/sxw-to-markdown",
+			"document/abw-to-markdown",
+			"document/cwk-to-markdown",
+			"document/hwp-to-markdown",
+		],
+	},
+	{
+		slug: "bpg-vs-webp",
+		title:
+			"BPG vs WebP: High-Efficiency HEVC Compression vs Web Vector & Raster",
+		description:
+			"Compare Fabrice Bellard's Better Portable Graphics (.bpg) HEVC intra compression with Google WebP (.webp) raster graphics.",
+		formatA: "BPG",
+		formatB: "WebP",
+		category: "image",
+		summary:
+			"BPG (Better Portable Graphics) by Fabrice Bellard leverages HEVC intra-frame video compression to achieve dramatic visual quality at very low bitrates. Google WebP uses VP8 intra-frame coding and is natively supported across 100% of modern web browsers.",
+		prosA: [
+			"Significantly higher compression efficiency than JPEG and standard WebP at low bitrates",
+			"Native support for 8-bit to 14-bit channel precision with wide color gamuts",
+			"Full support for YCbCr 4:2:0, 4:2:2, 4:4:4, and RGB color spaces",
+			"Includes integrated EXIF, ICC profiles, and XMP metadata storage",
+		],
+		prosB: [
+			"Universal native browser adoption across Chrome, Safari, Firefox, and Edge",
+			"Comprehensive web tooling, CDN support, and responsive image tag integration",
+			"Hardware-accelerated decoding on almost all modern mobile and desktop GPUs",
+			"Supports both lossy (VP8) and bit-exact lossless (WebP-Lossless) modes",
+		],
+		specs: [
+			{
+				feature: "Underlying Codec",
+				formatA: "HEVC (H.265) Intra-Frame Prediction",
+				formatB: "VP8 / VP8L Intra-Frame Transform",
+			},
+			{
+				feature: "Native Web Browser Support",
+				formatA: "None (requires JS/WASM decoder)",
+				formatB: "Universal (>97% global browser support)",
+			},
+			{
+				feature: "Color Depth",
+				formatA: "8, 10, 12, 14 bits per channel",
+				formatB: "8 bits per channel",
+			},
+			{
+				feature: "Chroma Subsampling",
+				formatA: "4:2:0, 4:2:2, 4:4:4, Grayscale, RGB",
+				formatB: "4:2:0 (Lossy), 4:4:4 (Lossless)",
+			},
+			{
+				feature: "Creator / Maintainer",
+				formatA: "Fabrice Bellard",
+				formatB: "Google LLC",
+			},
+		],
+		verdict:
+			"While BPG offers exceptional compression quality derived from HEVC, WebP won the web standardization battle. convrtr decodes BPG files directly in your browser without plugins, converting them into standard 32-bit RGBA PNG images for instant use.",
+		relatedTools: [
+			"image/bpg-to-png",
+			"image/png-to-webp",
+			"image/jpg-to-webp",
+			"image/qoi-to-png",
+			"image/hdr-to-png",
+		],
+	},
 ];
 
 export function getComparison(slug: string): ComparisonMeta | undefined {
