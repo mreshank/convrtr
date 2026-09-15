@@ -1,0 +1,51 @@
+In the golden age of PC MS-DOS demoscene music, composers sought formats that went beyond the 4-channel hardware restrictions of the Commodore Amiga without sacrificing tracker precision. Finnish developer group **DSIK** (Digital Sound Interface Kit) created the **Dynamic Studio Module (DSM)** format, using a structured Resource Interchange File Format (RIFF) container.
+
+Files saved in this format carry the **`.dsm`** extension.
+
+Unlike older tracker formats that used fixed binary offset tables, DSM adopted a clean chunk-based architecture, paving the way for multi-channel tracker standards on PC sound hardware like Gravis UltraSound and Sound Blaster AWE32.
+
+This technical guide dissects the RIFF DSMF chunk hierarchy, examines 16-channel voice mixing, and explains how [convrtr's DSM to WAV converter](/audio/dsm-to-wav) synthesizes vintage tracker compositions into studio-quality 16-bit stereo WAV audio directly in your web browser.
+
+## The RIFF DSMF Container
+
+Every DSM file begins with a standard 12-byte RIFF container header:
+
+| Offset | Size (Bytes) | Field Name | Expected Value |
+| :--- | :--- | :--- | :--- |
+| `0x00` | 4 bytes | Chunk ID | `"RIFF"` |
+| `0x04` | 4 bytes (LE) | File Size | File length minus 8 bytes |
+| `0x08` | 4 bytes | Form Type | `"DSMF"` |
+
+Following the root container, the file contains sequential data chunks padded to 2-byte word boundaries:
+
+### 1. The SONG Chunk
+The `SONG` chunk defines global playback metadata and sequence progression:
+- **Title**: 32 ASCII characters describing the song name.
+- **Header Version & Flags**: Version indicator (typically 1) and playback flags.
+- **Dimensions**: `numOrders`, `numSamples`, `numPatterns`, and `numChannels` (supporting up to 16 simultaneous digital channels).
+- **Master Speed & Tempo**: Default tick rate and BPM.
+- **Order Table**: Array of pattern numbers to play sequentially.
+
+### 2. The INST Chunk
+Each instrument is declared in its own `INST` chunk:
+- **Sample Name**: 32-character ASCII instrument label.
+- **Playback Tuning**: 32-bit C2Spd playback frequency (typically 8363 Hz for middle C).
+- **Loop Points**: 32-bit start and end sample offsets for sustained instruments.
+- **Volume**: Native volume range (0 to 64).
+- **PCM Data**: 8-bit PCM audio samples, encoded either as unsigned or two's-complement signed bytes.
+
+### 3. The PATT Chunk
+Pattern data is stored across sequential `PATT` chunks:
+- **Pattern Number**: 16-bit integer index.
+- **Row Count**: Number of rows per pattern (typically 64).
+- **Event Streams**: Compact event byte streams indicating channel number, note (semitones 1 to 84), instrument index, and effect parameters.
+
+## Software Mixing & 16-Bit Stereo WAV Synthesis
+
+convrtr's in-browser audio engine simulates the DSIK playback routine at 44.1 kHz:
+1. **Channel Polyphony**: Up to 16 independent channel voices with configurable stereo separation (default 75%).
+2. **Linear Interpolation**: Smooth fractional sample stepping to eliminate harsh aliasing during pitch shifting.
+3. **Loop Point Wrapping**: Seamless repeat looping for pads and sustained instruments.
+4. **Soft Limiting**: Automatic clamping to prevent digital clipping when all 16 voices trigger simultaneously.
+
+All decoding and audio synthesis run in pure client-side TypeScript inside your browser, producing lossless 16-bit stereo WAV audio with zero cloud reliance.

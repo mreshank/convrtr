@@ -3014,6 +3014,183 @@ export const COMPARISONS: ComparisonMeta[] = [
 			"image/iff-to-png",
 		],
 	},
+	{
+		slug: "dsm-vs-mod",
+		title: "DSM vs MOD: Dynamic Studio Module vs Amiga ProTracker",
+		description:
+			"Compare the RIFF-based Dynamic Studio Module (.dsm) multi-channel architecture with the classic Commodore Amiga 4-channel ProTracker (.mod) standard.",
+		formatA: "DSM",
+		formatB: "MOD",
+		category: "audio",
+		summary:
+			"While Commodore Amiga ProTracker (.mod) files established the fundamentals of computer tracker music with 4 fixed audio channels and 31 instruments, Dynamic Studio Module (.dsm) expanded tracker capabilities for PC MS-DOS with RIFF container framing, up to 16 digital channels, and custom channel panning.",
+		prosA: [
+			"Up to 16 simultaneous digital PCM channels",
+			"Standard RIFF chunk container architecture (DSMF)",
+			"Configurable per-channel stereo panning and master tempo controls",
+			"Flexible sample headers with arbitrary lengths and C2SPD tuning",
+		],
+		prosB: [
+			"Near-universal compatibility across every hardware and software player since 1987",
+			"Extremely lightweight memory footprint optimized for Motorola 68000",
+			"Immense library of tens of thousands of classic Amiga and demoscene tracks",
+			"Hardware-timed cycle accuracy on original Commodore Amiga Paula chips",
+		],
+		specs: [
+			{
+				feature: "Container Architecture",
+				formatA: "RIFF chunked container (DSMF)",
+				formatB: "Fixed binary offset structure",
+			},
+			{
+				feature: "Maximum Channels",
+				formatA: "16 digital channels",
+				formatB: "4 digital channels (or 8 in OctaMED)",
+			},
+			{
+				feature: "Sample Resolution",
+				formatA: "8-bit signed / unsigned PCM",
+				formatB: "8-bit signed linear PCM",
+			},
+			{
+				feature: "Hardware Platform",
+				formatA: "IBM PC Compatible (MS-DOS Sound Blaster / Gravis)",
+				formatB: "Commodore Amiga (Paula 8364 DAC)",
+			},
+			{
+				feature: "Stereo Panning",
+				formatA: "Continuous 0–127 panning per channel",
+				formatB: "Fixed hard-panned (L, R, R, L)",
+			},
+		],
+		verdict:
+			"MOD is the immortal foundation of computer tracker music, while DSM represents the PC demoscene's expansion into 16-channel polyphony. convrtr synthesizes both tracker formats into pristine 16-bit stereo WAV entirely within your browser.",
+		relatedTools: [
+			"audio/dsm-to-wav",
+			"audio/mod-to-wav",
+			"audio/amf-to-wav",
+			"audio/s3m-to-wav",
+			"audio/xm-to-wav",
+		],
+	},
+	{
+		slug: "sxw-vs-odt",
+		title: "SXW vs ODT: OpenOffice 1.x Legacy XML vs Modern OpenDocument Text",
+		description:
+			"A detailed comparison of Sun Microsystems' OpenOffice.org 1.x Writer (.sxw) XML package and the OASIS ISO-standardized OpenDocument Text (.odt) format.",
+		formatA: "SXW",
+		formatB: "ODT",
+		category: "document",
+		summary:
+			"Before OASIS and ISO standardized OpenDocument Format (ODF) in 2005, OpenOffice.org 1.0 and 1.1 saved word processing documents in the .sxw format. While both use ZIP containers packing XML streams, SXW uses the older Sun namespace schema that modern office suites often struggle to render accurately.",
+		prosA: [
+			"Pioneered open XML word processing inside compressed ZIP packages",
+			"Preserves original formatting of early 2000s StarOffice and OpenOffice files",
+			"Includes Dublin Core metadata and clean hierarchical content.xml streams",
+			"Completely free from proprietary binary OLE container lock-in",
+		],
+		prosB: [
+			"Universal ISO/IEC 26300 international standard",
+			"Supported natively across LibreOffice, Google Docs, Microsoft Office, and mobile apps",
+			"Richer typographic feature set (OpenType features, SVG shapes, MathML)",
+			"Active maintenance and schema evolutions across modern document ecosystems",
+		],
+		specs: [
+			{
+				feature: "Specification Standard",
+				formatA: "Sun Microsystems OpenOffice.org 1.0 Schema",
+				formatB: "OASIS / ISO/IEC 26300 Standard",
+			},
+			{
+				feature: "Package Container",
+				formatA: "PKZIP archive with content.xml & meta.xml",
+				formatB: "PKZIP archive with ODF manifest & content.xml",
+			},
+			{
+				feature: "MIME Identifier",
+				formatA: "application/vnd.sun.xml.writer",
+				formatB: "application/vnd.oasis.opendocument.text",
+			},
+			{
+				feature: "Default Suite",
+				formatA: "OpenOffice.org 1.0–1.1.5 / StarOffice 6.0",
+				formatB: "OpenOffice.org 2.0+ / LibreOffice / Apache OpenOffice",
+			},
+			{
+				feature: "Initial Release Year",
+				formatA: "2002",
+				formatB: "2005",
+			},
+		],
+		verdict:
+			"ODT is the contemporary champion of open document formats, but millions of archival files remain saved as SXW. convrtr extracts SXW text, tables, and lists into universal Markdown directly in your browser with zero data leakage.",
+		relatedTools: [
+			"document/sxw-to-markdown",
+			"document/abw-to-markdown",
+			"document/cwk-to-markdown",
+			"document/hwp-to-markdown",
+			"document/rtf-to-markdown",
+		],
+	},
+	{
+		slug: "xcur-vs-cur",
+		title: "XCUR vs CUR: Linux X11 Xcursor vs Windows Static Cursor",
+		description:
+			"Compare the technical architecture of X11 Xcursor (.xcur) and Microsoft Windows Cursor (.cur) mouse pointer bitmap formats.",
+		formatA: "XCUR",
+		formatB: "CUR",
+		category: "image",
+		summary:
+			"X11 Xcursor (.xcur) and Windows Cursor (.cur) are the two primary mouse pointer formats across desktop operating systems. Xcursor features multi-size alpha-blended 32-bit ARGB rasters designed for X11/Wayland desktop themes, while CUR uses classic Windows ICO-derived DIB bitmaps with 1-bit XOR/AND transparency masks.",
+		prosA: [
+			"Native 32-bit ARGB with smooth semi-transparent alpha channel blending",
+			"Multi-resolution table of contents packing sizes from 16px to 128px in one file",
+			"Standard cursor theme format across Linux (GNOME, KDE, XFCE) and BSD",
+			"Directly stores millisecond frame delays for animated cursor themes",
+		],
+		prosB: [
+			"Universal native support across all Windows versions since Windows 1.0",
+			"Extremely simple binary structure supported by nearly every icon editor",
+			"Includes exact integer X/Y hotspot pixel coordinates",
+			"Supported natively as web cursors via CSS url() syntax in all browsers",
+		],
+		specs: [
+			{
+				feature: "Primary Platform",
+				formatA: "Linux / UNIX / X11 / Wayland",
+				formatB: "Microsoft Windows",
+			},
+			{
+				feature: "File Magic",
+				formatA: "0x72756358 ('Xcur')",
+				formatB: "0x0000 0x0002 (Type 2 Cursor)",
+			},
+			{
+				feature: "Transparency Model",
+				formatA: "32-bit premultiplied ARGB alpha channel",
+				formatB: "1-bit AND mask or 32-bit alpha channel",
+			},
+			{
+				feature: "Multi-Resolution Packing",
+				formatA: "TOC chunk table with nominal pixel sizes",
+				formatB: "Icon directory entries with width and height bytes",
+			},
+			{
+				feature: "Hotspot Storage",
+				formatA: "32-bit integers in image chunk header",
+				formatB: "16-bit integers in resource directory header",
+			},
+		],
+		verdict:
+			"Xcursor offers superior modern alpha blending for Unix desktops, while CUR remains the standard for Windows. convrtr un-premultiplies and renders both cursor formats into transparent 32-bit RGBA PNG images directly in your browser.",
+		relatedTools: [
+			"image/xcur-to-png",
+			"image/cur-to-png",
+			"image/ani-to-png",
+			"image/icns-to-png",
+			"image/ico-to-png",
+		],
+	},
 ];
 
 export function getComparison(slug: string): ComparisonMeta | undefined {

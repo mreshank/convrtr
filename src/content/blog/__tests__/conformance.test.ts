@@ -58,6 +58,9 @@ const POST_SLUGS = [
 	"converting-amf-tracker-modules-to-wav",
 	"converting-clarisworks-appleworks-cwk-to-markdown",
 	"converting-amstrad-cpc-screen-dumps-to-png",
+	"converting-dsm-tracker-modules-to-wav",
+	"converting-openoffice-sxw-to-markdown",
+	"converting-x11-xcur-cursors-to-png",
 ];
 
 describe("blog registry conformance", () => {

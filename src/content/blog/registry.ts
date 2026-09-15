@@ -16,6 +16,7 @@ import { meta as convertingClarisworksAppleworksCwkToMarkdown } from "./converti
 import { meta as convertingComposer669TrackerToWav } from "./converting-composer-669-tracker-to-wav/meta";
 import { meta as convertingCp437NfoSceneArtToHtml } from "./converting-cp437-nfo-scene-art-to-html/meta";
 import { meta as convertingDicomMedicalImagesToPng } from "./converting-dicom-medical-images-to-png/meta";
+import { meta as convertingDsmTrackerModulesToWav } from "./converting-dsm-tracker-modules-to-wav/meta";
 import { meta as convertingEmacsOrgModeToMarkdown } from "./converting-emacs-org-mode-to-markdown/meta";
 import { meta as convertingEvernoteEnexToMarkdown } from "./converting-evernote-enex-to-markdown/meta";
 import { meta as convertingFarandoleComposerFarToWav } from "./converting-farandole-composer-far-to-wav/meta";
@@ -26,6 +27,7 @@ import { meta as convertingGoodnotesToPdfWithoutApp } from "./converting-goodnot
 import { meta as convertingHangulWordProcessorHwpToMarkdown } from "./converting-hangul-word-processor-hwp-to-markdown/meta";
 import { meta as convertingImpulseTrackerItToWav } from "./converting-impulse-tracker-it-to-wav/meta";
 import { meta as convertingNesChrTileRomToPng } from "./converting-nes-chr-tile-rom-to-png/meta";
+import { meta as convertingOpenofficeSxwToMarkdown } from "./converting-openoffice-sxw-to-markdown/meta";
 import { meta as convertingOpenrasterOraToPng } from "./converting-openraster-ora-to-png/meta";
 import { meta as convertingOpmlOutlinesToMarkdown } from "./converting-opml-outlines-to-markdown/meta";
 import { meta as convertingPalmdocPdbToMarkdown } from "./converting-palmdoc-pdb-to-markdown/meta";
@@ -36,6 +38,7 @@ import { meta as convertingRadianceHdrRgbeToPng } from "./converting-radiance-hd
 import { meta as convertingScreamTrackerS3mToWav } from "./converting-scream-tracker-s3m-to-wav/meta";
 import { meta as convertingTelephonyUlawAlawToWav } from "./converting-telephony-ulaw-alaw-to-wav/meta";
 import { meta as convertingWestwoodAudAudioToWav } from "./converting-westwood-aud-audio-to-wav/meta";
+import { meta as convertingX11XcurCursorsToPng } from "./converting-x11-xcur-cursors-to-png/meta";
 import { meta as decodingZxSpectrumScrMemoryDumps } from "./decoding-zx-spectrum-scr-memory-dumps/meta";
 import { meta as extractingChmHelpFilesModernSystems } from "./extracting-chm-help-files-modern-systems/meta";
 import { meta as extractingGodotPckPackagesBrowser } from "./extracting-godot-pck-packages-browser/meta";
@@ -108,6 +111,9 @@ export const BLOG_POSTS: BlogPostMeta[] = [
 	convertingAmfTrackerModulesToWav,
 	convertingClarisworksAppleworksCwkToMarkdown,
 	convertingAmstradCpcScreenDumpsToPng,
+	convertingDsmTrackerModulesToWav,
+	convertingOpenofficeSxwToMarkdown,
+	convertingX11XcurCursorsToPng,
 ];
 
 export function getPost(

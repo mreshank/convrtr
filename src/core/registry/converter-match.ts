@@ -332,6 +332,15 @@ const MIME_MAP: Record<string, string> = {
 	"image/x-cpc": "cpc",
 	"image/x-cpc-screen": "cpc",
 	"application/x-cpc-screen": "cpc",
+	"audio/x-dsm": "dsm",
+	"audio/dsm": "dsm",
+	"application/x-dsm": "dsm",
+	"application/vnd.sun.xml.writer": "sxw",
+	"application/x-staroffice-writer": "sxw",
+	"application/sxw": "sxw",
+	"image/x-xcursor": "xcur",
+	"application/x-xcursor": "xcur",
+	"image/xcur": "xcur",
 };
 
 /**

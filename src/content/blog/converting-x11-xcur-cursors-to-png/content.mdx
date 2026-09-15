@@ -1,0 +1,57 @@
+On Linux, FreeBSD, and Unix workstations, desktop environments like GNOME, KDE Plasma, XFCE, and modern Wayland compositors render mouse pointers using the **X11 Xcursor** architecture. Files implementing cursor themes carry the **`.xcur`** or **`.cursor`** extension (or appear without an extension inside cursor theme directories).
+
+Unlike legacy Windows 1-bit monochrome cursors, Xcursor was engineered for modern alpha transparency, anti-aliased shadows, and high-DPI displays. A single cursor file often bundles multiple resolutions (such as 24px, 32px, 48px, and 64px) alongside animated sequence frames.
+
+However, standard image software, design suites like Figma, and web browsers cannot natively open or preview Xcursor binary files.
+
+This technical guide unpacks the binary structure of Xcursor files, details how premultiplied 32-bit ARGB pixels are decoded, and demonstrates how [convrtr's XCUR to PNG converter](/image/xcur-to-png) extracts transparent 32-bit RGBA PNG graphics directly in your browser.
+
+## The Xcursor Header and Table of Contents
+
+An Xcursor file begins with a 16-byte file header followed by an array of table-of-contents (TOC) entries:
+
+| Offset | Size (Bytes) | Field Name | Description |
+| :--- | :--- | :--- | :--- |
+| `0x00` | 4 bytes | Magic Bytes | ASCII `"Xcur"` (`0x72756358` in little-endian) |
+| `0x04` | 4 bytes (LE) | Header Size | Length of file header (16 bytes) |
+| `0x08` | 4 bytes (LE) | Version | Format version (1) |
+| `0x0C` | 4 bytes (LE) | TOC Count | Number of chunks declared in the TOC |
+
+Each entry in the TOC occupies 12 bytes:
+- **Type**: 32-bit integer (`0xFFFD0002` identifies image chunks, while `0xFFFD0001` represents text comments).
+- **Subtype**: Nominal size in pixels (e.g., 24, 32, 48, 64).
+- **Position**: 32-bit byte offset within the file where the chunk data begins.
+
+## The Image Chunk Structure
+
+At each chunk position, a 36-byte chunk header describes the cursor frame:
+
+- **Width & Height**: Exact pixel dimensions of the raster.
+- **Hotspot Coordinates (`xhot`, `yhot`)**: The click target position relative to the top-left corner of the raster.
+- **Delay**: Animation frame duration in milliseconds (0 for static pointers).
+
+Directly following the 36-byte chunk header, the file stores `width * height * 4` bytes of raw pixel data.
+
+## Decoding Premultiplied ARGB Pixels
+
+Xcursor stores pixels as 32-bit little-endian integers where color channels are **premultiplied by alpha**:
+
+```text
+Byte 0: Blue  = (B * A) / 255
+Byte 1: Green = (G * A) / 255
+Byte 2: Red   = (R * A) / 255
+Byte 3: Alpha = A
+```
+
+If an image viewer naively renders premultiplied color channels as standard RGBA, semi-transparent drop shadows and anti-aliased borders appear dark, discolored, and muddy.
+
+convrtr reverses the premultiplication formula for every pixel:
+```text
+if (Alpha > 0 && Alpha < 255) {
+  Red   = Math.min(255, Math.round((Red   * 255) / Alpha));
+  Green = Math.min(255, Math.round((Green * 255) / Alpha));
+  Blue  = Math.min(255, Math.round((Blue  * 255) / Alpha));
+}
+```
+
+The resulting pixels are encoded into a crisp 32-bit RGBA PNG image with clean transparency and preserved hotspot metadata. All conversion takes place in client-side TypeScript inside your browser.

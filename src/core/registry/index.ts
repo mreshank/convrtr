@@ -8,6 +8,7 @@ import { audToWav } from "./tools/audio/aud-to-wav";
 import { avrToWav } from "./tools/audio/avr-to-wav";
 import { cafToWav } from "./tools/audio/caf-to-wav";
 import { dsfToWav } from "./tools/audio/dsf-to-wav";
+import { dsmToWav } from "./tools/audio/dsm-to-wav";
 import { dspToWav } from "./tools/audio/dsp-to-wav";
 import { farToWav } from "./tools/audio/far-to-wav";
 import { coverArtFLAC } from "./tools/audio/flac-cover-art";
@@ -83,6 +84,7 @@ import { scormToZip } from "./tools/document/scorm-to-zip";
 import { smiToSrt } from "./tools/document/smi-to-srt";
 import { srtToVtt } from "./tools/document/srt-to-vtt";
 import { subToSrt } from "./tools/document/sub-to-srt";
+import { sxwToMarkdown } from "./tools/document/sxw-to-markdown";
 import { tcxToGeoJson } from "./tools/document/tcx-to-geojson";
 import { vcfToCsv } from "./tools/document/vcf-to-csv";
 import { vntToTxt } from "./tools/document/vnt-to-txt";
@@ -134,6 +136,7 @@ import { timToPng } from "./tools/image/tim-to-png";
 import { vtfToPng } from "./tools/image/vtf-to-png";
 import { wmfToSvg } from "./tools/image/wmf-to-svg";
 import { xbmToPng } from "./tools/image/xbm-to-png";
+import { xcurToPng } from "./tools/image/xcur-to-png";
 import { xpmToPng } from "./tools/image/xpm-to-png";
 import { xwdToPng } from "./tools/image/xwd-to-png";
 import { zxToPng } from "./tools/image/zx-to-png";
@@ -357,6 +360,9 @@ export const TOOLS: Tool[] = [
 	amfToWav,
 	cwkToMarkdown,
 	cpcToPng,
+	dsmToWav,
+	sxwToMarkdown,
+	xcurToPng,
 ];
 
 export function getTool(id: string): Tool | undefined {

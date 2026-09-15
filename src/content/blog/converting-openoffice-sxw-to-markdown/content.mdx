@@ -1,0 +1,51 @@
+In 2000, Sun Microsystems acquired StarDivision and open-sourced the StarOffice suite as **OpenOffice.org**. Before the International Organization for Standardization (ISO) and OASIS standardized the OpenDocument Format (.odt) in 2005, OpenOffice.org 1.0 and 1.1 saved word processing documents using the **`.sxw`** extension.
+
+SXW proved that office documents could abandon opaque, proprietary binary OLE containers (like Microsoft Word .doc) in favor of human-inspectable XML wrapped inside a standard ZIP package.
+
+However, modern office suites and mobile devices no longer provide reliable backwards compatibility for the pre-ODF Sun XML schema used in SXW files.
+
+This technical guide explores the package hierarchy of `.sxw` archives, contrasts its XML syntax with modern ODF, and demonstrates how [convrtr's SXW to Markdown converter](/document/sxw-to-markdown) transforms vintage StarOffice and OpenOffice documents into portable GitHub Flavored Markdown entirely inside your browser.
+
+## The SXW ZIP Package Hierarchy
+
+An `.sxw` document is a PKZIP archive containing structured XML streams:
+
+- **`mimetype`**: Uncompressed text file declaring `application/vnd.sun.xml.writer`.
+- **`content.xml`**: The core document tree holding headings, paragraphs, tables, lists, and character styles.
+- **`meta.xml`**: Document metadata adhering to the Dublin Core metadata specification (title, author, creation timestamp, summary).
+- **`styles.xml`**: Page layout, margins, font declarations, and paragraph styles.
+- **`settings.xml`**: View zoom levels, cursor position, and printer preferences.
+
+convrtr extracts `content.xml` and `meta.xml` directly into memory using client-side JavaScript, bypassing file-system write overhead.
+
+## The Sun XML Document Schema
+
+While modern OpenDocument Text (.odt) uses the `urn:oasis:names:tc:opendocument:xmlns:text:1.0` namespace, SXW files use the original Sun namespace:
+
+```xml
+<office:document-content
+  xmlns:office="http://openoffice.org/2000/office"
+  xmlns:text="http://openoffice.org/2000/text"
+  xmlns:table="http://openoffice.org/2000/table">
+  <office:body>
+    <text:h text:level="1">Executive Summary</text:h>
+    <text:p>OpenOffice pioneered open document formats.</text:p>
+  </office:body>
+</office:document-content>
+```
+
+Key XML structures include:
+- **Headings**: `<text:h text:level="N">` tags, where $N$ maps directly to Markdown heading levels (`#`, `##`, `###`).
+- **Paragraphs**: `<text:p>` tags containing text runs, spaces (`<text:s text:c="N"/>`), and hyperlinks (`<text:a xlink:href="...">`).
+- **Lists**: `<text:unordered-list>` and `<text:ordered-list>` containing nested `<text:list-item>` elements.
+- **Tables**: `<table:table>`, `<table:table-row>`, and `<table:table-cell>` grids.
+
+## Transformation to GitHub Flavored Markdown
+
+convrtr's extraction engine walks the XML node graph and translates each block element into standard GitHub Flavored Markdown:
+- Headings are converted with appropriate `#` prefixes.
+- Tables are formatted into Markdown pipe tables with aligned header rows (`| Header |` and `| --- |`).
+- Bulleted and numbered lists are preserved with indentation hierarchy.
+- Dublin Core metadata is formatted into frontmatter at the top of the document.
+
+Because all processing runs client-side in browser memory, your confidential business archives and legal records remain 100% private.

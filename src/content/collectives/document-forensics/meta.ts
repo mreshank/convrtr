@@ -21,5 +21,6 @@ export const meta: CollectiveMeta = {
 		"document/abw-to-markdown",
 		"document/hwp-to-markdown",
 		"document/cwk-to-markdown",
+		"document/sxw-to-markdown",
 	],
 };

@@ -88,6 +88,9 @@
 | `.amf` | Advanced Module Format / ASYLUM Tracker | Tracker Music / Audio | Otto Chrons 16-channel DOS tracker unpacker & 8-bit PCM software synthesis to 16-bit stereo WAV | `SOLVED` | **SHIPPED** |
 | `.cwk` | ClarisWorks / AppleWorks Document | Document Forensics / Office | MacBinary II unpacker with Mac OS Roman / UTF-8 text extractor & formatting to GFM Markdown | `SOLVED` | **SHIPPED** |
 | `.cpc` / `.scr` | Amstrad CPC Screen Dump | Retro / 8-Bit Art | Motorola 6845 CRTC non-linear framebuffer decoder with 27-color Gate Array palette to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
+| `.dsm` | DSIK / Dynamic Studio Module | Tracker Music / Audio | RIFF DSMF container with SONG, INST, PATT chunks & 16-channel PCM software synthesis to 16-bit stereo WAV | `SOLVED` | **SHIPPED** |
+| `.sxw` | OpenOffice.org 1.x Document Archive | Document Forensics / Office | Sun StarOffice XML schema unpacker & Dublin Core parser to GitHub Flavored Markdown | `SOLVED` | **SHIPPED** |
+| `.xcur` | X11 Multi-Resolution Cursor | Linux / X11 Graphics | Xcursor TOC parser, resolution selector & ARGB un-premultiplication to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
 
 
 
@@ -2643,6 +2646,53 @@
 
 ---
 
+### 121. DSIK / Dynamic Studio Module (.dsm)
+- **Ecosystem & Context:** Dynamic Studio was a DOS-based music tracker created by DSIK (Digital Speech and Information Laboratories). The `.dsm` format uses a RIFF-derived structured container holding 16 channels of 8-bit sample data, instrument envelopes, and track sequencing.
+- **Forensic Format Architecture:**
+  - Container: RIFF structure with fourCC `RIFF` and form type `DSMF`.
+  - Chunks: `SONG` (module title, channel count, tempo, speed, order list), `INST` (instrument metadata, loop points, volume, default pitch), `PATT` (packed 16-channel note and effect rows).
+  - Audio Rendering: 16-channel software synthesis mixer with linear interpolation, sample loop wrapping, and stereo panning into 16-bit linear PCM WAV.
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript binary parser reading RIFF subchunks.
+  - Mixes all active channels at 44.1 kHz stereo with envelope volume calculations.
+  - Packs final rendered audio into uncompressed standard RIFF/WAVE.
+- **Fidelity:** `CYCLE-ACCURATE DSIK 16-CHANNEL TRACKER MIXDOWN TO 16-BIT STEREO WAV`.
+- **Status:** **Wave 42 Shipped (`audio/dsm-to-wav`) — Milestone Tool 121**.
+
+---
+
+### 122. OpenOffice.org 1.x Legacy Document (.sxw)
+- **Ecosystem & Context:** Before OASIS OpenDocument (`.odt`) was standardized, StarOffice and OpenOffice.org 1.x used the `.sxw` format (Sun XML Writer). These files remain inaccessible in modern word processors that only support newer `.odt` or `.docx` formats.
+- **Forensic Format Architecture:**
+  - Container: PKZIP (`50 4B 03 04`) holding `content.xml`, `meta.xml`, `styles.xml`.
+  - Schema: Sun StarOffice XML schema (`xmlns:text="http://openoffice.org/2000/text"`).
+  - XML Elements: `<text:h>` (headings 1–6), `<text:p>` (paragraphs), `<text:list>` / `<text:list-item>` (bulleted and ordered lists), `<table:table>` (structured grid tables).
+  - Metadata: Dublin Core (`<dc:title>`, `<dc:creator>`, `<dc:date>`).
+- **In-Browser Execution Strategy:**
+  - Unzips archive in-memory via `fflate`.
+  - Parses `meta.xml` for YAML frontmatter generation.
+  - Recursively converts `content.xml` nodes into clean GitHub Flavored Markdown (GFM).
+- **Fidelity:** `SEMANTIC SUN XML TREE PRESERVATION TO GFM MARKDOWN`.
+- **Status:** **Wave 42 Shipped (`document/sxw-to-markdown`) — Milestone Tool 122**.
+
+---
+
+### 123. X11 Multi-Resolution Cursor (.xcur)
+- **Ecosystem & Context:** X11 cursor themes use the Xcursor (`.xcur`) binary format to package mouse pointer images across multiple display densities (16x16 up to 128x128). Web developers and Linux theme authors need PNG exports of cursor graphics for previewing and web assets.
+- **Forensic Format Architecture:**
+  - Magic Bytes: `0x58 0x63 0x75 0x72` (`Xcur`).
+  - Table of Contents: Version, TOC count, followed by chunk records with `type = 0xFFFD0002` (`XCUR_IMAGE_TYPE`).
+  - Image Chunks: Header size, type, subtype (cursor nominal size), version, width, height, xhot, yhot, delay (for animations).
+  - Pixel Storage: 32-bit ARGB pixels where RGB channels are premultiplied by Alpha.
+- **In-Browser Execution Strategy:**
+  - Parses TOC to find matching or largest nominal cursor size.
+  - Performs un-premultiplication of alpha channels (`unmult = Math.round((c * 255) / a)`).
+  - Converts 32-bit ARGB buffer to RGBA and encodes to standard PNG.
+- **Fidelity:** `UN-PREMULTIPLIED LOSSLESS ARGB TO 32-BIT RGBA PNG`.
+- **Status:** **Wave 42 Shipped (`image/xcur-to-png`) — Milestone Tool 123**.
+
+---
+
 ## Roadmap Waves & Next Steps
 
 1. **Wave 1 (Shipped):**
@@ -2807,12 +2857,12 @@
     - Tool 118: `audio/amf-to-wav` (Advanced Music Format / ASYLUM Music Format `.amf` 16-channel DOS tracker module to 16-bit stereo WAV) — **Shipped**
     - Tool 119: `document/cwk-to-markdown` (ClarisWorks / AppleWorks `.cwk` legacy word processing document extractor to GitHub Flavored Markdown) — **Shipped**
     - Tool 120: `image/cpc-to-png` (Amstrad CPC `.cpc` / `.scr` retro screen memory dump decoder to 32-bit RGBA PNG) — **Shipped**
-42. **Wave 42:**
-    - Tool 121: `audio/rad-to-wav` (Reality Adlib Tracker `.rad` 9-channel Yamaha OPL2/OPL3 FM synth tracker to 16-bit stereo WAV)
-    - Tool 122: `document/sxw-to-markdown` (OpenOffice.org 1.x `.sxw` legacy XML document archive to GitHub Flavored Markdown)
-    - Tool 123: `image/xcur-to-png` (X11 multi-resolution mouse cursor `.xcur` to 32-bit RGBA PNG)
+42. **Wave 42 (Shipped):**
+    - Tool 121: `audio/dsm-to-wav` (DSIK / Dynamic Studio Module `.dsm` 16-channel tracker to 16-bit stereo WAV) — **Shipped**
+    - Tool 122: `document/sxw-to-markdown` (OpenOffice.org 1.x `.sxw` legacy XML document archive to GitHub Flavored Markdown) — **Shipped**
+    - Tool 123: `image/xcur-to-png` (X11 multi-resolution mouse cursor `.xcur` to 32-bit RGBA PNG) — **Shipped**
 43. **Wave 43:**
-    - Tool 124: `audio/dsm-to-wav` (DSIK / Dynamic Studio Module `.dsm` 16-channel tracker to 16-bit stereo WAV)
+    - Tool 124: `audio/rad-to-wav` (Reality Adlib Tracker `.rad` 9-channel Yamaha OPL2/OPL3 FM synth tracker to 16-bit stereo WAV)
     - Tool 125: `document/sdw-to-markdown` (StarWriter 5.x / StarOffice `.sdw` compound document to GitHub Flavored Markdown)
     - Tool 126: `image/bpg-to-png` (Better Portable Graphics `.bpg` HEVC-derived high-efficiency image decoder to 32-bit RGBA PNG)
 44. **Wave 44:**
