@@ -20,5 +20,6 @@ export const meta: CollectiveMeta = {
 		"image/qoi-to-png",
 		"image/hdr-to-png",
 		"image/bpg-to-png",
+		"image/blp-to-png",
 	],
 };

@@ -1,0 +1,62 @@
+# Converting Oktalyzer (OKT) Modules to WAV: Amiga 8-Channel Chiptune Synthesis
+
+Released in 1989 by German programmer **Armin Sander**, **Oktalyzer** was an engineering breakthrough for the Commodore Amiga. While the Amiga's custom sound coprocessor (**Paula**) natively featured only 4 hardware DMA audio channels (2 panned hard left and 2 panned hard right), Oktalyzer introduced software mixing to squeeze 8 polyphonic channels out of the standard Amiga 500.
+
+In this deep dive, we explore the chunk-based architecture of `.okt` files, the mechanics of Amiga PAL period calculation, and how convrtr synthesizes Oktalyzer modules into studio-grade 16-bit 44.1kHz stereo WAV audio entirely within your browser.
+
+---
+
+## 1. The OKTASONG Chunk Structure
+
+Oktalyzer modules follow an IFF-like chunk-based layout starting with the 8-byte ASCII format signature `OKTASONG`:
+
+| Chunk ID | Name | Description |
+|---|---|---|
+| `CMOD` | Channel Modes | 8 bytes configuring 4-channel vs 8-channel voice pairings |
+| `SAMP` | Sample Headers | 32-byte headers per sample: name, length, loop start, loop length, and volume |
+| `SPEE` | Default Speed | Initial tick tempo per pattern row (typically 6 ticks) |
+| `SLEN` | Song Length | Number of orders in the arrangement playlist |
+| `PLEN` | Pattern Length | Total count of distinct patterns stored in the file |
+| `PATT` | Order List | Array of 16-bit indices mapping arrangement orders to pattern numbers |
+| `PBOD` | Pattern Body | Pattern row cells: 64 rows with note, instrument, and effect commands |
+| `SBOD` | Sample Bodies | Raw 8-bit signed mono PCM waveforms (-128 to 127) |
+
+---
+
+## 2. Amiga Paula Period and Frequency Synthesis
+
+In classic Amiga audio architecture, sample pitch is governed by clock division against the PAL master frequency (3,546,895 Hz). The sound hardware counter decrements by 1 every clock cycle until it reaches the note period:
+
+```
+Frequency (Hz) = 3546895 / Period
+```
+
+For middle C (note C-3), the PAL period is 428, producing an audio frequency of approximately 8287 Hz:
+
+```ts
+function noteToPeriod(note: number): number {
+  if (note < 1) return 0;
+  const semitoneDiff = note - 25;
+  const period = Math.round(428 * Math.pow(2, -semitoneDiff / 12));
+  return Math.max(50, Math.min(6000, period));
+}
+```
+
+By computing `step = freq / sampleRate`, convrtr resamples 8-bit signed PCM samples across any target output sample rate (such as 44.1 kHz or 48 kHz) using smooth linear interpolation.
+
+---
+
+## 3. 8-Channel Stereo Panning
+
+To reproduce the authentic acoustic stage of the Amiga, channels are panned across left and right stereo channels according to their Paula hardware channel pairings:
+
+- **Left Channels:** 0, 3, 4, 7
+- **Right Channels:** 1, 2, 5, 6
+
+A configurable stereo separation parameter allows listeners to adjust the mix from authentic hard-panned stereo separation down to balanced modern headphone listening.
+
+---
+
+## 4. 100% Private Offline In-Browser Conversion
+
+convrtr performs all IFF chunk parsing, oscillator stepping, sample interpolation, and WAV packaging directly in client-side TypeScript. Your retro tracker files are processed purely in local memory with zero server uploads.

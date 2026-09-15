@@ -1,8 +1,5 @@
 import { writeWav } from "../audio/wav";
-import type {
-	RadConversionOptions,
-	RadConversionResult,
-} from "./types";
+import type { RadConversionOptions, RadConversionResult } from "./types";
 
 interface OplInstrument {
 	name: string;

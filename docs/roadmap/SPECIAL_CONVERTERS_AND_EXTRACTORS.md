@@ -94,6 +94,9 @@
 | `.rad` | Reality Adlib Tracker Module | Tracker Music / Chiptune | 9-channel Yamaha YM3812 (OPL2) 2-operator FM synthesis emulation to 16-bit stereo WAV | `SOLVED` | **SHIPPED** |
 | `.sdw` | StarWriter / StarOffice Document | Document Forensics / Office | OLE 2.0 Compound File Binary (CFB) stream unpacker & metadata extractor to GFM Markdown | `SOLVED` | **SHIPPED** |
 | `.bpg` | Better Portable Graphics Image | High-Efficiency Graphics | Fabrice Bellard HEVC intra-frame predictor & YCbCr color converter to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
+| `.okt` | Amiga Oktalyzer Module | Tracker Music / Chiptune | 8-channel Paula software-mixed Amiga tracker synthesis to 16-bit stereo WAV | `SOLVED` | **SHIPPED** |
+| `.zabw` | Compressed AbiWord Document | Document Forensics / Office | In-memory Gzip AWML XML decompressor & document structure parser to GFM Markdown | `SOLVED` | **SHIPPED** |
+| `.blp` | Blizzard Picture Game Texture | Game Dev / Modding | Warcraft III & WoW 256-color paletted & DXT1/5 texture decompressor to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
 
 
 
@@ -2744,6 +2747,50 @@
 
 ---
 
+### 127. Amiga Oktalyzer Module (.okt)
+- **Ecosystem & Context:** Oktalyzer was Armin Sander's landmark 1989 music tracker that enabled 8 simultaneous polyphonic sound channels on the stock Commodore Amiga by performing software mixing over the 4-channel Paula sound chip.
+- **Forensic Format Architecture:**
+  - Magic Bytes: `OKTASONG` (8 ASCII bytes at offset 0).
+  - Chunk Layout: IFF-style chunks including `CMOD` (channel modes), `SAMP` (sample headers), `SPEE` (default speed), `SLEN` (order count), `PLEN` (pattern count), `PATT` (order list), `PBOD` (pattern row bodies: 64 rows x 8 channels), and `SBOD` (8-bit signed PCM sample audio data).
+- **In-Browser Execution Strategy:**
+  - Emulates Amiga PAL clock division (3,546,895 Hz) for period-to-pitch conversion.
+  - Linear interpolation resampling across active voice channels.
+  - Authentic Paula hardware channel stereo panning and mixing into uncompressed 16-bit 44.1kHz stereo WAV.
+- **Fidelity:** `ACCURATE 8-CHANNEL AMIGA PAULA RESAMPLED MIX TO 16-BIT STEREO WAV`.
+- **Status:** **Wave 44 Shipped (`audio/okt-to-wav`) — Milestone Tool 127**.
+
+---
+
+### 128. Compressed AbiWord Document (.zabw)
+- **Ecosystem & Context:** ZABW is the native compressed XML document format of the cross-platform AbiWord word processor, packaging Dublin Core metadata, styled paragraphs, nested lists, and tables inside a lossless Gzip container.
+- **Forensic Format Architecture:**
+  - Magic Bytes: `0x1F 0x8B` (RFC 1952 Gzip container signature).
+  - Internal XML: AbiWord AWML schema (`<abiword>`) containing `<metadata>` with `<m key="dc.*">`, `<section>`, `<p style="...">`, `<c props="...">` inline formatting, `<a href="...">`, and `<table><cell>`.
+- **In-Browser Execution Strategy:**
+  - In-memory Gzip decompression via pure JS/WASM inflate.
+  - Extracts Dublin Core metadata for YAML frontmatter.
+  - Maps styles, character formatting (bold, italic, strikethrough, code), hyperlinks, lists, and tables into clean GitHub Flavored Markdown.
+- **Fidelity:** `ZERO-LEAKAGE GZIP XML DECOMPRESSION TO GFM MARKDOWN`.
+- **Status:** **Wave 44 Shipped (`document/zabw-to-markdown`) — Milestone Tool 128**.
+
+---
+
+### 129. Blizzard Picture Game Texture (.blp)
+- **Ecosystem & Context:** BLP is Blizzard Entertainment's proprietary texture container format used across Warcraft III (BLP1) and World of Warcraft (BLP2) for unit textures, spell icons, terrain tiles, and UI skins.
+- **Forensic Format Architecture:**
+  - Magic Bytes: `BLP1` or `BLP2`.
+  - Compression Modes: 256-color paletted (BGRA palette with 1/4/8-bit alpha channels), S3TC/DXT block compression (DXT1, DXT3, DXT5), and raw 32-bit BGRA uncompressed mipmap arrays.
+  - Mipmap Hierarchy: 16-level offset and length directory table.
+- **In-Browser Execution Strategy:**
+  - Reads header and extracts top-resolution mipmap level 0.
+  - Decodes 256-color BGRA palette and reconstructs alpha channels.
+  - Implements DXT1 and DXT5 block decompression.
+  - Encodes decoded 32-bit RGBA pixels into standard transparent PNG.
+- **Fidelity:** `LOSSLESS PALETTE & DXT DECODING TO 32-BIT RGBA PNG`.
+- **Status:** **Wave 44 Shipped (`image/blp-to-png`) — Milestone Tool 129**.
+
+---
+
 ## Roadmap Waves & Next Steps
 
 1. **Wave 1 (Shipped):**
@@ -2916,10 +2963,10 @@
     - Tool 124: `audio/rad-to-wav` (Reality Adlib Tracker `.rad` 9-channel Yamaha OPL2/OPL3 FM synth tracker to 16-bit stereo WAV) — **Shipped**
     - Tool 125: `document/sdw-to-markdown` (StarWriter 5.x / StarOffice `.sdw` compound document to GitHub Flavored Markdown) — **Shipped**
     - Tool 126: `image/bpg-to-png` (Better Portable Graphics `.bpg` HEVC-derived high-efficiency image decoder to 32-bit RGBA PNG) — **Shipped**
-44. **Wave 44:**
-    - Tool 127: `audio/okt-to-wav` (Oktalyzer `.okt` Amiga 8-channel tracker module to 16-bit stereo WAV)
-    - Tool 128: `document/zabw-to-markdown` (Gzip-compressed AbiWord `.zabw` archive to GitHub Flavored Markdown)
-    - Tool 129: `image/blp-to-png` (Blizzard Texture `.blp` Warcraft III / WoW texture format to 32-bit RGBA PNG)
+44. **Wave 44 (Shipped):**
+    - Tool 127: `audio/okt-to-wav` (Oktalyzer `.okt` Amiga 8-channel tracker module to 16-bit stereo WAV) — **Shipped**
+    - Tool 128: `document/zabw-to-markdown` (Gzip-compressed AbiWord `.zabw` archive to GitHub Flavored Markdown) — **Shipped**
+    - Tool 129: `image/blp-to-png` (Blizzard Texture `.blp` Warcraft III / WoW texture format to 32-bit RGBA PNG) — **Shipped**
 45. **Wave 45:**
     - Tool 130: `audio/mtm-to-wav` (MultiTracker Module `.mtm` 32-channel DOS tracker to 16-bit stereo WAV)
     - Tool 131: `document/rtfd-to-markdown` (Apple RTFD Rich Text Format with Attachments bundle to GitHub Flavored Markdown)

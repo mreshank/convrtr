@@ -22,6 +22,7 @@ import { mp4ToM4a } from "./tools/audio/mp4-to-m4a";
 import { nistToWav } from "./tools/audio/nist-to-wav";
 import { normaliseFLAC } from "./tools/audio/normalise-flac";
 import { normaliseWAV } from "./tools/audio/normalise-wav";
+import { oktToWav } from "./tools/audio/okt-to-wav";
 import { opusToMp3 } from "./tools/audio/opus-to-mp3";
 import { ptmToWav } from "./tools/audio/ptm-to-wav";
 import { radToWav } from "./tools/audio/rad-to-wav";
@@ -94,6 +95,7 @@ import { vttToSrt } from "./tools/document/vtt-to-srt";
 import { wadToZip } from "./tools/document/wad-to-zip";
 import { webarchiveToHtml } from "./tools/document/webarchive-to-html";
 import { xmindToMarkdown } from "./tools/document/xmind-to-markdown";
+import { zabwToMarkdown } from "./tools/document/zabw-to-markdown";
 import { faviconPack } from "./tools/favicon-pack";
 import { gifFrames } from "./tools/gif-frames";
 import { heicToJpg } from "./tools/heic-to-jpg";
@@ -104,6 +106,7 @@ import { acbmToPng } from "./tools/image/acbm-to-png";
 import { aniToPng } from "./tools/image/ani-to-png";
 import { artToPng } from "./tools/image/art-to-png";
 import { asepriteToPng } from "./tools/image/aseprite-to-png";
+import { blpToPng } from "./tools/image/blp-to-png";
 import { bpgToPng } from "./tools/image/bpg-to-png";
 import { cdrToPng } from "./tools/image/cdr-to-png";
 import { cgmToSvg } from "./tools/image/cgm-to-svg";
@@ -369,6 +372,9 @@ export const TOOLS: Tool[] = [
 	radToWav,
 	sdwToMarkdown,
 	bpgToPng,
+	oktToWav,
+	zabwToMarkdown,
+	blpToPng,
 ];
 
 export function getTool(id: string): Tool | undefined {

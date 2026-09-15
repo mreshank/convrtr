@@ -1,0 +1,63 @@
+# Converting Compressed AbiWord (ZABW) to Markdown: Gzip XML Document Extraction
+
+**AbiWord**, the lightweight open-source word processor originally developed by SourceGear Corporation as part of the AbiSource project, pioneered transparent XML storage for word processing documents. To eliminate the file size bloat associated with verbose XML tags, AbiWord introduced the `.zabw` extension: a lossless Gzip-compressed container packaging complete AWML (AbiWord Markup Language) documents.
+
+In this guide, we explore how `.zabw` documents are structured, how styles and Dublin Core metadata are defined, and how convrtr decompresses and converts them to GitHub Flavored Markdown (GFM) directly in the browser.
+
+---
+
+## 1. Decompressing the ZABW Container
+
+A `.zabw` file is a Gzip archive containing a single XML document. The first two bytes contain the RFC 1952 magic header:
+
+- Byte 0: `0x1F`
+- Byte 1: `0x8B` (Gzip ID flags)
+
+When convrtr receives a file, it checks these magic bytes. If present, it decompresses the compressed bitstream in memory using pure WebAssembly/JavaScript deflate decompression routines, yielding the underlying AWML XML text.
+
+---
+
+## 2. The AbiWord Document Object Model (AWML)
+
+The decompressed XML follows the AbiWord AWML schema:
+
+```xml
+<abiword fileformat="1.0">
+  <metadata>
+    <m key="dc.title">Research Summary</m>
+    <m key="dc.creator">Linus Torvalds</m>
+    <m key="dc.subject">Operating Systems</m>
+  </metadata>
+  <section>
+    <p style="Heading 1">Introduction</p>
+    <p>This is a paragraph with <c props="font-weight:bold">bold</c> text.</p>
+    <table>
+      <cell><p>Header 1</p></cell>
+      <cell><p>Header 2</p></cell>
+    </table>
+  </section>
+</abiword>
+```
+
+---
+
+## 3. Structural Mapping to Markdown
+
+convrtr maps AWML elements directly to GitHub Flavored Markdown structures:
+
+1. **Headings:** Paragraphs with `style="Heading N"` or `props="heading-level: N"` translate to `#`, `##`, `###`, etc.
+2. **Inline Formatting:** Character runs (`<c props="...">`) translate:
+   - `font-weight: bold` becomes `**bold**`
+   - `font-style: italic` becomes `*italic*`
+   - `text-decoration: line-through` becomes `~~strike~~`
+   - Monospace font families become backtick code spans
+3. **Hyperlinks:** `<a href="...">text</a>` tags convert to `[text](url)` links.
+4. **Lists:** Paragraphs carrying bullet or list attributes map to bulleted list items `- item`.
+5. **Tables:** `<cell>` nodes inside `<table>` blocks convert into GFM pipe tables with formatted headers and dividers.
+6. **Frontmatter:** Dublin Core metadata (`dc.title`, `dc.creator`, `dc.subject`) is serialized as clean YAML frontmatter.
+
+---
+
+## 4. Total Privacy Guarantee
+
+Because convrtr executes 100% inside your web browser, confidential business contracts, personal essays, and sensitive documents never touch an external server or API.

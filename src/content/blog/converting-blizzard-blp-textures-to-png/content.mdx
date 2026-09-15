@@ -1,0 +1,57 @@
+# Converting Blizzard BLP Textures to PNG: Warcraft III & WoW Asset Decoding
+
+For more than two decades, Blizzard Entertainment games—including **Warcraft III: Reign of Chaos**, **The Frozen Throne**, and **World of Warcraft**—have stored character models, spell icons, terrain tilesets, and user interface graphics in the proprietary **BLP (Blizzard Picture)** container format.
+
+Because mainstream image editors and web browsers cannot view or open `.blp` files directly, extracting and converting them into standard 32-bit RGBA PNG files is an essential step for game modders, web UI developers, and digital archivists.
+
+---
+
+## 1. BLP1 vs BLP2 Evolution
+
+Blizzard's texture format evolved across two major generations:
+
+1. **BLP1 (Warcraft III):** Focused on 256-color paletted textures with dedicated 1-bit, 4-bit, or 8-bit alpha channels, as well as embedded JPEG-compressed graphics.
+2. **BLP2 (World of Warcraft):** Expanded to incorporate DirectX texture compression (DXT1/BC1, DXT3/BC2, DXT5/BC3) and raw 32-bit BGRA uncompressed mipmapped textures.
+
+---
+
+## 2. BLP Header Anatomy
+
+Both BLP variants begin with a 4-byte ASCII signature followed by metadata offsets:
+
+| Field | Type | Description |
+|---|---|---|
+| Magic | 4 bytes | `BLP1` or `BLP2` |
+| Type | uint32 | `0` = JPEG, `1` = Direct / Paletted |
+| Compression / Alpha | uint8 / uint32 | Color encoding flags and alpha bit depth |
+| Width | uint32 | Texture width in pixels |
+| Height | uint32 | Texture height in pixels |
+| Mipmap Offsets | 16 x uint32 | Byte offsets into the file for each mipmap level |
+| Mipmap Lengths | 16 x uint32 | Byte sizes of each mipmap level payload |
+
+In paletted files, a 1024-byte palette follows the header, consisting of 256 four-byte BGRA color entries.
+
+---
+
+## 3. Paletted Color and Alpha Channel Extraction
+
+In Warcraft III BLP1 paletted images, pixel color indices and alpha transparency values are stored separately:
+
+1. **Color Indices:** `width * height` sequential bytes indexing into the 256-entry BGRA palette.
+2. **Alpha Channel:**
+   - **8-bit Alpha:** 1 byte per pixel providing full 256-step alpha blending.
+   - **4-bit Alpha:** 4 bits per pixel (packed 2 pixels per byte), scaled to 0..255.
+   - **1-bit Alpha:** 1 bit per pixel (packed 8 pixels per byte) for binary cutout transparency.
+
+convrtr combines the palette RGB colors with the extracted alpha values into an un-premultiplied 32-bit RGBA pixel array.
+
+---
+
+## 4. Hardware DXT Decompression
+
+For World of Warcraft BLP2 textures compressed with S3TC/DXT:
+
+- **DXT1:** 4x4 pixel blocks compressed into 8 bytes, interpolating between two 16-bit 5:6:5 RGB endpoints.
+- **DXT5:** 4x4 blocks compressed into 16 bytes, with 8 bytes dedicated to 8-step interpolated alpha.
+
+convrtr decompresses these blocks directly in TypeScript, synthesizing transparent 32-bit RGBA PNG files in memory with zero external dependencies.

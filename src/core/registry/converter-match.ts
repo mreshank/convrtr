@@ -351,6 +351,14 @@ const MIME_MAP: Record<string, string> = {
 	"image/bpg": "bpg",
 	"image/x-bpg": "bpg",
 	"application/x-bpg": "bpg",
+	"audio/x-oktalyzer": "okt",
+	"audio/okt": "okt",
+	"application/x-oktalyzer": "okt",
+	"application/x-zabw": "zabw",
+	"application/zabw": "zabw",
+	"image/x-blp": "blp",
+	"image/blp": "blp",
+	"application/x-blp": "blp",
 };
 
 /**

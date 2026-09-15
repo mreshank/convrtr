@@ -1,8 +1,5 @@
 import { encodeRgbaToPng } from "../dds/parser";
-import type {
-	BpgConversionOptions,
-	BpgConversionResult,
-} from "./types";
+import type { BpgConversionOptions, BpgConversionResult } from "./types";
 
 const BPG_MAGIC = [0x79, 0x71, 0x73, 0xfb]; // "yqs\xFB"
 

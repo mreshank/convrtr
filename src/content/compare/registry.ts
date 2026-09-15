@@ -3369,6 +3369,182 @@ export const COMPARISONS: ComparisonMeta[] = [
 			"image/hdr-to-png",
 		],
 	},
+	{
+		slug: "okt-vs-mod",
+		title:
+			"OKT vs MOD: Amiga 8-Channel Oktalyzer vs Standard 4-Channel ProTracker",
+		description:
+			"Technical breakdown of Amiga music tracker formats: compare Oktalyzer 8-channel CPU software mixing against standard 4-channel DMA Paula MOD files.",
+		formatA: "OKT",
+		formatB: "MOD",
+		category: "audio",
+		summary:
+			"Oktalyzer (.okt) doubled the Amiga's native channel count by implementing 8-channel software mixing in real time, whereas standard ProTracker (.mod) modules used 4 hardware DMA audio channels directly mapped to the Paula chip.",
+		prosA: [
+			"Supports 8 simultaneous polyphonic audio channels on stock Amiga hardware",
+			"Rich chords, layered percussion, and complex counterpoint melodies",
+			"Uses compact IFF chunk structure with customizable channel modes",
+			"High historical significance in the Amiga demo and chiptune scenes",
+		],
+		prosB: [
+			"Universal tracker software compatibility and ubiquitous player support",
+			"Zero CPU mixing overhead due to direct hardware DMA playback",
+			"Simpler 4-channel pattern layout supported across all tracker platforms",
+			"Standardized effect command syntax across dozens of trackers",
+		],
+		specs: [
+			{
+				feature: "Channel Count",
+				formatA: "8 channels (4 pairs mixed)",
+				formatB: "4 channels",
+			},
+			{
+				feature: "Playback Mechanism",
+				formatA: "Software CPU Mixing + DMA",
+				formatB: "Hardware DMA Direct",
+			},
+			{
+				feature: "Platform",
+				formatA: "Commodore Amiga",
+				formatB: "Amiga, PC, Atari",
+			},
+			{
+				feature: "Sample Depth",
+				formatA: "8-bit Signed PCM",
+				formatB: "8-bit Signed PCM",
+			},
+			{
+				feature: "Container Format",
+				formatA: "IFF-style Chunk Stream",
+				formatB: "Fixed Byte Offset Structure",
+			},
+		],
+		verdict:
+			"Use MOD for maximum retro player compatibility. Use OKT when exploring vintage 8-channel Amiga chiptunes. convrtr synthesizes both formats offline into modern 16-bit 44.1kHz stereo WAV audio.",
+		relatedTools: [
+			"audio/okt-to-wav",
+			"audio/mod-to-wav",
+			"audio/xm-to-wav",
+			"audio/s3m-to-wav",
+		],
+	},
+	{
+		slug: "zabw-vs-abw",
+		title:
+			"ZABW vs ABW: Compressed AbiWord Archive vs Plain XML Word Processor Document",
+		description:
+			"Compare AbiWord's compressed .zabw format with standard plain text XML .abw files: compression efficiency, storage size, and parsing requirements.",
+		formatA: "ZABW",
+		formatB: "ABW",
+		category: "document",
+		summary:
+			"ZABW and ABW are the two primary file formats of the open-source AbiWord word processor. ZABW encapsulates the exact same AWML XML document structure as ABW, but compresses it with Gzip to achieve 70-80% smaller file sizes.",
+		prosA: [
+			"70% to 85% smaller file size on disk through lossless Gzip compression",
+			"Fast network transfer for office document sharing and archival",
+			"Preserves identical typography, Dublin Core metadata, and document structure",
+			"Standard native format for space-constrained installations",
+		],
+		prosB: [
+			"Plain human-readable XML text inspectable in any text editor",
+			"Can be grepped and processed by standard shell utilities without decompression",
+			"Zero decompression overhead during opening",
+			"Resilient to localized disk corruption since text remains uncompressed",
+		],
+		specs: [
+			{
+				feature: "Underlying Format",
+				formatA: "Gzip-Compressed XML",
+				formatB: "Plain XML (AWML)",
+			},
+			{
+				feature: "Compression Type",
+				formatA: "Deflate / Gzip",
+				formatB: "None (Uncompressed)",
+			},
+			{
+				feature: "Typical File Size",
+				formatA: "15% - 30% of original",
+				formatB: "100% (Verbose XML)",
+			},
+			{
+				feature: "Human Readable",
+				formatA: "No (Binary Gzip Stream)",
+				formatB: "Yes (Direct XML)",
+			},
+			{
+				feature: "Word Processor",
+				formatA: "AbiWord (GNOME Office)",
+				formatB: "AbiWord (GNOME Office)",
+			},
+		],
+		verdict:
+			"ZABW is ideal for lightweight document storage and distribution, while ABW is ideal for transparent text inspection. convrtr converts both formats directly into clean GitHub Flavored Markdown in your browser.",
+		relatedTools: [
+			"document/zabw-to-markdown",
+			"document/abw-to-markdown",
+			"document/sxw-to-markdown",
+			"document/sdw-to-markdown",
+		],
+	},
+	{
+		slug: "blp-vs-dds",
+		title: "BLP vs DDS: Blizzard Game Texture vs Microsoft DirectDraw Surface",
+		description:
+			"Compare Blizzard's proprietary BLP texture container against Microsoft's industry-standard DirectDraw Surface DDS: compression codecs, game engines, and mipmap hierarchies.",
+		formatA: "BLP",
+		formatB: "DDS",
+		category: "image",
+		summary:
+			"BLP is Blizzard Entertainment's proprietary texture container format used in Warcraft III and World of Warcraft, while DDS is Microsoft's universal DirectX texture format. Both store mipmapped GPU-compressed textures like DXT1 and DXT5, but BLP also packages paletted 256-color textures with custom alpha depths.",
+		prosA: [
+			"Optimized specifically for Warcraft III (BLP1) and World of Warcraft (BLP2) game engines",
+			"Supports compact 8-bit paletted textures with dedicated 1-bit, 4-bit, or 8-bit alpha channels",
+			"Native mipmap offset tables tailored for Blizzard MPQ archive packaging",
+			"Essential format for Warcraft modders, WoW UI designers, and private servers",
+		],
+		prosB: [
+			"Industry-standard direct-to-GPU texture format across Unreal, Unity, and custom engines",
+			"Directly uploadable to DirectX, Vulkan, and OpenGL drivers without CPU translation",
+			"Supports modern block compression algorithms (BC1 through BC7, ASTC)",
+			"Universal tooling support in Adobe Photoshop, GIMP, and 3D modeling packages",
+		],
+		specs: [
+			{
+				feature: "Primary Developer",
+				formatA: "Blizzard Entertainment",
+				formatB: "Microsoft Corporation",
+			},
+			{
+				feature: "Block Compression",
+				formatA: "DXT1, DXT3, DXT5 (BLP2)",
+				formatB: "BC1-BC7, DXT1-5",
+			},
+			{
+				feature: "Paletted Color",
+				formatA: "Yes (256-color BGRA palette)",
+				formatB: "Rare / Legacy only",
+			},
+			{
+				feature: "Ecosystem",
+				formatA: "Warcraft III, WoW, StarCraft II",
+				formatB: "Universal Game Development",
+			},
+			{
+				feature: "Direct GPU Upload",
+				formatA: "Requires Blizzard Engine",
+				formatB: "Native Direct3D / Vulkan",
+			},
+		],
+		verdict:
+			"DDS is the global standard for modern 3D game engines, whereas BLP is the indispensable format for Blizzard game modding and asset extraction. convrtr decodes both formats into transparent 32-bit RGBA PNG images 100% offline.",
+		relatedTools: [
+			"image/blp-to-png",
+			"image/dds-to-png",
+			"image/vtf-to-png",
+			"image/tga-to-png",
+		],
+	},
 ];
 
 export function getComparison(slug: string): ComparisonMeta | undefined {

@@ -31,5 +31,6 @@ export const meta: CollectiveMeta = {
 		"image/cpc-to-png",
 		"audio/dsm-to-wav",
 		"audio/rad-to-wav",
+		"audio/okt-to-wav",
 	],
 };
