@@ -360,6 +360,18 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 	}, []);
 
 	const handleOpenSidePanel = async () => {
+		try {
+			if (typeof chrome !== "undefined" && chrome.sidePanel?.open) {
+				const currentWindow = await chrome.windows.getCurrent();
+				if (currentWindow?.id) {
+					await chrome.sidePanel.open({ windowId: currentWindow.id });
+					window.close();
+					return;
+				}
+			}
+		} catch (err) {
+			console.warn("[convrtr] Direct side panel open warning:", err);
+		}
 		if (typeof chrome !== "undefined" && chrome.runtime?.sendMessage) {
 			await chrome.runtime.sendMessage({ type: "OPEN_SIDE_PANEL" });
 			window.close();
@@ -479,178 +491,174 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 
 	return (
 		<div className={containerClass}>
+			{/* Popup Mode Helper Banner */}
+			{mode === "popup" && (
+				<div
+					className="mono text-[11px] px-3 py-2 border mb-3 flex items-center justify-between gap-2"
+					style={{
+						borderColor: "var(--accent)",
+						background: "var(--surface)",
+						color: "var(--ink)",
+					}}
+				>
+					<span className="truncate">Dock convrtr alongside active tabs:</span>
+					<button
+						type="button"
+						onClick={handleOpenSidePanel}
+						className="mono text-[10px] px-2.5 py-1 border font-semibold shrink-0 cursor-pointer"
+						style={{
+							background: "var(--accent)",
+							color: "var(--ground)",
+							borderColor: "var(--accent)",
+						}}
+					>
+						OPEN SIDE PANEL ↗
+					</button>
+				</div>
+			)}
+
 			{/* Top Extension Header */}
 			<header
-				className="flex items-center justify-between border-b pb-3 mb-3 gap-2 flex-wrap"
+				className="flex flex-col gap-2.5 border-b pb-3 mb-3"
 				style={{ borderColor: "var(--rule)" }}
 			>
-				<div className="flex items-center gap-2.5">
-					{/* Logo Mark Chevron */}
-					<div
-						className="flex items-center justify-center w-6 h-6 border shrink-0"
-						style={{
-							background: "var(--surface)",
-							borderColor: "var(--rule-strong)",
-						}}
-					>
-						<svg
-							width="12"
-							height="12"
-							viewBox="0 0 32 32"
-							fill="none"
-							stroke="currentColor"
-							strokeWidth="4"
-							strokeLinecap="square"
-							strokeLinejoin="miter"
-							aria-hidden="true"
-						>
-							<path d="M11 7 L23 16 L11 25" />
-						</svg>
-					</div>
-
-					<div className="flex items-baseline gap-2">
-						<span
-							className="mono font-semibold tracking-tight text-[13px] uppercase"
-							style={{ color: "var(--ink)" }}
-						>
-							convrtr
-						</span>
-						<span
-							className="mono text-[10px] uppercase px-1.5 py-0.5 border"
+				{/* Row 1: Brand identity, mode, history, and studio expand */}
+				<div className="flex items-center justify-between">
+					<div className="flex items-center gap-2">
+						<div
+							className="flex items-center justify-center w-6 h-6 border shrink-0"
 							style={{
-								borderColor: "var(--rule)",
-								color: "var(--accent)",
 								background: "var(--surface)",
+								borderColor: "var(--rule-strong)",
 							}}
 						>
-							[{mode.toUpperCase()}]
-						</span>
-					</div>
-				</div>
-
-				{/* Header Actions */}
-				<div className="flex items-center gap-1.5 flex-wrap">
-					{/* Capture Page button */}
-					<button
-						type="button"
-						onClick={handleCaptureVisibleTab}
-						className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer"
-						style={{
-							background: "transparent",
-							color: "var(--ink)",
-							borderColor: "var(--rule)",
-						}}
-						title="Capture visible viewport screenshot into convrtr (⌘⇧S)"
-					>
-						CAPTURE 📷
-					</button>
-
-					{/* Extract Page Assets button */}
-					<button
-						type="button"
-						onClick={handleExtractAllPageAssets}
-						className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer"
-						style={{
-							background: "transparent",
-							color: "var(--ink)",
-							borderColor: "var(--rule)",
-						}}
-						title="Extract images, audio, video, SVGs, and linked docs from active page"
-					>
-						EXTRACT ⚡
-					</button>
-
-					{/* Paste button */}
-					<button
-						type="button"
-						onClick={handlePasteFromClipboardButton}
-						className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer"
-						style={{
-							background: "transparent",
-							color: "var(--ink)",
-							borderColor: "var(--rule)",
-						}}
-						title="Paste image/file from clipboard (⌘V)"
-					>
-						PASTE ⌘V
-					</button>
-
-					{/* Quick Presets Toggle */}
-					<button
-						type="button"
-						onClick={() => setShowPresets((prev) => !prev)}
-						className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer"
-						style={{
-							background: showPresets ? "var(--surface)" : "transparent",
-							color: showPresets ? "var(--accent)" : "var(--ink-muted)",
-							borderColor: showPresets ? "var(--accent)" : "var(--rule)",
-						}}
-						title="Toggle Quick Format Presets"
-					>
-						PRESETS
-					</button>
-
-					{/* History toggle */}
-					<button
-						type="button"
-						onClick={() => setShowHistory((prev) => !prev)}
-						className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer"
-						style={{
-							background: showHistory ? "var(--surface)" : "transparent",
-							color: showHistory ? "var(--accent)" : "var(--ink-muted)",
-							borderColor: showHistory ? "var(--accent)" : "var(--rule)",
-						}}
-						title="View conversion history"
-					>
-						HISTORY ({historyRecords.length})
-					</button>
-
-					{mode === "popup" && (
-						<>
-							<button
-								type="button"
-								onClick={handleOpenSidePanel}
-								className="mono text-[10px] px-2.5 py-1 border transition-colors cursor-pointer"
-								style={{
-									background: "var(--ink)",
-									color: "var(--ground)",
-									borderColor: "var(--ink)",
-								}}
-								title="Dock in Chrome Side Panel (Command+Shift+C)"
+							<svg
+								width="12"
+								height="12"
+								viewBox="0 0 32 32"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="4"
+								strokeLinecap="square"
+								strokeLinejoin="miter"
+								aria-hidden="true"
 							>
-								SIDE PANEL ↗
-							</button>
-							<button
-								type="button"
-								onClick={handleOpenFullTab}
-								className="mono text-[10px] px-2.5 py-1 border transition-colors cursor-pointer"
+								<path d="M11 7 L23 16 L11 25" />
+							</svg>
+						</div>
+
+						<div className="flex items-baseline gap-1.5">
+							<span
+								className="mono font-bold tracking-tight text-[13px] uppercase"
+								style={{ color: "var(--ink)" }}
+							>
+								convrtr
+							</span>
+							<span
+								className="mono text-[9px] uppercase px-1.5 py-0.5 border font-semibold"
 								style={{
-									background: "transparent",
-									color: "var(--ink-muted)",
 									borderColor: "var(--rule)",
+									color: "var(--accent)",
+									background: "var(--surface)",
 								}}
-								title="Open in Full Tab Studio"
 							>
-								STUDIO ↗
-							</button>
-						</>
-					)}
+								{mode === "sidepanel" ? "SIDE PANEL" : mode.toUpperCase()}
+							</span>
+						</div>
+					</div>
 
-					{mode === "sidepanel" && (
+					<div className="flex items-center gap-1.5">
+						<button
+							type="button"
+							onClick={() => setShowPresets((prev) => !prev)}
+							className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer"
+							style={{
+								background: showPresets ? "var(--surface)" : "transparent",
+								color: showPresets ? "var(--accent)" : "var(--ink-muted)",
+								borderColor: showPresets ? "var(--accent)" : "var(--rule)",
+							}}
+							title="Toggle Quick Format Presets"
+						>
+							PRESETS
+						</button>
+
+						<button
+							type="button"
+							onClick={() => setShowHistory((prev) => !prev)}
+							className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer"
+							style={{
+								background: showHistory ? "var(--surface)" : "transparent",
+								color: showHistory ? "var(--accent)" : "var(--ink-muted)",
+								borderColor: showHistory ? "var(--accent)" : "var(--rule)",
+							}}
+							title="Toggle Conversion History"
+						>
+							HISTORY
+							{historyRecords.length > 0 ? ` (${historyRecords.length})` : ""}
+						</button>
+
 						<button
 							type="button"
 							onClick={handleOpenFullTab}
 							className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer"
 							style={{
 								background: "transparent",
-								color: "var(--ink-muted)",
+								color: "var(--ink)",
 								borderColor: "var(--rule)",
 							}}
 							title="Expand to Full Tab Studio"
 						>
 							STUDIO ↗
 						</button>
-					)}
+					</div>
+				</div>
+
+				{/* Row 2: 3-column utility grid */}
+				<div className="grid grid-cols-3 gap-1.5">
+					<button
+						type="button"
+						onClick={handleCaptureVisibleTab}
+						className="mono text-[10px] py-1.5 px-2 border flex items-center justify-center gap-1.5 transition-colors cursor-pointer text-center"
+						style={{
+							background: "var(--surface)",
+							color: "var(--ink)",
+							borderColor: "var(--rule)",
+						}}
+						title="Capture visible tab viewport screenshot (⌘⇧S)"
+					>
+						<span>📷</span>
+						<span className="truncate">CAPTURE</span>
+					</button>
+
+					<button
+						type="button"
+						onClick={handleExtractAllPageAssets}
+						className="mono text-[10px] py-1.5 px-2 border flex items-center justify-center gap-1.5 transition-colors cursor-pointer text-center"
+						style={{
+							background: "var(--surface)",
+							color: "var(--ink)",
+							borderColor: "var(--rule)",
+						}}
+						title="Extract all media & SVGs from current webpage"
+					>
+						<span>⚡</span>
+						<span className="truncate">EXTRACT</span>
+					</button>
+
+					<button
+						type="button"
+						onClick={handlePasteFromClipboardButton}
+						className="mono text-[10px] py-1.5 px-2 border flex items-center justify-center gap-1.5 transition-colors cursor-pointer text-center"
+						style={{
+							background: "var(--surface)",
+							color: "var(--ink)",
+							borderColor: "var(--rule)",
+						}}
+						title="Paste image/document from clipboard (⌘V)"
+					>
+						<span>📋</span>
+						<span className="truncate">PASTE ⌘V</span>
+					</button>
 				</div>
 			</header>
 
@@ -658,7 +666,7 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 			{showPresets && (
 				<nav
 					aria-label="Quick format presets"
-					className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-3 border-b"
+					className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-3 border-b no-scrollbar"
 					style={{ borderColor: "var(--rule-subtle)" }}
 				>
 					<span
@@ -675,7 +683,7 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 								setStatusNotice(`Preset active: [${p.label}]`);
 								setTimeout(() => setStatusNotice(null), 3500);
 							}}
-							className="mono text-[10px] px-2 py-0.5 border shrink-0 transition-colors cursor-pointer"
+							className="mono text-[10px] px-2 py-0.5 border shrink-0 transition-colors cursor-pointer whitespace-nowrap"
 							style={{
 								borderColor: "var(--rule)",
 								background: "var(--surface)",

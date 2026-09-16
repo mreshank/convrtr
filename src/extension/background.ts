@@ -8,6 +8,36 @@
 
 import { TOOLS } from "@/core/registry";
 
+// Ensure clicking the extension icon opens the native Side Panel directly
+if (chrome.sidePanel?.setPanelBehavior) {
+	chrome.sidePanel
+		.setPanelBehavior({
+			openPanelOnActionClick: true,
+		})
+		.catch((err) => {
+			console.warn("[convrtr:bg] setPanelBehavior warning:", err);
+		});
+}
+
+// Fallback action click listener ensuring side panel opens on icon click
+chrome.action?.onClicked?.addListener(async (tab) => {
+	try {
+		if (tab?.windowId) {
+			await chrome.sidePanel.open({ windowId: tab.windowId });
+		} else {
+			const win = await chrome.windows.getLastFocused();
+			if (win?.id) {
+				await chrome.sidePanel.open({ windowId: win.id });
+			}
+		}
+	} catch (err) {
+		console.error(
+			"[convrtr:bg] Error opening side panel on action click:",
+			err,
+		);
+	}
+});
+
 let badgeClearTimer: ReturnType<typeof setTimeout> | null = null;
 
 /**
@@ -298,10 +328,10 @@ chrome.runtime.onInstalled.addListener(async () => {
 			contexts: ["page"],
 		});
 
-		// Configure side panel behavior: action icon shows popup with quick actions
+		// Configure side panel behavior: clicking action icon opens the native Side Panel
 		if (chrome.sidePanel?.setPanelBehavior) {
 			await chrome.sidePanel.setPanelBehavior({
-				openPanelOnActionClick: false,
+				openPanelOnActionClick: true,
 			});
 		}
 	} catch (err) {

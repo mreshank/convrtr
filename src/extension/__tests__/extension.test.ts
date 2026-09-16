@@ -52,9 +52,7 @@ describe("convrtr Chrome Extension Manifest & Configuration", () => {
 	it("points to existing source entry points", () => {
 		const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"));
 
-		expect(
-			existsSync(resolve(root, "src/extension", manifest.action.default_popup)),
-		).toBe(true);
+		expect(existsSync(resolve(root, "src/extension/popup.html"))).toBe(true);
 		expect(
 			existsSync(
 				resolve(root, "src/extension", manifest.side_panel.default_path),
