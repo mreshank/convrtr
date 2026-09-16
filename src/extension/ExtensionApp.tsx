@@ -509,7 +509,9 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 						color: "var(--ink)",
 					}}
 				>
-					<span className="truncate">Quick Popup [⌘⇧,]. Dock alongside tabs:</span>
+					<span className="truncate">
+						Quick Popup [⌘⇧,]. Dock alongside tabs:
+					</span>
 					<button
 						type="button"
 						onClick={handleOpenSidePanel}

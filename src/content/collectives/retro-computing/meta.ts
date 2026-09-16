@@ -39,5 +39,7 @@ export const meta: CollectiveMeta = {
 		"audio/hmi-to-wav",
 		"audio/rol-to-wav",
 		"image/pcd-to-png",
+		"audio/xmi-to-wav",
+		"image/raw-to-png",
 	],
 };

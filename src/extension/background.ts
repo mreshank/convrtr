@@ -546,8 +546,7 @@ async function openQuickPopup() {
 			focusedWindow?.left !== undefined && focusedWindow.width
 				? Math.max(0, focusedWindow.left + focusedWindow.width - width - 40)
 				: 200;
-		const top =
-			focusedWindow?.top !== undefined ? focusedWindow.top + 60 : 80;
+		const top = focusedWindow?.top !== undefined ? focusedWindow.top + 60 : 80;
 
 		await chrome.windows.create({
 			url: chrome.runtime.getURL("popup.html"),

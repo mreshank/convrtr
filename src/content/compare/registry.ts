@@ -4416,6 +4416,170 @@ export const COMPARISONS: ComparisonMeta[] = [
 			"Kodak Photo CD pioneered digital photo archiving, but proprietary formats become difficult to view over time. convrtr extracts Kodak Photo CD Image Pac files and translates PhotoYCC to standard sRGB 32-bit RGBA PNG images directly in your browser with zero data leakage.",
 		relatedTools: ["image/pcd-to-png", "image/srf-to-png", "image/tga-to-png"],
 	},
+	{
+		slug: "xmi-vs-mid",
+		title: "XMI vs MID: Miles Sound System Extended MIDI vs Standard MIDI",
+		description:
+			"A technical comparison between Miles Sound System Extended MIDI (.xmi) game music files and Standard MIDI (.mid). Discover multi-track event streaming, delta intervals, and modern audio conversion.",
+		formatA: "XMI",
+		formatB: "MIDI",
+		category: "audio",
+		summary:
+			"Miles Sound System Extended MIDI (.xmi) is a specialized game audio sequence format created in 1991 by John Miles for MS-DOS PC gaming titles from Sierra, Origin, LucasArts, and BioWare. Standard MIDI Files (.mid) represent a hardware-agnostic digital music specification published by the MIDI Manufacturers Association to encode note numbers, velocity, and timing parameters across electronic synthesizers.",
+		prosA: [
+			"Optimized for low-latency interrupt playback in resource-constrained MS-DOS game engines",
+			"Encapsulates timbre bank assignments (TIMB chunks) and sequence catalogs inside IFF containers",
+			"Powers classic video game soundtracks from Wing Commander, Ultima, Theme Park, and Warcraft",
+			"Preserves authentic 1990s PC gaming arrangements with dedicated channel velocity curves",
+		],
+		prosB: [
+			"Universal playback support across all modern operating systems, web browsers, and media players",
+			"Easily loaded into any Digital Audio Workstation (DAW) for remixing with modern virtual instruments",
+			"Supports standard 16-channel MIDI orchestrations with standardized General MIDI sound banks",
+			"Ubiquitous standard with decades of tool support and cross-platform software integration",
+		],
+		specs: [
+			{
+				feature: "Original Creator",
+				formatA: "John Miles / Miles Design (1991)",
+				formatB: "Dave Smith & MIDI Consortium (1983)",
+			},
+			{
+				feature: "File Container",
+				formatA: "IFF FORM XMID Chunk Hierarchy",
+				formatB: "Standard MThd / MTrk Chunk Hierarchy",
+			},
+			{
+				feature: "Delta Timing Scheme",
+				formatA: "Cumulative sub-128 byte intervals",
+				formatB: "Variable-Length Quantity (VLQ)",
+			},
+			{
+				feature: "Note Duration",
+				formatA: "Directly embedded in Note On events",
+				formatB: "Calculated via paired Note Off messages",
+			},
+			{
+				feature: "Modern Browser Playback",
+				formatA: "Requires dedicated converter or emulator",
+				formatB: "Requires Web Audio SoundFont synthesizer",
+			},
+		],
+		verdict:
+			"Standard MIDI is universal, but XMI remains the quintessential soundtrack format of 1990s MS-DOS PC gaming. convrtr parses IFF XMID containers and synthesizes multi-harmonic voices into crisp 16-bit linear stereo WAV audio directly in your browser.",
+		relatedTools: ["audio/xmi-to-wav", "audio/hmi-to-wav", "audio/rol-to-wav"],
+	},
+	{
+		slug: "troff-vs-markdown",
+		title:
+			"TROFF vs Markdown: Classical Typesetting Markup vs GitHub Flavored Markdown",
+		description:
+			"A technical comparison between classical AT&T troff typography documents and GitHub Flavored Markdown (GFM). Discover formatting requests, macro facilities, and modern documentation pipelines.",
+		formatA: "TROFF",
+		formatB: "Markdown",
+		category: "document",
+		summary:
+			"Troff is the historic typesetting language created in 1973 by Joe Ossanna and Brian Kernighan at AT&T Bell Laboratories to typeset technical documents and books on phototypesetters and laser printers. GitHub Flavored Markdown (GFM) is the universal lightweight plain-text markup standard designed for web readability, code repositories, issue tracking, and online documentation.",
+		prosA: [
+			"Unmatched mathematical precision and micro-typography control over line breaks and kerning",
+			"Extensible macro language enabling custom abbreviations, number registers, and traps",
+			"Rich preprocessor ecosystem (eqn for mathematics, tbl for tables, pic for diagrams)",
+			"Historic format used to typeset seminal computing books including K&R C",
+		],
+		prosB: [
+			"Instantly readable and writable in any plain text editor without compilation",
+			"Universal native rendering on GitHub, GitLab, modern wikis, and content management systems",
+			"Clean intuitive syntax for headings, emphasis, bullet lists, and fenced code blocks",
+			"Seamless integration into modern static site generators (Next.js, Astro, Hugo)",
+		],
+		specs: [
+			{
+				feature: "Original Creator",
+				formatA: "Joe Ossanna / Brian Kernighan (1973)",
+				formatB: "John Gruber / Aaron Swartz (2004)",
+			},
+			{
+				feature: "Target Output",
+				formatA: "Phototypesetters, PostScript, PDF",
+				formatB: "HTML, Web Browsers, Documentation",
+			},
+			{
+				feature: "Syntax Paradigm",
+				formatA: "Imperative typesetting dot requests (.sp, .br)",
+				formatB: "Declarative plain text conventions (#, *, >)",
+			},
+			{
+				feature: "Web Ecosystem Compatibility",
+				formatA: "Requires dedicated compilation pipeline",
+				formatB: "Native universal web support",
+			},
+			{
+				feature: "Learning Curve",
+				formatA: "Steep (Low-level typography commands)",
+				formatB: "Minimal (Learned in 5 minutes)",
+			},
+		],
+		verdict:
+			"Troff pioneered digital typography, but Markdown dominates modern developer documentation. convrtr parses classic AT&T troff documents into clean GitHub Flavored Markdown with preserved headings, blockquotes, and code blocks 100% offline.",
+		relatedTools: [
+			"document/troff-to-markdown",
+			"document/man-to-markdown",
+			"document/texinfo-to-markdown",
+		],
+	},
+	{
+		slug: "raw-vs-jpg",
+		title: "RAW vs JPEG: Digital Camera Sensor Data vs Compressed Web Images",
+		description:
+			"A technical comparison between camera RAW / DNG sensor files and standard JPEG (.jpg) images. Understand bit depth, dynamic range latitude, demosaicing, and web delivery.",
+		formatA: "RAW",
+		formatB: "JPEG",
+		category: "image",
+		summary:
+			"Camera RAW formats (including Adobe DNG, Canon CR2, Nikon NEF, and Sony ARW) store minimally processed 12-bit to 16-bit linear sensor samples directly from digital camera sensors alongside high-fidelity embedded preview streams. JPEG (Joint Photographic Experts Group) is the universal 8-bit lossy image standard using Discrete Cosine Transform (DCT) compression for compact storage and instant display.",
+		prosA: [
+			"Captures maximum sensor dynamic range with 12-bit to 16-bit color depth per channel",
+			"Preserves complete exposure latitude for recovering blown highlights and deep shadow details",
+			"Non-destructive workflow where white balance and color grading are applied post-capture",
+			"Professional photography standard for studio shoots, landscapes, and archival preservation",
+		],
+		prosB: [
+			"Universal viewing support across every smartphone, computer, browser, and smart display",
+			"Extremely compact file sizes (typically 10-20x smaller than uncompressed RAW sensor files)",
+			"Standard sRGB color encoding ready for instant social sharing and web publishing",
+			"Fast hardware-accelerated decoding supported natively by modern GPU and CPU architectures",
+		],
+		specs: [
+			{
+				feature: "Bit Depth",
+				formatA: "12-bit, 14-bit, or 16-bit per channel",
+				formatB: "8-bit per channel (24-bit RGB)",
+			},
+			{
+				feature: "Processing State",
+				formatA: "Unprocessed Bayer CFA sensor samples",
+				formatB: "Demosaiced, color-corrected, sharpened",
+			},
+			{
+				feature: "Compression Type",
+				formatA: "Lossless / Uncompressed",
+				formatB: "Lossy Discrete Cosine Transform (DCT)",
+			},
+			{
+				feature: "Typical File Size",
+				formatA: "20 MB – 80 MB per photo",
+				formatB: "2 MB – 10 MB per photo",
+			},
+			{
+				feature: "Browser Compatibility",
+				formatA: "Unsupported natively (requires conversion)",
+				formatB: "Universal native support (>99.9%)",
+			},
+		],
+		verdict:
+			"RAW delivers supreme photographic flexibility, but JPEG and PNG are essential for universal viewing. convrtr extracts camera RAW and DNG files into crisp 32-bit RGBA PNG images directly in your browser with zero data leakage.",
+		relatedTools: ["image/raw-to-png", "image/srf-to-png", "image/pcd-to-png"],
+	},
 ];
 
 export function getComparison(slug: string): ComparisonMeta | undefined {

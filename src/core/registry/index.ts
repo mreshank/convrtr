@@ -49,6 +49,7 @@ import { wavToMp3 } from "./tools/audio/wav-to-mp3";
 import { wavToOpus } from "./tools/audio/wav-to-opus";
 import { waveformWAV } from "./tools/audio/wav-waveform";
 import { xmToWav } from "./tools/audio/xm-to-wav";
+import { xmiToWav } from "./tools/audio/xmi-to-wav";
 import { avifToJpg } from "./tools/avif-to-jpg";
 import { avifToPng } from "./tools/avif-to-png";
 import { compressJpg } from "./tools/compress-jpg";
@@ -99,6 +100,7 @@ import { subToSrt } from "./tools/document/sub-to-srt";
 import { sxwToMarkdown } from "./tools/document/sxw-to-markdown";
 import { tcxToGeoJson } from "./tools/document/tcx-to-geojson";
 import { texinfoToMarkdown } from "./tools/document/texinfo-to-markdown";
+import { troffToMarkdown } from "./tools/document/troff-to-markdown";
 import { vcfToCsv } from "./tools/document/vcf-to-csv";
 import { vntToTxt } from "./tools/document/vnt-to-txt";
 import { vttToSrt } from "./tools/document/vtt-to-srt";
@@ -144,6 +146,7 @@ import { ppmToPng } from "./tools/image/ppm-to-png";
 import { procreateToPng } from "./tools/image/procreate-to-png";
 import { qoiToPng } from "./tools/image/qoi-to-png";
 import { rasToPng } from "./tools/image/ras-to-png";
+import { rawToPng } from "./tools/image/raw-to-png";
 import { rpgmvpToPng } from "./tools/image/rpgmvp-to-png";
 import { sgiToPng } from "./tools/image/sgi-to-png";
 import { srfToPng } from "./tools/image/srf-to-png";
@@ -405,6 +408,9 @@ export const TOOLS: Tool[] = [
 	rolToWav,
 	manToMarkdown,
 	pcdToPng,
+	xmiToWav,
+	troffToMarkdown,
+	rawToPng,
 ];
 
 export function getTool(id: string): Tool | undefined {

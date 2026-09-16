@@ -29,5 +29,6 @@ export const meta: CollectiveMeta = {
 		"document/lyx-to-markdown",
 		"document/texinfo-to-markdown",
 		"document/man-to-markdown",
+		"document/troff-to-markdown",
 	],
 };

@@ -1,0 +1,35 @@
+# Converting AT&T Troff Documents to Markdown: Classical Unix Typesetting
+
+In 1973, Joe Ossanna at AT&T Bell Laboratories created **troff** ("typesetter roff") to drive a Graphic Systems CAT phototypesetter connected to a PDP-11 Unix computer. Later enhanced by Brian Kernighan into device-independent troff (*ditroff*) in 1979, the system became the bedrock of computer science documentation.
+
+From classical Bell Labs Technical Memoranda to the original manuscripts of Brian Kernighan and Dennis Ritchie's *The C Programming Language*, troff documents (`.tr`, `.troff`, `.t`) contain decades of foundational computing research.
+
+---
+
+## 1. Classical Troff Requests vs Modern Markdown
+
+Troff processes text using a stream of imperative dot requests and inline escapes:
+
+- **Three-Part Titles (`.tl`):** Formats left, center, and right header/footer content: `.tl 'Draft'The C Language'1978'`.
+- **Vertical and Horizontal Spacing (`.sp`, `.br`, `.bp`):** Controls baseline advances, paragraph breaks, and page boundaries.
+- **Centering and Indents (`.ce`, `.in`, `.ti`):** Sets running margin indents and centered display blocks.
+- **Preformatted Verbatim (`.nf` / `.fi`):** Disables line filling to preserve source code listings and ASCII diagrams.
+- **String Registers (`.ds` / `\*(name`):** Defines reusable textual macros and variable expansions.
+- **Classical Macro Packages (`ms`, `me`, `mm`):** Provides high-level abstractions like `.TL` (title), `.AU` (author), `.NH` (numbered heading), `.PP` (paragraph), and `.QP` (quoted block).
+
+---
+
+## 2. Transforming Troff Primitives into Clean GFM
+
+convrtr parses troff requests and string registers directly in the browser:
+
+1. **Heading Synthesis:** Maps `.TL` to `# Document Title`, `.NH 1` to `## Primary Section`, and `.NH 2` to `### Subsection`.
+2. **Typography Escapes:** Resolves inline character escapes (`\fB` bold, `\fI` italic, `\f(CW` monospace, `\(em` em-dash) into clean GitHub Flavored Markdown.
+3. **Blockquotes and Code Blocks:** Maps `.QP` to Markdown blockquotes (`>`) and `.nf`/`.fi` blocks to fenced code blocks.
+4. **Macro Stripping:** Cleanly ignores raw typesetting driver requests while preserving content flow.
+
+---
+
+## 3. Fast, Private In-Browser Document Processing
+
+Technical reports, internal research papers, and archived Unix manuscripts should remain private. convrtr processes AT&T troff files 100% client-side in your browser with zero network requests.

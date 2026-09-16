@@ -24,5 +24,6 @@ export const meta: CollectiveMeta = {
 		"image/vda-to-png",
 		"image/wal-to-png",
 		"image/mng-to-png",
+		"audio/xmi-to-wav",
 	],
 };

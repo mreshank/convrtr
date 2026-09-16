@@ -3163,14 +3163,14 @@
     - Tool 139: `audio/hmi-to-wav` (Human Machine Interfaces MIDI `.hmi` MS-DOS game music to 16-bit stereo WAV) — **Shipped**
     - Tool 140: `document/texinfo-to-markdown` (GNU Texinfo `.texi` technical manual to GitHub Flavored Markdown) — **Shipped**
     - Tool 141: `image/mng-to-png` (Multiple-image Network Graphics `.mng` animation frames to PNG) — **Shipped**
-49. **Wave 49:**
-    - Tool 142: `audio/rol-to-wav` (AdLib Visual Composer `.rol` FM synthesis song to 16-bit stereo WAV)
-    - Tool 143: `document/man-to-markdown` (UNIX roff / troff manual page `.1`..`.8` to GitHub Flavored Markdown)
-    - Tool 144: `image/pcd-to-png` (Kodak Photo CD `.pcd` multi-resolution photo format to 32-bit RGBA PNG)
-50. **Wave 50 (The 147-Tool Grand Finale):**
-    - Tool 145: `audio/xmi-to-wav` (Miles Sound System Extended MIDI `.xmi` MS-DOS soundtrack to 16-bit stereo WAV)
-    - Tool 146: `document/troff-to-markdown` (Classical AT&T troff typography document to GitHub Flavored Markdown)
-    - Tool 147: `image/raw-to-png` (Universal DNG / Bayer RAW sensor preview extractor to 32-bit RGBA PNG)
+49. **Wave 49 (Shipped):**
+    - Tool 142: `audio/rol-to-wav` (AdLib Visual Composer `.rol` FM synthesis song to 16-bit stereo WAV) — **Shipped**
+    - Tool 143: `document/man-to-markdown` (UNIX roff / troff manual page `.1`..`.8` to GitHub Flavored Markdown) — **Shipped**
+    - Tool 144: `image/pcd-to-png` (Kodak Photo CD `.pcd` multi-resolution photo format to 32-bit RGBA PNG) — **Shipped**
+50. **Wave 50 (The 147-Tool Grand Finale — Shipped):**
+    - Tool 145: `audio/xmi-to-wav` (Miles Sound System Extended MIDI `.xmi` MS-DOS soundtrack to 16-bit stereo WAV) — **Shipped**
+    - Tool 146: `document/troff-to-markdown` (Classical AT&T troff typography document to GitHub Flavored Markdown) — **Shipped**
+    - Tool 147: `image/raw-to-png` (Universal DNG / Bayer RAW sensor preview extractor to 32-bit RGBA PNG) — **Shipped**
 
 
 

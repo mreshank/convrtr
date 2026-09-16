@@ -1,0 +1,33 @@
+# Converting Miles Sound System XMI to WAV: 1990s PC Game Soundtracks
+
+During the MS-DOS PC gaming boom of the 1990s, the **Miles Sound System (MSS)**—originally created by programmer John Miles under the name *Audio Interface Library (AIL)*—was the industry gold standard middleware for interactive video game sound.
+
+Titles developed by Sierra On-Line, Origin Systems, LucasArts, Bullfrog Productions, and BioWare—including *Wing Commander*, *Ultima Underworld*, *Theme Park*, *Master of Magic*, *Star Wars: X-Wing*, and *Baldur's Gate*—relied on the **Extended MIDI (.xmi)** format to drive music playback across AdLib, Sound Blaster, Roland MT-32, and General MIDI hardware.
+
+---
+
+## 1. The Structure of an IFF XMID File
+
+Unlike standard `.mid` files which follow standard MIDI chunk conventions (`MThd` / `MTrk`), XMI files are organized into Electronic Arts-style Interchange File Format (IFF) chunk structures:
+
+- **Top-Level `FORM` Chunk:** Declares the overall envelope with an `XDIR` (sequence catalog) or `XMID` (single extended song) form type FourCC.
+- **Timbre Bank (`TIMB`) Chunk:** Catalogs which hardware patch voices, Roland MT-32 timbres, or General MIDI program numbers are utilized by the sequence tracks.
+- **Event Stream (`EVNT`) Chunk:** Encapsulates the compressed MIDI note events. Rather than standard MIDI variable-length quantities, XMI represents delta time through sequential accumulator bytes with values under 128 (`0x00..0x7F`).
+- **Embedded Note Duration:** In XMI, Note On events (`0x90`) explicitly embed note duration counts directly within the command packet, simplifying polyphony tracking on early CPUs.
+
+---
+
+## 2. In-Browser Synthesis to 16-bit Linear WAV
+
+Because contemporary operating systems and media players do not ship with 1990s Miles Sound System drivers, playing `.xmi` files requires emulating the sequence scheduler and instrument voice synthesizer:
+
+1. **Delta Interval Accumulation:** Accumulates sequential sub-128 timing bytes to schedule note onset and release events precisely against tempo markings.
+2. **Harmonic Voice Generation:** Emulates multi-harmonic oscillator instruments across channels with dynamic ADSR amplitude envelopes.
+3. **Stereo Spatialization:** Evaluates pan controller events (`CC 10`) to recreate wide stereo imaging.
+4. **Uncompressed WAV Export:** Writes standard 16-bit 44.1 kHz linear PCM stereo audio via `writeWav`.
+
+---
+
+## 3. Preservation with 100% Offline Client-Side Privacy
+
+Preserving retro computer gaming culture should never depend on cloud services or remote server conversions. convrtr synthesizes your `.xmi` soundtrack files entirely inside your browser sandbox. 100% offline, private, and instant.

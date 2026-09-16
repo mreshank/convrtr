@@ -411,6 +411,15 @@ const MIME_MAP: Record<string, string> = {
 	"image/x-photo-cd": "pcd",
 	"image/x-pcd": "pcd",
 	"image/pcd": "pcd",
+	"audio/x-xmi": "xmi",
+	"audio/xmi": "xmi",
+	"application/x-xmi": "xmi",
+	"application/x-troff": "troff",
+	"image/x-raw": "raw",
+	"image/x-adobe-dng": "dng",
+	"image/x-canon-cr2": "cr2",
+	"image/x-nikon-nef": "nef",
+	"image/raw": "raw",
 };
 
 /**

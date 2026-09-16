@@ -11,11 +11,13 @@ import { meta as convertingAppleRtfdBundlesToMarkdown } from "./converting-apple
 import { meta as convertingAtariStAvrAudioToWav } from "./converting-atari-st-avr-audio-to-wav/meta";
 import { meta as convertingAtariStDegasToPng } from "./converting-atari-st-degas-to-png/meta";
 import { meta as convertingAtariStNeochromeToPng } from "./converting-atari-st-neochrome-to-png/meta";
+import { meta as convertingAttTroffDocumentsToMarkdown } from "./converting-att-troff-documents-to-markdown/meta";
 import { meta as convertingBetterPortableGraphicsBpgToPng } from "./converting-better-portable-graphics-bpg-to-png/meta";
 import { meta as convertingBibtexToMarkdownTables } from "./converting-bibtex-to-markdown-tables/meta";
 import { meta as convertingBlizzardBlpTexturesToPng } from "./converting-blizzard-blp-textures-to-png/meta";
 import { meta as convertingC64ArtStudioToPng } from "./converting-c64-art-studio-to-png/meta";
 import { meta as convertingC64KoalaKoaToPng } from "./converting-c64-koala-koa-to-png/meta";
+import { meta as convertingCameraRawDngToPng } from "./converting-camera-raw-dng-to-png/meta";
 import { meta as convertingCgmToSvg } from "./converting-cgm-to-svg/meta";
 import { meta as convertingClarisworksAppleworksCwkToMarkdown } from "./converting-clarisworks-appleworks-cwk-to-markdown/meta";
 import { meta as convertingComposer669TrackerToWav } from "./converting-composer-669-tracker-to-wav/meta";
@@ -38,6 +40,7 @@ import { meta as convertingImpulseTrackerItToWav } from "./converting-impulse-tr
 import { meta as convertingKodakPhotoCdToPng } from "./converting-kodak-photo-cd-to-png/meta";
 import { meta as convertingLyxDocumentsToMarkdown } from "./converting-lyx-documents-to-markdown/meta";
 import { meta as convertingMathematicaNbNotebooksToMarkdown } from "./converting-mathematica-nb-notebooks-to-markdown/meta";
+import { meta as convertingMilesSoundSystemXmiToWav } from "./converting-miles-sound-system-xmi-to-wav/meta";
 import { meta as convertingMngAnimatedGraphicsToPng } from "./converting-mng-animated-graphics-to-png/meta";
 import { meta as convertingMultitrackerMtmModulesToWav } from "./converting-multitracker-mtm-modules-to-wav/meta";
 import { meta as convertingNesChrTileRomToPng } from "./converting-nes-chr-tile-rom-to-png/meta";
@@ -156,6 +159,9 @@ export const BLOG_POSTS: BlogPostMeta[] = [
 	convertingAdlibRolMusicToWav,
 	convertingUnixManPagesToMarkdown,
 	convertingKodakPhotoCdToPng,
+	convertingMilesSoundSystemXmiToWav,
+	convertingAttTroffDocumentsToMarkdown,
+	convertingCameraRawDngToPng,
 ];
 
 export const PUBLISHED_BLOG_POSTS: BlogPostMeta[] = BLOG_POSTS.filter(
