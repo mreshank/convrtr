@@ -3,7 +3,7 @@
 Single source of truth for the Chrome Web Store listing metadata, permissions justifications, privacy disclosures, and version history for **convrtr**.
 
 **Last Updated:** 2026-09-16  
-**Current Version:** 0.2.0  
+**Current Version:** 0.2.1  
 **Manifest Version:** 3  
 
 ---
@@ -29,7 +29,9 @@ No file uploads. No server queues. No size limits. Zero data leaves your compute
 KEY FEATURES:
 • Universal Format Coverage: Convert images, video, audio, documents, e-books, archives, 3D models, retro gaming assets, vector graphics, and data files across 198+ dedicated tools and 146+ specialized local engines.
 • Multi-Hop Graph Routing: Intelligent conversion routing traverses format paths automatically (e.g. CLIP → PNG → PDF, or XM → WAV → MP3) in a single step with live progress reporting.
-• Native Chrome Side Panel: Dock convrtr beside your active browser tab. Drag and drop files from your desktop or web pages while you work.
+• Native Chrome Side Panel (Action click or ⌘⇧C): Dock convrtr beside your active browser tab with persistent visibility as you browse.
+• Instant Quick Popup (⌘⇧, or Ctrl+Shift+Comma): Summon a sleek, high-speed converter popup anytime with dedicated keyboard shortcut.
+• Omnidirectional Surface Switching: Seamlessly hop between Quick Popup, docked Side Panel, and full-screen Studio tab with 1 click.
 • Page Viewport Capture (⌘⇧S): One-click screenshot capture of your active browser viewport staged directly into convrtr for instant conversion to WebP, PDF, or vector SVG.
 • Deep Page Media & Asset Extraction: Extract responsive images, video/audio sources, canvas renders, inline vector SVGs, and linked documents from any web page in 1 click.
 • Quick Context Menus: Right-click any image, video, audio file, selected code/text, or link on any webpage and select "Convert with convrtr" to stage and process it instantly.
@@ -91,10 +93,17 @@ Every permission declared in `manifest.json` is justified below for the Chrome W
 
 ## 4. Version History
 
+### 0.2.1 — 2026-09-16
+- Defaulted primary toolbar action to native Chrome Side Panel.
+- Added dedicated shortcut (`Command+Shift+Comma` / `Ctrl+Shift+Comma`) to launch the Quick Popup anytime.
+- Added bidirectional navigation controls (`POPUP ↗` in side panel, `DOCK IN SIDE PANEL ↗` in popup).
+- Added right-click context menu shortcuts for both Side Panel and Quick Popup.
+- Strict zero-emojis styling enforcement across all surfaces, copy, and code.
+
 ### 0.2.0 — 2026-09-16
 - Added Viewport Screenshot Capture (`capture_tab` shortcut `Command+Shift+S` / `Ctrl+Shift+S`, header button, and context menu).
 - Added Deep Webpage Asset & Vector Extraction (images, audio/video sources, HTML5 canvases, inline SVGs serialized as standalone `.svg` files, and linked documents).
-- Added Dynamic Toolbar Icon Badging (⏳ Running, DONE in green accent, ERR in red).
+- Added Dynamic Toolbar Icon Badging (RUN status with count, DONE in green accent, ERR in red).
 - Added Quick Workflow Presets Bar (`PNG➔WEBP`, `RASTER➔SVG`, `PDF➔TXT`, `JSON➔YAML`, etc.).
 - Added Conversion History live search filter and CSV/JSON export buttons.
 - Added Omnibox search keyword `cv` for quick format matching from the Chrome address bar.

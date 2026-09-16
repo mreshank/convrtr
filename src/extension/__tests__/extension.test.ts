@@ -20,7 +20,7 @@ describe("convrtr Chrome Extension Manifest & Configuration", () => {
 
 		expect(manifest.manifest_version).toBe(3);
 		expect(manifest.name).toBe("convrtr");
-		expect(manifest.version).toBe("0.2.0");
+		expect(manifest.version).toBe("0.2.1");
 		expect(typeof manifest.description).toBe("string");
 		expect(manifest.description.length).toBeGreaterThan(10);
 	});
@@ -44,6 +44,13 @@ describe("convrtr Chrome Extension Manifest & Configuration", () => {
 	it("defines keyboard shortcuts and omnibox keyword", () => {
 		const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"));
 
+		expect(manifest.commands?.open_popup).toBeDefined();
+		expect(manifest.commands?.open_popup?.suggested_key?.mac).toBe(
+			"Command+Shift+Comma",
+		);
+		expect(manifest.commands?.open_popup?.suggested_key?.default).toBe(
+			"Ctrl+Shift+Comma",
+		);
 		expect(manifest.commands?.open_side_panel).toBeDefined();
 		expect(manifest.commands?.capture_tab).toBeDefined();
 		expect(manifest.omnibox?.keyword).toBe("cv");

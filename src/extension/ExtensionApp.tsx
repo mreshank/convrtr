@@ -378,6 +378,14 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 		}
 	};
 
+	const handleOpenPopup = async () => {
+		if (typeof chrome !== "undefined" && chrome.runtime?.sendMessage) {
+			await chrome.runtime.sendMessage({ type: "OPEN_POPUP" }).catch(() => {});
+		} else {
+			window.open("/popup.html", "_blank", "width=580,height=640");
+		}
+	};
+
 	const handleOpenFullTab = async () => {
 		if (typeof chrome !== "undefined") {
 			if (chrome.tabs?.create) {
@@ -496,12 +504,12 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 				<div
 					className="mono text-[11px] px-3 py-2 border mb-3 flex items-center justify-between gap-2"
 					style={{
-						borderColor: "var(--accent)",
+						borderColor: "var(--rule-subtle)",
 						background: "var(--surface)",
 						color: "var(--ink)",
 					}}
 				>
-					<span className="truncate">Dock convrtr alongside active tabs:</span>
+					<span className="truncate">Quick Popup [⌘⇧,]. Dock alongside tabs:</span>
 					<button
 						type="button"
 						onClick={handleOpenSidePanel}
@@ -511,8 +519,9 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 							color: "var(--ground)",
 							borderColor: "var(--accent)",
 						}}
+						title="Dock in Chrome Side Panel (⌘⇧C)"
 					>
-						OPEN SIDE PANEL ↗
+						DOCK IN SIDE PANEL ↗
 					</button>
 				</div>
 			)}
@@ -561,8 +570,19 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 									color: "var(--accent)",
 									background: "var(--surface)",
 								}}
+								title={
+									mode === "sidepanel"
+										? "Docked Side Panel (Shortcut: ⌘⇧C or Ctrl+Shift+C)"
+										: mode === "popup"
+											? "Quick Popup (Shortcut: ⌘⇧, or Ctrl+Shift+,)"
+											: "Full Tab Studio"
+								}
 							>
-								{mode === "sidepanel" ? "SIDE PANEL" : mode.toUpperCase()}
+								{mode === "sidepanel"
+									? "SIDE PANEL [⌘⇧C]"
+									: mode === "popup"
+										? "POPUP [⌘⇧,]"
+										: "STUDIO"}
 							</span>
 						</div>
 					</div>
@@ -596,6 +616,38 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 							HISTORY
 							{historyRecords.length > 0 ? ` (${historyRecords.length})` : ""}
 						</button>
+
+						{mode === "sidepanel" && (
+							<button
+								type="button"
+								onClick={handleOpenPopup}
+								className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer"
+								style={{
+									background: "transparent",
+									color: "var(--ink)",
+									borderColor: "var(--rule)",
+								}}
+								title="Open Quick Popup (⌘⇧, or Ctrl+Shift+,)"
+							>
+								POPUP ↗
+							</button>
+						)}
+
+						{mode === "popup" && (
+							<button
+								type="button"
+								onClick={handleOpenSidePanel}
+								className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer"
+								style={{
+									background: "var(--surface)",
+									color: "var(--accent)",
+									borderColor: "var(--accent)",
+								}}
+								title="Dock in Chrome Side Panel (⌘⇧C or Ctrl+Shift+C)"
+							>
+								SIDE PANEL ↗
+							</button>
+						)}
 
 						<button
 							type="button"

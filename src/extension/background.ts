@@ -323,8 +323,14 @@ chrome.runtime.onInstalled.addListener(async () => {
 		});
 
 		chrome.contextMenus.create({
+			id: "convrtr_open_popup",
+			title: "Open Quick Popup (⌘⇧,)",
+			contexts: ["page"],
+		});
+
+		chrome.contextMenus.create({
 			id: "convrtr_open_sidepanel",
-			title: "Open convrtr Side Panel",
+			title: "Open convrtr Side Panel (⌘⇧C)",
 			contexts: ["page"],
 		});
 
@@ -353,10 +359,22 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 			return;
 		}
 
-		// 2. Open Side Panel immediately for other actions
+		// 2. Open Quick Popup explicitly
+		if (info.menuItemId === "convrtr_open_popup") {
+			await openQuickPopup();
+			return;
+		}
+
+		// 3. Open Side Panel explicitly
+		if (info.menuItemId === "convrtr_open_sidepanel") {
+			await chrome.sidePanel.open({ windowId: tab.windowId });
+			return;
+		}
+
+		// Open Side Panel immediately for other contextual staging actions
 		await chrome.sidePanel.open({ windowId: tab.windowId });
 
-		// 3. Handle extracting all media & vector assets
+		// 4. Handle extracting all media & vector assets
 		if (info.menuItemId === "convrtr_extract_page_media" && tab.id) {
 			await extractPageAssets(tab.id, tab.windowId);
 			return;
@@ -495,9 +513,65 @@ chrome.omnibox.onInputEntered.addListener(async (text) => {
 	await chrome.tabs.create({ url: tabUrl });
 });
 
-// Handle keyboard shortcuts (e.g. Command+Shift+C / Command+Shift+S)
+/**
+ * Opens the convrtr Quick Popup.
+ * Tries chrome.action.openPopup() first (native toolbar popup, Chrome 127+),
+ * falling back to a dedicated compact floating window.
+ */
+async function openQuickPopup() {
+	try {
+		const focusedWindow = await chrome.windows.getLastFocused({
+			populate: false,
+		});
+
+		// Attempt native toolbar popup via Chrome 127+ API
+		if (typeof chrome.action?.openPopup === "function") {
+			try {
+				await chrome.action.setPopup({ popup: "popup.html" });
+				await chrome.action.openPopup({ windowId: focusedWindow?.id });
+				// Restore empty popup so subsequent icon clicks continue opening the side panel
+				setTimeout(async () => {
+					await chrome.action.setPopup({ popup: "" }).catch(() => {});
+				}, 500);
+				return;
+			} catch (openErr) {
+				console.warn("[convrtr:bg] chrome.action.openPopup fallback:", openErr);
+			}
+		}
+
+		// Floating popup window (resilient across all browser versions)
+		const width = 580;
+		const height = 640;
+		const left =
+			focusedWindow?.left !== undefined && focusedWindow.width
+				? Math.max(0, focusedWindow.left + focusedWindow.width - width - 40)
+				: 200;
+		const top =
+			focusedWindow?.top !== undefined ? focusedWindow.top + 60 : 80;
+
+		await chrome.windows.create({
+			url: chrome.runtime.getURL("popup.html"),
+			type: "popup",
+			width,
+			height,
+			left,
+			top,
+			focused: true,
+		});
+	} catch (err) {
+		console.error("[convrtr:bg] Failed to open quick popup:", err);
+	}
+}
+
+// Handle keyboard shortcuts (Command+Shift+Comma / Command+Shift+C / Command+Shift+S)
 chrome.commands.onCommand.addListener(async (command) => {
-	if (command === "open_side_panel") {
+	if (command === "open_popup") {
+		try {
+			await openQuickPopup();
+		} catch (err) {
+			console.error("[convrtr:bg] Error opening popup from shortcut:", err);
+		}
+	} else if (command === "open_side_panel") {
 		try {
 			const currentWindow = await chrome.windows.getCurrent();
 			if (currentWindow.id) {
@@ -521,6 +595,18 @@ chrome.commands.onCommand.addListener(async (command) => {
 
 // Listen for messages from popup, side panel, or client components
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+	if (message?.type === "OPEN_POPUP") {
+		(async () => {
+			try {
+				await openQuickPopup();
+				sendResponse({ ok: true });
+			} catch (err) {
+				sendResponse({ ok: false, error: String(err) });
+			}
+		})();
+		return true;
+	}
+
 	if (message?.type === "OPEN_SIDE_PANEL") {
 		(async () => {
 			try {
