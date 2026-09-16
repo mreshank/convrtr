@@ -1638,8 +1638,19 @@ export function MasterConverterClient({
 					onDrop={(e) => {
 						e.preventDefault();
 						setDropActive(false);
-						if (e.dataTransfer.files) {
+						if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
 							handleFiles(Array.from(e.dataTransfer.files));
+						} else {
+							const uri =
+								e.dataTransfer.getData("text/uri-list") ||
+								e.dataTransfer.getData("URL");
+							if (uri) {
+								window.dispatchEvent(
+									new CustomEvent("convrtr:fetch-url", {
+										detail: { url: uri },
+									}),
+								);
+							}
 						}
 					}}
 					onClick={() => {
@@ -3300,8 +3311,19 @@ export function MasterConverterClient({
 						onDrop={(e) => {
 							e.preventDefault();
 							setDropActive(false);
-							if (e.dataTransfer.files) {
+							if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
 								handleFiles(Array.from(e.dataTransfer.files));
+							} else {
+								const uri =
+									e.dataTransfer.getData("text/uri-list") ||
+									e.dataTransfer.getData("URL");
+								if (uri) {
+									window.dispatchEvent(
+										new CustomEvent("convrtr:fetch-url", {
+											detail: { url: uri },
+										}),
+									);
+								}
 							}
 						}}
 						onClick={() =>

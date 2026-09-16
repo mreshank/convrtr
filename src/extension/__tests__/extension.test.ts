@@ -1,6 +1,8 @@
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { exportHistoryAsCsv, exportHistoryAsJson } from "@/core/history/store";
+import type { ConversionHistoryRecord } from "@/core/history/types";
 import { TOOLS } from "@/core/registry";
 import {
 	findConversionRoute,
@@ -18,12 +20,12 @@ describe("convrtr Chrome Extension Manifest & Configuration", () => {
 
 		expect(manifest.manifest_version).toBe(3);
 		expect(manifest.name).toBe("convrtr");
-		expect(manifest.version).toBe("0.1.0");
+		expect(manifest.version).toBe("0.2.0");
 		expect(typeof manifest.description).toBe("string");
 		expect(manifest.description.length).toBeGreaterThan(10);
 	});
 
-	it("declares necessary permissions for native Chrome surfaces and offline capability", () => {
+	it("declares necessary permissions for native Chrome surfaces, tab capture, and offline capability", () => {
 		const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"));
 		const permissions = manifest.permissions as string[];
 
@@ -32,6 +34,19 @@ describe("convrtr Chrome Extension Manifest & Configuration", () => {
 		expect(permissions).toContain("contextMenus");
 		expect(permissions).toContain("tabs");
 		expect(permissions).toContain("downloads");
+		expect(permissions).toContain("scripting");
+		expect(permissions).toContain("activeTab");
+
+		const hostPermissions = manifest.host_permissions as string[];
+		expect(hostPermissions).toContain("<all_urls>");
+	});
+
+	it("defines keyboard shortcuts and omnibox keyword", () => {
+		const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"));
+
+		expect(manifest.commands?.open_side_panel).toBeDefined();
+		expect(manifest.commands?.capture_tab).toBeDefined();
+		expect(manifest.omnibox?.keyword).toBe("cv");
 	});
 
 	it("points to existing source entry points", () => {
@@ -92,5 +107,32 @@ describe("Core Engine & Tool Registry Sharing", () => {
 			(t) => t.id.includes("compress") || t.id.includes("resize"),
 		);
 		expect(hasSpecialized).toBe(true);
+	});
+
+	it("exports conversion history records as valid CSV and JSON", () => {
+		const mockRecords: ConversionHistoryRecord[] = [
+			{
+				id: "rec_1",
+				timestamp: Date.now(),
+				toolId: "image-png-to-webp",
+				category: "image",
+				inputName: "screenshot.png",
+				inputSize: 10240,
+				outputName: "screenshot.webp",
+				outputSize: 4096,
+				durationMs: 450,
+				status: "success",
+			},
+		];
+
+		const csv = exportHistoryAsCsv(mockRecords);
+		expect(csv).toContain("screenshot.png");
+		expect(csv).toContain("screenshot.webp");
+		expect(csv).toContain("success");
+
+		const json = exportHistoryAsJson(mockRecords);
+		const parsed = JSON.parse(json);
+		expect(parsed.length).toBe(1);
+		expect(parsed[0].inputName).toBe("screenshot.png");
 	});
 });

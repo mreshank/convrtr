@@ -3,7 +3,7 @@
 Single source of truth for the Chrome Web Store listing metadata, permissions justifications, privacy disclosures, and version history for **convrtr**.
 
 **Last Updated:** 2026-09-16  
-**Current Version:** 0.1.0  
+**Current Version:** 0.2.0  
 **Manifest Version:** 3  
 
 ---
@@ -30,18 +30,24 @@ KEY FEATURES:
 • Universal Format Coverage: Convert images, video, audio, documents, e-books, archives, 3D models, retro gaming assets, vector graphics, and data files across 198+ dedicated tools and 146+ specialized local engines.
 • Multi-Hop Graph Routing: Intelligent conversion routing traverses format paths automatically (e.g. CLIP → PNG → PDF, or XM → WAV → MP3) in a single step with live progress reporting.
 • Native Chrome Side Panel: Dock convrtr beside your active browser tab. Drag and drop files from your desktop or web pages while you work.
-• Quick Context Menus: Right-click any image, video, audio file, or link on any webpage and select "Convert with convrtr" to stage and process it instantly.
-• Selective Batch Processing: Queue multiple files, apply common target formats in bulk or customize per file, preview outputs, and download individually or as a single ZIP.
-• Full Desktop Studio Mode: Expand into a dedicated full browser tab whenever you want maximum screen space for massive file batches.
-• In-Place Operations: Compress images, resize dimensions, strip EXIF metadata, rotate PDFs, merge multiple PDFs into one document, normalize audio, and more.
+• Page Viewport Capture (⌘⇧S): One-click screenshot capture of your active browser viewport staged directly into convrtr for instant conversion to WebP, PDF, or vector SVG.
+• Deep Page Media & Asset Extraction: Extract responsive images, video/audio sources, canvas renders, inline vector SVGs, and linked documents from any web page in 1 click.
+• Quick Context Menus: Right-click any image, video, audio file, selected code/text, or link on any webpage and select "Convert with convrtr" to stage and process it instantly.
+• Address Bar Omnibox (cv): Type "cv png to webp" or "cv pdf" directly into your Chrome address bar for instant format search and jump-to-converter navigation.
+• Quick Workflow Presets: Instant one-click chips for popular workflows (PNG➔WEBP, JPG➔WEBP, RASTER➔SVG, PDF➔TXT, SVG➔PNG, JSON➔YAML, MP4➔MP3).
+• Dynamic Icon Badging: Live status badge (⏳ Running, DONE, ERR) directly on your toolbar icon so you always know when batch processing finishes.
+• History Drawer & Export: Search past conversions, preview file sizes and duration, and export full history records as CSV or JSON.
 • Complete Privacy & Security: All conversions are processed locally via WebAssembly, Web Workers, and WebCodecs. Works completely offline.
 
 PERMISSIONS USAGE:
 • sidePanel: Displays the converter alongside any web page you are browsing.
 • storage: Temporarily passes staged file references between background events and the active converter UI.
-• contextMenus: Lets you right-click web media to convert it instantly with convrtr.
-• tabs: Opens the converter in a full tab when requested and binds the side panel to your active window.
+• contextMenus: Lets you right-click web media, text selections, or entire pages to convert them instantly with convrtr.
+• tabs: Opens the converter in a full tab when requested, identifies window IDs for side panel docking, and captures visible viewports.
 • downloads: Saves your converted files and batch ZIP archives directly to your Downloads folder.
+• scripting: Queries DOM elements on the active page to extract images, media sources, inline SVGs, and document links upon user request.
+• activeTab: Captures the visible tab viewport when you trigger "Capture Page" (⌘⇧S).
+• host_permissions (<all_urls>): Allows media and asset extraction across standard websites upon user command.
 ```
 
 ### Category
@@ -63,10 +69,13 @@ Every permission declared in `manifest.json` is justified below for the Chrome W
 | Permission | Specific Reason Required for Functionality |
 | :--- | :--- |
 | `sidePanel` | Allows convrtr to open in Chrome's native Side Panel dock, allowing users to drag and drop files and monitor conversion progress without switching away from their current web page. |
-| `storage` | Uses `chrome.storage.session` to pass metadata for media selected via context menus into the converter interface. No personal data or browsing history is stored. |
-| `contextMenus` | Creates context menu entries ("Convert image with convrtr", "Convert video with convrtr", etc.) when right-clicking media on web pages. |
-| `tabs` | Identifies the current browser window ID so the side panel opens in the user's active window, and allows opening the Full Tab Studio (`tab.html`) in a new tab upon user request. |
-| `downloads` | Saves completed conversion outputs, transformed images/audio/video, and batch ZIP archives to the user's local disk via standard browser download APIs. |
+| `storage` | Uses `chrome.storage.session` to pass ephemeral file references (such as media URLs, text snippets, or screenshots) from background events into the converter interface. No personal data or browsing history is stored. |
+| `contextMenus` | Creates context menu entries ("Convert image with convrtr", "Capture visible page to convrtr", "Extract all media on page", etc.) when right-clicking on web pages. |
+| `tabs` | Identifies the current browser window ID so the side panel opens in the user's active window, captures the visible tab viewport when requested, and allows opening the Full Tab Studio (`tab.html`) upon user request. |
+| `downloads` | Saves completed conversion outputs, transformed images/audio/video, and batch ZIP archives to the user's local disk via Chrome's native download manager. |
+| `scripting` | Executes non-intrusive DOM queries to discover and extract media (images, audio/video sources, canvases, inline SVGs, and linked documents) on the active page when explicitly invoked by the user. |
+| `activeTab` | Grants temporary permission to capture the active tab's visible area (`chrome.tabs.captureVisibleTab`) when the user executes the Capture Page command (`Command+Shift+S` or via extension button). |
+| `host_permissions: ["<all_urls>"]` | Required to permit asset extraction across any standard website that the user requests media extraction on. Zero data is uploaded or transmitted remotely. |
 
 ---
 
@@ -81,6 +90,15 @@ Every permission declared in `manifest.json` is justified below for the Chrome W
 ---
 
 ## 4. Version History
+
+### 0.2.0 — 2026-09-16
+- Added Viewport Screenshot Capture (`capture_tab` shortcut `Command+Shift+S` / `Ctrl+Shift+S`, header button, and context menu).
+- Added Deep Webpage Asset & Vector Extraction (images, audio/video sources, HTML5 canvases, inline SVGs serialized as standalone `.svg` files, and linked documents).
+- Added Dynamic Toolbar Icon Badging (⏳ Running, DONE in green accent, ERR in red).
+- Added Quick Workflow Presets Bar (`PNG➔WEBP`, `RASTER➔SVG`, `PDF➔TXT`, `JSON➔YAML`, etc.).
+- Added Conversion History live search filter and CSV/JSON export buttons.
+- Added Omnibox search keyword `cv` for quick format matching from the Chrome address bar.
+- Manifest V3 permissions upgraded with `activeTab`, `scripting`, and `host_permissions`.
 
 ### 0.1.0 — 2026-09-16
 - Initial release of the universal convrtr Chrome Extension.
