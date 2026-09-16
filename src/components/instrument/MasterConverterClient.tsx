@@ -2874,7 +2874,7 @@ export function MasterConverterClient({
 																	}}
 																	title="Configure advanced parameters for this file"
 																>
-																	{item.isConfigOpen ? "▲ PARAMS" : "⚙ PARAMS"}
+																	{item.isConfigOpen ? "▲ PARAMS" : "▼ PARAMS"}
 																</button>
 															)}
 													</div>

@@ -32,7 +32,7 @@ export function PostStatusBanner({ status }: { status?: BlogPostStatus }) {
 						gap: "calc(var(--space-base) / 2)",
 					}}
 				>
-					<span aria-hidden="true">⚠</span> Under Review
+					<span aria-hidden="true" className="font-mono">[!]</span> Under Review
 				</span>
 				<p
 					style={{

@@ -26,14 +26,14 @@ const outDir = resolve(root, "dist-extension");
 const isWatch = process.argv.includes("--watch") || process.argv.includes("-w");
 
 async function runBuild() {
-	console.log("⚡ Building convrtr Chrome Extension...");
+	console.log("[convrtr:build] Building Chrome Extension...");
 
 	// 1. Generate icons
-	console.log("🎨 Generating extension icons...");
+	console.log("[convrtr:build] Generating extension icons...");
 	await generateExtensionIcons();
 
 	// 2. Run Vite build
-	console.log("📦 Bundling extension with Vite...");
+	console.log("[convrtr:build] Bundling extension with Vite...");
 	const buildResult = await build({
 		configFile: false,
 		root: srcExtension,
@@ -73,7 +73,9 @@ async function runBuild() {
 	// 3. Post-build asset copying
 	await copyStaticExtensionAssets();
 
-	console.log("✅ convrtr Chrome Extension build complete at dist-extension/");
+	console.log(
+		"[convrtr:build] Chrome Extension build complete at dist-extension/",
+	);
 	return buildResult;
 }
 
@@ -108,6 +110,6 @@ async function copyStaticExtensionAssets() {
 }
 
 runBuild().catch((err) => {
-	console.error("❌ Extension build failed:", err);
+	console.error("[convrtr:build] Extension build failed:", err);
 	process.exit(1);
 });

@@ -35,7 +35,7 @@ KEY FEATURES:
 • Quick Context Menus: Right-click any image, video, audio file, selected code/text, or link on any webpage and select "Convert with convrtr" to stage and process it instantly.
 • Address Bar Omnibox (cv): Type "cv png to webp" or "cv pdf" directly into your Chrome address bar for instant format search and jump-to-converter navigation.
 • Quick Workflow Presets: Instant one-click chips for popular workflows (PNG➔WEBP, JPG➔WEBP, RASTER➔SVG, PDF➔TXT, SVG➔PNG, JSON➔YAML, MP4➔MP3).
-• Dynamic Icon Badging: Live status badge (⏳ Running, DONE, ERR) directly on your toolbar icon so you always know when batch processing finishes.
+• Dynamic Icon Badging: Live status badge (RUN, DONE, ERR) directly on your toolbar icon so you always know when batch processing finishes.
 • History Drawer & Export: Search past conversions, preview file sizes and duration, and export full history records as CSV or JSON.
 • Complete Privacy & Security: All conversions are processed locally via WebAssembly, Web Workers, and WebCodecs. Works completely offline.
 

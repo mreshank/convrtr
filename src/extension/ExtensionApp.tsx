@@ -618,7 +618,7 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 					<button
 						type="button"
 						onClick={handleCaptureVisibleTab}
-						className="mono text-[10px] py-1.5 px-2 border flex items-center justify-center gap-1.5 transition-colors cursor-pointer text-center"
+						className="mono text-[10px] py-1.5 px-2 border flex items-center justify-center transition-colors cursor-pointer text-center"
 						style={{
 							background: "var(--surface)",
 							color: "var(--ink)",
@@ -626,14 +626,13 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 						}}
 						title="Capture visible tab viewport screenshot (⌘⇧S)"
 					>
-						<span>📷</span>
 						<span className="truncate">CAPTURE</span>
 					</button>
 
 					<button
 						type="button"
 						onClick={handleExtractAllPageAssets}
-						className="mono text-[10px] py-1.5 px-2 border flex items-center justify-center gap-1.5 transition-colors cursor-pointer text-center"
+						className="mono text-[10px] py-1.5 px-2 border flex items-center justify-center transition-colors cursor-pointer text-center"
 						style={{
 							background: "var(--surface)",
 							color: "var(--ink)",
@@ -641,14 +640,13 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 						}}
 						title="Extract all media & SVGs from current webpage"
 					>
-						<span>⚡</span>
 						<span className="truncate">EXTRACT</span>
 					</button>
 
 					<button
 						type="button"
 						onClick={handlePasteFromClipboardButton}
-						className="mono text-[10px] py-1.5 px-2 border flex items-center justify-center gap-1.5 transition-colors cursor-pointer text-center"
+						className="mono text-[10px] py-1.5 px-2 border flex items-center justify-center transition-colors cursor-pointer text-center"
 						style={{
 							background: "var(--surface)",
 							color: "var(--ink)",
@@ -656,7 +654,6 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 						}}
 						title="Paste image/document from clipboard (⌘V)"
 					>
-						<span>📋</span>
 						<span className="truncate">PASTE ⌘V</span>
 					</button>
 				</div>
