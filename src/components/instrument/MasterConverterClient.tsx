@@ -665,6 +665,24 @@ export function MasterConverterClient({
 		if (staged.length > 0) {
 			handleFiles(staged);
 		}
+
+		const onIngest = (
+			e: CustomEvent<{ files: (File | StagedConversion)[] }>,
+		) => {
+			if (e.detail?.files && e.detail.files.length > 0) {
+				handleFiles(e.detail.files);
+			}
+		};
+		window.addEventListener(
+			"convrtr:ingest" as never,
+			onIngest as EventListener,
+		);
+		return () => {
+			window.removeEventListener(
+				"convrtr:ingest" as never,
+				onIngest as EventListener,
+			);
+		};
 	}, []);
 
 	const selectedItems = items.filter((item) => item.selected);

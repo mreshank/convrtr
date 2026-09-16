@@ -59,7 +59,8 @@ export const rolToWav: Tool = {
 		],
 	},
 	seo: {
-		title: "ROL to WAV — Convert AdLib Visual Composer ROL to WAV Online | convrtr",
+		title:
+			"ROL to WAV — Convert AdLib Visual Composer ROL to WAV Online | convrtr",
 		h1: "Convert AdLib Visual Composer (.rol) to WAV",
 		intent:
 			"Synthesize and convert vintage AdLib Visual Composer (.rol) music files from 1980s and 1990s MS-DOS multimedia applications into studio-quality 16-bit stereo WAV audio directly in your browser. Pure Yamaha YM3812 OPL2 FM synthesis 100% offline with zero server uploads.",

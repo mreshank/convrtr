@@ -40,11 +40,7 @@ export function convertRolToWav(
 		);
 	}
 
-	const view = new DataView(
-		bytes.buffer,
-		bytes.byteOffset,
-		bytes.byteLength,
-	);
+	const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
 
 	const majorVer = view.getUint16(0, true);
 	const minorVer = view.getUint16(2, true);
@@ -192,7 +188,8 @@ export function convertRolToWav(
 			if (voice.phaseCar > 2 * Math.PI) voice.phaseCar -= 2 * Math.PI;
 
 			// Carrier modulated by modulator
-			const carSample = Math.sin(voice.phaseCar + modSample) * env * voice.volume * 0.28;
+			const carSample =
+				Math.sin(voice.phaseCar + modSample) * env * voice.volume * 0.28;
 
 			// Channel stereo panning (-0.6 left, 0 center, 0.6 right)
 			const pan = ((voice.channel % 3) - 1) * 0.6;

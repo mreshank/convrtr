@@ -1,0 +1,84 @@
+@import "../design/tokens.css";
+@import "../design/primitives/primitives.css";
+@import "../design/families/families.css";
+@import "../design/templates/templates.css";
+@import "../design/chrome/chrome.css";
+@import "tailwindcss";
+
+:root {
+	--font-sans:
+		-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+		Arial, sans-serif;
+	--font-mono:
+		ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+		"Courier New", monospace;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+	background-color: var(--ground);
+	color: var(--ink);
+	font-family: var(--font-sans);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	text-rendering: optimizeLegibility;
+	scrollbar-color: var(--rule-strong) var(--ground);
+	scrollbar-width: thin;
+	min-height: 100vh;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
+}
+
+::-webkit-scrollbar-track {
+	background: var(--ground);
+}
+
+::-webkit-scrollbar-thumb {
+	background: var(--rule-strong);
+	border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: var(--accent);
+}
+
+/* Custom selection */
+::selection {
+	background-color: var(--accent);
+	color: var(--ground);
+}
+
+/* Side panel responsive container */
+.convrtr-sidepanel-shell {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	min-height: 100vh;
+	box-sizing: border-box;
+}
+
+/* Popup specific bounds */
+.convrtr-popup-shell {
+	width: 480px;
+	max-width: 100vw;
+	min-height: 520px;
+	display: flex;
+	flex-direction: column;
+	box-sizing: border-box;
+	background-color: var(--ground);
+}
+
+/* Full tab studio shell */
+.convrtr-tab-shell {
+	width: 100%;
+	min-height: 100vh;
+	max-width: 1400px;
+	margin: 0 auto;
+	box-sizing: border-box;
+}

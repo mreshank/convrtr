@@ -37,8 +37,7 @@ export const pcdToPng: Tool = {
 			{
 				id: "base16",
 				label: "Base/16 Thumbnail (192×128)",
-				explanation:
-					"Extracts contact-sheet thumbnail resolution (Base/16).",
+				explanation: "Extracts contact-sheet thumbnail resolution (Base/16).",
 				params: { resolution: "base16" },
 			},
 		],
@@ -58,8 +57,7 @@ export const pcdToPng: Tool = {
 		],
 	},
 	seo: {
-		title:
-			"PCD to PNG — Convert Kodak Photo CD Images to PNG Online | convrtr",
+		title: "PCD to PNG — Convert Kodak Photo CD Images to PNG Online | convrtr",
 		h1: "Convert Kodak Photo CD (.pcd) to PNG",
 		intent:
 			"Extract and convert vintage Kodak Photo CD Image Pac archives (.pcd) into high-resolution 32-bit RGBA PNG images directly in your browser. Accurate PhotoYCC color space translation 100% offline with zero server uploads.",

@@ -65,11 +65,15 @@ describe("Unix Man Page Parser Engine", () => {
 
 		expect(result.markdown).toContain("# EXAMPLE(1) — User Commands");
 		expect(result.markdown).toContain("## NAME");
-		expect(result.markdown).toContain("example - an exemplary command line utility");
+		expect(result.markdown).toContain(
+			"example - an exemplary command line utility",
+		);
 		expect(result.markdown).toContain("## SYNOPSIS");
 		expect(result.markdown).toContain("### Options");
 		expect(result.markdown).toContain(": Enable verbose output mode.");
-		expect(result.markdown).toContain("```\n$ example --verbose -o out.txt\n$ cat out.txt\n```");
+		expect(result.markdown).toContain(
+			"```\n$ example --verbose -o out.txt\n$ cat out.txt\n```",
+		);
 		expect(result.markdown).toContain("## SEE ALSO");
 		expect(result.markdown).toContain("**ls**(1)");
 	});

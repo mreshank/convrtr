@@ -4303,15 +4303,12 @@ export const COMPARISONS: ComparisonMeta[] = [
 		],
 		verdict:
 			"Standard MIDI remains the universal music protocol, but vintage AdLib ROL music captures the authentic spirit of early PC soundcards. convrtr emulates the Yamaha YM3812 OPL2 chip to synthesize ROL files into studio-quality 16-bit stereo WAV audio directly in your browser.",
-		relatedTools: [
-			"audio/rol-to-wav",
-			"audio/hmi-to-wav",
-			"audio/imf-to-wav",
-		],
+		relatedTools: ["audio/rol-to-wav", "audio/hmi-to-wav", "audio/imf-to-wav"],
 	},
 	{
 		slug: "man-vs-markdown",
-		title: "MAN vs Markdown: Unix Roff Documentation vs GitHub Flavored Markdown",
+		title:
+			"MAN vs Markdown: Unix Roff Documentation vs GitHub Flavored Markdown",
 		description:
 			"A technical comparison between Unix manual pages (roff / man / mdoc) and GitHub Flavored Markdown (GFM). Discover formatting conventions, macro directives, and modern web documentation.",
 		formatA: "MAN",
@@ -4417,11 +4414,7 @@ export const COMPARISONS: ComparisonMeta[] = [
 		],
 		verdict:
 			"Kodak Photo CD pioneered digital photo archiving, but proprietary formats become difficult to view over time. convrtr extracts Kodak Photo CD Image Pac files and translates PhotoYCC to standard sRGB 32-bit RGBA PNG images directly in your browser with zero data leakage.",
-		relatedTools: [
-			"image/pcd-to-png",
-			"image/srf-to-png",
-			"image/tga-to-png",
-		],
+		relatedTools: ["image/pcd-to-png", "image/srf-to-png", "image/tga-to-png"],
 	},
 ];
 
