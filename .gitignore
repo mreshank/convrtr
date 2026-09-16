@@ -17,6 +17,7 @@
 /.next/
 /out/
 /dist-extension/
+/convrtr-extension*.zip
 
 # playwright
 /test-results/

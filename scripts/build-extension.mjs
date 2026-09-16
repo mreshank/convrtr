@@ -10,8 +10,9 @@
  * 4. Supports `--watch` flag for local live development.
  */
 
+import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
-import { cp, mkdir, readFile, writeFile } from "node:fs/promises";
+import { cp, mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import react from "@vitejs/plugin-react";
@@ -73,6 +74,11 @@ async function runBuild() {
 	// 3. Post-build asset copying
 	await copyStaticExtensionAssets();
 
+	// 4. Package ZIP archive for Chrome Web Store if not watch mode
+	if (!isWatch) {
+		await packageExtensionZip();
+	}
+
 	console.log(
 		"[convrtr:build] Chrome Extension build complete at dist-extension/",
 	);
@@ -106,6 +112,33 @@ async function copyStaticExtensionAssets() {
 	if (existsSync(ffmpegSource)) {
 		await cp(ffmpegSource, resolve(outDir, "ffmpeg"), { recursive: true });
 		console.log("  → Copied ffmpeg/");
+	}
+}
+
+async function packageExtensionZip() {
+	try {
+		const manifestJson = JSON.parse(
+			await readFile(resolve(srcExtension, "manifest.json"), "utf-8"),
+		);
+		const version = manifestJson.version || "0.2.1";
+		const versionZip = resolve(root, `convrtr-extension-v${version}.zip`);
+		const latestZip = resolve(root, "convrtr-extension.zip");
+
+		console.log(
+			"[convrtr:build] Creating Chrome Web Store distribution ZIP...",
+		);
+		execFileSync("zip", ["-r", "-X", versionZip, ".", "-x", "*.DS_Store"], {
+			cwd: outDir,
+			stdio: "ignore",
+		});
+		await cp(versionZip, latestZip);
+
+		const { size } = await stat(versionZip);
+		const sizeMb = (size / (1024 * 1024)).toFixed(2);
+		console.log(`  → Created ${versionZip} (${sizeMb} MB)`);
+		console.log(`  → Created ${latestZip} (${sizeMb} MB)`);
+	} catch (err) {
+		console.warn("[convrtr:build] Warning: Could not create ZIP archive:", err);
 	}
 }
 
