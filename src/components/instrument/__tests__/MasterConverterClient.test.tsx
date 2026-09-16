@@ -5,6 +5,7 @@ import { MasterConverterClient } from "../MasterConverterClient";
 // Mock runJob and readFile
 vi.mock("@/core/pipeline/client", () => ({
 	runJob: vi.fn().mockResolvedValue(new ArrayBuffer(100)),
+	runManyJob: vi.fn().mockResolvedValue(new ArrayBuffer(300)),
 	JobError: class JobError extends Error {
 		code = "ENGINE_FAILURE" as const;
 	},
@@ -520,5 +521,88 @@ describe("MasterConverterClient", () => {
 			name: /Save icon\.png/i,
 		});
 		expect(saveBtn).toBeDefined();
+	});
+
+	it("executes multi-hop chained conversion seamlessly across multiple steps", async () => {
+		const { runJob } = await import("@/core/pipeline/client");
+		render(<MasterConverterClient />);
+		const dropField = screen.getByTestId("drop-field");
+
+		const files = [
+			new File(["clip-data"], "artwork.clip", {
+				type: "application/x-sqlite3",
+			}),
+		];
+		fireEvent.drop(dropField, { dataTransfer: { files } });
+
+		const select = screen.getByRole("combobox", {
+			name: "Target format for artwork.clip",
+		}) as HTMLSelectElement;
+
+		// Select PDF target (which is a multi-hop via PNG)
+		const pdfOption = Array.from(select.options).find((opt) =>
+			opt.value.includes("pdf"),
+		);
+		expect(pdfOption).toBeDefined();
+		fireEvent.change(select, { target: { value: pdfOption?.value } });
+
+		const convertBtn = screen.getByRole("button", { name: /CONVERT 1 FILE/i });
+		fireEvent.click(convertBtn);
+
+		// Verify completion
+		const saveBtn = await screen.findByRole("button", {
+			name: /Save artwork\.clip/i,
+		});
+		expect(saveBtn).toBeDefined();
+		expect(runJob).toHaveBeenCalled();
+	});
+
+	it("renders merge PDF button when multiple PDFs are selected and merges them", async () => {
+		const { runManyJob } = await import("@/core/pipeline/client");
+		render(<MasterConverterClient />);
+		const dropField = screen.getByTestId("drop-field");
+
+		const files = [
+			new File(["pdf-1"], "doc1.pdf", { type: "application/pdf" }),
+			new File(["pdf-2"], "doc2.pdf", { type: "application/pdf" }),
+		];
+		fireEvent.drop(dropField, { dataTransfer: { files } });
+
+		const mergeBtn = screen.getByTestId("merge-selected-pdfs-btn");
+		expect(mergeBtn).toBeDefined();
+		expect(mergeBtn.textContent).toContain("MERGE 2 PDFS");
+
+		fireEvent.click(mergeBtn);
+
+		await screen.findByText(/Successfully merged 2 PDFs/i);
+		expect(runManyJob).toHaveBeenCalled();
+	});
+
+	it("toggles parameter tuning drawer for tools with advanced options", async () => {
+		render(<MasterConverterClient />);
+		const dropField = screen.getByTestId("drop-field");
+
+		const files = [new File(["jpg-data"], "photo.jpg", { type: "image/jpeg" })];
+		fireEvent.drop(dropField, { dataTransfer: { files } });
+
+		const select = screen.getByRole("combobox", {
+			name: "Target format for photo.jpg",
+		}) as HTMLSelectElement;
+
+		const resizeOption = Array.from(select.options).find((opt) =>
+			opt.value.includes("resize"),
+		);
+		if (resizeOption) {
+			fireEvent.change(select, { target: { value: resizeOption.value } });
+
+			const toggleConfigBtn = screen.getByRole("button", { name: /PARAMS/i });
+			expect(toggleConfigBtn).toBeDefined();
+
+			fireEvent.click(toggleConfigBtn);
+			expect(screen.getByText(/\[ CONFIGURATION:/i)).toBeDefined();
+
+			fireEvent.click(screen.getByRole("button", { name: /CLOSE ✕/i }));
+			expect(screen.queryByText(/\[ CONFIGURATION:/i)).toBeNull();
+		}
 	});
 });

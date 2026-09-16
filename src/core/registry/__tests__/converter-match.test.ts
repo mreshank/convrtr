@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
 	detectFileExtension,
+	findConversionRoute,
 	findToolForConversion,
 	getAllTargetFormats,
 	getAvailableTargetFormatsForFile,
@@ -98,6 +99,82 @@ describe("converter-match", () => {
 			const all = getAllTargetFormats([file1, file2]);
 			expect(all).toContain("webp");
 			expect(all).toContain("mp3");
+		});
+	});
+
+	describe("findConversionRoute", () => {
+		it("resolves direct route for direct tool", () => {
+			const routeInfo = findConversionRoute("png", "webp");
+			expect(routeInfo).toBeDefined();
+			expect(routeInfo?.route).toHaveLength(1);
+			expect(routeInfo?.tool.id).toBe("image/png-to-webp");
+		});
+
+		it("resolves multi-hop route for clip -> pdf (via PNG)", () => {
+			const routeInfo = findConversionRoute("clip", "pdf");
+			expect(routeInfo).toBeDefined();
+			if (!routeInfo) return;
+			expect(routeInfo.route.length).toBeGreaterThanOrEqual(2);
+			expect(routeInfo.route[0]?.accept.ext).toContain("clip");
+			expect(routeInfo.route[routeInfo.route.length - 1]?.output.ext).toBe(
+				"pdf",
+			);
+			expect(routeInfo.intermediateSteps).toContain("PNG");
+		});
+
+		it("resolves multi-hop route for tracker audio xm -> mp3 (via WAV)", () => {
+			const routeInfo = findConversionRoute("xm", "mp3");
+			expect(routeInfo).toBeDefined();
+			if (!routeInfo) return;
+			expect(routeInfo.route.length).toBeGreaterThanOrEqual(2);
+			expect(routeInfo.route[0]?.accept.ext).toContain("xm");
+			expect(routeInfo.route[routeInfo.route.length - 1]?.output.ext).toBe(
+				"mp3",
+			);
+			expect(routeInfo.intermediateSteps).toContain("WAV");
+		});
+
+		it("resolves multi-hop route for mov -> gif (via MP4)", () => {
+			const routeInfo = findConversionRoute("mov", "gif");
+			expect(routeInfo).toBeDefined();
+			if (!routeInfo) return;
+			expect(routeInfo.route.length).toBeGreaterThanOrEqual(2);
+			expect(routeInfo.route[0]?.accept.ext).toContain("mov");
+			expect(routeInfo.route[routeInfo.route.length - 1]?.output.ext).toBe(
+				"gif",
+			);
+			expect(routeInfo.intermediateSteps).toContain("MP4");
+		});
+
+		it("resolves operation disambiguation by specific tool ID", () => {
+			const compressRoute = findConversionRoute("jpg", "image/compress-jpg");
+			expect(compressRoute).toBeDefined();
+			expect(compressRoute?.tool.id).toBe("image/compress-jpg");
+
+			const resizeRoute = findConversionRoute("jpg", "image/resize-jpg");
+			expect(resizeRoute).toBeDefined();
+			expect(resizeRoute?.tool.id).toBe("image/resize-jpg");
+		});
+	});
+
+	describe("operation disambiguation and multi-hop in getAvailableTargetFormatsForFile", () => {
+		it("includes disambiguated same-format operations for JPG", () => {
+			const targets = getAvailableTargetFormatsForFile("sample.jpg");
+			const labels = targets.map((t) => t.label);
+			expect(labels.some((l) => l.includes("COMPRESS"))).toBe(true);
+			expect(labels.some((l) => l.includes("RESIZE"))).toBe(true);
+			expect(labels.some((l) => l.includes("STRIP METADATA"))).toBe(true);
+		});
+
+		it("includes multi-hop options for Clip Studio .clip file", () => {
+			const targets = getAvailableTargetFormatsForFile("artwork.clip");
+			const exts = targets.map((t) => t.ext);
+			// Direct is PNG
+			expect(exts).toContain("png");
+			// Multi-hop reaches PDF, WEBP, JPG, AVIF
+			expect(exts).toContain("pdf");
+			expect(exts).toContain("webp");
+			expect(exts).toContain("jpg");
 		});
 	});
 });

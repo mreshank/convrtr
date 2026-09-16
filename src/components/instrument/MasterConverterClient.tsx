@@ -14,11 +14,12 @@ import {
 } from "@/core/io";
 import { preflight } from "@/core/io/preflight";
 import { type ZipEntry, zipOutputs } from "@/core/io/zip";
-import { JobError, runJob } from "@/core/pipeline/client";
+import { JobError, runJob, runManyJob } from "@/core/pipeline/client";
 import { resolveConcurrency, runPool } from "@/core/pipeline/pool";
 import type { ErrorCode } from "@/core/pipeline/protocol";
 import { initialQuality, type QualityState } from "@/core/quality";
 import {
+	getTool,
 	QUALITY_PRESETS,
 	type QualityPreset,
 	TOOLS,
@@ -26,6 +27,7 @@ import {
 } from "@/core/registry";
 import {
 	detectFileExtension,
+	findConversionRoute,
 	findToolForConversion,
 	getAllTargetFormats,
 	getAvailableTargetFormatsForFile,
@@ -46,8 +48,12 @@ export type MasterItem = {
 	ext: string;
 	selected: boolean;
 	targetExt: string;
+	targetId?: string;
 	toolId?: string;
 	tool?: Tool;
+	route?: Tool[];
+	customParams?: Record<string, number | string | boolean>;
+	isConfigOpen?: boolean;
 	status: "idle" | "queued" | "converting" | "done" | "error" | "cancelled";
 	ratio: number;
 	phase: string;
@@ -608,18 +614,31 @@ export function MasterConverterClient({
 				defaultTarget = availableTargets[0]?.ext ?? "";
 			}
 
-			const tool = defaultTarget
-				? findToolForConversion(ext, defaultTarget)
+			const matchedTarget = availableTargets.find(
+				(t) => t.id === defaultTarget || t.ext === defaultTarget,
+			);
+			const routeInfo = defaultTarget
+				? findConversionRoute(ext, defaultTarget)
 				: undefined;
+			const tool =
+				matchedTarget?.tool ??
+				routeInfo?.tool ??
+				(defaultTarget ? findToolForConversion(ext, defaultTarget) : undefined);
+			const route =
+				matchedTarget?.route ?? routeInfo?.route ?? (tool ? [tool] : undefined);
+			const targetId = matchedTarget?.id ?? defaultTarget;
+			const finalTargetExt = matchedTarget?.ext ?? defaultTarget;
 
 			return {
 				id: `${file.name}-${file.size}-${Date.now()}-${index}`,
 				file,
 				ext,
 				selected: true,
-				targetExt: defaultTarget,
+				targetExt: finalTargetExt,
+				targetId,
 				toolId: tool?.id,
 				tool,
+				route,
 				status: "idle",
 				ratio: 0,
 				phase: "",
@@ -680,6 +699,13 @@ export function MasterConverterClient({
 		return Array.from(set);
 	}, [items]);
 
+	// Selected PDFs count for merge capability
+	const selectedPdfs = useMemo(
+		() => items.filter((i) => i.selected && i.ext.toLowerCase() === "pdf"),
+		[items],
+	);
+	const canMergePdfs = selectedPdfs.length >= 2;
+
 	// Apply a global target format across all compatible selected items
 	const applyGlobalTarget = (target: string) => {
 		setGlobalTarget(target);
@@ -687,15 +713,31 @@ export function MasterConverterClient({
 			prev.map((item) => {
 				if (!item.selected) return item;
 				const available = getAvailableTargetFormatsForFile(item.file);
-				const isCompatible = available.some((t) => t.ext === target);
-				if (!isCompatible) return item;
+				const matched = available.find(
+					(t) => t.id === target || t.ext === target,
+				);
+				if (!matched) return item;
 
-				const tool = findToolForConversion(item.ext, target);
+				const routeInfo = findConversionRoute(item.ext, target);
+				const tool =
+					matched.tool ??
+					routeInfo?.tool ??
+					findToolForConversion(item.ext, target);
+				const route =
+					matched.route ?? routeInfo?.route ?? (tool ? [tool] : undefined);
+				const targetExt =
+					matched.ext ??
+					routeInfo?.tool.output.ext ??
+					target.split(":")[0] ??
+					"";
+
 				return {
 					...item,
-					targetExt: target,
+					targetExt,
+					targetId: matched.id,
 					toolId: tool?.id,
 					tool,
+					route,
 				};
 			}),
 		);
@@ -742,20 +784,126 @@ export function MasterConverterClient({
 		setIsConverting(false);
 	};
 
+	// Toggle parameter customization drawer for a single item
+	const toggleItemConfig = (id: string) => {
+		setItems((prev) =>
+			prev.map((item) =>
+				item.id === id ? { ...item, isConfigOpen: !item.isConfigOpen } : item,
+			),
+		);
+	};
+
+	// Update custom parameter for a single item
+	const updateItemParam = (
+		id: string,
+		paramKey: string,
+		paramVal: number | string | boolean,
+	) => {
+		setItems((prev) =>
+			prev.map((item) =>
+				item.id === id
+					? {
+							...item,
+							customParams: {
+								...(item.customParams ?? {}),
+								[paramKey]: paramVal,
+							},
+						}
+					: item,
+			),
+		);
+	};
+
 	// Change target for a single item
-	const changeItemTarget = (id: string, targetExt: string) => {
+	const changeItemTarget = (id: string, targetValue: string) => {
 		setItems((prev) =>
 			prev.map((item) => {
 				if (item.id !== id) return item;
-				const tool = findToolForConversion(item.ext, targetExt);
+				const available = getAvailableTargetFormatsForFile(item.file);
+				const matched = available.find(
+					(t) => t.id === targetValue || t.ext === targetValue,
+				);
+				const routeInfo = findConversionRoute(item.ext, targetValue);
+				const tool =
+					matched?.tool ??
+					routeInfo?.tool ??
+					findToolForConversion(item.ext, targetValue);
+				const route =
+					matched?.route ?? routeInfo?.route ?? (tool ? [tool] : undefined);
+				const targetExt =
+					matched?.ext ??
+					routeInfo?.tool.output.ext ??
+					targetValue.split(":")[0] ??
+					"";
+
 				return {
 					...item,
 					targetExt,
+					targetId: matched?.id ?? targetValue,
 					toolId: tool?.id,
 					tool,
+					route,
 				};
 			}),
 		);
+	};
+
+	// Multi-file PDF merge handler
+	const handleMergePdfs = async () => {
+		if (selectedPdfs.length < 2) return;
+		const pdfMergeTool =
+			getTool("document/merge-pdf") ??
+			TOOLS.find((t) => t.id === "document/merge-pdf");
+		if (!pdfMergeTool) return;
+
+		setIsConverting(true);
+		setTopError(null);
+		const controller = new AbortController();
+		controllerRef.current = controller;
+		startedAtRef.current = Date.now();
+
+		try {
+			const inputs = await Promise.all(
+				selectedPdfs.map((item) => readFile(item.file)),
+			);
+			const output = await runManyJob(
+				{
+					id: `merge-${Date.now()}`,
+					engines: pdfMergeTool.engines,
+					inputs,
+					params: {},
+					mode: "many",
+				},
+				() => {},
+				controller.signal,
+			);
+
+			const outName = `merged-${selectedPdfs.length}-files.pdf`;
+			await saveOutput(output, outName, "application/pdf");
+			addHistoryRecord({
+				toolId: pdfMergeTool.id,
+				category: "document",
+				inputName: `${selectedPdfs.length} files combined`,
+				inputSize: selectedPdfs.reduce((sum, item) => sum + item.file.size, 0),
+				outputName: outName,
+				outputSize: output.byteLength,
+				durationMs: Date.now() - startedAtRef.current,
+				status: "success",
+			});
+
+			setChainedNotice(
+				`Successfully merged ${selectedPdfs.length} PDFs into "${outName}". Download initiated.`,
+			);
+		} catch (err) {
+			if (controller.signal.aborted) return;
+			const code: ErrorCode =
+				err instanceof JobError ? err.code : "ENGINE_FAILURE";
+			const detail =
+				err instanceof Error ? err.message : "Failed to merge PDF files";
+			setTopError({ code, detail });
+		} finally {
+			setIsConverting(false);
+		}
 	};
 
 	// Download individual item output
@@ -952,8 +1100,20 @@ export function MasterConverterClient({
 				return;
 			}
 
-			const tool = item.tool ?? findToolForConversion(item.ext, item.targetExt);
-			if (!tool) {
+			const routeInfo =
+				item.route && item.route.length > 0
+					? {
+							tool: item.tool ?? item.route[item.route.length - 1],
+							route: item.route,
+						}
+					: findConversionRoute(item.ext, item.targetId ?? item.targetExt);
+
+			const fallbackTool =
+				item.tool ?? findToolForConversion(item.ext, item.targetExt);
+			const route = routeInfo?.route ?? (fallbackTool ? [fallbackTool] : []);
+			const finalTool = routeInfo?.tool ?? fallbackTool;
+
+			if (!finalTool || route.length === 0) {
 				setItems((prev) =>
 					prev.map((m) =>
 						m.id === item.id
@@ -981,40 +1141,83 @@ export function MasterConverterClient({
 			);
 
 			try {
-				const input = await readFile(item.file);
-				const qualityState: QualityState = initialQuality(tool);
-				// Override with chosen quality preset params if available
-				const preset = tool.quality.presets.find((p) => p.id === qualityPreset);
-				const params = preset
-					? { ...preset.params }
-					: { ...qualityState.params };
-
+				let currentBuffer = await readFile(item.file);
 				const startTime = Date.now();
-				const output = await runJob(
-					{
-						id: item.id,
-						engines: tool.engines,
-						params,
-						input,
-					},
-					(event) => {
-						if (event.type === "progress") {
-							setItems((prev) =>
-								prev.map((m) =>
-									m.id === item.id
-										? { ...m, ratio: event.ratio, phase: event.phase }
-										: m,
-								),
-							);
-						}
-					},
-					controller.signal,
-				);
 
-				const outName = outputFilename(item.file.name, tool.output.ext);
+				for (let stepIndex = 0; stepIndex < route.length; stepIndex++) {
+					if (controller.signal.aborted) {
+						setItems((prev) =>
+							prev.map((m) =>
+								m.id === item.id ? { ...m, status: "cancelled" } : m,
+							),
+						);
+						return;
+					}
+
+					const stepTool = route[stepIndex];
+					if (!stepTool) continue;
+					const isFinalStep = stepIndex === route.length - 1;
+					const stepPrefix =
+						route.length > 1 ? `[Step ${stepIndex + 1}/${route.length}] ` : "";
+
+					const qualityState: QualityState = initialQuality(stepTool);
+					const preset = stepTool.quality.presets.find(
+						(p) => p.id === qualityPreset,
+					);
+					const baseParams = preset
+						? { ...preset.params }
+						: { ...qualityState.params };
+					const params =
+						isFinalStep && item.customParams
+							? { ...baseParams, ...item.customParams }
+							: baseParams;
+
+					setItems((prev) =>
+						prev.map((m) =>
+							m.id === item.id
+								? {
+										...m,
+										ratio: stepIndex / route.length,
+										phase: `${stepPrefix}${stepTool.seo.h1 || "CONVERTING"}`,
+									}
+								: m,
+						),
+					);
+
+					const stepOutput = await runJob(
+						{
+							id: `${item.id}-s${stepIndex}`,
+							engines: stepTool.engines,
+							params,
+							input: currentBuffer,
+						},
+						(event) => {
+							if (event.type === "progress") {
+								const overallRatio = (stepIndex + event.ratio) / route.length;
+								setItems((prev) =>
+									prev.map((m) =>
+										m.id === item.id
+											? {
+													...m,
+													ratio: overallRatio,
+													phase: `${stepPrefix}${event.phase}`,
+												}
+											: m,
+									),
+								);
+							}
+						},
+						controller.signal,
+					);
+
+					currentBuffer = stepOutput;
+				}
+
+				const output = currentBuffer;
+				const outName = outputFilename(item.file.name, finalTool.output.ext);
 				addHistoryRecord({
-					toolId: tool.id,
-					category: tool.category,
+					toolId: finalTool.id,
+					category: finalTool.category,
 					inputName: item.file.name,
 					inputSize: item.file.size,
 					outputName: outName,
@@ -1034,6 +1237,8 @@ export function MasterConverterClient({
 									output,
 									outputSize: output.byteLength,
 									outputName: outName,
+									tool: finalTool,
+									toolId: finalTool.id,
 								}
 							: m,
 					),
@@ -1987,6 +2192,25 @@ export function MasterConverterClient({
 											</span>
 										</button>
 									)}
+									{canMergePdfs && (
+										<button
+											type="button"
+											data-testid="merge-selected-pdfs-btn"
+											onClick={handleMergePdfs}
+											disabled={isConverting}
+											className="mono border px-2.5 py-0.5 text-[11px] font-medium transition-all hover:bg-[var(--accent)] hover:text-[var(--ground)] inline-flex items-center gap-1"
+											style={{
+												borderColor: "var(--accent)",
+												borderRadius: "var(--radius)",
+												color: "var(--accent)",
+												background: "transparent",
+												cursor: isConverting ? "not-allowed" : "pointer",
+											}}
+											title="Merge selected PDF files into one combined PDF"
+										>
+											<span>⎘ MERGE {selectedPdfs.length} PDFS →</span>
+										</button>
+									)}
 								</div>
 							</div>
 
@@ -2568,36 +2792,63 @@ export function MasterConverterClient({
 													className="border-b px-3 py-2 text-center"
 													style={cellStyle}
 												>
-													{availableTargets.length > 0 ? (
-														<select
-															value={item.targetExt}
-															disabled={isConverting}
-															aria-label={`Target format for ${item.file.name}`}
-															onChange={(e) =>
-																changeItemTarget(item.id, e.target.value)
-															}
-															className="mono border px-2 py-0.5 text-[11px]"
-															style={{
-																borderColor: "var(--rule-strong)",
-																borderRadius: "var(--radius)",
-																background: "var(--ground)",
-																color: "var(--ink)",
-															}}
-														>
-															{availableTargets.map((t) => (
-																<option key={t.ext} value={t.ext}>
-																	→ {t.label}
-																</option>
-															))}
-														</select>
-													) : (
-														<span
-															className="text-[11px]"
-															style={{ color: "var(--ink-muted)" }}
-														>
-															NO CONVERSION
-														</span>
-													)}
+													<div className="flex items-center justify-center gap-1">
+														{availableTargets.length > 0 ? (
+															<select
+																value={item.targetId ?? item.targetExt}
+																disabled={isConverting}
+																aria-label={`Target format for ${item.file.name}`}
+																onChange={(e) =>
+																	changeItemTarget(item.id, e.target.value)
+																}
+																className="mono border px-2 py-0.5 text-[11px]"
+																style={{
+																	borderColor: "var(--rule-strong)",
+																	borderRadius: "var(--radius)",
+																	background: "var(--ground)",
+																	color: "var(--ink)",
+																}}
+															>
+																{availableTargets.map((t) => (
+																	<option key={t.id} value={t.id}>
+																		→ {t.label}
+																	</option>
+																))}
+															</select>
+														) : (
+															<span
+																className="text-[11px]"
+																style={{ color: "var(--ink-muted)" }}
+															>
+																NO CONVERSION
+															</span>
+														)}
+														{item.tool?.quality?.advanced &&
+															item.tool.quality.advanced.length > 0 && (
+																<button
+																	type="button"
+																	data-testid={`toggle-config-${item.id}`}
+																	onClick={() => toggleItemConfig(item.id)}
+																	className="mono border px-1.5 py-0.5 text-[10px]"
+																	style={{
+																		borderColor: item.isConfigOpen
+																			? "var(--accent)"
+																			: "var(--rule-strong)",
+																		color: item.isConfigOpen
+																			? "var(--accent)"
+																			: "var(--ink-muted)",
+																		borderRadius: "var(--radius)",
+																		background: item.isConfigOpen
+																			? "var(--surface)"
+																			: "transparent",
+																		cursor: "pointer",
+																	}}
+																	title="Configure advanced parameters for this file"
+																>
+																	{item.isConfigOpen ? "▲ PARAMS" : "⚙ PARAMS"}
+																</button>
+															)}
+													</div>
 												</td>
 
 												{/* Output Size */}
@@ -2811,6 +3062,180 @@ export function MasterConverterClient({
 													)}
 												</td>
 											</tr>
+
+											{/* Inline Config Drawer Row */}
+											{item.isConfigOpen && item.tool?.quality?.advanced && (
+												<tr
+													data-testid={`config-row-${item.id}`}
+													style={{
+														background: "var(--surface)",
+													}}
+												>
+													<td
+														colSpan={8}
+														className="border-b px-4 py-3"
+														style={cellStyle}
+													>
+														<div className="flex flex-col gap-2">
+															<div className="flex items-center justify-between">
+																<span
+																	className="mono text-[11px] font-semibold"
+																	style={{ color: "var(--accent)" }}
+																>
+																	[ CONFIGURATION:{" "}
+																	{item.tool.seo.h1?.toUpperCase() ||
+																		item.tool.id.toUpperCase()}{" "}
+																	]
+																</span>
+																<button
+																	type="button"
+																	onClick={() => toggleItemConfig(item.id)}
+																	className="mono text-[10px]"
+																	style={{
+																		color: "var(--ink-muted)",
+																		cursor: "pointer",
+																	}}
+																>
+																	CLOSE ✕
+																</button>
+															</div>
+															<div className="flex flex-wrap items-center gap-4 pt-1">
+																{item.tool.quality.advanced.map((param) => {
+																	if (
+																		param.control === "slider" ||
+																		param.control === "stepper"
+																	) {
+																		const currentVal =
+																			(item.customParams?.[
+																				param.key
+																			] as number) ?? param.default;
+																		return (
+																			<div
+																				key={param.key}
+																				className="flex items-center gap-2"
+																			>
+																				<label
+																					htmlFor={`param-${item.id}-${param.key}`}
+																					className="mono text-[11px]"
+																					style={{
+																						color: "var(--ink-muted)",
+																					}}
+																				>
+																					{param.label}:
+																				</label>
+																				<input
+																					id={`param-${item.id}-${param.key}`}
+																					type="number"
+																					min={param.min}
+																					max={param.max}
+																					step={param.step}
+																					value={currentVal}
+																					onChange={(e) =>
+																						updateItemParam(
+																							item.id,
+																							param.key,
+																							Number.parseFloat(
+																								e.target.value,
+																							) || 0,
+																						)
+																					}
+																					className="mono border px-2 py-0.5 text-[11px] w-20"
+																					style={{
+																						borderColor: "var(--rule-strong)",
+																						background: "var(--ground)",
+																						color: "var(--ink)",
+																						borderRadius: "var(--radius)",
+																					}}
+																				/>
+																			</div>
+																		);
+																	}
+																	if (param.control === "select") {
+																		const currentVal =
+																			(item.customParams?.[
+																				param.key
+																			] as string) ?? param.default;
+																		return (
+																			<div
+																				key={param.key}
+																				className="flex items-center gap-2"
+																			>
+																				<label
+																					htmlFor={`param-${item.id}-${param.key}`}
+																					className="mono text-[11px]"
+																					style={{
+																						color: "var(--ink-muted)",
+																					}}
+																				>
+																					{param.label}:
+																				</label>
+																				<select
+																					id={`param-${item.id}-${param.key}`}
+																					value={currentVal}
+																					onChange={(e) =>
+																						updateItemParam(
+																							item.id,
+																							param.key,
+																							e.target.value,
+																						)
+																					}
+																					className="mono border px-2 py-0.5 text-[11px]"
+																					style={{
+																						borderColor: "var(--rule-strong)",
+																						background: "var(--ground)",
+																						color: "var(--ink)",
+																						borderRadius: "var(--radius)",
+																					}}
+																				>
+																					{param.options.map((opt) => (
+																						<option
+																							key={opt.value}
+																							value={opt.value}
+																						>
+																							{opt.label}
+																						</option>
+																					))}
+																				</select>
+																			</div>
+																		);
+																	}
+																	if (param.control === "toggle") {
+																		const currentVal =
+																			(item.customParams?.[
+																				param.key
+																			] as boolean) ?? param.default;
+																		return (
+																			<label
+																				key={param.key}
+																				className="flex items-center gap-2 cursor-pointer"
+																			>
+																				<input
+																					type="checkbox"
+																					checked={currentVal}
+																					onChange={(e) =>
+																						updateItemParam(
+																							item.id,
+																							param.key,
+																							e.target.checked,
+																						)
+																					}
+																				/>
+																				<span
+																					className="mono text-[11px]"
+																					style={{ color: "var(--ink)" }}
+																				>
+																					{param.label}
+																				</span>
+																			</label>
+																		);
+																	}
+																	return null;
+																})}
+															</div>
+														</div>
+													</td>
+												</tr>
+											)}
 
 											{/* Inline Error Panel Row */}
 											{isErrorRow && item.error && (

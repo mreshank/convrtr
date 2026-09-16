@@ -1,3 +1,5 @@
+export type BlogPostStatus = "published" | "under-review" | "draft";
+
 export interface BlogPostMeta {
 	slug: string;
 	title: string;
@@ -8,4 +10,6 @@ export interface BlogPostMeta {
 	relatedTools: string[];
 	tags: string[];
 	bodyFormat: "mdx" | "tsx";
+	/** Publication status. Defaults to "published" if omitted. */
+	status?: BlogPostStatus;
 }

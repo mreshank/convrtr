@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { BLOG_POSTS } from "@/content/blog/registry";
+import { PUBLISHED_BLOG_POSTS } from "@/content/blog/registry";
 import { COLLECTIVES } from "@/content/collectives/registry";
 import { COMPARISONS } from "@/content/compare/registry";
 import { TOOLS } from "@/core/registry";
@@ -119,7 +119,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 		})),
 
 		// Blog posts
-		...BLOG_POSTS.map((post) => ({
+		...PUBLISHED_BLOG_POSTS.map((post) => ({
 			url: `${SITE}/blog/${post.slug}`,
 			lastModified: new Date(post.publishedAt),
 			changeFrequency: "monthly" as const,

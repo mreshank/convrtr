@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ToolAppendix } from "@/components/content/ToolAppendix";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { BLOG_POSTS, getPostsByTool } from "@/content/blog/registry";
+import { getPostsByTool, PUBLISHED_BLOG_POSTS } from "@/content/blog/registry";
 import { getComparisonsByFormat } from "@/content/compare/registry";
 import { getTool, TOOLS } from "@/core/registry";
 import { ConverterPage } from "@/design/templates";
@@ -56,7 +56,7 @@ export default async function ToolPage({
 
 	const toolPosts = getPostsByTool(tool.id);
 	const relatedPosts =
-		toolPosts.length > 0 ? toolPosts : BLOG_POSTS.slice(0, 3);
+		toolPosts.length > 0 ? toolPosts : PUBLISHED_BLOG_POSTS.slice(0, 3);
 	const rawFrom = tool.accept.ext[0] ?? tool.output.ext;
 	const rawTo = tool.output.ext;
 	const comparisons = getRelatedComparisons(rawFrom, rawTo).slice(0, 3);

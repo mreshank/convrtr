@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { PostStatusBanner } from "@/components/content/PostStatusBanner";
 import { RelatedReading } from "@/components/content/RelatedReading";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { BLOG_POSTS, getPost } from "@/content/blog/registry";
+import {
+	BLOG_POSTS,
+	getPost,
+	PUBLISHED_BLOG_POSTS,
+} from "@/content/blog/registry";
 import type { BlogPostMeta } from "@/content/blog/types";
 import { ArticlePage } from "@/design/templates";
 import { buildBlogPostingJsonLd } from "@/lib/jsonld";
@@ -23,9 +28,9 @@ function formatDateline(iso: string) {
 	}).format(new Date(iso));
 }
 
-/** Other posts that support the same tool — the same relation the tool page's own related-reading block uses. */
+/** Other published posts that support the same tool — the same relation the tool page's own related-reading block uses. */
 function getRelatedPosts(post: BlogPostMeta) {
-	return BLOG_POSTS.filter(
+	return PUBLISHED_BLOG_POSTS.filter(
 		(candidate) =>
 			candidate.slug !== post.slug &&
 			candidate.relatedTools.some((tool) => post.relatedTools.includes(tool)),
@@ -40,6 +45,8 @@ export async function generateMetadata({
 	const { slug } = await params;
 	const post = getPost(slug);
 	if (!post) return {};
+	const isPublished = (post.status ?? "published") === "published";
+
 	return {
 		title: post.title,
 		description: post.description,
@@ -49,6 +56,17 @@ export async function generateMetadata({
 			description: post.description,
 			url: `${SITE}/blog/${post.slug}`,
 		},
+		robots: isPublished
+			? undefined
+			: {
+					index: false,
+					follow: false,
+					nocache: true,
+					googleBot: {
+						index: false,
+						follow: false,
+					},
+				},
 	};
 }
 
@@ -68,14 +86,17 @@ export default async function BlogPostPage({
 		`@/content/blog/${slug}/content.mdx`
 	);
 
+	const isPublished = (post.status ?? "published") === "published";
 	const dateline = formatDateline(post.publishedAt);
 	const related = getRelatedPosts(post);
 
 	return (
 		<>
-			<JsonLd
-				schema={buildBlogPostingJsonLd(post, `${SITE}/blog/${post.slug}`)}
-			/>
+			{isPublished && (
+				<JsonLd
+					schema={buildBlogPostingJsonLd(post, `${SITE}/blog/${post.slug}`)}
+				/>
+			)}
 			<ArticlePage
 				title={post.title}
 				dateline={dateline}
@@ -83,6 +104,7 @@ export default async function BlogPostPage({
 					related.length > 0 ? <RelatedReading posts={related} /> : undefined
 				}
 			>
+				<PostStatusBanner status={post.status} />
 				<Content />
 			</ArticlePage>
 		</>

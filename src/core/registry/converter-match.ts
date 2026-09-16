@@ -1,10 +1,22 @@
 import { TOOLS, type Tool } from "./index";
 
 export type TargetOption = {
+	id: string;
 	ext: string;
 	label: string;
 	toolId: string;
 	tool: Tool;
+	route?: Tool[];
+	kind?: string;
+	description?: string;
+	isMultiHop?: boolean;
+	intermediateSteps?: string[];
+};
+
+export type ConversionRoute = {
+	tool: Tool;
+	route: Tool[];
+	intermediateSteps?: string[];
 };
 
 const MIME_MAP: Record<string, string> = {
@@ -421,8 +433,165 @@ export function detectFileExtension(fileOrName: File | string): string {
 	return "";
 }
 
+function isValidHopTransition(
+	sourceCategory: Tool["category"] | undefined,
+	tool: Tool,
+	isIntermediate: boolean,
+): boolean {
+	if (!sourceCategory) return true;
+	// Do not use metadata extraction (like audio cover art) or splitting as an intermediate bridge across domains
+	// and do not chain into archive extractions (.zip) over multi-hop
+	if (
+		isIntermediate &&
+		(tool.id.includes("cover-art") ||
+			tool.id.includes("split-") ||
+			tool.output.ext === "zip")
+	) {
+		return false;
+	}
+
+	// Audio source should only hop to audio (or video)
+	if (sourceCategory === "audio") {
+		return (
+			tool.category === "audio" &&
+			tool.output.ext !== "jpg" &&
+			tool.output.ext !== "png"
+		);
+	}
+	// Document source should stay in document or data
+	if (sourceCategory === "document") {
+		return tool.category === "document" || tool.category === "data";
+	}
+	// Image source can go to image or document (PDF)
+	if (sourceCategory === "image") {
+		return (
+			tool.category === "image" ||
+			(tool.category === "document" && tool.output.ext === "pdf")
+		);
+	}
+	// Video source can go to video, audio, or image (never document/pdf)
+	if (sourceCategory === "video") {
+		return (
+			(tool.category === "video" ||
+				tool.category === "audio" ||
+				tool.category === "image") &&
+			tool.output.ext !== "pdf"
+		);
+	}
+	return true;
+}
+
+/**
+ * Finds the best conversion route (direct or multi-hop chained route) between two formats.
+ */
+export function findConversionRoute(
+	fromExt: string,
+	toTargetOrId: string,
+): ConversionRoute | undefined {
+	const from = fromExt.toLowerCase();
+	const target = toTargetOrId.toLowerCase();
+
+	if (!from || !target) return undefined;
+
+	// 1. Direct tool match by exact tool ID or composite ID (e.g., "jpg:image/compress-jpg")
+	const cleanTargetId = target.includes(":") ? target.split(":")[1] : target;
+	const toolById = TOOLS.find(
+		(t) =>
+			t.id.toLowerCase() === cleanTargetId ||
+			t.slug.toLowerCase() === cleanTargetId ||
+			`${t.output.ext}:${t.kind}`.toLowerCase() === target,
+	);
+	if (toolById?.accept.ext.map((e) => e.toLowerCase()).includes(from)) {
+		return { tool: toolById, route: [toolById] };
+	}
+
+	// 2. Direct conversion tools matching target extension
+	const directCandidates = TOOLS.filter(
+		(tool) =>
+			tool.accept.ext.map((e) => e.toLowerCase()).includes(from) &&
+			tool.output.ext.toLowerCase() ===
+				(target.includes(":") ? target.split(":")[0] : target),
+	);
+	if (directCandidates.length > 0) {
+		const directTool =
+			directCandidates.find((t) => t.kind === "convert") ?? directCandidates[0];
+		if (directTool) {
+			return { tool: directTool, route: [directTool] };
+		}
+	}
+
+	// 3. Multi-hop BFS graph search (up to 3 hops)
+	// We chain tools whose kind is "convert" or "extract"
+	type QueueItem = {
+		currentExt: string;
+		path: Tool[];
+	};
+
+	const sourceCategory = TOOLS.find((t) =>
+		t.accept.ext.map((e) => e.toLowerCase()).includes(from),
+	)?.category;
+	const baseTarget = target.includes(":") ? target.split(":")[0] : target;
+	const queue: QueueItem[] = [{ currentExt: from, path: [] }];
+	const visited = new Set<string>([from]);
+
+	while (queue.length > 0) {
+		const item = queue.shift();
+		if (!item) break;
+		const { currentExt, path } = item;
+		if (path.length >= 3) continue;
+
+		const nextTools = TOOLS.filter(
+			(tool) =>
+				(tool.kind === "convert" || tool.kind === "extract") &&
+				tool.accept.ext.map((e) => e.toLowerCase()).includes(currentExt) &&
+				isValidHopTransition(sourceCategory, tool, path.length > 0),
+		);
+
+		// Prioritize clean standard interchange formats
+		nextTools.sort((a, b) => {
+			const preferred = ["png", "wav", "mp4", "pdf"];
+			const aIndex = preferred.indexOf(a.output.ext.toLowerCase());
+			const bIndex = preferred.indexOf(b.output.ext.toLowerCase());
+			if (aIndex !== -1 && bIndex === -1) return -1;
+			if (bIndex !== -1 && aIndex === -1) return 1;
+			return 0;
+		});
+
+		for (const tool of nextTools) {
+			const nextExt = tool.output.ext.toLowerCase();
+
+			if (nextExt === baseTarget) {
+				const fullRoute = [...path, tool];
+				const lastTool = fullRoute[fullRoute.length - 1];
+				if (lastTool) {
+					const intermediateSteps = fullRoute
+						.slice(0, -1)
+						.map((t) => t.output.ext.toUpperCase());
+					return {
+						tool: lastTool,
+						route: fullRoute,
+						intermediateSteps,
+					};
+				}
+			}
+
+			if (!visited.has(nextExt) && path.length < 2) {
+				visited.add(nextExt);
+				queue.push({
+					currentExt: nextExt,
+					path: [...path, tool],
+				});
+			}
+		}
+	}
+
+	return undefined;
+}
+
 /**
  * Returns all available target formats and tools for a given input file or extension.
+ * Supports direct conversions, same-format operations (compress/resize/strip metadata),
+ * and multi-hop chained routes.
  */
 export function getAvailableTargetFormatsForFile(
 	fileOrExt: File | string,
@@ -438,29 +607,129 @@ export function getAvailableTargetFormatsForFile(
 		tool.accept.ext.map((e) => e.toLowerCase()).includes(ext),
 	);
 
-	const optionMap = new Map<string, TargetOption>();
+	const options: TargetOption[] = [];
+	const directTargetsSeen = new Set<string>();
 
+	// 1. Direct cross-format conversions (ext !== targetExt)
 	for (const tool of matchingTools) {
 		const targetExt = tool.output.ext.toLowerCase();
-		const existing = optionMap.get(targetExt);
+		if (targetExt === ext) continue;
 
-		// Prefer explicit "convert" tools over utility/inspect tools
-		if (
-			!existing ||
-			(tool.kind === "convert" && existing.tool.kind !== "convert")
-		) {
-			optionMap.set(targetExt, {
+		if (!directTargetsSeen.has(targetExt)) {
+			directTargetsSeen.add(targetExt);
+			options.push({
+				id: targetExt,
 				ext: targetExt,
 				label: targetExt.toUpperCase(),
 				toolId: tool.id,
 				tool,
+				route: [tool],
+				kind: tool.kind,
+				description: tool.seo.h1 || "Direct conversion",
 			});
 		}
 	}
 
-	return Array.from(optionMap.values()).sort((a, b) =>
-		a.label.localeCompare(b.label),
-	);
+	// 2. Same-format operations (ext === targetExt)
+	for (const tool of matchingTools) {
+		const targetExt = tool.output.ext.toLowerCase();
+		if (targetExt !== ext) continue;
+
+		let actionLabel = "EDIT";
+		if (tool.kind === "compress") actionLabel = "COMPRESS";
+		else if (tool.kind === "resize") actionLabel = "RESIZE";
+		else if (tool.id.includes("exif") || tool.id.includes("metadata"))
+			actionLabel = "STRIP METADATA";
+		else if (tool.id.includes("split")) actionLabel = "SPLIT";
+		else if (tool.id.includes("rotate")) actionLabel = "ROTATE";
+		else if (tool.id.includes("normalise")) actionLabel = "NORMALISE";
+		else if (tool.id.includes("trim")) actionLabel = "TRIM";
+
+		options.push({
+			id: `${targetExt}:${tool.id}`,
+			ext: targetExt,
+			label: `${targetExt.toUpperCase()} (${actionLabel})`,
+			toolId: tool.id,
+			tool,
+			route: [tool],
+			kind: tool.kind,
+			description: tool.seo.h1 || actionLabel,
+		});
+	}
+
+	// 3. Multi-hop chained conversions (e.g. clip -> png -> pdf)
+	// BFS to discover reachable targets not already in directTargetsSeen
+	const sourceCategory = matchingTools[0]?.category;
+	const queue: { currentExt: string; path: Tool[] }[] = [
+		{ currentExt: ext, path: [] },
+	];
+	const visited = new Set<string>([ext]);
+
+	while (queue.length > 0) {
+		const item = queue.shift();
+		if (!item) break;
+		const { currentExt, path } = item;
+		if (path.length >= 3) continue;
+
+		const nextTools = TOOLS.filter(
+			(tool) =>
+				(tool.kind === "convert" || tool.kind === "extract") &&
+				tool.accept.ext.map((e) => e.toLowerCase()).includes(currentExt) &&
+				isValidHopTransition(sourceCategory, tool, path.length > 0),
+		);
+
+		// Prioritize clean standard interchange formats
+		nextTools.sort((a, b) => {
+			const preferred = ["png", "wav", "mp4", "pdf"];
+			const aIndex = preferred.indexOf(a.output.ext.toLowerCase());
+			const bIndex = preferred.indexOf(b.output.ext.toLowerCase());
+			if (aIndex !== -1 && bIndex === -1) return -1;
+			if (bIndex !== -1 && aIndex === -1) return 1;
+			return 0;
+		});
+
+		for (const tool of nextTools) {
+			const nextExt = tool.output.ext.toLowerCase();
+
+			if (!directTargetsSeen.has(nextExt) && nextExt !== ext) {
+				directTargetsSeen.add(nextExt);
+				const fullRoute = [...path, tool];
+				const intermediateSteps = fullRoute
+					.slice(0, -1)
+					.map((t) => t.output.ext.toUpperCase());
+
+				options.push({
+					id: `${nextExt}:via-${intermediateSteps.join("-").toLowerCase()}`,
+					ext: nextExt,
+					label: `${nextExt.toUpperCase()} (via ${intermediateSteps.join(" → ")})`,
+					toolId: tool.id,
+					tool,
+					route: fullRoute,
+					kind: "convert",
+					description: `Chained conversion via ${intermediateSteps.join(" → ")}`,
+					isMultiHop: true,
+					intermediateSteps,
+				});
+			}
+
+			if (!visited.has(nextExt) && path.length < 2) {
+				visited.add(nextExt);
+				queue.push({
+					currentExt: nextExt,
+					path: [...path, tool],
+				});
+			}
+		}
+	}
+
+	return options.sort((a, b) => {
+		// Put direct cross-conversions first, then multi-hop, then same-format ops
+		if (a.ext !== ext && b.ext === ext) return -1;
+		if (a.ext === ext && b.ext !== ext) return 1;
+		if (!a.isMultiHop && b.isMultiHop) return -1;
+		if (a.isMultiHop && !b.isMultiHop) return 1;
+		return a.label.localeCompare(b.label);
+	});
 }
 
 /**

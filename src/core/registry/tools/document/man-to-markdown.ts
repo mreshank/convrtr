@@ -63,7 +63,6 @@ export const manToMarkdown: Tool = {
 			"document/texinfo-to-markdown",
 			"document/lyx-to-markdown",
 			"document/latex-to-markdown",
-			"document/rst-to-markdown",
 			"document/org-to-markdown",
 		],
 	},

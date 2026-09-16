@@ -97,6 +97,18 @@ describe("blog registry conformance", () => {
 			expect(existsSync(path), path).toBe(true);
 		}
 	});
+
+	it("declares only valid status values when specified", () => {
+		const validStatuses = new Set(["published", "under-review", "draft"]);
+		for (const post of BLOG_POSTS) {
+			if (post.status !== undefined) {
+				expect(
+					validStatuses.has(post.status),
+					`${post.slug} has invalid status "${post.status}"`,
+				).toBe(true);
+			}
+		}
+	});
 });
 
 describe("module boundary", () => {

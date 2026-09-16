@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { JsonLd } from "@/components/seo/JsonLd";
-import { BLOG_POSTS } from "@/content/blog/registry";
+import { PUBLISHED_BLOG_POSTS } from "@/content/blog/registry";
 import { type BlogGridItem, HubPage } from "@/design/templates";
 import { buildBlogIndexJsonLd } from "@/lib/jsonld";
 import { SITE } from "@/lib/site";
@@ -37,7 +37,7 @@ const READING_TIMES: Record<string, string> = {
 	"troubleshooting-a-failed-mlw-extraction": "6 min read",
 };
 
-const BLOG_GRID_ITEMS: BlogGridItem[] = BLOG_POSTS.map((post) => ({
+const BLOG_GRID_ITEMS: BlogGridItem[] = PUBLISHED_BLOG_POSTS.map((post) => ({
 	slug: post.slug,
 	title: post.title,
 	description: post.description,
@@ -55,7 +55,9 @@ const BLOG_GRID_ITEMS: BlogGridItem[] = BLOG_POSTS.map((post) => ({
 export default function BlogIndexPage() {
 	return (
 		<>
-			<JsonLd schema={buildBlogIndexJsonLd(BLOG_POSTS, `${SITE}/blog`)} />
+			<JsonLd
+				schema={buildBlogIndexJsonLd(PUBLISHED_BLOG_POSTS, `${SITE}/blog`)}
+			/>
 			<HubPage
 				title="Blog"
 				lede="Deep dives on the file formats and special converters convrtr supports."

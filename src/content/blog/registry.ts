@@ -158,6 +158,10 @@ export const BLOG_POSTS: BlogPostMeta[] = [
 	convertingKodakPhotoCdToPng,
 ];
 
+export const PUBLISHED_BLOG_POSTS: BlogPostMeta[] = BLOG_POSTS.filter(
+	(post) => (post.status ?? "published") === "published",
+);
+
 export function getPost(
 	slug: string,
 	posts: BlogPostMeta[] = BLOG_POSTS,
@@ -167,7 +171,11 @@ export function getPost(
 
 export function getPostsByTool(
 	toolId: string,
-	posts: BlogPostMeta[] = BLOG_POSTS,
+	posts: BlogPostMeta[] = PUBLISHED_BLOG_POSTS,
 ): BlogPostMeta[] {
-	return posts.filter((post) => post.relatedTools.includes(toolId));
+	return posts.filter(
+		(post) =>
+			post.relatedTools.includes(toolId) &&
+			(post.status ?? "published") === "published",
+	);
 }
