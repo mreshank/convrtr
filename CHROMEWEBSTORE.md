@@ -27,7 +27,7 @@ convrtr is the universal, ultra-fast file conversion, compression, extraction, a
 No file uploads. No server queues. No size limits. Zero data leaves your computer.
 
 KEY FEATURES:
-• Universal Format Coverage: Convert images, video, audio, documents, e-books, archives, 3D models, retro gaming assets, vector graphics, and data files across 198+ dedicated tools and 146+ specialized local engines.
+• Universal Format Coverage: Convert images, video, audio, documents, e-books, archives, 3D models, retro gaming assets, vector graphics, and data files across 200 dedicated tools and 147 specialized local engines.
 • Multi-Hop Graph Routing: Intelligent conversion routing traverses format paths automatically (e.g. CLIP → PNG → PDF, or XM → WAV → MP3) in a single step with live progress reporting.
 • Native Chrome Side Panel (Action click or ⌘⇧C): Dock convrtr beside your active browser tab with persistent visibility as you browse.
 • Instant Quick Popup (⌘⇧, or Ctrl+Shift+Comma): Summon a sleek, high-speed converter popup anytime with dedicated keyboard shortcut.
@@ -111,7 +111,7 @@ Every permission declared in `manifest.json` is justified below for the Chrome W
 
 ### 0.1.0 — 2026-09-16
 - Initial release of the universal convrtr Chrome Extension.
-- Direct shared engine architecture with all 198+ tools and 146+ local engines.
+- Direct shared engine architecture with all 200 tools and 147 local engines.
 - Chrome Side Panel (`sidepanel.html`), Quick Popup (`popup.html`), and Full Tab Studio (`tab.html`).
 - Intelligent multi-hop conversion graph routing.
 - Context menu integration for converting web images, audio, video, and links.
