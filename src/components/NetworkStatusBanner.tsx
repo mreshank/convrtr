@@ -56,7 +56,7 @@ export function NetworkStatusBanner() {
 				borderColor: "var(--rule)",
 			}}
 		>
-			<div className="max-w-[1600px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
+			<div className="w-full mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
 				<div className="flex items-center gap-2">
 					<span
 						className="inline-block w-2 h-2 rounded-full"

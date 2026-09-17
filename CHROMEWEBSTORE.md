@@ -2,8 +2,8 @@
 
 Single source of truth for the Chrome Web Store listing metadata, permissions justifications, privacy disclosures, and version history for **convrtr**.
 
-**Last Updated:** 2026-09-16  
-**Current Version:** 0.2.1  
+**Last Updated:** 2026-09-17  
+**Current Version:** 0.2.2  
 **Manifest Version:** 3  
 
 ---
@@ -12,48 +12,66 @@ Single source of truth for the Chrome Web Store listing metadata, permissions ju
 
 ### Name
 ```
-convrtr — Universal Local File Converter
+convrtr — File Converter
+```
+
+### Single Purpose Statement (for Developer Dashboard)
+```
+Converts files and web media directly within your browser using local WebAssembly processing.
 ```
 
 ### Short Description (max 132 characters)
 ```
-Universal in-browser file converter. Convert, compress, transpile, extract, and decrypt files locally with zero server uploads.
+Private in-browser file converter. Convert media and documents locally using WebAssembly with zero server uploads.
 ```
+*(Length: 119 characters)*
 
-### Detailed Description
+### Detailed Description (Plain Text Format)
 ```
-convrtr is the universal, ultra-fast file conversion, compression, extraction, and media processing studio that runs 100% inside your browser.
+convrtr is a private, client-side file converter that runs entirely inside your browser.
 
-No file uploads. No server queues. No size limits. Zero data leaves your computer.
+Convert images, audio, video, and documents locally without uploading your files to remote servers. No account registration, no server queues, and no network latency.
 
-KEY FEATURES:
-• Universal Format Coverage: Convert images, video, audio, documents, e-books, archives, 3D models, retro gaming assets, vector graphics, and data files across 200 dedicated tools and 147 specialized local engines.
-• Multi-Hop Graph Routing: Intelligent conversion routing traverses format paths automatically (e.g. CLIP → PNG → PDF, or XM → WAV → MP3) in a single step with live progress reporting.
-• Native Chrome Side Panel (Action click or ⌘⇧C): Dock convrtr beside your active browser tab with persistent visibility as you browse.
-• Instant Quick Popup (⌘⇧, or Ctrl+Shift+Comma): Summon a sleek, high-speed converter popup anytime with dedicated keyboard shortcut.
-• Omnidirectional Surface Switching: Seamlessly hop between Quick Popup, docked Side Panel, and full-screen Studio tab with 1 click.
-• Page Viewport Capture (⌘⇧S): One-click screenshot capture of your active browser viewport staged directly into convrtr for instant conversion to WebP, PDF, or vector SVG.
-• Deep Page Media & Asset Extraction: Extract responsive images, video/audio sources, canvas renders, inline vector SVGs, and linked documents from any web page in 1 click.
-• Quick Context Menus: Right-click any image, video, audio file, selected code/text, or link on any webpage and select "Convert with convrtr" to stage and process it instantly.
-• Address Bar Omnibox (cv): Type "cv png to webp" or "cv pdf" directly into your Chrome address bar for instant format search and jump-to-converter navigation.
-• Quick Workflow Presets: Instant one-click chips for popular workflows (PNG➔WEBP, JPG➔WEBP, RASTER➔SVG, PDF➔TXT, SVG➔PNG, JSON➔YAML, MP4➔MP3).
-• Dynamic Icon Badging: Live status badge (RUN, DONE, ERR) directly on your toolbar icon so you always know when batch processing finishes.
-• History Drawer & Export: Search past conversions, preview file sizes and duration, and export full history records as CSV or JSON.
-• Complete Privacy & Security: All conversions are processed locally via WebAssembly, Web Workers, and WebCodecs. Works completely offline.
+FEATURES:
+• Native Side Panel — Open convrtr beside your active browser tab to convert files without switching windows.
+• Quick Popup & Studio Views — Convert files in a compact popup via keyboard shortcut (Command+Shift+Comma) or expand into a full-screen workspace.
+• Context Menu Conversion — Right-click images, media elements, or links on any webpage to stage and convert them directly.
+• Visible Viewport Capture — Capture the visible portion of your current browser tab (Command+Shift+S) and stage it directly for conversion.
+• Webpage Media Staging — Stage images, audio, video, and vector graphics from web pages into the converter with a single click.
+• Omnibox Navigation — Type "cv" in Chrome's address bar to quickly find supported conversion options.
+• 100% Client-Side Processing — All file processing runs locally on your machine via WebAssembly and Web Workers.
+• Complete Privacy — Zero files or telemetry are transmitted across the network. Works completely offline.
 
-PERMISSIONS USAGE:
-• sidePanel: Displays the converter alongside any web page you are browsing.
-• storage: Temporarily passes staged file references between background events and the active converter UI.
-• contextMenus: Lets you right-click web media, text selections, or entire pages to convert them instantly with convrtr.
-• tabs: Opens the converter in a full tab when requested, identifies window IDs for side panel docking, and captures visible viewports.
-• downloads: Saves your converted files and batch ZIP archives directly to your Downloads folder.
-• scripting: Queries DOM elements on the active page to extract images, media sources, inline SVGs, and document links upon user request.
-• activeTab: Grants temporary, user-invoked permission to capture visible viewports (⌘⇧S) and extract media upon explicit command without requiring broad host permissions.
+HOW TO USE:
+1. Click the convrtr extension icon in your Chrome toolbar to open the Side Panel.
+2. Drag and drop a file or select one from your computer.
+3. Choose your target format.
+4. Click Convert to process the file locally and save the result to your Downloads folder.
+
+PRIVACY & SECURITY:
+convrtr is designed from the ground up for privacy. It does not collect, store, or transmit personal data or file contents. All conversions occur entirely on your local machine using client-side WebAssembly, Canvas, and Web Workers.
+
+PERMISSIONS:
+• sidePanel: Displays the converter beside your active tab for side-by-side workflow.
+• storage: Passes temporary session references between background events and the converter interface. No browsing history or personal data is stored.
+• contextMenus: Lets you right-click web media or links to stage them for conversion.
+• tabs: Opens the converter in a full browser tab when requested and identifies the active window for side panel display.
+• downloads: Saves converted output files to your Downloads folder.
+• scripting: Inspects media elements on the active page to stage them into the converter upon explicit user request.
+• activeTab: Grants temporary, user-invoked access to capture the visible tab or stage media upon explicit command without broad host permissions.
+
+SUPPORT & CONTACT:
+Email: contact@mreshank.com
+Help & Diagnostic Center: https://convrtr.mreshank.com/support
+Privacy Policy: https://convrtr.mreshank.com/privacy
+Source Code & Issues: https://github.com/mreshank/convrtr
+
+Version 0.2.2 — Compliance release streamlining store metadata and reinforcing client-side single-purpose file conversion.
 ```
 
 ### Category
 ```
-Productivity / Developer Tools / Photos
+Productivity
 ```
 
 ### Language
@@ -114,6 +132,12 @@ Every permission declared in `manifest.json` is justified below for the Chrome W
 
 ## 4. Version History
 
+### 0.2.2 — 2026-09-17
+- Resolved Chrome Web Store "Yellow Nickel" spam policy review flag.
+- Streamlined store listing metadata, eliminating keyword stuffing and format permutation chains.
+- Formulated clear Single Purpose statement: in-browser file conversion via local WebAssembly.
+- Bumped extension version to 0.2.2 for package resubmission.
+
 ### 0.2.1 — 2026-09-16
 - Defaulted primary toolbar action to native Chrome Side Panel.
 - Added dedicated shortcut (`Command+Shift+Comma` / `Ctrl+Shift+Comma`) to launch the Quick Popup anytime.
@@ -125,10 +149,10 @@ Every permission declared in `manifest.json` is justified below for the Chrome W
 - Added Viewport Screenshot Capture (`capture_tab` shortcut `Command+Shift+S` / `Ctrl+Shift+S`, header button, and context menu).
 - Added Deep Webpage Asset & Vector Extraction (images, audio/video sources, HTML5 canvases, inline SVGs serialized as standalone `.svg` files, and linked documents).
 - Added Dynamic Toolbar Icon Badging (RUN status with count, DONE in green accent, ERR in red).
-- Added Quick Workflow Presets Bar (`PNG➔WEBP`, `RASTER➔SVG`, `PDF➔TXT`, `JSON➔YAML`, etc.).
+- Added Quick Workflow Presets Bar.
 - Added Conversion History live search filter and CSV/JSON export buttons.
 - Added Omnibox search keyword `cv` for quick format matching from the Chrome address bar.
-- Manifest V3 permissions upgraded with `activeTab`, `scripting`, and `host_permissions`.
+- Manifest V3 permissions upgraded with `activeTab` and `scripting`.
 
 ### 0.1.0 — 2026-09-16
 - Initial release of the universal convrtr Chrome Extension.
