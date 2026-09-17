@@ -33,6 +33,7 @@ export default function FeedbackPage() {
 			/>
 			<div className="flex flex-col">
 				<ArticlePage
+					breadcrumbs={[{ name: "Home", href: "/" }, { name: "Feedback" }]}
 					title={feedback.title}
 					dateline={feedback.updated}
 					sections={feedback.sections}

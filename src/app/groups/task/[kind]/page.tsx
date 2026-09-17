@@ -70,6 +70,11 @@ export default async function TaskGroupPage({
 				)}
 			/>
 			<HubPage
+				breadcrumbs={[
+					{ name: "Home", href: "/" },
+					{ name: "Groups", href: "/groups" },
+					{ name: `${label(kind)} Tools` },
+				]}
 				title={`${label(kind)} tools`}
 				lede={`Every tool that can ${kind} a file, all running in your browser.`}
 				count={{

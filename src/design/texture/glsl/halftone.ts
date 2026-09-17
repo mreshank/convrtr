@@ -62,7 +62,7 @@ void main() {
 
 	float dot = smoothstep(radius, radius - 0.09, length(cellUv));
 	vec3 dotColor = mix(palette_rule, palette_accent, clamp(mouseProximity * 1.6, 0.0, 1.0));
-	vec3 color = mix(palette_ground, dotColor, dot * u_intensity);
-	gl_FragColor = vec4(color, 1.0);
+	float alpha = clamp(dot * u_intensity, 0.0, 1.0);
+	gl_FragColor = vec4(dotColor * alpha, alpha);
 }
 `;

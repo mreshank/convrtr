@@ -71,6 +71,49 @@ export function buildHomeJsonLd() {
 					"Multi-file batch conversion and ZIP export",
 				],
 			},
+			{
+				"@type": "ItemList",
+				"@id": `${SITE}/#navigation`,
+				name: "Primary Navigation",
+				itemListElement: [
+					{
+						"@type": "SiteNavigationElement",
+						position: 1,
+						name: "All Tools",
+						url: `${SITE}/tools`,
+					},
+					{
+						"@type": "SiteNavigationElement",
+						position: 2,
+						name: "Master Converter",
+						url: `${SITE}/convert`,
+					},
+					{
+						"@type": "SiteNavigationElement",
+						position: 3,
+						name: "Groups",
+						url: `${SITE}/groups`,
+					},
+					{
+						"@type": "SiteNavigationElement",
+						position: 4,
+						name: "Collectives",
+						url: `${SITE}/collectives`,
+					},
+					{
+						"@type": "SiteNavigationElement",
+						position: 5,
+						name: "Format Comparisons",
+						url: `${SITE}/compare`,
+					},
+					{
+						"@type": "SiteNavigationElement",
+						position: 6,
+						name: "Engineering Blog",
+						url: `${SITE}/blog`,
+					},
+				],
+			},
 		],
 	};
 }
@@ -80,86 +123,93 @@ export function buildToolJsonLd(tool: Tool, url: string) {
 	const categoryLabel =
 		tool.category.charAt(0).toUpperCase() + tool.category.slice(1);
 
+	const graphNodes: Record<string, unknown>[] = [
+		{
+			"@type": "SoftwareApplication",
+			name: tool.seo.h1,
+			applicationCategory: "UtilitiesApplication",
+			applicationSubCategory: "File Converter",
+			operatingSystem: "Any",
+			browserRequirements: "Requires WebAssembly and HTML5",
+			url,
+			isPartOf: { "@type": "WebSite", "@id": `${origin}/#website` },
+			description: tool.seo.intent,
+			isAccessibleForFree: true,
+			offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+			featureList: [
+				`Converts .${tool.accept.ext.join(", .")} to .${tool.output.ext}`,
+				"100% private client-side processing",
+				"Zero server upload",
+			],
+		},
+		{
+			"@type": "HowTo",
+			name: tool.seo.h1,
+			description: tool.seo.intent,
+			totalTime: "PT10S",
+			step: [
+				{
+					"@type": "HowToStep",
+					position: 1,
+					name: `Select .${tool.accept.ext[0]} file`,
+					text: `Drop your .${tool.accept.ext[0]} file onto the page or choose it from your device.`,
+					url: `${url}#step-1`,
+				},
+				{
+					"@type": "HowToStep",
+					position: 2,
+					name: "Choose quality preset",
+					text: "Choose how much quality you want to keep.",
+					url: `${url}#step-2`,
+				},
+				{
+					"@type": "HowToStep",
+					position: 3,
+					name: `Download .${tool.output.ext} file`,
+					text: `Save the .${tool.output.ext} file to your device.`,
+					url: `${url}#step-3`,
+				},
+			],
+		},
+		{
+			"@type": "BreadcrumbList",
+			itemListElement: [
+				{
+					"@type": "ListItem",
+					position: 1,
+					name: "Home",
+					item: origin,
+				},
+				{
+					"@type": "ListItem",
+					position: 2,
+					name: `${categoryLabel} Tools`,
+					item: `${origin}/${tool.category}`,
+				},
+				{
+					"@type": "ListItem",
+					position: 3,
+					name: tool.seo.h1,
+					item: url,
+				},
+			],
+		},
+	];
+
+	if (tool.seo.faq && tool.seo.faq.length > 0) {
+		graphNodes.push({
+			"@type": "FAQPage",
+			mainEntity: tool.seo.faq.map((item) => ({
+				"@type": "Question",
+				name: item.q,
+				acceptedAnswer: { "@type": "Answer", text: item.a },
+			})),
+		});
+	}
+
 	return {
 		"@context": "https://schema.org",
-		"@graph": [
-			{
-				"@type": "SoftwareApplication",
-				name: tool.seo.h1,
-				applicationCategory: "UtilitiesApplication",
-				operatingSystem: "Any",
-				browserRequirements: "Requires WebAssembly and HTML5",
-				url,
-				description: tool.seo.intent,
-				isAccessibleForFree: true,
-				offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-				featureList: [
-					`Converts .${tool.accept.ext.join(", .")} to .${tool.output.ext}`,
-					"100% private client-side processing",
-					"Zero server upload",
-				],
-			},
-			{
-				"@type": "HowTo",
-				name: tool.seo.h1,
-				description: tool.seo.intent,
-				totalTime: "PT10S",
-				step: [
-					{
-						"@type": "HowToStep",
-						position: 1,
-						name: `Select .${tool.accept.ext[0]} file`,
-						text: `Drop your .${tool.accept.ext[0]} file onto the page or choose it from your device.`,
-						url: `${url}#step-1`,
-					},
-					{
-						"@type": "HowToStep",
-						position: 2,
-						name: "Choose quality preset",
-						text: "Choose how much quality you want to keep.",
-						url: `${url}#step-2`,
-					},
-					{
-						"@type": "HowToStep",
-						position: 3,
-						name: `Download .${tool.output.ext} file`,
-						text: `Save the .${tool.output.ext} file to your device.`,
-						url: `${url}#step-3`,
-					},
-				],
-			},
-			{
-				"@type": "BreadcrumbList",
-				itemListElement: [
-					{
-						"@type": "ListItem",
-						position: 1,
-						name: "Home",
-						item: origin,
-					},
-					{
-						"@type": "ListItem",
-						position: 2,
-						name: `${categoryLabel} Tools`,
-						item: `${origin}/${tool.category}`,
-					},
-					{
-						"@type": "ListItem",
-						position: 3,
-						name: tool.seo.h1,
-						item: url,
-					},
-				],
-			},
-			{
-				"@type": "FAQPage",
-				mainEntity: tool.seo.faq.map((item) => ({
-					"@type": "Question",
-					name: item.q,
-					acceptedAnswer: { "@type": "Answer", text: item.a },
-				})),
-			},
-		],
+		"@graph": graphNodes,
 	};
 }
 

@@ -30,6 +30,10 @@ export default function TermsPage() {
 				})}
 			/>
 			<LegalPage
+				breadcrumbs={[
+					{ name: "Home", href: "/" },
+					{ name: "Terms of Service" },
+				]}
 				title={terms.title}
 				revised={terms.updated}
 				sections={terms.sections}

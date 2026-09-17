@@ -82,4 +82,22 @@ describe("ConverterPage", () => {
 		);
 		expect(measured.length).toBe(4);
 	});
+
+	it("renders breadcrumbs when provided", () => {
+		const { container } = render(
+			<ConverterPage
+				breadcrumbs={[
+					{ name: "Home", href: "/" },
+					{ name: "Image Tools", href: "/image" },
+					{ name: "PNG to WebP" },
+				]}
+				title="PNG to WebP"
+				lede="Convert locally."
+			>
+				<div data-testid="instrument" />
+			</ConverterPage>,
+		);
+		expect(container.querySelector("[data-breadcrumbs]")).toBeDefined();
+		expect(screen.getByText("IMAGE TOOLS")).toBeDefined();
+	});
 });

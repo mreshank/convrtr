@@ -76,6 +76,11 @@ export default async function FormatGroupPage({
 				)}
 			/>
 			<HubPage
+				breadcrumbs={[
+					{ name: "Home", href: "/" },
+					{ name: "Groups", href: "/groups" },
+					{ name: `${format.toUpperCase()} Tools` },
+				]}
 				title={`${format.toUpperCase()} tools`}
 				lede={`Every conversion that accepts or produces ${format.toUpperCase()}, all running in your browser.`}
 				count={{

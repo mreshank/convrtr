@@ -59,6 +59,10 @@ export default function BlogIndexPage() {
 				schema={buildBlogIndexJsonLd(PUBLISHED_BLOG_POSTS, `${SITE}/blog`)}
 			/>
 			<HubPage
+				breadcrumbs={[
+					{ name: "Home", href: "/" },
+					{ name: "Blog" },
+				]}
 				title="Blog"
 				lede="Deep dives on the file formats and special converters convrtr supports."
 				count={{

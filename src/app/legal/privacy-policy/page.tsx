@@ -30,6 +30,7 @@ export default function PrivacyPolicyPage() {
 				})}
 			/>
 			<LegalPage
+				breadcrumbs={[{ name: "Home", href: "/" }, { name: "Privacy Policy" }]}
 				title={privacyPolicy.title}
 				revised={privacyPolicy.updated}
 				sections={privacyPolicy.sections}

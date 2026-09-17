@@ -31,6 +31,7 @@ export default function ToolsIndexPage() {
 		<>
 			<JsonLd schema={buildToolsIndexJsonLd(TOOLS, `${SITE}/tools`)} />
 			<HubPage
+				breadcrumbs={[{ name: "Home", href: "/" }, { name: "All Tools" }]}
 				title="All tools"
 				lede="Every conversion runs in your browser — nothing is uploaded."
 				count={{

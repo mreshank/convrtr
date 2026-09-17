@@ -92,22 +92,39 @@ describe("buildHomeJsonLd", () => {
 		expect(app.offers.price).toBe("0");
 		expect(app.featureList?.length).toBeGreaterThan(2);
 	});
+
+	it("emits SiteNavigationElement sitelinks navigation", () => {
+		const nav = jsonLd["@graph"].find(
+			(n) => n["@type"] === "ItemList" && n["@id"]?.toString().includes("#navigation"),
+		) as {
+			itemListElement: { "@type": string; name: string; url: string }[];
+		};
+		expect(nav).toBeDefined();
+		expect(nav.itemListElement.length).toBeGreaterThanOrEqual(5);
+		expect(nav.itemListElement[0]?.["@type"]).toBe("SiteNavigationElement");
+	});
 });
 
 describe("buildToolJsonLd", () => {
 	const graph = buildToolJsonLd(
 		pngToWebp,
 		"https://convrtr.mreshank.com/image/png-to-webp",
-	) as {
+	) as unknown as {
 		"@graph": { "@type": string; [key: string]: unknown }[];
 	};
 
-	it("emits a SoftwareApplication node that is free", () => {
+	it("emits a SoftwareApplication node that is free and linked to website", () => {
 		const app = graph["@graph"].find(
 			(n) => n["@type"] === "SoftwareApplication",
-		) as { offers: { price: string } } | undefined;
+		) as {
+			offers: { price: string };
+			applicationSubCategory?: string;
+			isPartOf?: { "@type": string };
+		} | undefined;
 		expect(app).toBeDefined();
 		expect(app?.offers.price).toBe("0");
+		expect(app?.applicationSubCategory).toBe("File Converter");
+		expect(app?.isPartOf?.["@type"]).toBe("WebSite");
 	});
 
 	it("emits an FAQPage node with one entry per registry FAQ", () => {

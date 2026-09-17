@@ -2,11 +2,14 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import type { PageSection } from "@/content/pages/types";
 import { FusedHeadline } from "@/design/families";
+import { Breadcrumbs, type BreadcrumbItem } from "@/design/primitives";
 
 type Props = {
 	title: string;
 	/** Rendered in the mono voice, already formatted by the route. */
 	dateline: string;
+	/** Breadcrumbs trail for navigation and SEO schema matching. */
+	breadcrumbs?: BreadcrumbItem[];
 	/**
 	 * v2's content-band sequence for this page's body -- a mono eyebrow and a
 	 * `FusedHeadline` per topic, composed into a responsive space-efficient
@@ -91,6 +94,7 @@ function formatProseText(text: string): ReactNode {
 export function ArticlePage({
 	title,
 	dateline,
+	breadcrumbs,
 	sections,
 	children,
 	related,
@@ -119,6 +123,7 @@ export function ArticlePage({
 						paddingBottom: "var(--gap-md)",
 					}}
 				>
+					{breadcrumbs ? <Breadcrumbs items={breadcrumbs} /> : null}
 					<div
 						style={{
 							display: "flex",
@@ -315,6 +320,7 @@ export function ArticlePage({
 					gap: "var(--gap-sm)",
 				}}
 			>
+				{breadcrumbs ? <Breadcrumbs items={breadcrumbs} /> : null}
 				<p data-dateline className="mono" style={{ color: "var(--ink-muted)" }}>
 					{dateline}
 				</p>

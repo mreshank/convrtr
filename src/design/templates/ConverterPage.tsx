@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
+import { Breadcrumbs, type BreadcrumbItem } from "@/design/primitives";
 
 type Props = {
 	/** The tool's category, in the mono label voice. */
-	eyebrow: string;
+	eyebrow?: string;
+	breadcrumbs?: BreadcrumbItem[];
 	title: string;
 	lede: string;
 	/** The instrument itself. */
@@ -43,6 +45,7 @@ type Props = {
  */
 export function ConverterPage({
 	eyebrow,
+	breadcrumbs,
 	title,
 	lede,
 	children,
@@ -60,14 +63,22 @@ export function ConverterPage({
 				gap: "var(--gap-md)",
 			}}
 		>
-			<p
-				data-eyebrow
-				data-converter-measure={measureAttr}
-				className="meta"
-				style={{ color: "var(--ink-muted)" }}
-			>
-				{eyebrow}
-			</p>
+			{breadcrumbs ? (
+				<div data-converter-measure={measureAttr}>
+					<Breadcrumbs items={breadcrumbs} />
+				</div>
+			) : null}
+
+			{eyebrow ? (
+				<p
+					data-eyebrow
+					data-converter-measure={measureAttr}
+					className="meta"
+					style={{ color: "var(--ink-muted)", margin: 0 }}
+				>
+					{eyebrow}
+				</p>
+			) : null}
 
 			<h1
 				data-converter-measure={measureAttr}

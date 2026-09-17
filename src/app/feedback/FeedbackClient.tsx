@@ -1,7 +1,17 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { getHistory } from "@/core/history/store";
+import {
+	type DispatchResult,
+	dispatchFormSubmission,
+} from "@/lib/form-dispatch";
+import {
+	formatDiagnosticMarkdown,
+	runSystemDiagnostics,
+} from "@/lib/system-diagnostics";
+import { useNetworkStatus } from "@/lib/useNetworkStatus";
 
 const CATEGORIES = [
 	{ id: "format", label: "FORMAT PROPOSAL" },
@@ -19,46 +29,224 @@ const RATINGS = [
 ] as const;
 
 export function FeedbackClient() {
-	const router = useRouter();
+	const { isOnline } = useNetworkStatus();
 	const [category, setCategory] = useState<string>("format");
 	const [rating, setRating] = useState<number>(5);
 	const [message, setMessage] = useState<string>("");
 	const [contactEmail, setContactEmail] = useState<string>("");
-	const [submitting, setSubmitting] = useState(false);
+	const [attachDiagnostics, setAttachDiagnostics] = useState<boolean>(true);
+	const [attachRecentError, setAttachRecentError] = useState<boolean>(true);
+	const [recentErrorDetected, setRecentErrorDetected] = useState<string | null>(
+		null,
+	);
+	const [submitting, setSubmitting] = useState<boolean>(false);
+	const [dispatchResult, setDispatchResult] = useState<DispatchResult | null>(
+		null,
+	);
+	const [copied, setCopied] = useState<boolean>(false);
 
-	const handleSubmit = (e: React.FormEvent) => {
+	// Scan recent local history for conversion errors on mount
+	useEffect(() => {
+		try {
+			const history = getHistory();
+			const latestError = history.find(
+				(rec) => rec.status === "error" && rec.errorMessage,
+			);
+			if (latestError) {
+				setRecentErrorDetected(
+					`[${latestError.toolId}] ${latestError.errorMessage} (${latestError.inputName})`,
+				);
+			}
+		} catch {
+			// Local history access unavailable
+		}
+	}, []);
+
+	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!message.trim()) return;
 
 		setSubmitting(true);
-		try {
-			// Save in local storage for auditing/session record
-			const existing = JSON.parse(
-				localStorage.getItem("convrtr_user_feedback") || "[]",
-			);
-			existing.push({
-				category,
-				rating,
-				message: message.trim(),
-				contactEmail: contactEmail.trim() || undefined,
-				timestamp: new Date().toISOString(),
-			});
-			localStorage.setItem(
-				"convrtr_user_feedback",
-				JSON.stringify(existing.slice(-20)),
-			);
-		} catch {
-			// Ignore local storage quota errors
+
+		let diagnosticMd = "";
+		if (attachDiagnostics) {
+			const report = runSystemDiagnostics();
+			diagnosticMd = formatDiagnosticMarkdown(report);
 		}
 
-		router.push("/thank-you");
+		const result = await dispatchFormSubmission({
+			type: "feedback",
+			topicOrCategory: category,
+			rating,
+			email: contactEmail.trim() || undefined,
+			message: message.trim(),
+			recentError:
+				attachRecentError && recentErrorDetected
+					? recentErrorDetected
+					: undefined,
+			diagnosticReportMarkdown: diagnosticMd || undefined,
+		});
+
+		setDispatchResult(result);
+		setSubmitting(false);
+	};
+
+	const handleCopyTicket = async () => {
+		if (!dispatchResult?.ticketMarkdown) return;
+		try {
+			await navigator.clipboard.writeText(dispatchResult.ticketMarkdown);
+			setCopied(true);
+			setTimeout(() => setCopied(false), 2500);
+		} catch {
+			// Clipboard API unavailable
+		}
+	};
+
+	const resetForm = () => {
+		setDispatchResult(null);
+		setMessage("");
 	};
 
 	const githubIssueUrl = `https://github.com/mreshank/convrtr/issues/new?title=${encodeURIComponent(
 		`[${category.toUpperCase()}] ${message.slice(0, 60) || "Feedback"}`,
 	)}&body=${encodeURIComponent(
-		`### Category\n${category}\n\n### Rating\n${rating}/5\n\n### Feedback Details\n${message}\n\n*Submitted via convrtr web feedback portal*`,
+		`### Category\n${category}\n\n### Rating\n${rating}/5\n\n### Feedback Details\n${message}\n\n${recentErrorDetected ? `### Recent Error\n\`\`\`\n${recentErrorDetected}\n\`\`\`\n\n` : ""}*Submitted via convrtr web feedback portal*`,
 	)}`;
+
+	// Success / Submission Recorded View
+	if (dispatchResult) {
+		return (
+			<div className="w-full max-w-2xl mx-auto py-8">
+				<div
+					className="border p-6 md:p-8 flex flex-col gap-6"
+					style={{
+						background: "var(--surface)",
+						borderColor: "var(--rule)",
+					}}
+				>
+					<div
+						className="flex flex-col gap-1 border-b pb-4"
+						style={{ borderColor: "var(--rule)" }}
+					>
+						<div className="flex items-center justify-between">
+							<span
+								className="mono text-[10px] tracking-wider uppercase"
+								style={{ color: "var(--ink-muted)" }}
+							>
+								FEEDBACK DISPATCH STATUS
+							</span>
+							<span
+								className="mono text-[10px] font-bold tracking-wider px-2 py-0.5 border"
+								style={{
+									color:
+										dispatchResult.mode === "online_transmitted"
+											? "var(--accent)"
+											: "var(--ink)",
+									borderColor:
+										dispatchResult.mode === "online_transmitted"
+											? "var(--accent)"
+											: "var(--rule)",
+									background: "transparent",
+								}}
+							>
+								{dispatchResult.mode === "online_transmitted"
+									? "TRANSMISSION CONFIRMED"
+									: dispatchResult.mode === "offline_queued"
+										? "OFFLINE // CACHED LOCALLY"
+										: "NETWORK FALLBACK ACTIVE"}
+							</span>
+						</div>
+						<h2
+							className="text-xl md:text-2xl font-bold tracking-tight uppercase mt-2"
+							style={{ color: "var(--ink)" }}
+						>
+							{dispatchResult.mode === "online_transmitted"
+								? "RESPONSE TRANSMITTED"
+								: "FEEDBACK RECORDED LOCALLY"}
+						</h2>
+						<p className="text-xs mono" style={{ color: "var(--ink-muted)" }}>
+							{dispatchResult.message}
+						</p>
+					</div>
+
+					<div className="flex flex-col gap-3">
+						<span
+							className="mono text-[11px] font-semibold uppercase tracking-wider"
+							style={{ color: "var(--ink)" }}
+						>
+							DIRECT ACTIONS & TICKET EXPORT
+						</span>
+						<div className="flex flex-wrap gap-2">
+							<button
+								type="button"
+								onClick={handleCopyTicket}
+								className="mono text-xs font-bold py-2 px-4 border transition-colors cursor-pointer"
+								style={{
+									background: copied ? "var(--accent)" : "var(--ink)",
+									color: copied ? "var(--ground)" : "var(--surface)",
+									borderColor: copied ? "var(--accent)" : "var(--ink)",
+								}}
+							>
+								{copied ? "COPIED TO CLIPBOARD" : "COPY TICKET (MARKDOWN) ➔"}
+							</button>
+
+							<a
+								href={dispatchResult.mailtoUrl}
+								className="mono text-xs py-2 px-4 border transition-colors text-center cursor-pointer"
+								style={{
+									color: "var(--ink)",
+									borderColor: "var(--rule)",
+								}}
+							>
+								DISPATCH IN EMAIL CLIENT ↗
+							</a>
+
+							<a
+								href={githubIssueUrl}
+								target="_blank"
+								rel="noreferrer"
+								className="mono text-xs py-2 px-4 border transition-colors text-center cursor-pointer"
+								style={{
+									color: "var(--ink-muted)",
+									borderColor: "var(--rule)",
+								}}
+							>
+								FILE ON GITHUB ISSUES ↗
+							</a>
+						</div>
+					</div>
+
+					<div
+						className="flex items-center justify-between pt-4 border-t"
+						style={{ borderColor: "var(--rule)" }}
+					>
+						<button
+							type="button"
+							onClick={resetForm}
+							className="mono text-[11px] py-1.5 px-3 border transition-colors cursor-pointer hover:underline"
+							style={{
+								color: "var(--ink)",
+								borderColor: "var(--rule)",
+							}}
+						>
+							SUBMIT ANOTHER RESPONSE ➔
+						</button>
+						<Link
+							href="/convert"
+							className="mono text-[11px] font-bold py-1.5 px-3 border text-center transition-colors cursor-pointer"
+							style={{
+								background: "var(--ink)",
+								color: "var(--surface)",
+								borderColor: "var(--ink)",
+							}}
+						>
+							START CONVERTING ➔
+						</Link>
+					</div>
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<div className="w-full max-w-2xl mx-auto py-8">
@@ -71,12 +259,23 @@ export function FeedbackClient() {
 				}}
 			>
 				<div>
-					<span
-						className="mono text-[10px] tracking-wider uppercase block mb-1"
-						style={{ color: "var(--ink-muted)" }}
-					>
-						COMMUNITY INPUT
-					</span>
+					<div className="flex items-center justify-between mb-1">
+						<span
+							className="mono text-[10px] tracking-wider uppercase"
+							style={{ color: "var(--ink-muted)" }}
+						>
+							COMMUNITY INPUT & ENGINE PROPOSALS
+						</span>
+						<span
+							className="mono text-[9px] tracking-wider uppercase px-2 py-0.5 border"
+							style={{
+								color: isOnline ? "var(--accent)" : "var(--ink-muted)",
+								borderColor: isOnline ? "var(--accent)" : "var(--rule)",
+							}}
+						>
+							{isOnline ? "ONLINE // LIVE DISPATCH" : "OFFLINE // LOCAL QUEUE"}
+						</span>
+					</div>
 					<h2
 						className="text-xl md:text-2xl font-bold tracking-tight uppercase"
 						style={{ color: "var(--ink)" }}
@@ -84,8 +283,8 @@ export function FeedbackClient() {
 						SHARE YOUR FEEDBACK
 					</h2>
 					<p className="text-sm mt-1" style={{ color: "var(--ink-muted)" }}>
-						Suggest new file formats, report conversion anomalies, or share your
-						thoughts with the maintainers.
+						Suggest new file formats, report conversion anomalies, or transmit
+						feedback directly to the engineering team.
 					</p>
 				</div>
 
@@ -139,7 +338,7 @@ export function FeedbackClient() {
 									className="mono text-[10px] py-1.5 px-3 border transition-colors cursor-pointer"
 									style={{
 										background: active ? "var(--surface-alt)" : "transparent",
-										color: active ? "var(--accent)" : "var(--ink-muted)",
+										color: active ? "var(--ink-inverse)" : "var(--ink-muted)",
 										borderColor: active ? "var(--accent)" : "var(--rule)",
 										fontWeight: active ? 700 : 500,
 									}}
@@ -183,14 +382,14 @@ export function FeedbackClient() {
 						className="mono text-[11px] font-semibold uppercase tracking-wider"
 						style={{ color: "var(--ink)" }}
 					>
-						YOUR EMAIL (OPTIONAL)
+						YOUR EMAIL (OPTIONAL FOR FOLLOW-UP)
 					</label>
 					<input
 						id="feedback-email"
 						type="email"
 						value={contactEmail}
 						onChange={(e) => setContactEmail(e.target.value)}
-						placeholder="user@example.com (only if you want a follow-up)"
+						placeholder="user@example.com"
 						className="mono text-xs p-3 border w-full outline-none"
 						style={{
 							background: "var(--ground)",
@@ -198,6 +397,55 @@ export function FeedbackClient() {
 							borderColor: "var(--rule)",
 						}}
 					/>
+				</div>
+
+				{/* Diagnostic Options */}
+				<div
+					className="flex flex-col gap-2 p-3 border"
+					style={{
+						borderColor: "var(--rule)",
+						background: "var(--ground)",
+					}}
+				>
+					<label className="flex items-center gap-2 cursor-pointer">
+						<input
+							type="checkbox"
+							checked={attachDiagnostics}
+							onChange={(e) => setAttachDiagnostics(e.target.checked)}
+							className="cursor-pointer"
+						/>
+						<span className="mono text-[11px]" style={{ color: "var(--ink)" }}>
+							ATTACH BROWSER & SYSTEM DIAGNOSTICS (WASM, SIMD, MEMORY)
+						</span>
+					</label>
+
+					{recentErrorDetected && (
+						<label
+							className="flex items-start gap-2 cursor-pointer mt-1 pt-1 border-t"
+							style={{ borderColor: "var(--rule)" }}
+						>
+							<input
+								type="checkbox"
+								checked={attachRecentError}
+								onChange={(e) => setAttachRecentError(e.target.checked)}
+								className="mt-0.5 cursor-pointer"
+							/>
+							<div className="flex flex-col">
+								<span
+									className="mono text-[10px] font-bold"
+									style={{ color: "var(--accent)" }}
+								>
+									ATTACH RECENT CONVERSION ANOMALY:
+								</span>
+								<span
+									className="mono text-[10px]"
+									style={{ color: "var(--ink-muted)" }}
+								>
+									{recentErrorDetected}
+								</span>
+							</div>
+						</label>
+					)}
 				</div>
 
 				{/* Action Buttons */}
@@ -213,10 +461,14 @@ export function FeedbackClient() {
 							background: "var(--ink)",
 							color: "var(--surface)",
 							borderColor: "var(--ink)",
-							opacity: !message.trim() ? 0.5 : 1,
+							opacity: submitting || !message.trim() ? 0.5 : 1,
 						}}
 					>
-						SUBMIT FEEDBACK ➔
+						{submitting
+							? "TRANSMITTING..."
+							: isOnline
+								? "SUBMIT FEEDBACK ➔"
+								: "SAVE TO QUEUE (OFFLINE) ➔"}
 					</button>
 
 					<a

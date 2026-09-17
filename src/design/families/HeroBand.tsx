@@ -135,9 +135,39 @@ export function HeroBand({ lead, cont, cta, secondary }: Props) {
 						gap: "var(--gap-md)",
 					}}
 				>
-					<p className="meta" style={{ color: "var(--ink-muted)" }}>
-						Local file conversion
-					</p>
+					<div
+						style={{
+							display: "flex",
+							alignItems: "center",
+							gap: "var(--space-base)",
+							flexWrap: "wrap",
+						}}
+					>
+						<p className="meta" style={{ color: "var(--ink-muted)", margin: 0 }}>
+							Local file conversion // WebAssembly sandbox
+						</p>
+						<Link
+							href="#extension-spotlight"
+							style={{
+								display: "inline-flex",
+								alignItems: "center",
+								fontFamily: "var(--font-mono)",
+								fontSize: "var(--mono-size)",
+								color: "var(--ink)",
+								borderWidth: "var(--rule-width)",
+								borderStyle: "solid",
+								borderColor: "var(--rule)",
+								backgroundColor: "var(--surface)",
+								padding: "calc(var(--space-base) / 4) var(--space-base)",
+								borderRadius: "var(--radius-pill)",
+								textDecoration: "none",
+								letterSpacing: "0.06em",
+								textTransform: "uppercase",
+							}}
+						>
+							Chrome Extension [Soon] ↗
+						</Link>
+					</div>
 
 					<FusedHeadline as="h1" lead={lead} cont={cont} />
 

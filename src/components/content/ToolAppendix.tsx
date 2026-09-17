@@ -1,7 +1,9 @@
 import Link from "next/link";
 import type { BlogPostMeta } from "@/content/blog/types";
 import type { ComparisonMeta } from "@/content/compare/types";
+import type { Tool } from "@/core/registry";
 import { ArrowUpRight } from "@/design/primitives/ArrowUpRight";
+import { RelatedConverters } from "./RelatedConverters";
 import { RelatedReading } from "./RelatedReading";
 
 export interface FAQItem {
@@ -13,10 +15,12 @@ export function ToolAppendix({
 	faq,
 	comparisons,
 	posts,
+	tool,
 }: {
 	faq: FAQItem[];
 	comparisons: ComparisonMeta[];
 	posts: BlogPostMeta[];
+	tool?: Tool;
 }) {
 	return (
 		<div
@@ -30,6 +34,8 @@ export function ToolAppendix({
 				margin: "0 auto",
 			}}
 		>
+			{/* High-powered internal routing & cross-converter mesh */}
+			{tool && <RelatedConverters tool={tool} />}
 			{/* Format Comparisons / Battles */}
 			{comparisons.length > 0 && (
 				<section

@@ -3,6 +3,7 @@
 import { UserButton, useUser } from "@clerk/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { hasLocalAdminOverride, isSuperAdminUser } from "@/lib/admin-auth";
 import { Tooltip } from "@/design/primitives/Tooltip";
 import { AuthErrorBoundary } from "./AuthErrorBoundary";
 import { clerkAppearance } from "./clerk-theme";
@@ -98,16 +99,67 @@ function AuthIconButton({ sessionName }: { sessionName?: string | null }) {
 }
 
 function AuthenticatedMenu({ sessionName }: { sessionName?: string | null }) {
-	const { isSignedIn } = useUser();
+	const { isSignedIn, user } = useUser();
+	const isAdmin = isSuperAdminUser(user) || hasLocalAdminOverride();
 
 	if (!isSignedIn) {
-		return <AuthIconButton sessionName={sessionName} />;
+		return (
+			<div
+				style={{
+					display: "flex",
+					alignItems: "center",
+					gap: "var(--space-base)",
+				}}
+			>
+				{hasLocalAdminOverride() && (
+					<Link
+						href="/admin"
+						style={{
+							fontFamily: "var(--font-mono)",
+							fontSize: "var(--mono-size)",
+							color: "var(--accent)",
+							borderWidth: "var(--rule-width)",
+							borderStyle: "solid",
+							borderColor: "var(--rule-strong)",
+							padding: "calc(var(--space-base) / 4) var(--space-base)",
+							borderRadius: "var(--radius-pill)",
+							textDecoration: "none",
+							letterSpacing: "0.06em",
+							textTransform: "uppercase",
+						}}
+					>
+						Admin ↗
+					</Link>
+				)}
+				<AuthIconButton sessionName={sessionName} />
+			</div>
+		);
 	}
 
 	return (
 		<div
 			style={{ display: "flex", alignItems: "center", gap: "var(--gap-sm)" }}
 		>
+			{isAdmin && (
+				<Link
+					href="/admin"
+					style={{
+						fontFamily: "var(--font-mono)",
+						fontSize: "var(--mono-size)",
+						color: "var(--accent)",
+						borderWidth: "var(--rule-width)",
+						borderStyle: "solid",
+						borderColor: "var(--rule-strong)",
+						padding: "calc(var(--space-base) / 4) var(--space-base)",
+						borderRadius: "var(--radius-pill)",
+						textDecoration: "none",
+						letterSpacing: "0.06em",
+						textTransform: "uppercase",
+					}}
+				>
+					Admin ↗
+				</Link>
+			)}
 			<Tooltip content="Conversion History" position="bottom">
 				<Link
 					href="/history"

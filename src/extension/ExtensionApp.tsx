@@ -667,6 +667,21 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 						</button>
 
 						<a
+							href={`${SITE}/support`}
+							target="_blank"
+							rel="noreferrer"
+							className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer inline-flex items-center"
+							style={{
+								background: "transparent",
+								color: "var(--ink)",
+								borderColor: "var(--rule)",
+							}}
+							title="Live Diagnostics & Troubleshooting Center"
+						>
+							SUPPORT ↗
+						</a>
+
+						<a
 							href={`${SITE}/feedback`}
 							target="_blank"
 							rel="noreferrer"

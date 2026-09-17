@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ToolTable } from "@/app/tools/ToolTable";
 import { toToolRow } from "@/app/tools/toolRow";
+import { CategoryNavStrip } from "@/components/content/CategoryNavStrip";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { CATEGORIES, type Category, getToolsByCategory } from "@/core/registry";
 import { HubPage } from "@/design/templates";
@@ -75,6 +76,10 @@ export default async function CategoryPage({
 				schema={buildCategoryJsonLd(category, tools, `${SITE}/${category}`)}
 			/>
 			<HubPage
+				breadcrumbs={[
+					{ name: "Home", href: "/" },
+					{ name: `${label(category)} Tools` },
+				]}
 				title={label(category)}
 				lede={`For converting ${category} files, all running in your browser.`}
 				count={{
@@ -82,6 +87,7 @@ export default async function CategoryPage({
 					noun: tools.length === 1 ? "tool" : "tools",
 				}}
 			>
+				<CategoryNavStrip currentCategory={category} />
 				<ToolTable rows={rows} caption={`${label(category)} tools`} />
 			</HubPage>
 		</>

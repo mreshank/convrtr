@@ -1,7 +1,7 @@
 import { LiveDemo } from "@/components/instrument/LiveDemo";
 import type { Category, QualityPreset } from "@/core/registry";
 import { ListingRows } from "@/design/families";
-import { MonoMeta } from "@/design/primitives";
+import { type BreadcrumbItem, MonoMeta } from "@/design/primitives";
 import { HubPage } from "./HubPage";
 
 export type ShowcaseTool = {
@@ -21,6 +21,7 @@ function label(category: Category): string {
 
 type Props = {
 	eyebrow?: string;
+	breadcrumbs?: BreadcrumbItem[];
 	title: string;
 	/**
 	 * The set's reason for existing -- a collective's `why`, the thing that
@@ -64,6 +65,7 @@ type Props = {
  */
 export function ShowcasePage({
 	eyebrow,
+	breadcrumbs,
 	title,
 	reason,
 	count,
@@ -73,6 +75,7 @@ export function ShowcasePage({
 	return (
 		<HubPage
 			eyebrow={eyebrow}
+			breadcrumbs={breadcrumbs}
 			title={{ lead: title, cont: reason }}
 			count={count}
 		>

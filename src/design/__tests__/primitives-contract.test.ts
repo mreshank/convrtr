@@ -195,6 +195,8 @@ const CLIENT_COMPONENT_ALLOWLIST = new Set([
 	"CollectiveGrid.tsx",
 	// `Tooltip` holds open/closed state, timeouts, and hover/focus/Escape handlers.
 	"Tooltip.tsx",
+	// `AdminDashboardPage` holds interactive state for tabs, sub management, and dispatch logs.
+	"AdminDashboardPage.tsx",
 ]);
 
 function filesDeclaringUseClient(dir: string): string[] {

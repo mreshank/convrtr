@@ -31,6 +31,7 @@ export default function AboutPage() {
 				})}
 			/>
 			<ArticlePage
+				breadcrumbs={[{ name: "Home", href: "/" }, { name: "About" }]}
 				title={about.title}
 				dateline={about.updated}
 				sections={about.sections}

@@ -17,6 +17,8 @@ export function generateMetadata(): Metadata {
 	};
 }
 
+import { SupportClient } from "./SupportClient";
+
 export default function SupportPage() {
 	return (
 		<>
@@ -30,11 +32,17 @@ export default function SupportPage() {
 					type: "ContactPage",
 				})}
 			/>
-			<ArticlePage
-				title={support.title}
-				dateline={support.updated}
-				sections={support.sections}
-			/>
+			<div className="flex flex-col">
+				<ArticlePage
+					breadcrumbs={[{ name: "Home", href: "/" }, { name: "Support" }]}
+					title={support.title}
+					dateline={support.updated}
+					sections={support.sections}
+				/>
+				<div className="px-4 pb-16">
+					<SupportClient />
+				</div>
+			</div>
 		</>
 	);
 }

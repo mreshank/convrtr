@@ -12,7 +12,7 @@ import {
 	type ListingItem,
 	ListingRows,
 } from "@/design/families";
-import { SectionSeparator } from "@/design/primitives";
+import { Breadcrumbs, type BreadcrumbItem, SectionSeparator } from "@/design/primitives";
 import { HALFTONE_FRAGMENT, ShaderSurface } from "@/design/texture";
 
 /**
@@ -28,6 +28,8 @@ export type ListingSection = {
 type Props = {
 	/** Small mono label above the headline. Optional — not every hub needs one. */
 	eyebrow?: string;
+	/** Breadcrumbs trail for navigation and SEO schema matching. */
+	breadcrumbs?: BreadcrumbItem[];
 	/**
 	 * A plain string for every hub but one. `ShowcasePage` passes the
 	 * `{ lead, cont }` pair instead, for the one hub whose second sentence IS
@@ -85,6 +87,7 @@ type Props = {
  */
 export function HubPage({
 	eyebrow,
+	breadcrumbs,
 	title,
 	lede,
 	count,
@@ -136,6 +139,7 @@ export function HubPage({
 						gap: "var(--space-base)",
 					}}
 				>
+					{breadcrumbs ? <Breadcrumbs items={breadcrumbs} /> : null}
 					{eyebrow ? (
 						<p
 							className="meta"

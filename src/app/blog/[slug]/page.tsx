@@ -98,6 +98,11 @@ export default async function BlogPostPage({
 				/>
 			)}
 			<ArticlePage
+				breadcrumbs={[
+					{ name: "Home", href: "/" },
+					{ name: "Blog", href: "/blog" },
+					{ name: post.title },
+				]}
 				title={post.title}
 				dateline={dateline}
 				related={

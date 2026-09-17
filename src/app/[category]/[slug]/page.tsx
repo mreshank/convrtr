@@ -65,6 +65,11 @@ export default async function ToolPage({
 		<>
 			<JsonLd schema={buildToolJsonLd(tool, `${SITE}/${tool.id}`)} />
 			<ConverterPage
+				breadcrumbs={[
+					{ name: "Home", href: "/" },
+					{ name: `${label(tool.category)} Tools`, href: `/${tool.category}` },
+					{ name: tool.seo.h1 },
+				]}
 				eyebrow={`${label(tool.category)} · ${rawFrom.toUpperCase()} → ${rawTo.toUpperCase()}`}
 				title={tool.seo.h1}
 				lede={tool.seo.intent}
@@ -73,6 +78,7 @@ export default async function ToolPage({
 						faq={tool.seo.faq}
 						comparisons={comparisons}
 						posts={relatedPosts}
+						tool={tool}
 					/>
 				}
 			>

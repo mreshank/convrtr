@@ -17,6 +17,8 @@ export function generateMetadata(): Metadata {
 	};
 }
 
+import { ContactClient } from "./ContactClient";
+
 export default function ContactPage() {
 	return (
 		<>
@@ -30,11 +32,17 @@ export default function ContactPage() {
 					type: "ContactPage",
 				})}
 			/>
-			<ArticlePage
-				title={contact.title}
-				dateline={contact.updated}
-				sections={contact.sections}
-			/>
+			<div className="flex flex-col">
+				<ArticlePage
+					breadcrumbs={[{ name: "Home", href: "/" }, { name: "Contact" }]}
+					title={contact.title}
+					dateline={contact.updated}
+					sections={contact.sections}
+				/>
+				<div className="px-4 pb-16">
+					<ContactClient />
+				</div>
+			</div>
 		</>
 	);
 }

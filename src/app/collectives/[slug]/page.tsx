@@ -78,9 +78,6 @@ export default async function CollectivePage({
 	const collective = getCollective(slug);
 	if (!collective) notFound();
 
-	// `flatMap` rather than `.map(getTool)` so the result types as `Tool[]`
-	// rather than `(Tool | undefined)[]` -- the registry test already
-	// guarantees every id here resolves, so nothing is silently dropped.
 	const tools = collective.toolIds.flatMap((id) => {
 		const tool = getTool(id);
 		return tool ? [tool] : [];
@@ -104,12 +101,14 @@ export default async function CollectivePage({
 				)}
 			/>
 			<ShowcasePage
+				breadcrumbs={[
+					{ name: "Home", href: "/" },
+					{ name: "Collectives", href: "/collectives" },
+					{ name: collective.title },
+				]}
 				title={collective.title}
 				reason={collective.why}
-				count={{
-					value: tools.length,
-					noun: tools.length === 1 ? "tool" : "tools",
-				}}
+				count={{ value: tools.length, noun: tools.length === 1 ? "tool" : "tools" }}
 				showcase={showcase}
 				demo={DEMOS[collective.slug]}
 			/>

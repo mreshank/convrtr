@@ -97,6 +97,10 @@ export default function GroupsIndexPage() {
 		<>
 			<JsonLd schema={buildGroupsIndexJsonLd(`${SITE}/groups`)} />
 			<HubPage
+				breadcrumbs={[
+					{ name: "Home", href: "/" },
+					{ name: "Groups" },
+				]}
 				title="Browse by type, format, or task"
 				lede="Every conversion, grouped three ways: by file type, by format, and by what it does."
 				count={{

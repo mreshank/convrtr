@@ -31,6 +31,7 @@ export default function HowItWorksPage() {
 				})}
 			/>
 			<ArticlePage
+				breadcrumbs={[{ name: "Home", href: "/" }, { name: "How it works" }]}
 				title={howItWorks.title}
 				dateline={howItWorks.updated}
 				sections={howItWorks.sections}

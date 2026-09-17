@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist_Mono, Inter } from "next/font/google";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { UserMenu } from "@/components/auth/UserMenu";
+import { BroadcastBanner } from "@/components/broadcasts/BroadcastBanner";
+import { NetworkStatusBanner } from "@/components/NetworkStatusBanner";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import { RouteAwareFooter, SiteHeader } from "@/design/primitives";
 import { DifferenceCursor } from "@/design/primitives/DifferenceCursor";
@@ -108,6 +110,12 @@ const CONTACT = [
 // so they're reachable from every page even when a visitor lands scrolled
 // past the bar.
 const EXPLORE = [
+	{ href: "/convert", label: "Convert" },
+	{ href: "/tools", label: "Tools" },
+	{ href: "/image", label: "Image Tools" },
+	{ href: "/audio", label: "Audio Tools" },
+	{ href: "/video", label: "Video Tools" },
+	{ href: "/document", label: "Document Tools" },
 	{ href: "/groups", label: "Groups" },
 	{ href: "/collectives", label: "Collectives" },
 	{ href: "/compare", label: "Compare" },
@@ -137,6 +145,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 				<AuthProvider>
 					<ServiceWorkerRegistration />
 					<DifferenceCursor />
+					<BroadcastBanner />
+					<NetworkStatusBanner />
 					<SiteHeader links={NAV} cta={CTA} authSlot={<UserMenu />} />
 					<main id="main-content" className="flex-1">
 						{children}

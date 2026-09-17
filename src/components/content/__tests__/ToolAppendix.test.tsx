@@ -76,4 +76,37 @@ describe("ToolAppendix", () => {
 		expect(screen.queryByTestId("tool-faq")).toBeNull();
 		expect(screen.queryByTestId("tool-comparisons")).toBeNull();
 	});
+
+	it("renders RelatedConverters when tool is provided", () => {
+		const sampleTool = {
+			id: "image/png-to-webp",
+			slug: "png-to-webp",
+			category: "image" as const,
+			accept: { mime: ["image/png"], ext: ["png"] },
+			output: { mime: "image/webp", ext: "webp" },
+			kind: "convert" as const,
+			tags: ["lossy"],
+			features: { batch: true, preview: true },
+			quality: { kind: "continuous" as const, default: 80 },
+			engines: ["wasm" as const],
+			seo: {
+				title: "PNG to WebP",
+				h1: "Convert PNG to WebP",
+				intent: "Convert PNG to WebP online",
+				faq: [],
+			},
+		};
+
+		render(
+			<ToolAppendix
+				faq={[]}
+				comparisons={[]}
+				posts={[]}
+				tool={sampleTool as unknown as import("@/core/registry/types").Tool}
+			/>,
+		);
+
+		expect(screen.getByTestId("related-converters")).toBeDefined();
+		expect(screen.getByText("Related Converters & Routing")).toBeDefined();
+	});
 });

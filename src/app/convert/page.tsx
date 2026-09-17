@@ -26,6 +26,10 @@ export default function MasterConvertPage() {
 		<>
 			<JsonLd schema={buildConvertStudioJsonLd(`${SITE}/convert`)} />
 			<ConverterPage
+				breadcrumbs={[
+					{ name: "Home", href: "/" },
+					{ name: "Master File Converter" },
+				]}
 				eyebrow="Universal · Multi-File Studio"
 				title="Master File Converter"
 				lede="Convert multiple files between formats entirely in your browser. Customize your selection on the go, choose target formats individually or in bulk, and download individually or as a ZIP."

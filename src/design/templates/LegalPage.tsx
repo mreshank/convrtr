@@ -1,10 +1,12 @@
 import { Fragment, type ReactNode } from "react";
 import type { PageSection } from "@/content/pages/types";
 import { ProseSection } from "@/design/families";
-import { Hairline } from "@/design/primitives";
+import { Breadcrumbs, type BreadcrumbItem, Hairline } from "@/design/primitives";
 
 type Props = {
 	title: string;
+	/** Breadcrumbs trail for navigation and SEO schema matching. */
+	breadcrumbs?: BreadcrumbItem[];
 	/** Formatted by the route; the template only renders it in the mono voice. */
 	revised: string;
 	/**
@@ -52,7 +54,13 @@ function clean(text: string) {
  * `ArticlePage` already wraps its own titles at 68ch, and 56ch is far wider
  * than "Privacy Policy", the longest title any route passes here.
  */
-export function LegalPage({ title, revised, sections, children }: Props) {
+export function LegalPage({
+	title,
+	breadcrumbs,
+	revised,
+	sections,
+	children,
+}: Props) {
 	return (
 		<article
 			style={{
@@ -70,6 +78,7 @@ export function LegalPage({ title, revised, sections, children }: Props) {
 					gap: "var(--gap-sm)",
 				}}
 			>
+				{breadcrumbs ? <Breadcrumbs items={breadcrumbs} /> : null}
 				<h1
 					style={{
 						fontSize: "var(--headline-size)",

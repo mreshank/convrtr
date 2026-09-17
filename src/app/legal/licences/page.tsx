@@ -57,7 +57,11 @@ export default function LicencesPage() {
 					breadcrumbs: [{ name: "Licences", url: `${SITE}/legal/licences` }],
 				})}
 			/>
-			<LegalPage title={licences.title} revised={licences.updated}>
+			<LegalPage
+				breadcrumbs={[{ name: "Home", href: "/" }, { name: "Licences" }]}
+				title={licences.title}
+				revised={licences.updated}
+			>
 				<div className="flex flex-col gap-6">
 					<p>
 						{licences.introBefore} <code>package.json</code>{" "}

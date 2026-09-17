@@ -24,6 +24,10 @@ export default function CompareIndexPage() {
 				schema={buildCompareIndexJsonLd(COMPARISONS, `${SITE}/compare`)}
 			/>
 			<HubPage
+				breadcrumbs={[
+					{ name: "Home", href: "/" },
+					{ name: "Format Comparisons" },
+				]}
 				title="Format Comparisons"
 				lede="Direct head-to-head technical comparisons between image, audio, and document formats."
 				count={{

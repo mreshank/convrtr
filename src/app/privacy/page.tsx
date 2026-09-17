@@ -30,6 +30,7 @@ export default function PrivacyPage() {
 				})}
 			/>
 			<ArticlePage
+				breadcrumbs={[{ name: "Home", href: "/" }, { name: "Privacy" }]}
 				title={privacy.title}
 				dateline={`Revised ${privacy.updated}`}
 				sections={privacy.sections}

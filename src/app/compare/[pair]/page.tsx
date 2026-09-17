@@ -50,6 +50,11 @@ export default async function ComparisonDetailPage({
 		<>
 			<JsonLd schema={jsonLd} />
 			<ConverterPage
+				breadcrumbs={[
+					{ name: "Home", href: "/" },
+					{ name: "Format Comparisons", href: "/compare" },
+					{ name: comparison.title },
+				]}
 				eyebrow={`FORMAT ANALYSIS // ${comparison.category.toUpperCase()}`}
 				title={comparison.title}
 				lede={comparison.description}
