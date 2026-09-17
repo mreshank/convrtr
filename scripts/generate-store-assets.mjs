@@ -589,13 +589,208 @@ async function generateStoreAssets() {
 		});
 		await page4.close();
 
+		// 5. Marquee Promo Tile (1400x560)
+		console.log("  → Capturing marquee tile: Large Promo Tile (1400x560)...");
+		const page5 = await browser.newPage({
+			viewport: { width: 1400, height: 560 },
+		});
+		const marqueeTileHtml = `<!DOCTYPE html>
+		<html lang="en">
+		<head>
+			<meta charset="UTF-8">
+			<style>
+				* { box-sizing: border-box; margin: 0; padding: 0; }
+				body {
+					width: 1400px;
+					height: 560px;
+					background: #050505;
+					color: #ffffff;
+					font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+					display: flex;
+					flex-direction: column;
+					justify-content: space-between;
+					padding: 60px 72px;
+					position: relative;
+					overflow: hidden;
+					border: 1px solid #1a1a1a;
+				}
+				.bg-grid {
+					position: absolute;
+					top: 0; left: 0; right: 0; bottom: 0;
+					background-image: linear-gradient(#111111 1px, transparent 1px), linear-gradient(to right, #111111 1px, transparent 1px);
+					background-size: 40px 40px;
+					opacity: 0.4;
+					z-index: 1;
+				}
+				.content {
+					position: relative;
+					z-index: 2;
+					height: 100%;
+					display: flex;
+					flex-direction: column;
+					justify-content: space-between;
+				}
+				.header {
+					display: flex;
+					justify-content: space-between;
+					align-items: center;
+				}
+				.brand {
+					display: flex;
+					align-items: center;
+					gap: 16px;
+				}
+				.brand-mark {
+					width: 40px;
+					height: 40px;
+					background: #ffffff;
+					clip-path: polygon(33% 13%, 82% 50%, 33% 87%, 25% 77%, 61% 50%, 25% 23%);
+				}
+				.brand-title {
+					font-family: ui-monospace, SFMono-Regular, monospace;
+					font-size: 28px;
+					font-weight: 800;
+					letter-spacing: 4px;
+					color: #ffffff;
+				}
+				.badge-group {
+					display: flex;
+					gap: 10px;
+				}
+				.badge {
+					font-family: ui-monospace, monospace;
+					font-size: 11px;
+					padding: 6px 12px;
+					background: #111111;
+					border: 1px solid #262626;
+					letter-spacing: 1.5px;
+					font-weight: 600;
+				}
+				.badge.accent {
+					color: #38ef7d;
+					border-color: #225533;
+					background: #091a10;
+				}
+				.hero {
+					margin: 24px 0;
+				}
+				.headline {
+					font-size: 52px;
+					font-weight: 800;
+					line-height: 1.05;
+					letter-spacing: -1.5px;
+					color: #ffffff;
+					margin-bottom: 12px;
+				}
+				.subline {
+					font-size: 18px;
+					color: #888888;
+					max-width: 820px;
+					line-height: 1.5;
+				}
+				.footer-strip {
+					display: flex;
+					justify-content: space-between;
+					align-items: flex-end;
+					border-top: 1px solid #1c1c1c;
+					padding-top: 24px;
+				}
+				.metrics {
+					display: flex;
+					gap: 40px;
+				}
+				.metric {
+					display: flex;
+					flex-direction: column;
+				}
+				.metric-val {
+					font-family: ui-monospace, monospace;
+					font-size: 24px;
+					font-weight: 700;
+					color: #ffffff;
+				}
+				.metric-lbl {
+					font-family: ui-monospace, monospace;
+					font-size: 10px;
+					color: #666666;
+					letter-spacing: 1.5px;
+					text-transform: uppercase;
+					margin-top: 2px;
+				}
+				.feature-chips {
+					display: flex;
+					gap: 8px;
+				}
+				.chip {
+					font-family: ui-monospace, monospace;
+					font-size: 11px;
+					padding: 6px 12px;
+					background: #141414;
+					border: 1px solid #262626;
+					color: #cccccc;
+				}
+			</style>
+		</head>
+		<body>
+			<div class="bg-grid"></div>
+			<div class="content">
+				<div class="header">
+					<div class="brand">
+						<div class="brand-mark"></div>
+						<div class="brand-title">CONVRTR</div>
+					</div>
+					<div class="badge-group">
+						<div class="badge accent">100% PRIVATE &amp; OFFLINE</div>
+						<div class="badge">CHROME EXTENSION V0.2.1</div>
+					</div>
+				</div>
+				<div class="hero">
+					<div class="headline">UNIVERSAL LOCAL FILE CONVERTER</div>
+					<div class="subline">
+						Convert, compress, extract, and inspect media directly in your browser. Side panel dock, instant quick popup, active viewport capture, and deep page asset extraction with zero cloud dependencies.
+					</div>
+				</div>
+				<div class="footer-strip">
+					<div class="metrics">
+						<div class="metric">
+							<span class="metric-val">200 TOOLS</span>
+							<span class="metric-lbl">DEDICATED CONVERTERS</span>
+						</div>
+						<div class="metric">
+							<span class="metric-val">147 ENGINES</span>
+							<span class="metric-lbl">WASM &amp; LOCAL CODECS</span>
+						</div>
+						<div class="metric">
+							<span class="metric-val">0 BYTES</span>
+							<span class="metric-lbl">REMOTE UPLOAD LIMIT</span>
+						</div>
+					</div>
+					<div class="feature-chips">
+						<div class="chip">SIDE PANEL</div>
+						<div class="chip">QUICK POPUP ⌘⇧,</div>
+						<div class="chip">PAGE CAPTURE ⌘⇧S</div>
+						<div class="chip">MULTI-HOP GRAPH</div>
+					</div>
+				</div>
+			</div>
+		</body>
+		</html>`;
+		await page5.setContent(marqueeTileHtml);
+		await page5.waitForTimeout(400);
+		await page5.screenshot({
+			path: join(storeAssetsDir, "promo-marquee-tile.png"),
+		});
+		await page5.close();
+
 		console.log(
 			"[convrtr:store] Store assets generated successfully in store-assets/:",
 		);
+		console.log("  - store-assets/icon-128.png (128x128)");
 		console.log("  - store-assets/screenshot-1-tab-studio.png (1280x800)");
 		console.log("  - store-assets/screenshot-2-sidepanel.png (1280x800)");
 		console.log("  - store-assets/screenshot-3-popup.png (1280x800)");
 		console.log("  - store-assets/promo-small-tile.png (440x280)");
+		console.log("  - store-assets/promo-marquee-tile.png (1400x560)");
 	} finally {
 		await browser.close();
 		await server.close();
