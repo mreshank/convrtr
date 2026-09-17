@@ -62,6 +62,18 @@ Productivity / Developer Tools / Photos
 English
 ```
 
+### Privacy Policy URL
+```
+https://convrtr.mreshank.com/privacy
+```
+
+### Store Listing Visual Assets (in `store-assets/`)
+- **Store Icon (128x128):** `store-assets/icon-128.png`
+- **Screenshot 1 — Full Tab Studio (1280x800):** `store-assets/screenshot-1-tab-studio.png`
+- **Screenshot 2 — Docked Side Panel (1280x800):** `store-assets/screenshot-2-sidepanel.png`
+- **Screenshot 3 — Quick Popup (1280x800):** `store-assets/screenshot-3-popup.png`
+- **Small Promo Tile (440x280):** `store-assets/promo-small-tile.png`
+
 ---
 
 ## 2. Permissions Justification

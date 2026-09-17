@@ -11,6 +11,7 @@
 		"typecheck": "next typegen && tsc --noEmit",
 		"build:extension": "node scripts/build-extension.mjs",
 		"dev:extension": "node scripts/build-extension.mjs --watch",
+		"assets:store": "node scripts/generate-store-assets.mjs",
 		"ci": "pnpm typecheck && pnpm lint && pnpm test && pnpm build && pnpm playwright test"
 	},
 	"engines": {
