@@ -34,7 +34,6 @@
 		"scripting",
 		"activeTab"
 	],
-	"host_permissions": ["<all_urls>"],
 	"commands": {
 		"open_popup": {
 			"suggested_key": {

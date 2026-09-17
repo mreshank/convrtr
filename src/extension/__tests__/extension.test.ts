@@ -37,8 +37,8 @@ describe("convrtr Chrome Extension Manifest & Configuration", () => {
 		expect(permissions).toContain("scripting");
 		expect(permissions).toContain("activeTab");
 
-		const hostPermissions = manifest.host_permissions as string[];
-		expect(hostPermissions).toContain("<all_urls>");
+		// Broad host permissions omitted to eliminate Chrome Web Store review delays
+		expect(manifest.host_permissions).toBeUndefined();
 	});
 
 	it("defines keyboard shortcuts and omnibox keyword", () => {

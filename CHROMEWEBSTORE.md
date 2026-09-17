@@ -48,8 +48,7 @@ PERMISSIONS USAGE:
 • tabs: Opens the converter in a full tab when requested, identifies window IDs for side panel docking, and captures visible viewports.
 • downloads: Saves your converted files and batch ZIP archives directly to your Downloads folder.
 • scripting: Queries DOM elements on the active page to extract images, media sources, inline SVGs, and document links upon user request.
-• activeTab: Captures the visible tab viewport when you trigger "Capture Page" (⌘⇧S).
-• host_permissions (<all_urls>): Allows media and asset extraction across standard websites upon user command.
+• activeTab: Grants temporary, user-invoked permission to capture visible viewports (⌘⇧S) and extract media upon explicit command without requiring broad host permissions.
 ```
 
 ### Category
@@ -99,8 +98,7 @@ Every permission declared in `manifest.json` is justified below for the Chrome W
 | `tabs` | Identifies the current browser window ID so the side panel opens in the user's active window, captures the visible tab viewport when requested, and allows opening the Full Tab Studio (`tab.html`) upon user request. |
 | `downloads` | Saves completed conversion outputs, transformed images/audio/video, and batch ZIP archives to the user's local disk via Chrome's native download manager. |
 | `scripting` | Executes non-intrusive DOM queries to discover and extract media (images, audio/video sources, canvases, inline SVGs, and linked documents) on the active page when explicitly invoked by the user. |
-| `activeTab` | Grants temporary permission to capture the active tab's visible area (`chrome.tabs.captureVisibleTab`) when the user executes the Capture Page command (`Command+Shift+S` or via extension button). |
-| `host_permissions: ["<all_urls>"]` | Required to permit asset extraction across any standard website that the user requests media extraction on. Zero data is uploaded or transmitted remotely. |
+| `activeTab` | Grants temporary permission to capture the active tab's visible area (`chrome.tabs.captureVisibleTab`) or extract media when explicitly initiated by user gesture (`Command+Shift+S`, context menu, or extension button). Eliminates the need for broad host permissions, maximizing user privacy and fast-tracking store review. |
 
 ---
 
