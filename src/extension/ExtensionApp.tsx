@@ -8,6 +8,7 @@ import {
 } from "@/core/history/store";
 import type { ConversionHistoryRecord } from "@/core/history/types";
 import { formatBytes, formatDuration } from "@/lib/format";
+import { SITE } from "@/lib/site";
 import "./extension.css";
 
 export type ExtensionMode = "sidepanel" | "popup" | "tab";
@@ -664,6 +665,21 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 						>
 							STUDIO ↗
 						</button>
+
+						<a
+							href={`${SITE}/feedback`}
+							target="_blank"
+							rel="noreferrer"
+							className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer inline-flex items-center"
+							style={{
+								background: "transparent",
+								color: "var(--ink)",
+								borderColor: "var(--rule)",
+							}}
+							title="Submit Feedback or Format Proposals"
+						>
+							FEEDBACK ↗
+						</a>
 					</div>
 				</div>
 

@@ -98,10 +98,10 @@ const SOCIALS = [
 	{ href: "https://github.com/mreshank/convrtr", label: "GitHub" },
 ];
 const CONTACT = [
-	{
-		href: "https://github.com/mreshank/convrtr/issues",
-		label: "Issues",
-	},
+	{ href: "/contact", label: "Contact" },
+	{ href: "/support", label: "Support" },
+	{ href: "/feedback", label: "Feedback" },
+	{ href: "/issues", label: "Issues ↗" },
 ];
 
 // The registry-derived hubs, echoed in the footer alongside the header nav

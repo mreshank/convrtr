@@ -55,6 +55,11 @@ describe("RootLayout", () => {
 			"/legal/terms",
 			"/legal/privacy-policy",
 			"/legal/licences",
+			"/contact",
+			"/support",
+			"/feedback",
+			"/issues",
+			"/thank-you",
 		]);
 		for (const link of screen.getAllByRole("link")) {
 			const href = link.getAttribute("href") ?? "";

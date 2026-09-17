@@ -62,6 +62,16 @@ Productivity / Developer Tools / Photos
 English
 ```
 
+### Homepage URL
+```
+https://convrtr.mreshank.com
+```
+
+### Support URL
+```
+https://convrtr.mreshank.com/support
+```
+
 ### Privacy Policy URL
 ```
 https://convrtr.mreshank.com/privacy
@@ -73,6 +83,7 @@ https://convrtr.mreshank.com/privacy
 - **Screenshot 2 — Docked Side Panel (1280x800):** `store-assets/screenshot-2-sidepanel.png`
 - **Screenshot 3 — Quick Popup (1280x800):** `store-assets/screenshot-3-popup.png`
 - **Small Promo Tile (440x280):** `store-assets/promo-small-tile.png`
+- **Marquee Promo Tile (1400x560):** `store-assets/promo-marquee-tile.png`
 
 ---
 
