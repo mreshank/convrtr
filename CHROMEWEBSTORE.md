@@ -3,7 +3,7 @@
 Single source of truth for the Chrome Web Store listing metadata, permissions justifications, privacy disclosures, and version history for **convrtr**.
 
 **Last Updated:** 2026-09-18  
-**Current Version:** 0.2.4  
+**Current Version:** 0.2.5  
 **Manifest Version:** 3  
 
 ---
@@ -12,7 +12,7 @@ Single source of truth for the Chrome Web Store listing metadata, permissions ju
 
 ### Name
 ```
-convrtr — File Converter
+convrtr
 ```
 
 ### Single Purpose Statement (for Developer Dashboard)
@@ -64,7 +64,7 @@ Help & Diagnostic Center: https://convrtr.mreshank.com/support
 Privacy Policy: https://convrtr.mreshank.com/privacy
 Source Code & Issues: https://github.com/mreshank/convrtr
 
-Version 0.2.4 — Permission minimization release removing unused tabs and downloads permissions per Chrome Web Store review.
+Version 0.2.5 — Permission minimization release removing unused tabs and downloads permissions per Chrome Web Store review.
 ```
 
 ### Category
@@ -131,6 +131,11 @@ Every permission declared in `manifest.json` is strictly justified below for the
 ---
 
 ## 4. Version History
+
+### 0.2.5 — 2026-09-18
+- Set extension store name strictly to `convrtr` to prevent title metadata discrepancies with manifest.
+- Set `action.default_title` strictly to `convrtr`.
+- Maintained strict 5-permission least privilege set (`sidePanel`, `storage`, `contextMenus`, `scripting`, `activeTab`) with `tabs` and `downloads` completely removed.
 
 ### 0.2.4 — 2026-09-18
 - Successfully resolved Chrome Web Store appeal: overturned previous "Yellow Nickel" spam policy rejection (confirmed 100% compliant with SPAM policy).

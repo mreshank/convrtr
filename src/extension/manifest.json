@@ -1,7 +1,7 @@
 {
 	"manifest_version": 3,
 	"name": "convrtr",
-	"version": "0.2.4",
+	"version": "0.2.5",
 	"description": "Private in-browser file converter. Convert media and documents locally using WebAssembly with zero server uploads.",
 	"icons": {
 		"16": "icons/icon-16.png",
@@ -10,7 +10,7 @@
 		"128": "icons/icon-128.png"
 	},
 	"action": {
-		"default_title": "convrtr - File Converter",
+		"default_title": "convrtr",
 		"default_icon": {
 			"16": "icons/icon-16.png",
 			"32": "icons/icon-32.png",
