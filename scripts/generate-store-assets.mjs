@@ -92,16 +92,16 @@ async function generateStoreAssets() {
 				body {
 					width: 1280px;
 					height: 800px;
-					background: #080808;
+					background: #0a0a0a;
 					color: #e5e5e5;
-					font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+					font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 					display: flex;
 					flex-direction: column;
 					overflow: hidden;
 				}
 				.browser-chrome {
 					height: 44px;
-					background: #111111;
+					background: #121212;
 					border-bottom: 1px solid #222222;
 					display: flex;
 					align-items: center;
@@ -119,8 +119,8 @@ async function generateStoreAssets() {
 				.address-bar {
 					flex: 1;
 					height: 28px;
-					background: #181818;
-					border: 1px solid #262626;
+					background: #1a1a1a;
+					border: 1px solid #282828;
 					border-radius: 4px;
 					display: flex;
 					align-items: center;
@@ -128,23 +128,8 @@ async function generateStoreAssets() {
 					font-family: ui-monospace, SFMono-Regular, monospace;
 					font-size: 11px;
 					color: #888888;
-					letter-spacing: 0.5px;
 				}
-				.address-bar span { color: #ffffff; margin-right: 6px; }
-				.browser-action-icon {
-					height: 28px;
-					padding: 0 10px;
-					background: #202020;
-					border: 1px solid #333333;
-					border-radius: 4px;
-					display: flex;
-					align-items: center;
-					gap: 6px;
-					font-family: ui-monospace, monospace;
-					font-size: 11px;
-					color: #38ef7d;
-					font-weight: 600;
-				}
+				.address-bar span { color: #cccccc; margin-right: 4px; }
 				.content-area {
 					flex: 1;
 					display: flex;
@@ -152,60 +137,68 @@ async function generateStoreAssets() {
 				}
 				.web-viewport {
 					flex: 1;
-					background: #0d0d0d;
-					padding: 48px;
+					background: #0e0e0e;
+					padding: 40px 48px;
 					display: flex;
 					flex-direction: column;
-					justify-content: center;
 					border-right: 1px solid #222222;
+					overflow: hidden;
 				}
-				.hero-tag {
+				.article-category {
 					font-family: ui-monospace, monospace;
 					font-size: 11px;
-					color: #888888;
+					color: #777777;
 					text-transform: uppercase;
-					letter-spacing: 2px;
-					margin-bottom: 12px;
+					letter-spacing: 1px;
+					margin-bottom: 8px;
 				}
-				.hero-title {
-					font-size: 38px;
+				.article-title {
+					font-size: 28px;
 					font-weight: 700;
-					line-height: 1.15;
-					letter-spacing: -1px;
 					color: #ffffff;
 					margin-bottom: 16px;
+					line-height: 1.2;
 				}
-				.hero-desc {
-					font-size: 15px;
-					line-height: 1.6;
-					color: #888888;
-					max-width: 540px;
-					margin-bottom: 28px;
+				.article-body {
+					font-size: 14px;
+					line-height: 1.7;
+					color: #999999;
+					margin-bottom: 24px;
 				}
-				.specs-grid {
-					display: grid;
-					grid-template-columns: repeat(2, 1fr);
-					gap: 16px;
-					max-width: 540px;
-				}
-				.spec-box {
-					background: #141414;
+				.media-card {
 					border: 1px solid #222222;
-					padding: 14px 16px;
+					background: #141414;
+					padding: 16px;
+					display: flex;
+					align-items: center;
+					gap: 16px;
+					border-radius: 4px;
 				}
-				.spec-num {
+				.media-thumb {
+					width: 72px;
+					height: 72px;
+					background: #1e1e1e;
+					border: 1px solid #2a2a2a;
+					display: flex;
+					align-items: center;
+					justify-content: center;
 					font-family: ui-monospace, monospace;
-					font-size: 20px;
-					font-weight: 700;
+					font-size: 11px;
+					color: #666666;
+				}
+				.media-meta {
+					flex: 1;
+				}
+				.media-name {
+					font-size: 13px;
+					font-weight: 600;
 					color: #ffffff;
 					margin-bottom: 4px;
 				}
-				.spec-label {
+				.media-sub {
 					font-family: ui-monospace, monospace;
-					font-size: 10px;
-					color: #666666;
-					text-transform: uppercase;
-					letter-spacing: 1px;
+					font-size: 11px;
+					color: #777777;
 				}
 				.sidepanel-frame-wrapper {
 					width: 440px;
@@ -228,35 +221,21 @@ async function generateStoreAssets() {
 					<div class="dot dot-green"></div>
 				</div>
 				<div class="address-bar">
-					<span>convrtr.mreshank.com</span>/tools
-				</div>
-				<div class="browser-action-icon">
-					<span>[SIDE PANEL DOCKED]</span>
+					<span>https://</span>developer.mozilla.org/en-US/docs/WebAssembly
 				</div>
 			</div>
 			<div class="content-area">
 				<div class="web-viewport">
-					<div class="hero-tag">CHROME EXTENSION INTEGRATION</div>
-					<div class="hero-title">CONVERT WHILE YOU BROWSE.</div>
-					<div class="hero-desc">
-						Dock convrtr alongside any active web page. Drag images, media, text, and local files directly into the panel without losing context.
+					<div class="article-category">Documentation</div>
+					<div class="article-title">WebAssembly Architecture &amp; Client-Side Media</div>
+					<div class="article-body">
+						WebAssembly provides a portable binary-code format for executable programs, enabling high-performance client-side image, video, and document processing directly within modern web browsers without server uploads.
 					</div>
-					<div class="specs-grid">
-						<div class="spec-box">
-							<div class="spec-num">200 TOOLS</div>
-							<div class="spec-label">DEDICATED CONVERTERS</div>
-						</div>
-						<div class="spec-box">
-							<div class="spec-num">147 ENGINES</div>
-							<div class="spec-label">LOCAL CLIENT-SIDE</div>
-						</div>
-						<div class="spec-box">
-							<div class="spec-num">ZERO UPLOADS</div>
-							<div class="spec-label">100% PRIVATE &amp; OFFLINE</div>
-						</div>
-						<div class="spec-box">
-							<div class="spec-num">MULTI-HOP</div>
-							<div class="spec-label">AUTOMATIC GRAPH ROUTING</div>
+					<div class="media-card">
+						<div class="media-thumb">PNG</div>
+						<div class="media-meta">
+							<div class="media-name">diagram-architecture-overview.png</div>
+							<div class="media-sub">2048 x 1536 px &bull; 1.8 MB &bull; Ready for conversion</div>
 						</div>
 					</div>
 				</div>
@@ -287,9 +266,9 @@ async function generateStoreAssets() {
 				body {
 					width: 1280px;
 					height: 800px;
-					background: #080808;
+					background: #0a0a0a;
 					color: #e5e5e5;
-					font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+					font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 					display: flex;
 					flex-direction: column;
 					position: relative;
@@ -297,7 +276,7 @@ async function generateStoreAssets() {
 				}
 				.browser-chrome {
 					height: 44px;
-					background: #111111;
+					background: #121212;
 					border-bottom: 1px solid #222222;
 					display: flex;
 					align-items: center;
@@ -315,8 +294,8 @@ async function generateStoreAssets() {
 				.address-bar {
 					flex: 1;
 					height: 28px;
-					background: #181818;
-					border: 1px solid #262626;
+					background: #1a1a1a;
+					border: 1px solid #282828;
 					border-radius: 4px;
 					display: flex;
 					align-items: center;
@@ -325,45 +304,34 @@ async function generateStoreAssets() {
 					font-size: 11px;
 					color: #888888;
 				}
-				.address-bar span { color: #ffffff; }
-				.browser-actions {
-					display: flex;
-					gap: 8px;
-				}
-				.action-btn {
-					height: 28px;
-					padding: 0 10px;
-					background: #1a1a1a;
-					border: 1px solid #333333;
-					border-radius: 4px;
-					font-family: ui-monospace, monospace;
-					font-size: 10px;
-					color: #ffffff;
-					display: flex;
-					align-items: center;
-				}
-				.action-btn.active {
-					background: #ffffff;
-					color: #000000;
-					border-color: #ffffff;
-					font-weight: 600;
-				}
+				.address-bar span { color: #cccccc; margin-right: 4px; }
 				.desktop-canvas {
 					flex: 1;
-					display: flex;
-					align-items: center;
-					justify-content: center;
-					background: radial-gradient(circle at center, #151515 0%, #080808 100%);
+					padding: 48px 64px;
+					background: #0e0e0e;
 					position: relative;
+				}
+				.bg-article-title {
+					font-size: 32px;
+					font-weight: 700;
+					color: #ffffff;
+					margin-bottom: 16px;
+				}
+				.bg-article-body {
+					font-size: 15px;
+					line-height: 1.8;
+					color: #888888;
+					max-width: 600px;
+					margin-bottom: 24px;
 				}
 				.popup-modal-shadow {
 					position: absolute;
 					top: 16px;
-					right: 64px;
-					width: 480px;
-					height: 640px;
+					right: 48px;
+					width: 520px;
+					height: 680px;
 					box-shadow: 0 24px 60px rgba(0,0,0,0.9), 0 0 0 1px #333333;
-					border-radius: 8px;
+					border-radius: 6px;
 					overflow: hidden;
 					background: #000000;
 				}
@@ -371,47 +339,6 @@ async function generateStoreAssets() {
 					width: 100%;
 					height: 100%;
 					border: none;
-				}
-				.overlay-callout {
-					position: absolute;
-					left: 100px;
-					bottom: 120px;
-					max-width: 460px;
-				}
-				.callout-badge {
-					font-family: ui-monospace, monospace;
-					font-size: 11px;
-					letter-spacing: 2px;
-					color: #888888;
-					text-transform: uppercase;
-					margin-bottom: 12px;
-				}
-				.callout-title {
-					font-size: 32px;
-					font-weight: 700;
-					line-height: 1.2;
-					letter-spacing: -0.5px;
-					color: #ffffff;
-					margin-bottom: 12px;
-				}
-				.callout-desc {
-					font-size: 14px;
-					line-height: 1.6;
-					color: #888888;
-				}
-				.callout-keys {
-					display: inline-flex;
-					gap: 6px;
-					margin-top: 16px;
-				}
-				.key-chip {
-					font-family: ui-monospace, monospace;
-					font-size: 12px;
-					padding: 6px 10px;
-					background: #1c1c1c;
-					border: 1px solid #333333;
-					border-radius: 4px;
-					color: #ffffff;
 				}
 			</style>
 		</head>
@@ -423,24 +350,13 @@ async function generateStoreAssets() {
 					<div class="dot dot-green"></div>
 				</div>
 				<div class="address-bar">
-					<span>convrtr.mreshank.com</span>/tools
-				</div>
-				<div class="browser-actions">
-					<div class="action-btn active">[CONVRTR POPUP]</div>
+					<span>https://</span>developer.mozilla.org/en-US/docs/Web/Media/Formats
 				</div>
 			</div>
 			<div class="desktop-canvas">
-				<div class="overlay-callout">
-					<div class="callout-badge">INSTANT KEYBOARD ACCESS</div>
-					<div class="callout-title">HIGH-SPEED QUICK POPUP.</div>
-					<div class="callout-desc">
-						Summon convrtr instantly anywhere in Chrome with a dedicated keyboard shortcut. Convert files, extract page media, and switch smoothly to docked side panel or full tab with one click.
-					</div>
-					<div class="callout-keys">
-						<span class="key-chip">COMMAND</span>
-						<span class="key-chip">SHIFT</span>
-						<span class="key-chip">COMMA</span>
-					</div>
+				<div class="bg-article-title">Media Container Formats &amp; Web Codecs</div>
+				<div class="bg-article-body">
+					Digital media formats encompass container specifications and compressed bitstreams. Client-side conversion enables seamless transcoding between raster graphics, audio tracks, and document formats directly on the end-user device.
 				</div>
 				<div class="popup-modal-shadow">
 					<iframe src="${server.url}/popup.html"></iframe>
@@ -471,83 +387,51 @@ async function generateStoreAssets() {
 					height: 280px;
 					background: #000000;
 					color: #ffffff;
-					font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+					font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 					display: flex;
 					flex-direction: column;
 					justify-content: space-between;
-					padding: 28px;
+					padding: 36px;
 					position: relative;
 					overflow: hidden;
 					border: 1px solid #222222;
 				}
-				.top-row {
-					display: flex;
-					justify-content: space-between;
-					align-items: flex-start;
-				}
 				.brand {
 					display: flex;
 					align-items: center;
-					gap: 10px;
+					gap: 12px;
 				}
 				.brand-mark {
-					width: 28px;
-					height: 28px;
+					width: 32px;
+					height: 32px;
 					background: #ffffff;
 					clip-path: polygon(33% 13%, 82% 50%, 33% 87%, 25% 77%, 61% 50%, 25% 23%);
 				}
 				.brand-title {
 					font-family: ui-monospace, SFMono-Regular, monospace;
-					font-size: 20px;
+					font-size: 22px;
 					font-weight: 800;
 					letter-spacing: 3px;
 					color: #ffffff;
 				}
-				.tag-chip {
-					font-family: ui-monospace, monospace;
-					font-size: 9px;
-					padding: 4px 8px;
-					background: #141414;
-					border: 1px solid #333333;
-					color: #38ef7d;
-					letter-spacing: 1px;
-					font-weight: 600;
-				}
 				.middle {
-					margin-top: 8px;
+					margin-top: 12px;
 				}
 				.headline {
-					font-size: 24px;
-					font-weight: 800;
-					line-height: 1.15;
-					letter-spacing: -0.5px;
+					font-size: 22px;
+					font-weight: 700;
+					line-height: 1.2;
 					color: #ffffff;
-					margin-bottom: 6px;
+					margin-bottom: 8px;
 				}
 				.subline {
-					font-size: 12px;
-					color: #888888;
-					line-height: 1.4;
-				}
-				.bottom-metrics {
-					display: flex;
-					gap: 18px;
-					border-top: 1px solid #1a1a1a;
-					padding-top: 12px;
-				}
-				.metric {
-					display: flex;
-					flex-direction: column;
-				}
-				.metric-val {
-					font-family: ui-monospace, monospace;
 					font-size: 13px;
-					font-weight: 700;
-					color: #ffffff;
+					color: #888888;
+					line-height: 1.5;
 				}
-				.metric-lbl {
+				.tag-strip {
 					font-family: ui-monospace, monospace;
-					font-size: 8px;
+					font-size: 10px;
 					color: #666666;
 					letter-spacing: 1px;
 					text-transform: uppercase;
@@ -555,30 +439,16 @@ async function generateStoreAssets() {
 			</style>
 		</head>
 		<body>
-			<div class="top-row">
-				<div class="brand">
-					<div class="brand-mark"></div>
-					<div class="brand-title">CONVRTR</div>
-				</div>
-				<div class="tag-chip">100% LOCAL</div>
+			<div class="brand">
+				<div class="brand-mark"></div>
+				<div class="brand-title">CONVRTR</div>
 			</div>
 			<div class="middle">
-				<div class="headline">UNIVERSAL LOCAL FILE CONVERTER</div>
-				<div class="subline">Side Panel &bull; Quick Popup &bull; Viewport Capture &bull; Deep Extraction</div>
+				<div class="headline">In-Browser File Converter</div>
+				<div class="subline">Fast, private media and document conversion directly inside your browser.</div>
 			</div>
-			<div class="bottom-metrics">
-				<div class="metric">
-					<span class="metric-val">200 TOOLS</span>
-					<span class="metric-lbl">CONVERTERS</span>
-				</div>
-				<div class="metric">
-					<span class="metric-val">147 ENGINES</span>
-					<span class="metric-lbl">WASM &amp; CODECS</span>
-				</div>
-				<div class="metric">
-					<span class="metric-val">0 UPLOADS</span>
-					<span class="metric-lbl">PURE OFFLINE</span>
-				</div>
+			<div class="tag-strip">
+				100% Client-Side &bull; Zero Server Uploads
 			</div>
 		</body>
 		</html>`;
@@ -603,32 +473,16 @@ async function generateStoreAssets() {
 				body {
 					width: 1400px;
 					height: 560px;
-					background: #050505;
+					background: #000000;
 					color: #ffffff;
-					font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+					font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 					display: flex;
 					flex-direction: column;
 					justify-content: space-between;
-					padding: 60px 72px;
+					padding: 64px 80px;
 					position: relative;
 					overflow: hidden;
 					border: 1px solid #1a1a1a;
-				}
-				.bg-grid {
-					position: absolute;
-					top: 0; left: 0; right: 0; bottom: 0;
-					background-image: linear-gradient(#111111 1px, transparent 1px), linear-gradient(to right, #111111 1px, transparent 1px);
-					background-size: 40px 40px;
-					opacity: 0.4;
-					z-index: 1;
-				}
-				.content {
-					position: relative;
-					z-index: 2;
-					height: 100%;
-					display: flex;
-					flex-direction: column;
-					justify-content: space-between;
 				}
 				.header {
 					display: flex;
@@ -641,137 +495,66 @@ async function generateStoreAssets() {
 					gap: 16px;
 				}
 				.brand-mark {
-					width: 40px;
-					height: 40px;
+					width: 44px;
+					height: 44px;
 					background: #ffffff;
 					clip-path: polygon(33% 13%, 82% 50%, 33% 87%, 25% 77%, 61% 50%, 25% 23%);
 				}
 				.brand-title {
 					font-family: ui-monospace, SFMono-Regular, monospace;
-					font-size: 28px;
+					font-size: 32px;
 					font-weight: 800;
 					letter-spacing: 4px;
 					color: #ffffff;
-				}
-				.badge-group {
-					display: flex;
-					gap: 10px;
-				}
-				.badge {
-					font-family: ui-monospace, monospace;
-					font-size: 11px;
-					padding: 6px 12px;
-					background: #111111;
-					border: 1px solid #262626;
-					letter-spacing: 1.5px;
-					font-weight: 600;
-				}
-				.badge.accent {
-					color: #38ef7d;
-					border-color: #225533;
-					background: #091a10;
 				}
 				.hero {
 					margin: 24px 0;
 				}
 				.headline {
-					font-size: 52px;
+					font-size: 48px;
 					font-weight: 800;
-					line-height: 1.05;
-					letter-spacing: -1.5px;
+					line-height: 1.1;
+					letter-spacing: -1px;
 					color: #ffffff;
-					margin-bottom: 12px;
+					margin-bottom: 16px;
 				}
 				.subline {
-					font-size: 18px;
+					font-size: 20px;
 					color: #888888;
-					max-width: 820px;
-					line-height: 1.5;
+					max-width: 800px;
+					line-height: 1.6;
 				}
 				.footer-strip {
 					display: flex;
 					justify-content: space-between;
-					align-items: flex-end;
-					border-top: 1px solid #1c1c1c;
+					align-items: center;
+					border-top: 1px solid #1a1a1a;
 					padding-top: 24px;
 				}
-				.metrics {
-					display: flex;
-					gap: 40px;
-				}
-				.metric {
-					display: flex;
-					flex-direction: column;
-				}
-				.metric-val {
+				.footer-note {
 					font-family: ui-monospace, monospace;
-					font-size: 24px;
-					font-weight: 700;
-					color: #ffffff;
-				}
-				.metric-lbl {
-					font-family: ui-monospace, monospace;
-					font-size: 10px;
+					font-size: 12px;
 					color: #666666;
-					letter-spacing: 1.5px;
+					letter-spacing: 1px;
 					text-transform: uppercase;
-					margin-top: 2px;
-				}
-				.feature-chips {
-					display: flex;
-					gap: 8px;
-				}
-				.chip {
-					font-family: ui-monospace, monospace;
-					font-size: 11px;
-					padding: 6px 12px;
-					background: #141414;
-					border: 1px solid #262626;
-					color: #cccccc;
 				}
 			</style>
 		</head>
 		<body>
-			<div class="bg-grid"></div>
-			<div class="content">
-				<div class="header">
-					<div class="brand">
-						<div class="brand-mark"></div>
-						<div class="brand-title">CONVRTR</div>
-					</div>
-					<div class="badge-group">
-						<div class="badge accent">100% PRIVATE &amp; OFFLINE</div>
-						<div class="badge">CHROME EXTENSION V0.2.1</div>
-					</div>
+			<div class="header">
+				<div class="brand">
+					<div class="brand-mark"></div>
+					<div class="brand-title">CONVRTR</div>
 				</div>
-				<div class="hero">
-					<div class="headline">UNIVERSAL LOCAL FILE CONVERTER</div>
-					<div class="subline">
-						Convert, compress, extract, and inspect media directly in your browser. Side panel dock, instant quick popup, active viewport capture, and deep page asset extraction with zero cloud dependencies.
-					</div>
+			</div>
+			<div class="hero">
+				<div class="headline">Private In-Browser File Converter</div>
+				<div class="subline">
+					Convert media and documents locally on your device with WebAssembly. No server uploads, no queues, and full offline capability.
 				</div>
-				<div class="footer-strip">
-					<div class="metrics">
-						<div class="metric">
-							<span class="metric-val">200 TOOLS</span>
-							<span class="metric-lbl">DEDICATED CONVERTERS</span>
-						</div>
-						<div class="metric">
-							<span class="metric-val">147 ENGINES</span>
-							<span class="metric-lbl">WASM &amp; LOCAL CODECS</span>
-						</div>
-						<div class="metric">
-							<span class="metric-val">0 BYTES</span>
-							<span class="metric-lbl">REMOTE UPLOAD LIMIT</span>
-						</div>
-					</div>
-					<div class="feature-chips">
-						<div class="chip">SIDE PANEL</div>
-						<div class="chip">QUICK POPUP ⌘⇧,</div>
-						<div class="chip">PAGE CAPTURE ⌘⇧S</div>
-						<div class="chip">MULTI-HOP GRAPH</div>
-					</div>
-				</div>
+			</div>
+			<div class="footer-strip">
+				<div class="footer-note">Client-Side WebAssembly &bull; Zero Server Uploads &bull; Open Source</div>
 			</div>
 		</body>
 		</html>`;

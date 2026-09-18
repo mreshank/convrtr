@@ -2,8 +2,8 @@
 
 Single source of truth for the Chrome Web Store listing metadata, permissions justifications, privacy disclosures, and version history for **convrtr**.
 
-**Last Updated:** 2026-09-17  
-**Current Version:** 0.2.2  
+**Last Updated:** 2026-09-18  
+**Current Version:** 0.2.3  
 **Manifest Version:** 3  
 
 ---
@@ -131,6 +131,12 @@ Every permission declared in `manifest.json` is justified below for the Chrome W
 ---
 
 ## 4. Version History
+
+### 0.2.3 — 2026-09-18
+- Comprehensive remediation of Chrome Web Store automated "Yellow Nickel" OCR review flags.
+- Re-rendered all store listing screenshots (`screenshot-2-sidepanel.png`, `screenshot-3-popup.png`) with realistic, neutral browsing contexts, eliminating simulated developer URLs (`convrtr.mreshank.com/tools`) and marketing callout banners.
+- Redesigned small and marquee promotional tiles to follow Google's strict minimalist branding guidelines, completely removing version numbers (`V0.2.1`), tool/engine counts, and feature bullet lists.
+- Bumped extension version to 0.2.3.
 
 ### 0.2.2 — 2026-09-17
 - Resolved Chrome Web Store "Yellow Nickel" spam policy review flag.
