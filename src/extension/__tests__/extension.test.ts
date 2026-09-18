@@ -20,7 +20,7 @@ describe("convrtr Chrome Extension Manifest & Configuration", () => {
 
 		expect(manifest.manifest_version).toBe(3);
 		expect(manifest.name).toBe("convrtr");
-		expect(manifest.version).toBe("0.2.3");
+		expect(manifest.version).toBe("0.2.4");
 		expect(typeof manifest.description).toBe("string");
 		expect(manifest.description.length).toBeGreaterThan(10);
 	});
@@ -32,10 +32,13 @@ describe("convrtr Chrome Extension Manifest & Configuration", () => {
 		expect(permissions).toContain("sidePanel");
 		expect(permissions).toContain("storage");
 		expect(permissions).toContain("contextMenus");
-		expect(permissions).toContain("tabs");
-		expect(permissions).toContain("downloads");
 		expect(permissions).toContain("scripting");
 		expect(permissions).toContain("activeTab");
+
+		// "tabs" and "downloads" omitted to comply strictly with CWS Use of Permissions policy
+		expect(permissions).not.toContain("tabs");
+		expect(permissions).not.toContain("downloads");
+		expect(permissions.length).toBe(5);
 
 		// Broad host permissions omitted to eliminate Chrome Web Store review delays
 		expect(manifest.host_permissions).toBeUndefined();

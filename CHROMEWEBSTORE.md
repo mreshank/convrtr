@@ -3,7 +3,7 @@
 Single source of truth for the Chrome Web Store listing metadata, permissions justifications, privacy disclosures, and version history for **convrtr**.
 
 **Last Updated:** 2026-09-18  
-**Current Version:** 0.2.3  
+**Current Version:** 0.2.4  
 **Manifest Version:** 3  
 
 ---
@@ -55,8 +55,6 @@ PERMISSIONS:
 • sidePanel: Displays the converter beside your active tab for side-by-side workflow.
 • storage: Passes temporary session references between background events and the converter interface. No browsing history or personal data is stored.
 • contextMenus: Lets you right-click web media or links to stage them for conversion.
-• tabs: Opens the converter in a full browser tab when requested and identifies the active window for side panel display.
-• downloads: Saves converted output files to your Downloads folder.
 • scripting: Inspects media elements on the active page to stage them into the converter upon explicit user request.
 • activeTab: Grants temporary, user-invoked access to capture the visible tab or stage media upon explicit command without broad host permissions.
 
@@ -66,7 +64,7 @@ Help & Diagnostic Center: https://convrtr.mreshank.com/support
 Privacy Policy: https://convrtr.mreshank.com/privacy
 Source Code & Issues: https://github.com/mreshank/convrtr
 
-Version 0.2.2 — Compliance release streamlining store metadata and reinforcing client-side single-purpose file conversion.
+Version 0.2.4 — Permission minimization release removing unused tabs and downloads permissions per Chrome Web Store review.
 ```
 
 ### Category
@@ -106,17 +104,19 @@ https://convrtr.mreshank.com/privacy
 
 ## 2. Permissions Justification
 
-Every permission declared in `manifest.json` is justified below for the Chrome Web Store review team:
+Every permission declared in `manifest.json` is strictly justified below for the Chrome Web Store review team. Following least-privilege guidance, `tabs` and `downloads` permissions have been completely omitted from the manifest:
 
 | Permission | Specific Reason Required for Functionality |
 | :--- | :--- |
 | `sidePanel` | Allows convrtr to open in Chrome's native Side Panel dock, allowing users to drag and drop files and monitor conversion progress without switching away from their current web page. |
 | `storage` | Uses `chrome.storage.session` to pass ephemeral file references (such as media URLs, text snippets, or screenshots) from background events into the converter interface. No personal data or browsing history is stored. |
 | `contextMenus` | Creates context menu entries ("Convert image with convrtr", "Capture visible page to convrtr", "Extract all media on page", etc.) when right-clicking on web pages. |
-| `tabs` | Identifies the current browser window ID so the side panel opens in the user's active window, captures the visible tab viewport when requested, and allows opening the Full Tab Studio (`tab.html`) upon user request. |
-| `downloads` | Saves completed conversion outputs, transformed images/audio/video, and batch ZIP archives to the user's local disk via Chrome's native download manager. |
 | `scripting` | Executes non-intrusive DOM queries to discover and extract media (images, audio/video sources, canvases, inline SVGs, and linked documents) on the active page when explicitly invoked by the user. |
-| `activeTab` | Grants temporary permission to capture the active tab's visible area (`chrome.tabs.captureVisibleTab`) or extract media when explicitly initiated by user gesture (`Command+Shift+S`, context menu, or extension button). Eliminates the need for broad host permissions, maximizing user privacy and fast-tracking store review. |
+| `activeTab` | Grants temporary permission to capture the active tab's visible area (`chrome.tabs.captureVisibleTab`) or extract media when explicitly initiated by user gesture (`Command+Shift+S`, context menu, or extension button). Eliminates the need for broad host permissions or sensitive `tabs` permissions, maximizing user privacy and fast-tracking store review. |
+
+> **Omitted Permissions:**
+> - `tabs`: Not required. convrtr only creates local extension tabs (`chrome.tabs.create`) and queries active tab IDs (`tab.id`), never inspecting privileged properties (`url`, `title`, `favIconUrl`). Viewport capture is powered by `activeTab`.
+> - `downloads`: Not required. All converted file outputs and ZIP archives are generated client-side and downloaded via standard web DOM Blob anchor elements (`<a download>`).
 
 ---
 
@@ -131,6 +131,13 @@ Every permission declared in `manifest.json` is justified below for the Chrome W
 ---
 
 ## 4. Version History
+
+### 0.2.4 — 2026-09-18
+- Successfully resolved Chrome Web Store appeal: overturned previous "Yellow Nickel" spam policy rejection (confirmed 100% compliant with SPAM policy).
+- Streamlined extension manifest permissions to strict least-privilege set (`sidePanel`, `storage`, `contextMenus`, `scripting`, `activeTab`).
+- Removed `tabs` permission (convrtr only interacts with tab IDs for active window operations and visible viewport capture via `activeTab`, requiring zero access to sensitive tab URL/title/favicon properties).
+- Removed `downloads` permission (file outputs are delivered strictly client-side via standard web DOM Blob anchor downloads).
+- Bumped extension version to 0.2.4 for Chrome Web Store package update.
 
 ### 0.2.3 — 2026-09-18
 - Comprehensive remediation of Chrome Web Store automated "Yellow Nickel" OCR review flags.
