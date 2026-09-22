@@ -31,6 +31,18 @@ describe("MasterConverterClient", () => {
 		expect(screen.getByText("DROP FILES HERE TO CONVERT")).toBeDefined();
 	});
 
+	it("renders the Chrome Extension callout when empty and showExtensionCallout is true", () => {
+		render(<MasterConverterClient />);
+		const callout = screen.getByTestId("master-extension-callout");
+		expect(callout).toBeDefined();
+		expect(screen.getByText("INSTALL EXTENSION")).toBeDefined();
+	});
+
+	it("hides the Chrome Extension callout when showExtensionCallout is false", () => {
+		render(<MasterConverterClient showExtensionCallout={false} />);
+		expect(screen.queryByTestId("master-extension-callout")).toBeNull();
+	});
+
 	it("populates files when dropped and defaults all to selected", () => {
 		render(<MasterConverterClient />);
 		const dropField = screen.getByTestId("drop-field");

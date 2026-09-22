@@ -39,6 +39,7 @@ import {
 	formatDuration,
 	formatPercent,
 } from "@/lib/format";
+import { CHROME_EXTENSION_URL } from "@/lib/site";
 
 const HEAVY_DOWNLOAD_KEY = "convrtr:heavy-download-allowed";
 
@@ -59,9 +60,16 @@ export type MasterItem = {
 	phase: string;
 	output?: ArrayBuffer;
 	outputSize?: number;
+	durationMs?: number;
+	errorDetail?: string;
 	outputName?: string;
 	error?: { code: ErrorCode; message: string };
 	lineage?: { parentName: string; step: number };
+};
+
+export type ConfiguredPreset = {
+	from: string;
+	to: string;
 };
 
 const ALL_ACCEPTS = {
@@ -422,17 +430,14 @@ const cellStyle = {
 	borderColor: "var(--rule)",
 } as const;
 
-export type ConfiguredPreset = {
-	from: string;
-	to: string;
-};
-
 export function MasterConverterClient({
 	initialFrom,
 	initialTo,
+	showExtensionCallout = true,
 }: {
 	initialFrom?: string;
 	initialTo?: string;
+	showExtensionCallout?: boolean;
 } = {}) {
 	const fileInputId = useId();
 	const addMoreInputId = useId();
@@ -1801,6 +1806,71 @@ export function MasterConverterClient({
 							}
 						}}
 					/>
+				</div>
+			)}
+
+			{/* Chrome Extension Companion Callout for empty state */}
+			{items.length === 0 && showExtensionCallout && (
+				<div
+					data-testid="master-extension-callout"
+					className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border p-3.5"
+					style={{
+						borderColor: "var(--rule)",
+						borderRadius: "var(--radius)",
+						background: "var(--surface)",
+					}}
+				>
+					<div className="flex items-center gap-3">
+						<span
+							className="mono text-[10px] tracking-[0.08em] px-2 py-0.5"
+							style={{
+								background: "var(--ground)",
+								border: "1px solid var(--rule-strong)",
+								borderRadius: "var(--radius)",
+								color: "var(--accent)",
+							}}
+						>
+							CHROME EXTENSION
+						</span>
+						<p
+							className="text-[12px] m-0"
+							style={{ color: "var(--ink-muted)" }}
+						>
+							Convert files directly inside your browser Side Panel or right-click context menu.
+						</p>
+					</div>
+					<div className="flex items-center gap-2 shrink-0">
+						<a
+							href={CHROME_EXTENSION_URL}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="mono text-[11px] font-semibold px-3 py-1 border transition-colors inline-flex items-center gap-1.5"
+							style={{
+								borderColor: "var(--accent)",
+								borderRadius: "var(--radius-pill)",
+								background: "var(--ground)",
+								color: "var(--accent)",
+								textDecoration: "none",
+							}}
+						>
+							<span>INSTALL EXTENSION</span>
+							<span>↗</span>
+						</a>
+						<a
+							href="/extension"
+							className="mono text-[11px] px-3 py-1 border transition-colors inline-flex items-center gap-1.5"
+							style={{
+								borderColor: "var(--rule)",
+								borderRadius: "var(--radius-pill)",
+								background: "transparent",
+								color: "var(--ink-muted)",
+								textDecoration: "none",
+							}}
+						>
+							<span>SPECS</span>
+							<span>➔</span>
+						</a>
+					</div>
 				</div>
 			)}
 

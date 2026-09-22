@@ -26,7 +26,7 @@ function clean(text: string) {
 }
 
 const TOKEN_REGEX =
-	/(\/legal\/[a-z-]+|\/privacy|next\.config\.ts(?::\s*output:\s*"export")?|src\/[a-zA-Z0-9_/.-]+|e2e\/[a-zA-Z0-9_/.-]+|scripts\/[a-zA-Z0-9_/.-]+|package\.json|output:\s*"export"|display:\s*"standalone"|localStorage|Origin Private File System|libheif-js)/g;
+	/(\[[^\]]+\]\([^\s)]+\)|https?:\/\/[^\s)]+|\/legal\/[a-z-]+|\/privacy|\/extension|\/feedback|\/support|next\.config\.ts(?::\s*output:\s*"export")?|src\/[a-zA-Z0-9_/.-]+|e2e\/[a-zA-Z0-9_/.-]+|scripts\/[a-zA-Z0-9_/.-]+|package\.json|output:\s*"export"|display:\s*"standalone"|localStorage|Origin Private File System|libheif-js)/g;
 
 function formatProseText(text: string): ReactNode {
 	const parts = text.split(TOKEN_REGEX);
@@ -34,6 +34,59 @@ function formatProseText(text: string): ReactNode {
 
 	return parts.map((part, i) => {
 		if (!part) return null;
+		if (part.startsWith("[") && part.includes("](") && part.endsWith(")")) {
+			const closeBracket = part.indexOf("](");
+			const label = part.slice(1, closeBracket);
+			const href = part.slice(closeBracket + 2, -1);
+			const isExternal = href.startsWith("http");
+			return isExternal ? (
+				<a
+					// biome-ignore lint/suspicious/noArrayIndexKey: parts are a static regex split sequence
+					key={i}
+					href={href}
+					target="_blank"
+					rel="noopener noreferrer"
+					style={{
+						color: "var(--accent)",
+						textDecoration: "underline",
+						textUnderlineOffset: "3px",
+					}}
+				>
+					{label} ↗
+				</a>
+			) : (
+				<Link
+					// biome-ignore lint/suspicious/noArrayIndexKey: parts are a static regex split sequence
+					key={i}
+					href={href}
+					style={{
+						color: "var(--accent)",
+						textDecoration: "underline",
+						textUnderlineOffset: "3px",
+					}}
+				>
+					{label}
+				</Link>
+			);
+		}
+		if (part.startsWith("http://") || part.startsWith("https://")) {
+			return (
+				<a
+					// biome-ignore lint/suspicious/noArrayIndexKey: parts are a static regex split sequence
+					key={i}
+					href={part}
+					target="_blank"
+					rel="noopener noreferrer"
+					style={{
+						color: "var(--accent)",
+						textDecoration: "underline",
+						textUnderlineOffset: "3px",
+					}}
+				>
+					{part} ↗
+				</a>
+			);
+		}
 		if (part.startsWith("/")) {
 			return (
 				<Link

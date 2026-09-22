@@ -1,8 +1,9 @@
+import { CHROME_EXTENSION_URL } from "@/lib/site";
 import type { SectionedPageContent } from "./types";
 
 export const support: SectionedPageContent = {
 	title: "Support",
-	updated: "17 September 2026",
+	updated: "22 September 2026",
 	sections: [
 		{
 			eyebrow: "OFFLINE ARCHITECTURE",
@@ -36,6 +37,8 @@ export const support: SectionedPageContent = {
 				directly into your browser workflow. Use the Side Panel dock to convert files
 				while you browse, press Command+Shift+Comma (Ctrl+Shift+Comma) for the Quick Popup,
 				or press Command+Shift+S to capture visible web pages into the converter.`,
+				`[Install convrtr from the Chrome Web Store](${CHROME_EXTENSION_URL}) or review
+				the full specifications at /extension.`,
 			],
 		},
 		{

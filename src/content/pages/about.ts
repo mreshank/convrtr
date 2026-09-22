@@ -56,6 +56,17 @@ export const about: SectionedPageContent = {
 			],
 		},
 		{
+			eyebrow: "CHROME EXTENSION",
+			lead: "Docked Side Panel and right-click conversions.",
+			cont: "See /extension for full technical details.",
+			paragraphs: [
+				`The official convrtr Chrome Extension brings client-side file conversion
+				directly into Google Chrome. Dock it alongside any active tab in the Side
+				Panel, extract web media via context menus, or capture visible viewports
+				locally. Learn more at /extension.`,
+			],
+		},
+		{
 			eyebrow: "PRIVACY",
 			lead: "What happens to a file you drop here.",
 			cont: "See /privacy for the exact answer.",

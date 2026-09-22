@@ -68,6 +68,7 @@ import { meta as extractingChmHelpFilesModernSystems } from "./extracting-chm-he
 import { meta as extractingGodotPckPackagesBrowser } from "./extracting-godot-pck-packages-browser/meta";
 import { meta as garminFitToCsvGeojsonGpsData } from "./garmin-fit-to-csv-geojson-gps-data/meta";
 import { meta as howMlwEncryptionWorks } from "./how-mlw-encryption-works/meta";
+import { meta as howToConvertFilesInChromeWithoutUploading } from "./how-to-convert-files-in-chrome-without-uploading/meta";
 import { meta as isExtractingMlwVideoLegal } from "./is-extracting-mlw-video-legal/meta";
 import { meta as mlwVsOtherCoursePlatformVideoWrappers } from "./mlw-vs-other-course-platform-video-wrappers/meta";
 import { meta as recoveringCourseVideosAfterAPlatformShutsDown } from "./recovering-course-videos-after-a-platform-shuts-down/meta";
@@ -86,6 +87,7 @@ import { meta as whyClientSideWasmConvertersBeatCloud } from "./why-client-side-
  * against for tools.
  */
 export const BLOG_POSTS: BlogPostMeta[] = [
+	howToConvertFilesInChromeWithoutUploading,
 	howMlwEncryptionWorks,
 	recoveringCourseVideosAfterAPlatformShutsDown,
 	isExtractingMlwVideoLegal,

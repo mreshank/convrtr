@@ -7,3 +7,8 @@
  * fails if a second declaration reappears anywhere else in the source tree.
  */
 export const SITE = "https://convrtr.mreshank.com";
+export const CHROME_EXTENSION_ID = "pgoadfnhcalnheeepcbngchmhlkgboal";
+export const CHROME_EXTENSION_URL =
+	"https://chromewebstore.google.com/detail/convrtr/pgoadfnhcalnheeepcbngchmhlkgboal";
+export const CHROME_EXTENSION_SHORT_URL =
+	"https://chromewebstore.google.com/detail/pgoadfnhcalnheeepcbngchmhlkgboal";

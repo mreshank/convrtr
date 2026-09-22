@@ -23,6 +23,34 @@ const DEFAULT_ENDPOINT = `https://formsubmit.co/ajax/${DEFAULT_RECEIVER_EMAIL}`;
 const LOCAL_STORAGE_QUEUE_KEY = "convrtr_pending_submissions";
 
 /**
+ * Fetches with a hard deadline.
+ *
+ * Without this a stalled network leaves the feedback form spinning forever, and
+ * in non-browser test environments carrying a real fetch implementation a slow
+ * or hanging endpoint does the same to the suite. The race rejects on the
+ * timer rather than cancelling the request, so the caller's catch path decides
+ * what a slow network means — for a form that is "queue locally and fall back
+ * to mail", which is exactly the right behaviour for an endpoint that is down.
+ */
+async function postWithTimeout(
+	endpoint: string,
+	init: RequestInit,
+	timeoutMs = 4000,
+): Promise<Response> {
+	let timer: ReturnType<typeof setTimeout> | undefined;
+	const timerPromise = new Promise<never>((_resolve, reject) => {
+		timer = setTimeout(() => {
+			reject(new DOMException("Request timed out", "AbortError"));
+		}, timeoutMs);
+	});
+	try {
+		return await Promise.race([fetch(endpoint, init), timerPromise]);
+	} finally {
+		if (timer) clearTimeout(timer);
+	}
+}
+
+/**
  * Formats a clean, readable Markdown ticket for the user to copy or submit to GitHub/email.
  */
 export function buildTicketMarkdown(payload: FormPayload): string {
@@ -108,7 +136,7 @@ export async function dispatchFormSubmission(
 	const endpoint = process.env.NEXT_PUBLIC_FORM_ENDPOINT || DEFAULT_ENDPOINT;
 
 	try {
-		const res = await fetch(endpoint, {
+		const res = await postWithTimeout(endpoint, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",
@@ -191,7 +219,7 @@ export async function flushPendingSubmissions(): Promise<{
 
 	for (const item of queue) {
 		try {
-			const res = await fetch(endpoint, {
+			const res = await postWithTimeout(endpoint, {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",

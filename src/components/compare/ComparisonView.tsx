@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ComparisonMeta } from "@/content/compare/types";
+import { CHROME_EXTENSION_URL } from "@/lib/site";
 
 type Props = {
 	comparison: ComparisonMeta;
@@ -304,6 +305,126 @@ export function ComparisonView({ comparison }: Props) {
 							<span style={{ color: "var(--accent)" }}>↗</span>
 						</Link>
 					))}
+				</div>
+			</div>
+
+			{/* Chrome Extension Browser Companion Callout */}
+			<div
+				style={{
+					borderWidth: "var(--rule-width)",
+					borderStyle: "solid",
+					borderColor: "var(--rule)",
+					backgroundColor: "var(--surface)",
+					padding: "var(--gap-md)",
+					display: "flex",
+					flexDirection: "column",
+					gap: "var(--space-base)",
+				}}
+			>
+				<div
+					style={{
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "space-between",
+						flexWrap: "wrap",
+						gap: "var(--gap-sm)",
+					}}
+				>
+					<p
+						className="meta"
+						style={{
+							color: "var(--accent)",
+							margin: 0,
+							letterSpacing: "0.08em",
+							textTransform: "uppercase",
+						}}
+					>
+						[ BROWSER WORKFLOW // RIGHT-CLICK CONVERSION ]
+					</p>
+					<span
+						className="mono"
+						style={{
+							fontSize: "var(--mono-size)",
+							color: "var(--ink-muted)",
+						}}
+					>
+						CHROME WEB STORE · LIVE
+					</span>
+				</div>
+				<p
+					style={{
+						fontSize: "var(--body-size)",
+						lineHeight: "1.6",
+						color: "var(--ink)",
+						margin: 0,
+					}}
+				>
+					Converting files between {comparison.formatA.toUpperCase()} and{" "}
+					{comparison.formatB.toUpperCase()} frequently? The convrtr Chrome
+					Extension lets you right-click any image on any webpage or open the Side
+					Panel to convert assets instantly using local WebAssembly with zero server
+					uploads.
+				</p>
+				<div
+					style={{
+						display: "flex",
+						gap: "var(--gap-sm)",
+						flexWrap: "wrap",
+						alignItems: "center",
+						paddingTop: "var(--space-base)",
+					}}
+				>
+					<a
+						href={CHROME_EXTENSION_URL}
+						target="_blank"
+						rel="noopener noreferrer"
+						style={{
+							display: "inline-flex",
+							alignItems: "center",
+							gap: "var(--gap-sm)",
+							height: "36px",
+							padding: "0 14px",
+							borderWidth: "var(--rule-width)",
+							borderStyle: "solid",
+							borderColor: "var(--accent)",
+							borderRadius: "var(--radius-pill)",
+							backgroundColor: "var(--ground)",
+							color: "var(--accent)",
+							fontFamily: "var(--font-mono)",
+							fontSize: "var(--mono-size)",
+							textTransform: "uppercase",
+							letterSpacing: "0.08em",
+							textDecoration: "none",
+							fontWeight: 600,
+						}}
+					>
+						<span>INSTALL CHROME EXTENSION</span>
+						<span>↗</span>
+					</a>
+					<Link
+						href="/extension"
+						style={{
+							display: "inline-flex",
+							alignItems: "center",
+							gap: "var(--gap-sm)",
+							height: "36px",
+							padding: "0 14px",
+							borderWidth: "var(--rule-width)",
+							borderStyle: "solid",
+							borderColor: "var(--rule)",
+							borderRadius: "var(--radius-pill)",
+							backgroundColor: "var(--surface)",
+							color: "var(--ink-muted)",
+							fontFamily: "var(--font-mono)",
+							fontSize: "var(--mono-size)",
+							textTransform: "uppercase",
+							letterSpacing: "0.08em",
+							textDecoration: "none",
+						}}
+					>
+						<span>EXTENSION SPECS</span>
+						<span>➔</span>
+					</Link>
 				</div>
 			</div>
 		</div>

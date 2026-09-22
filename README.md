@@ -28,6 +28,19 @@ This runs, in order: typecheck, lint (Biome), unit tests (Vitest), the static pr
 build, and end-to-end tests (Playwright) — including the network assertion that fails the
 build if any file byte would leave the browser.
 
+## Chrome Extension
+
+convrtr is also available on the [Chrome Web Store](https://chromewebstore.google.com/detail/convrtr/pgoadfnhcalnheeepcbngchmhlkgboal).
+
+Install the browser companion for instant in-browser file conversion:
+
+- **Side Panel Workflow:** Convert files alongside any tab with `Command+Shift+C` (or `Ctrl+Shift+C`).
+- **Quick Popup Instrument:** Instant conversion interface triggered by `Command+Shift+,` (or `Ctrl+Shift+,`).
+- **Context Menu Integration:** Right-click web images to convert or capture on the fly.
+- **Viewport Snapshot:** Capture visible tabs directly into WASM image engines with `Command+Shift+S`.
+- **Omnibox Direct Search:** Type `cv <format>` in the Chrome address bar to jump directly to specific tools.
+- **Zero Server Uploads:** All conversion logic executes locally in Web Workers and WebAssembly.
+
 ## Architecture
 
 Each tool is a declaration in `src/core/registry` — its accepted/output formats, quality

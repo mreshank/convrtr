@@ -3,6 +3,7 @@ import type { BlogPostMeta } from "@/content/blog/types";
 import type { ComparisonMeta } from "@/content/compare/types";
 import type { Tool } from "@/core/registry";
 import { ArrowUpRight } from "@/design/primitives/ArrowUpRight";
+import { CHROME_EXTENSION_URL } from "@/lib/site";
 import { RelatedConverters } from "./RelatedConverters";
 import { RelatedReading } from "./RelatedReading";
 
@@ -36,6 +37,142 @@ export function ToolAppendix({
 		>
 			{/* High-powered internal routing & cross-converter mesh */}
 			{tool && <RelatedConverters tool={tool} />}
+
+			{/* Chrome Extension Browser Workflow Callout */}
+			<section
+				data-testid="tool-extension-callout"
+				style={{
+					borderWidth: "var(--rule-width)",
+					borderStyle: "solid",
+					borderColor: "var(--rule-strong)",
+					backgroundColor: "var(--surface)",
+					padding: "var(--gap-md)",
+					display: "flex",
+					flexDirection: "column",
+					gap: "var(--gap-sm)",
+				}}
+			>
+				<div
+					style={{
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "space-between",
+						flexWrap: "wrap",
+						gap: "var(--gap-sm)",
+					}}
+				>
+					<div
+						style={{
+							display: "flex",
+							alignItems: "center",
+							gap: "var(--gap-sm)",
+						}}
+					>
+						<span
+							className="meta"
+							style={{
+								borderWidth: "var(--rule-width)",
+								borderStyle: "solid",
+								borderColor: "var(--rule-strong)",
+								color: "var(--accent)",
+								backgroundColor: "var(--ground)",
+								padding: "0 14px",
+								height: "23px",
+								display: "inline-flex",
+								alignItems: "center",
+								borderRadius: "var(--radius-control)",
+							}}
+						>
+							[ BROWSER INSTRUMENT ]
+						</span>
+						<h2
+							style={{
+								fontSize: "var(--label-size)",
+								color: "var(--ink)",
+								fontWeight: "var(--label-weight)",
+							}}
+						>
+							Convert directly inside Chrome without switching tabs
+						</h2>
+					</div>
+
+					<Link
+						href="/extension"
+						className="meta"
+						style={{
+							color: "var(--ink-muted)",
+							textDecoration: "none",
+							display: "inline-flex",
+							alignItems: "center",
+							gap: "var(--space-base)",
+						}}
+					>
+						<span>Extension specs</span>
+						<ArrowUpRight size={12} />
+					</Link>
+				</div>
+
+				<p
+					style={{
+						fontSize: "var(--body-size)",
+						color: "var(--ink-muted)",
+						lineHeight: "var(--body-leading)",
+						margin: 0,
+					}}
+				>
+					Working with files across multiple web pages? The official convrtr Chrome Extension
+					adds native Side Panel docking, right-click context menu media extraction, and visible viewport
+					capture. Powered by the same zero-upload client-side WebAssembly engine.
+				</p>
+
+				<div
+					style={{
+						display: "flex",
+						alignItems: "center",
+						gap: "var(--gap-md)",
+						flexWrap: "wrap",
+						marginTop: "calc(var(--space-base) / 2)",
+					}}
+				>
+					<a
+						href={CHROME_EXTENSION_URL}
+						target="_blank"
+						rel="noopener noreferrer"
+						data-cta-fill
+						style={{
+							display: "inline-flex",
+							alignItems: "center",
+							gap: "var(--space-base)",
+							height: "36px",
+							padding: "0 var(--gap-md)",
+							background: "var(--ink)",
+							color: "var(--ground)",
+							borderRadius: "var(--radius-pill)",
+							fontSize: "var(--label-size)",
+							letterSpacing: "var(--label-tracking)",
+							fontWeight: "var(--label-weight)",
+							textDecoration: "none",
+						}}
+					>
+						<span>INSTALL CHROME EXTENSION</span>
+						<ArrowUpRight size={14} />
+					</a>
+
+					<Link
+						href="/extension"
+						style={{
+							fontSize: "var(--mono-size)",
+							fontFamily: "var(--font-mono)",
+							color: "var(--accent)",
+							textDecoration: "underline",
+							textUnderlineOffset: "3px",
+						}}
+					>
+						HOW IT WORKS & PERMISSIONS ➔
+					</Link>
+				</div>
+			</section>
+
 			{/* Format Comparisons / Battles */}
 			{comparisons.length > 0 && (
 				<section

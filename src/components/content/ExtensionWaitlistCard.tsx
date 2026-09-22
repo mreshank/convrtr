@@ -1,6 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
+import { ArrowUpRight } from "@/design/primitives/ArrowUpRight";
+import { CHROME_EXTENSION_URL } from "@/lib/site";
 import {
 	getSubscriptionStats,
 	type SubscriptionChannel,
@@ -125,7 +128,7 @@ export function ExtensionWaitlistCard() {
 							textTransform: "uppercase",
 						}}
 					>
-						CHROME WEB STORE {"//"} MANIFEST V3 {"//"} SOON TO LAUNCH
+						CHROME WEB STORE {"//"} MANIFEST V3 {"//"} NOW LIVE
 					</span>
 					<h2
 						style={{
@@ -159,26 +162,81 @@ export function ExtensionWaitlistCard() {
 							backgroundColor: "var(--ground)",
 						}}
 					>
-						{subCount.toLocaleString()}+ ENGINEERS WAITLISTED
+						● NOW LIVE ON CHROME WEB STORE
 					</span>
 				</div>
 			</div>
 
-			{/* Description */}
-			<p
+			{/* Description & Direct Store CTA */}
+			<div
 				style={{
-					color: "var(--ink-muted)",
-					fontSize: "var(--body-size)",
-					lineHeight: 1.6,
-					margin: 0,
-					maxWidth: "65ch",
+					display: "flex",
+					flexDirection: "column",
+					gap: "var(--gap-sm)",
 				}}
 			>
-				The universal in-browser media converter brought directly to your daily
-				workflow. Convert, transpile, extract, and inspect assets across any
-				webpage without leaving your tab. Zero file bytes or metadata ever leave
-				your machine.
-			</p>
+				<p
+					style={{
+						color: "var(--ink-muted)",
+						fontSize: "var(--body-size)",
+						lineHeight: 1.6,
+						margin: 0,
+						maxWidth: "65ch",
+					}}
+				>
+					The universal in-browser media converter brought directly to your daily
+					workflow. Convert, transpile, extract, and inspect assets across any
+					webpage without leaving your tab. Zero file bytes or metadata ever leave
+					your machine.
+				</p>
+
+				<div
+					style={{
+						display: "flex",
+						alignItems: "center",
+						gap: "var(--gap-md)",
+						flexWrap: "wrap",
+						marginTop: "calc(var(--space-base) / 2)",
+					}}
+				>
+					<a
+						href={CHROME_EXTENSION_URL}
+						target="_blank"
+						rel="noopener noreferrer"
+						data-cta-fill
+						style={{
+							display: "inline-flex",
+							alignItems: "center",
+							gap: "var(--space-base)",
+							height: "36px",
+							padding: "0 var(--gap-md)",
+							background: "var(--ink)",
+							color: "var(--ground)",
+							borderRadius: "var(--radius-pill)",
+							fontSize: "var(--label-size)",
+							letterSpacing: "var(--label-tracking)",
+							fontWeight: "var(--label-weight)",
+							textDecoration: "none",
+						}}
+					>
+						<span>INSTALL FROM CHROME WEB STORE</span>
+						<ArrowUpRight size={14} />
+					</a>
+
+					<Link
+						href="/extension"
+						style={{
+							fontSize: "var(--mono-size)",
+							fontFamily: "var(--font-mono)",
+							color: "var(--accent)",
+							textDecoration: "underline",
+							textUnderlineOffset: "3px",
+						}}
+					>
+						VIEW EXTENSION SPECS & SHORTCUTS ➔
+					</Link>
+				</div>
+			</div>
 
 			{/* 6-Grid Feature Capabilities */}
 			<div
@@ -276,7 +334,7 @@ export function ExtensionWaitlistCard() {
 							textTransform: "uppercase",
 						}}
 					>
-						LAUNCH RADAR {"//"} INSTANT NOTIFICATION
+						RELEASE RADAR {"//"} TECHNICAL CHANGELOGS
 					</span>
 					<h3
 						style={{
@@ -286,7 +344,7 @@ export function ExtensionWaitlistCard() {
 							color: "var(--ink)",
 						}}
 					>
-						Join the Store Launch Waitlist & Product Radar
+						Subscribe to Extension Changelogs & WASM Decoder Updates
 					</h3>
 					<p
 						style={{
@@ -295,8 +353,8 @@ export function ExtensionWaitlistCard() {
 							margin: "calc(var(--space-base) / 4) 0 0",
 						}}
 					>
-						Receive the instant Chrome Web Store direct installation link the
-						second it goes live, plus technical release changelogs.
+						Receive technical release notes, new format additions, and engine
+						performance updates directly from the engineering team.
 					</p>
 				</div>
 

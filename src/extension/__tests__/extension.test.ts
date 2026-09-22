@@ -20,7 +20,7 @@ describe("convrtr Chrome Extension Manifest & Configuration", () => {
 
 		expect(manifest.manifest_version).toBe(3);
 		expect(manifest.name).toBe("convrtr");
-		expect(manifest.version).toBe("0.2.5");
+		expect(manifest.version).toBe("0.2.6");
 		expect(typeof manifest.description).toBe("string");
 		expect(manifest.description.length).toBeGreaterThan(10);
 	});
@@ -42,6 +42,17 @@ describe("convrtr Chrome Extension Manifest & Configuration", () => {
 
 		// Broad host permissions omitted to eliminate Chrome Web Store review delays
 		expect(manifest.host_permissions).toBeUndefined();
+	});
+
+	it("declares Content Security Policy permitting WebAssembly compilation", () => {
+		const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"));
+		expect(manifest.content_security_policy?.extension_pages).toBeDefined();
+		expect(manifest.content_security_policy.extension_pages).toContain(
+			"'wasm-unsafe-eval'",
+		);
+		expect(manifest.content_security_policy.extension_pages).toContain(
+			"script-src 'self'",
+		);
 	});
 
 	it("defines keyboard shortcuts and omnibox keyword", () => {

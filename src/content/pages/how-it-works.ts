@@ -60,6 +60,17 @@ export const howItWorks: SectionedPageContent = {
 			],
 		},
 		{
+			eyebrow: "CHROME EXTENSION",
+			lead: "Docked Side Panel and right-click extraction.",
+			cont: "Manifest V3 integration without host permissions.",
+			paragraphs: [
+				`The convrtr Chrome Extension packages this exact WebAssembly pipeline into
+				Chrome's native Side Panel. Users can drag files into the dock, convert
+				images via right-click context menus, or capture visible viewports with
+				Command+Shift+S. Full details live at /extension.`,
+			],
+		},
+		{
 			eyebrow: "NETWORK GUARD",
 			lead: "None of this is asserted only in prose.",
 			cont: "e2e/network-guard.ts checks every request.",

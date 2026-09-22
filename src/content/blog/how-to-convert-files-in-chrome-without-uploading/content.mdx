@@ -1,0 +1,99 @@
+Every web worker, engineer, and designer encounters the same friction daily: you find an image or asset online, only to discover it is formatted as `.webp` or `.avif`. Or a client emails an iPhone `.heic` photo or `.m4a` voice note that your video editing suite or corporate intranet refuses to open.
+
+Until recently, the standard reaction was to open a search engine, search for a free converter, click a third-party upload site, and upload your file to an unknown remote server.
+
+In 2026, uploading files to third-party servers for format conversion is both an unnecessary privacy liability and a waste of network bandwidth.
+
+With the launch of the [convrtr Chrome Extension](https://chromewebstore.google.com/detail/convrtr/pgoadfnhcalnheeepcbngchmhlkgboal), the entire conversion pipeline operates directly within Google Chrome using client-side WebAssembly.
+
+```
+[ Active Webpage ]
+       │  (Right-click media / Drag & drop file / Command+Shift+S)
+       ▼
+[ Chrome Side Panel / convrtr Extension ]
+       │
+       ├── Web Worker spawns sandboxed WebAssembly runtime
+       ├── Native codecs execute locally on CPU (MozJPEG, libheif, oxipng, FFmpeg)
+       └── Converted file saves immediately to your Downloads folder
+```
+
+---
+
+## Why Browser-Native Conversion Beats Cloud Converters
+
+### 1. Zero Cloud Uploads & Absolute Privacy
+When you convert sensitive pitch decks, medical scans, internal architecture diagrams, or client contracts on traditional converter websites, your file travels across the internet to an untrusted cloud server. 
+
+convrtr operates on a strict zero-upload architecture: **zero bytes leave your machine**. Codecs are compiled from open-source libraries into WebAssembly and execute within an isolated worker process. Whether your Wi-Fi is active or offline, the conversion runs identically.
+
+### 2. Eliminating Network Round-Trips
+A 50 MB video or batch of 20 high-resolution photos requires uploading 50 MB over your outbound connection, waiting in a remote queue, and downloading the result back. Local WebAssembly processing eliminates network latency entirely. Modern multi-core processors transcode and convert media faster than raw upload speeds allow.
+
+### 3. Native Workflow Integration
+Instead of juggling dedicated converter tabs, the [convrtr Chrome Extension](https://chromewebstore.google.com/detail/convrtr/pgoadfnhcalnheeepcbngchmhlkgboal) introduces three distinct workflow touchpoints:
+
+---
+
+## Three Ways to Convert Media Inside Chrome
+
+### 1. The Docked Side Panel
+By utilizing Chrome's native Side Panel API (`chrome.sidePanel`), convrtr docks alongside your active browser tab. 
+
+- You can drag and drop files from your desktop directly into the Side Panel without obscuring your primary work window.
+- The panel maintains your batch progress, letting you convert dozens of files while continuing to browse or write in your main viewport.
+- Shortcut: Press `Command+Shift+C` (or `Ctrl+Shift+C` on Windows) to toggle the Side Panel.
+
+### 2. Context Menu Conversion
+When browsing documentation, image libraries, or web applications, you no longer need to download an image first just to convert it.
+
+- Right-click any image, video, audio element, or vector graphic on any webpage.
+- Select **Convert with convrtr** from the context menu.
+- The media is staged directly into the converter, decoded, and ready for instant conversion to your desired format.
+
+### 3. Visible Viewport Capture
+Need to extract a visual reference, code block, or dashboard metric?
+
+- Press `Command+Shift+S` (or `Ctrl+Shift+S`) or select **Capture visible page** from the context menu.
+- The extension takes a high-fidelity capture of your current tab viewport and stages it immediately into tools like [PNG to WebP](/image/png-to-webp) or [JPG to PDF](/document/jpg-to-pdf).
+- Zero third-party screenshot software required.
+
+---
+
+## Address Bar Omnibox Lookup
+
+For keyboard-first users, convrtr registers the `cv` keyword in Chrome's Omnibox.
+
+Type `cv` in your browser address bar, followed by a space and your desired format pairing (for example, `cv webp to png` or `cv heic to jpg`). Pressing Enter transports you directly to the matched converter tool, ready for file staging.
+
+---
+
+## Least-Privilege Permissions Architecture
+
+Browser extension security is critical. Many utility extensions request broad permissions such as `<all_urls>` or `tabs` that grant blanket access to browsing history.
+
+Following least-privilege principles, the convrtr extension requests only the minimum set of permissions necessary for functionality:
+
+| Declared Permission | Technical Purpose |
+| :--- | :--- |
+| `sidePanel` | Displays the converter interface alongside your active tab. |
+| `storage` | Uses `chrome.storage.session` to pass temporary, ephemeral file references between background events and the converter. No browsing history or personal data is persisted. |
+| `contextMenus` | Creates context menu entries to stage clicked media into the converter. |
+| `scripting` | Inspects media elements on the active page only upon explicit user request. |
+| `activeTab` | Grants temporary permission to capture the visible tab or stage media upon an explicit user gesture (`Command+Shift+S` or context menu click). |
+
+Noticeably absent from our manifest:
+- **No `tabs` permission:** convrtr never reads your open tabs, navigation URLs, or browsing history.
+- **No `downloads` permission:** Output files are created as client-side Blob anchors (`<a download>`), avoiding privileged filesystem access.
+- **No host permissions:** Zero remote domains are allowed to receive traffic from the extension.
+
+---
+
+## How to Install
+
+The convrtr extension is officially available on the Chrome Web Store:
+
+1. Visit the [convrtr Chrome Web Store Listing](https://chromewebstore.google.com/detail/convrtr/pgoadfnhcalnheeepcbngchmhlkgboal).
+2. Click **Add to Chrome**.
+3. Pin convrtr to your toolbar or press `Command+Shift+C` to open the Side Panel.
+
+For complete technical specifications, keyboard shortcut references, and privacy documentation, review our [Extension Specifications](/extension) and [How It Works](/how-it-works) guides.

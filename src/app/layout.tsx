@@ -7,7 +7,7 @@ import { NetworkStatusBanner } from "@/components/NetworkStatusBanner";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import { RouteAwareFooter, SiteHeader } from "@/design/primitives";
 import { DifferenceCursor } from "@/design/primitives/DifferenceCursor";
-import { SITE } from "@/lib/site";
+import { CHROME_EXTENSION_URL, SITE } from "@/lib/site";
 import "./globals.css";
 
 const inter = Inter({
@@ -85,6 +85,7 @@ const NAV = [
 	{ href: "/groups", label: "Groups" },
 	{ href: "/collectives", label: "Collectives" },
 	{ href: "/compare", label: "Compare" },
+	{ href: "/extension", label: "Extension" },
 	{ href: "/blog", label: "Blog" },
 	{ href: "/about", label: "About" },
 	{ href: "/how-it-works", label: "How it works" },
@@ -98,6 +99,7 @@ const CTA = { href: "/convert", label: "Start converting" };
 // instead, and a fabricated one would be a dead end wearing a live label.
 const SOCIALS = [
 	{ href: "https://github.com/mreshank/convrtr", label: "GitHub" },
+	{ href: CHROME_EXTENSION_URL, label: "Chrome Extension ↗" },
 ];
 const CONTACT = [
 	{ href: "/contact", label: "Contact" },
@@ -112,6 +114,7 @@ const CONTACT = [
 const EXPLORE = [
 	{ href: "/convert", label: "Convert" },
 	{ href: "/tools", label: "Tools" },
+	{ href: "/extension", label: "Chrome Extension" },
 	{ href: "/image", label: "Image Tools" },
 	{ href: "/audio", label: "Audio Tools" },
 	{ href: "/video", label: "Video Tools" },

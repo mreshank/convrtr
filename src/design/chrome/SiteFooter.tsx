@@ -169,15 +169,28 @@ export function SiteFooter({
 
 					<nav aria-label="Socials">
 						<MonoMeta as="div">Socials</MonoMeta>
-						{socials.map((item) => (
-							<Link
-								key={item.href}
-								href={item.href}
-								style={{ display: "block" }}
-							>
-								{item.label}
-							</Link>
-						))}
+						{socials.map((item) => {
+							const isExternal = item.href.startsWith("http");
+							return isExternal ? (
+								<a
+									key={item.href}
+									href={item.href}
+									target="_blank"
+									rel="noopener noreferrer"
+									style={{ display: "block" }}
+								>
+									{item.label}
+								</a>
+							) : (
+								<Link
+									key={item.href}
+									href={item.href}
+									style={{ display: "block" }}
+								>
+									{item.label}
+								</Link>
+							);
+						})}
 					</nav>
 
 					<nav aria-label="Contact">

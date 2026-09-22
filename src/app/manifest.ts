@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { CHROME_EXTENSION_ID, CHROME_EXTENSION_URL } from "@/lib/site";
 
 // Static export note: manifest.ts compiles to a Route Handler under the
 // hood, and this Next.js version refuses to export one with
@@ -28,6 +29,13 @@ export default function manifest(): MetadataRoute.Manifest {
 		display: "standalone",
 		background_color: "#000000",
 		theme_color: "#000000",
+		related_applications: [
+			{
+				platform: "chrome_web_store",
+				url: CHROME_EXTENSION_URL,
+				id: CHROME_EXTENSION_ID,
+			},
+		],
 		icons: [
 			{
 				src: "/icons/icon-192.png",

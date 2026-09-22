@@ -2,8 +2,8 @@
 
 Single source of truth for the Chrome Web Store listing metadata, permissions justifications, privacy disclosures, and version history for **convrtr**.
 
-**Last Updated:** 2026-09-18  
-**Current Version:** 0.2.5  
+**Last Updated:** 2026-09-22  
+**Current Version:** 0.2.6  
 **Manifest Version:** 3  
 
 ---
@@ -64,7 +64,7 @@ Help & Diagnostic Center: https://convrtr.mreshank.com/support
 Privacy Policy: https://convrtr.mreshank.com/privacy
 Source Code & Issues: https://github.com/mreshank/convrtr
 
-Version 0.2.5 — Permission minimization release removing unused tabs and downloads permissions per Chrome Web Store review.
+Version 0.2.6 — WebAssembly Content Security Policy update enabling full local in-browser codec execution.
 ```
 
 ### Category
@@ -118,6 +118,9 @@ Every permission declared in `manifest.json` is strictly justified below for the
 > - `tabs`: Not required. convrtr only creates local extension tabs (`chrome.tabs.create`) and queries active tab IDs (`tab.id`), never inspecting privileged properties (`url`, `title`, `favIconUrl`). Viewport capture is powered by `activeTab`.
 > - `downloads`: Not required. All converted file outputs and ZIP archives are generated client-side and downloaded via standard web DOM Blob anchor elements (`<a download>`).
 
+> **Content Security Policy (`content_security_policy`):**
+> - `extension_pages`: `"script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"` — standard Manifest V3 policy strictly required to compile and execute local WebAssembly codecs (such as MozJPEG, Oxipng, libheif, and SILK) directly inside the browser sandbox with zero server processing. General `unsafe-eval` remains strictly forbidden.
+
 ---
 
 ## 3. Privacy & Data Use Disclosure
@@ -131,6 +134,11 @@ Every permission declared in `manifest.json` is strictly justified below for the
 ---
 
 ## 4. Version History
+
+### 0.2.6 — 2026-09-22
+- Added `content_security_policy.extension_pages` declaring `'wasm-unsafe-eval'` to resolve Chromium Manifest V3 WebAssembly instantiation blocks across extension surfaces (enables local MozJPEG, Oxipng, libheif, and SILK conversion without server interaction).
+- Suppressed redundant extension marketing install callouts inside the extension interface (`showExtensionCallout={false}`).
+- Maintained strict 5-permission least privilege set (`sidePanel`, `storage`, `contextMenus`, `scripting`, `activeTab`) with zero remote network calls and 100% offline local processing.
 
 ### 0.2.5 — 2026-09-18
 - Set extension store name strictly to `convrtr` to prevent title metadata discrepancies with manifest.

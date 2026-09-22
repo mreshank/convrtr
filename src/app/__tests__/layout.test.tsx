@@ -52,6 +52,7 @@ describe("RootLayout", () => {
 			"/auth",
 			"/history",
 			"/compare",
+			"/extension",
 			"/legal/terms",
 			"/legal/privacy-policy",
 			"/legal/licences",

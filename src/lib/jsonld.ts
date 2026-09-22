@@ -2,7 +2,7 @@ import type { BlogPostMeta } from "@/content/blog/types";
 import type { CollectiveMeta } from "@/content/collectives/types";
 import type { ComparisonMeta } from "@/content/compare/types";
 import type { Tool } from "@/core/registry";
-import { SITE } from "@/lib/site";
+import { CHROME_EXTENSION_URL, SITE } from "@/lib/site";
 
 function getOrigin(url: string): string {
 	if (!url?.startsWith("http")) return SITE;
@@ -52,7 +52,10 @@ export function buildHomeJsonLd() {
 					width: "512",
 					height: "512",
 				},
-				sameAs: ["https://github.com/mreshank/convrtr"],
+				sameAs: [
+					"https://github.com/mreshank/convrtr",
+					CHROME_EXTENSION_URL,
+				],
 			},
 			{
 				"@type": "WebApplication",
@@ -860,5 +863,53 @@ export function buildWebPageJsonLd({
 	return {
 		"@context": "https://schema.org",
 		"@graph": graph,
+	};
+}
+
+export function buildExtensionJsonLd(url: string) {
+	const origin = getOrigin(url);
+	return {
+		"@context": "https://schema.org",
+		"@graph": [
+			{
+				"@type": "SoftwareApplication",
+				"@id": `${url}/#software`,
+				name: "convrtr — Chrome Extension",
+				applicationCategory: "BrowserApplication",
+				operatingSystem: "ChromeOS, macOS, Windows, Linux",
+				url,
+				downloadUrl: CHROME_EXTENSION_URL,
+				installUrl: CHROME_EXTENSION_URL,
+				isAccessibleForFree: true,
+				offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+				description:
+					"Private in-browser file converter extension. Convert web media, screenshots, and local files directly in Chrome Side Panel using client-side WebAssembly.",
+				featureList: [
+					"Native Chrome Side Panel docking",
+					"Right-click context menu media conversion",
+					"Visible viewport screenshot capture and conversion",
+					"Quick popup with Command+Shift+Comma",
+					"Omnibox lookup keyword cv",
+					"Zero server uploads - 100% private WebAssembly",
+				],
+			},
+			{
+				"@type": "BreadcrumbList",
+				itemListElement: [
+					{
+						"@type": "ListItem",
+						position: 1,
+						name: "Home",
+						item: origin,
+					},
+					{
+						"@type": "ListItem",
+						position: 2,
+						name: "Chrome Extension",
+						item: url,
+					},
+				],
+			},
+		],
 	};
 }

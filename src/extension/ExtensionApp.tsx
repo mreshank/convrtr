@@ -972,6 +972,7 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 				<MasterConverterClient
 					initialFrom={initialFrom}
 					initialTo={initialTo}
+					showExtensionCallout={false}
 				/>
 			</main>
 		</div>

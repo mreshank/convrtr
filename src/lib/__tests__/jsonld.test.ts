@@ -13,6 +13,7 @@ import {
 	buildCompareIndexJsonLd,
 	buildComparisonJsonLd,
 	buildConvertStudioJsonLd,
+	buildExtensionJsonLd,
 	buildFormatGroupJsonLd,
 	buildGroupsIndexJsonLd,
 	buildHomeJsonLd,
@@ -79,6 +80,7 @@ describe("buildHomeJsonLd", () => {
 		expect(org.name).toBe("convrtr");
 		expect(org.logo?.url).toContain("/icon.svg");
 		expect(org.sameAs).toContain("https://github.com/mreshank/convrtr");
+		expect(org.sameAs?.some((url) => url.includes("chromewebstore.google.com"))).toBe(true);
 	});
 
 	it("emits WebApplication with zero price and privacy features", () => {
@@ -427,5 +429,40 @@ describe("buildWebPageJsonLd", () => {
 		expect(crumbs.itemListElement).toHaveLength(2);
 		expect(crumbs.itemListElement[0]?.name).toBe("Home");
 		expect(crumbs.itemListElement[1]?.name).toBe("About");
+	});
+});
+
+describe("buildExtensionJsonLd", () => {
+	it("emits SoftwareApplication for browser extension with installUrl and breadcrumbs", () => {
+		const graph = buildExtensionJsonLd(
+			"https://convrtr.mreshank.com/extension",
+		);
+
+		const app = graph["@graph"].find(
+			(n) => n["@type"] === "SoftwareApplication",
+		) as {
+			name: string;
+			applicationCategory: string;
+			installUrl: string;
+			downloadUrl: string;
+			offers: { price: string };
+			featureList?: string[];
+		};
+		expect(app).toBeDefined();
+		expect(app.name).toContain("Chrome Extension");
+		expect(app.applicationCategory).toBe("BrowserApplication");
+		expect(app.installUrl).toContain("chromewebstore.google.com");
+		expect(app.offers.price).toBe("0");
+		expect(app.featureList?.length).toBeGreaterThan(3);
+
+		const crumbs = graph["@graph"].find(
+			(n) => n["@type"] === "BreadcrumbList",
+		) as {
+			itemListElement: { name: string; item?: string }[];
+		};
+		expect(crumbs).toBeDefined();
+		expect(crumbs.itemListElement).toHaveLength(2);
+		expect(crumbs.itemListElement[0]?.name).toBe("Home");
+		expect(crumbs.itemListElement[1]?.name).toBe("Chrome Extension");
 	});
 });
