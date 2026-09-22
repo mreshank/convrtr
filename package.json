@@ -5,7 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "next dev -p 3964",
-		"build": "node scripts/copy-ffmpeg-core.mjs && next build --webpack && node scripts/copy-flac-wasm.mjs && node scripts/generate-sw.mjs",
+		"build": "node scripts/copy-ffmpeg-core.mjs && node scripts/copy-sqljs-wasm.mjs && node scripts/copy-7zz-wasm.mjs && next build --webpack && node scripts/copy-flac-wasm.mjs && node scripts/generate-sw.mjs",
 		"test": "vitest run",
 		"lint": "biome check .",
 		"typecheck": "next typegen && tsc --noEmit",
@@ -18,6 +18,7 @@
 		"node": ">=20"
 	},
 	"dependencies": {
+		"7z-wasm": "^1.2.0",
 		"@breezystack/lamejs": "^1.2.7",
 		"@clerk/react": "^6.15.2",
 		"@clerk/themes": "^2.4.57",
@@ -34,9 +35,12 @@
 		"@mdx-js/react": "^3.1.1",
 		"@next/mdx": "^16.3.3",
 		"@types/mdx": "^2.0.14",
+		"apache-arrow": "^21.2.0",
 		"exifr": "^7.1.3",
 		"fflate": "^0.8.3",
 		"gifenc": "^1.0.3",
+		"hyparquet": "^1.31.1",
+		"hyparquet-compressors": "^1.1.2",
 		"libflacjs": "^5.6.0",
 		"libheif-js": "^1.19.8",
 		"mediabunny": "^1.55.5",
@@ -45,6 +49,7 @@
 		"react": "19.2.8",
 		"react-dom": "19.2.8",
 		"silk-wasm": "^3.7.1",
+		"sql.js": "^1.14.2",
 		"svgo": "^4.1.0",
 		"zod": "^4.4.3"
 	},

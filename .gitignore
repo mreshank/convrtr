@@ -58,3 +58,9 @@ next-env.d.ts
 
 # ffmpeg.wasm core, copied from node_modules at build time (31MB)
 public/ffmpeg/
+
+# sql.js core, copied from node_modules at build time (658KB)
+public/sql-wasm/
+
+# 7-Zip core, copied from node_modules at build time (1.6MB)
+public/7z/
