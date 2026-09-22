@@ -59,7 +59,8 @@ export type LegacyContainer =
 	| "mpg"
 	| "m4v"
 	| "dav"
-	| "h264";
+	| "h264"
+	| "vro";
 
 export function createLegacyConversionEngine(
 	from: LegacyContainer,

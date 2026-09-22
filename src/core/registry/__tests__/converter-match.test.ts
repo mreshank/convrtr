@@ -146,6 +146,60 @@ describe("converter-match", () => {
 			expect(routeInfo.intermediateSteps).toContain("MP4");
 		});
 
+		it("resolves a direct route for a FLIC animation to GIF", () => {
+			for (const ext of ["fli", "flc"]) {
+				const routeInfo = findConversionRoute(ext, "gif");
+				expect(routeInfo).toBeDefined();
+				expect(routeInfo?.tool.id).toBe("video/fli-to-gif");
+				expect(routeInfo?.route).toHaveLength(1);
+			}
+		});
+
+		it("resolves a direct route for an SVG sprite-sheet", () => {
+			const routeInfo = findConversionRoute("svg", "image/svg-sprite-sheet");
+			expect(routeInfo).toBeDefined();
+			expect(routeInfo?.tool.id).toBe("image/svg-sprite-sheet");
+			expect(routeInfo?.route).toHaveLength(1);
+		});
+
+		it("resolves direct routes for Apple iWork preview extraction", () => {
+			for (const [ext, toolId] of [
+				["pages", "document/pages-to-zip"],
+				["key", "document/key-to-zip"],
+			] as const) {
+				const routeInfo = findConversionRoute(ext, toolId);
+				expect(routeInfo, ext).toBeDefined();
+				expect(routeInfo?.tool.id).toBe(toolId);
+				expect(routeInfo?.route).toHaveLength(1);
+			}
+		});
+
+		it("resolves direct routes for GoPro proxy rename-and-verify", () => {
+			for (const [ext, toolId] of [
+				["lrv", "video/lrv-to-mp4"],
+				["thm", "image/thm-to-jpg"],
+			] as const) {
+				const routeInfo = findConversionRoute(ext, toolId);
+				expect(routeInfo, ext).toBeDefined();
+				expect(routeInfo?.tool.id).toBe(toolId);
+				expect(routeInfo?.route).toHaveLength(1);
+			}
+		});
+
+		it("resolves a direct route for ISO disc image extraction", () => {
+			const routeInfo = findConversionRoute("iso", "document/iso-to-zip");
+			expect(routeInfo).toBeDefined();
+			expect(routeInfo?.tool.id).toBe("document/iso-to-zip");
+			expect(routeInfo?.route).toHaveLength(1);
+		});
+
+		it("resolves a direct route for drawio diagram to SVG", () => {
+			const routeInfo = findConversionRoute("drawio", "image/drawio-to-svg");
+			expect(routeInfo).toBeDefined();
+			expect(routeInfo?.tool.id).toBe("image/drawio-to-svg");
+			expect(routeInfo?.route).toHaveLength(1);
+		});
+
 		it("resolves operation disambiguation by specific tool ID", () => {
 			const compressRoute = findConversionRoute("jpg", "image/compress-jpg");
 			expect(compressRoute).toBeDefined();
