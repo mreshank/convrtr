@@ -103,6 +103,8 @@
 | `.amr` | Adaptive Multi-Rate Audio | Telephony / Mobile | 3GPP ACELP speech codec frame unpacker & 10th-order LPC synthesizer to 16-bit linear PCM WAV | `SOLVED` | **SHIPPED** |
 | `.nb` / `.cdf` | Wolfram Mathematica Notebook | Scientific / Math | Hierarchical cell expression tree, 2D box formula & special character translator to GFM Markdown | `SOLVED` | **SHIPPED** |
 | `.wal` | Quake II Surface Texture | Game Dev / id Tech 2 | 100-byte header, 4-level pre-baked mipmap decoder & Quake II colormap indexer to 32-bit RGBA PNG | `SOLVED` | **SHIPPED** |
+| `.scriv` | Scrivener Writing Project | Writing / Publishing | ZIP package holding the manuscript as RTF (`content.rtf` root or `Files/**/*.rtf`) with no reader but the app itself | `TRIVIAL` | **SHIPPED** |
+| `.vro` | DVD-VR Camcorder / Recorder Stream | Video / Family Archive | DVD-VR program stream from DVD-RAM/RW recorders that no desktop player opens outside the disc | `SOLVED` | **SHIPPED** |
 
 
 
@@ -3171,6 +3173,1161 @@
     - Tool 145: `audio/xmi-to-wav` (Miles Sound System Extended MIDI `.xmi` MS-DOS soundtrack to 16-bit stereo WAV) — **Shipped**
     - Tool 146: `document/troff-to-markdown` (Classical AT&T troff typography document to GitHub Flavored Markdown) — **Shipped**
     - Tool 147: `image/raw-to-png` (Universal DNG / Bayer RAW sensor preview extractor to 32-bit RGBA PNG) — **Shipped**
+
+---
+
+# PART II — REDDIT LONG-TAIL RESEARCH LOG (opened 2026-09-21, no length limit)
+
+> **Method:** systematic Reddit + forum demand mining (20+ deep web-search sweeps, 2026-09-21).
+> Every entry below names at least one real community thread/forum where a human was
+> stranded with the format. Status is one of `SHIPPED` / `BACKLOG` (feasible, queued)
+> / `BLOCKED` (cannot/should-not do client-side — recorded so we never re-litigate).
+> Feasibility uses the same scale as Part I. This log grows without limit; newest
+> waves append at the end. Nothing is dropped without a written reason.
+
+## II.0 Cross-cutting findings (read first)
+
+1. **Privacy is the #1 unmet need, not codecs.** r/freesoftware (`.pst`→`.mbox`),
+   r/sysadmin (`.msg`), r/excel (`.vcf`), SuperUser (XPS→PDF with personal data),
+   r/whatsapp (chat→PDF): users repeatedly reject server-side upload converters for
+   mailboxes, contacts, chats, CCTV and legal/medical files. Every BACKLOG item below
+   with sensitive payload wins on the Zero-Server Guarantee alone, even where a
+   shady server tool nominally exists.
+2. **"Open without the $X00 app" is the universal phrasing.** `.pages` without a Mac,
+   `.kra` without Krita, `.sketch` without Sketch, `.dwg` without AutoCAD,
+   `.pub` without Publisher (being discontinued Oct 2026 — expect a wave),
+   `.one` without OneNote, `.psd` without Photoshop. The ZIP-preview-extraction
+   pattern (procreate/cdr/clip precedent) covers a whole family of these TRIVIALLY.
+3. **DRM is out of scope, always.** Audible `.aa`/`.aax` (DRM), Kindle KFX/AZW (DRM),
+   TiVo `.tivo` (per-user MAK — key-supplied decryption only, never keyless),
+   password vaults (`.kdbx` — never). Tracked as BLOCKED with reasons.
+4. **CCTV is a format zoo, not one format.** Veriframe's signature table documents
+   10+ proprietary DVR containers (`.dav` shipped; `.hvv`, `.xba`, `.synav`,
+   `.pdt/.idt`, `.XI1`, `.hbox`, `.sec`, `.cve` queued as "CCTV-2" family).
+   r/CCTV, r/Dashcam, ipcamtalk demand is constant and high-stakes (insurance, courts).
+5. **Embroidery has server tools but zero private client-side tools.** Freemoonie /
+   StitchPeek prove `.pes/.dst/.jef/.exp/.vp3/.hus/.xxx/.pec` parsing is SOLVED, yet
+   all of them upload user designs. A client-side stitch→SVG/PNG family is BACKLOG
+   with a privacy differentiator. r/Machine_Embroidery confirms PNG→PES confusion
+   demand too (digitising direction = FRONTIER, preview direction = SOLVED).
+6. **Data-science formats are an untouched continent.** `.sqlite/.db`→CSV,
+   `.parquet`→CSV, `.sav/.dta/.xpt` (SPSS/Stata/SAS)→CSV, `.mat`→CSV/JSON —
+   all SOLVED client-side (sql.js / parquet-wasm / pure parsers), all with steady
+   r/datasets / r/psychology / r/statistics demand, ~zero private browser tools.
+7. **Comic/archive variants of shipped tools are nearly free.** `.cbr` (RAR) and
+   `.cbt` (TAR) → PDF extend shipped `cbz-to-pdf`; `.7z`→ZIP and `.iso`→ZIP extend
+   the archive family. `.mobi` (non-DRM) → Markdown reuses the shipped PalmDoc LZ77
+   engine from `pdb-to-markdown` almost line-for-line.
+
+## II.1 Master tracking matrix (v1 — 2026-09-21)
+
+| # | Ext | Format / Domain | Ask → Give | Feas. | Status | Demand signal |
+|---|---|---|---|---|---|---|
+| 148 | `.kra` | Krita layered painting | preview PNG extract | `TRIVIAL` | **SHIPPED (W51)** | r/krita, Krita-Artists ("Krita won't open, need my work"), r/PaintToolSAI |
+| 149 | `.sketch` | Sketch design file | preview PNG extract | `TRIVIAL` | **SHIPPED (W51)** | designers w/o Mac/Sketch; fig2sketch only helps .fig→.sketch, not viewing |
+| 150 | `.als` | Ableton Live set | project summary JSON | `TRIVIAL` | **SHIPPED (W51)** | r/ableton (inherited USB with .als, no Ableton), r/FL_Studio stem questions |
+| 151 | `.pages` | Apple Pages (Mac/iOS) | embedded preview → PDF/PNG | `TRIVIAL` | **SHIPPED (W59)** | r/applehelp, r/mac, r/shortcuts — "no Mac, need PDF" |
+| 152 | `.numbers` | Apple Numbers | table → CSV | `HARD` | **BACKLOG** | same iWork-stranded family as .pages |
+| 153 | `.key` | Apple Keynote | preview → PDF/PNG | `TRIVIAL` | **SHIPPED (W59)** | same iWork-stranded family |
+| 154 | `.xd` | Adobe XD (discontinued) | preview PNG extract (ZIP) | `TRIVIAL` | **BACKLOG** | r/Adobe_XD "open without Adobe CC" (Jan 2023, still asked) |
+| 155 | `.fig` | Figma offline file | view/convert | `BLOCKED` | **BLOCKED** | proprietary binary; only Figma/Sketch import — honest-error page only |
+| 156 | `.sai` / `.sai2` | PaintTool SAI canvas | preview/merge extract | `SOLVED` | **BACKLOG** | r/PaintToolSAI "open .SAI anywhere free" |
+| 157 | `.pdn` | Paint.NET project | → PNG | `BLOCKED` | **BLOCKED** | undocumented layers; only Paint.NET reads (staaarter honest-error precedent) |
+| 158 | `.psd` | Photoshop document | flattened preview → PNG/JPG | `SOLVED` | **BACKLOG** | GraphicDesign.SE "psd without photoshop" (16k views); ag-psd exists |
+| 159 | `.xcf` | GIMP project | → PNG | `BLOCKED` | **BLOCKED** | catalogue verdict stands: no viable WASM port |
+| 160 | `.pst` | Outlook data file | → MBOX/EML/ZIP | `HARD` | **BACKLOG** | r/freesoftware, r/Outlook, r/sysadmin — "FREE, no limitations" |
+| 161 | `.ost` | Outlook offline cache | → PST/MBOX | `HARD` | **BACKLOG** | r/Outlook "open old user's OST" (locked to profile) |
+| 162 | `.mbox` / `.mbx` | Thunderbird/Apple Mail | → EML/ZIP | `TRIVIAL` | **BACKLOG** | Thunderbird ImportExportTools threads; reverse of 160/161 |
+| 163 | `.emlx` | Apple Mail message | → EML | `TRIVIAL` | **BACKLOG** | mac→windows mail migration threads |
+| 164 | `.one` | OneNote section | → Markdown/HTML | `HARD` | **BACKLOG** | r/OneNote (dozens of export threads); MS-ONESTORE parsers exist in Python (port) |
+| 165 | `.pub` | MS Publisher (EOL Oct 2026) | → PDF (preview/text) | `HARD` | **BACKLOG** | MS Q&A "convert all my publisher files" — EOL wave incoming |
+| 166 | `.vsd` / `.vsdx` | Visio drawing | → SVG | `HARD` | **BACKLOG** | libvisio/librevenge WASM port candidate; enterprise demand |
+| 167 | `.mpp` | MS Project plan | → CSV/JSON | `HARD` | **BACKLOG** | OLE/MPP parsers exist (server-side only today) |
+| 168 | `.xps` / `.oxps` | XML Paper Spec | → PDF | `SOLVED` | **BACKLOG** | SuperUser (privacy: "can't upload personal docs"); mupdf/ghostxps path |
+| 169 | `.djvu` | Scanned books | → PDF | `HARD` | **BACKLOG** | r/libgen; DjVuLibre WASM candidate |
+| 170 | `.wps` | MS Works document | → Markdown | `SOLVED` | **BACKLOG** | legacy-docs family w/ .cwk/.sdw/.sxw (all shipped) |
+| 171 | `.mobi` / `.azw3` (no DRM) | Kindle ebook (owned, DRM-free) | → Markdown/EPUB | `SOLVED` | **BACKLOG** | reuses shipped PalmDoc LZ77 engine; r/Calibre adjacent |
+| 172 | `.lit` | MS Reader ebook | → Markdown | `FRONTIER` | **BACKLOG** | r/AskReddit ".lit to Kindle, links all dead" |
+| 173 | `.aa` / `.aax` | Audible DRM audiobook | → MP3 | `BLOCKED` | **BLOCKED** | DRM circumvention — never, regardless of GitHub tooling |
+| 174 | `.kfx` (DRM) | Kindle DRM ebook | → EPUB | `BLOCKED` | **BLOCKED** | DRM circumvention — never |
+| 175 | `.m4b` (no DRM) | Chaptered audiobook | split by chapter / →MP3 | `SOLVED` | **BACKLOG** | m4b-tool (1.5k stars) is CLI-only; browser chapter split = differentiator |
+| 176 | `.wrf` / `.arf` | Cisco WebEx recording | → MP4 | `BLOCKED` | **BLOCKED** | needs Cisco's Windows-only player + site login; document honestly |
+| 177 | `.wtv` / `.dvr-ms` | Windows Media Center TV | → MP4 | `HARD` | **BACKLOG** | SuperUser/AVSForum; ffmpeg.wasm demux candidate (test before promise) |
+| 178 | `.tivo` | TiVo recording (MAK-encrypted) | → MP4 w/ user-supplied key | `HARD` | **BACKLOG** | key-supplied decryption only; never keyless |
+| 179 | `.dvf` / `.msv` / `.ics` | Sony voice recorder | → WAV | `FRONTIER` | **BACKLOG** | legacy Sound Organizer fails on 64-bit; convert.guru is upload-only |
+| 180 | `.dss` / `.ds2` | Olympus dictation (CELP) | → WAV/MP3 | `FRONTIER` | **BACKLOG** | Apple Communities threads; DS2_To_Mp3 native-Python port candidate |
+| 181 | `.qcp` | Qualcomm PureVoice | → WAV | `FRONTIER` | **BACKLOG** | telephony-forensics niche; zero browser tools |
+| 182 | `.flp` | FL Studio project | → MIDI/JSON/stems-list | `HARD` | **BACKLOG** | r/FL_Studio stem-export confusion; bravoh-daw/dawtool/LMMS refs |
+| 183 | `.logicx` | Logic Pro project | → JSON | `HARD` | **BACKLOG** | bundle + binary ProjectData; bravoh-daw ref |
+| 184 | `.rpp` | REAPER project | → JSON | `TRIVIAL` | **BACKLOG** | plain-text chunks — easiest DAW win after .als |
+| 185 | `.song` | Studio One project | → JSON/stems-list | `SOLVED` | **BACKLOG** | ZIP+XML; open DAWproject bridge exists |
+| 186 | `.bwproject` | Bitwig project | → JSON | `SOLVED` | **BACKLOG** | ZIP-based; same bridge |
+| 187 | `.band` | GarageBand project | → stems/ZIP | `SOLVED` | **BACKLOG** | bundle layout documented by community |
+| 188 | WhatsApp `.txt`/`.zip` | Chat export | → PDF/Markdown | `TRIVIAL` | **BACKLOG** | r/whatsapp, r/de_EDV; all current tools upload chats (privacy win) |
+| 189 | Telegram `.json` | Desktop export | → PDF/Markdown | `TRIVIAL` | **BACKLOG** | r/Telegram "how to export chat history" |
+| 190 | Discord `.json` | DCE export | → HTML/Markdown | `TRIVIAL` | **BACKLOG** | moderator/legal-evidence niche |
+| 191 | iMessage `chat.db` | iPhone SMS archive | → PDF | `HARD` | **BACKLOG** | SQLite + attachment attribution; legal-evidence demand |
+| 192 | `.pes` / `.dst` / `.jef` / `.exp` / `.vp3` / `.hus` / `.xxx` / `.pec` | Embroidery machine files | → SVG/PNG preview | `SOLVED` | **BACKLOG** | r/Machine_Embroidery; Freemoonie/StitchPeek prove parsing, but upload-only |
+| 193 | `.vpk` / `.gma` | Valve/Source addons | → ZIP | `SOLVED` | **BACKLOG** | VPKEdit format table; extends shipped wad/pak/bsp family |
+| 194 | `.mpq` | Blizzard archive | → ZIP | `SOLVED` | **BACKLOG** | modding/preservation; same family |
+| 195 | `.bsa` / `.ba2` | Bethesda archive | → ZIP | `SOLVED` | **BACKLOG** | Skyrim/Fallout modding; same family |
+| 196 | `.uasset` / `.upk` | Unreal package | list + extract raw | `HARD` | **BACKLOG** | PUBG/DMC5 REtool threads; version-fragile, ship read-only first |
+| 197 | `.qfx` / `.ofx` / `.qif` | Bank/money files | → CSV | `TRIVIAL` | **BACKLOG** | r/personalfinance migrators; SGML/OFX text parse |
+| 198 | `.nii` / `.nii.gz` | NIfTI neuroimaging | → PNG slice stack | `SOLVED` | **BACKLOG** | nifti-reader-js exists; zero private browser slicers |
+| 199 | `.cbr` / `.cbt` | Comic archives (RAR/TAR) | → PDF | `SOLVED` | **BACKLOG** | direct extension of shipped cbz-to-pdf |
+| 200 | `.7z` | 7-Zip archive | → ZIP | `SOLVED` | **BACKLOG** | 7z-wasm candidate; r/datahoarder |
+| 201 | `.iso` | Disc image (9660) | → ZIP | `SOLVED` | **SHIPPED (W59)** | game-preservation adjacent |
+| 202 | `.sqlite` / `.db` | SQLite database | → CSV/JSON per table | `SOLVED` | **BACKLOG** | sql.js; r/datasets constant demand |
+| 203 | `.parquet` | Columnar data | → CSV | `SOLVED` | **BACKLOG** | parquet-wasm; data-eng niche, zero upload-free tools |
+| 204 | `.sav` / `.dta` / `.xpt` | SPSS/Stata/SAS | → CSV | `SOLVED` | **BACKLOG** | r/psychology, r/statistics; pure-JS readers exist |
+| 205 | `.mat` (v5) | MATLAB workspace | → CSV/JSON | `SOLVED` | **BACKLOG** | academics stranded without licences |
+| 206 | `.canvas` | Obsidian canvas | → SVG/Markdown | `TRIVIAL` | **BACKLOG** | JSON graph → SVG render; r/ObsidianMD |
+| 207 | `.excalidraw` | Excalidraw scene | → SVG/PNG | `TRIVIAL` | **BACKLOG** | JSON scene; r/excalidraw self-host threads |
+| 208 | `.drawio` | diagrams.net drawing | → SVG | `TRIVIAL` | **SHIPPED (W59)** | XML-inflate; r/selfhosted |
+| 209 | `.woff2` | Web font | → TTF | `SOLVED` | **BACKLOG** | wawoff2; r/webdev font-recovery niche |
+| 210 | `.hvv` | Hikvision CCTV | → MP4 | `SOLVED` | **BACKLOG** | "CCTV-2" family w/ veriframe signatures; same remux pattern as .dav |
+| 211 | `.xba` | TimeSpace DVR | → MP4 | `SOLVED` | **BACKLOG** | CCTV-2 |
+| 212 | `.synav` | Synectics DVR | → MP4 | `HARD` | **BACKLOG** | CCTV-2 |
+| 213 | `.XI1` | Bosch DIBOS | → MP4 | `HARD` | **BACKLOG** | CCTV-2 |
+| 214 | `.sec` | PADD DVR | → MP4 | `HARD` | **BACKLOG** | CCTV-2 |
+| 215 | `.stl` (subtitles) | EBU Spruce STL binary subs | → SRT | `SOLVED` | **BACKLOG** | broadcast-archivist niche; binary spec open |
+| 216 | `.ttml` / `.dfxp` | Timed-text subs | → SRT | `TRIVIAL` | **BACKLOG** | XML→cues; streaming-rip adjacent, legit accessibility use |
+| 217 | `.lrc` | Karaoke lyrics | → SRT | `TRIVIAL` | **BACKLOG** | timestamped lines; trivial + beloved |
+| 218 | DJI `.srt` | Drone telemetry subs | → CSV/GeoJSON | `TRIVIAL` | **BACKLOG** | r/drones mapping; telemetry-in-subtitle niche |
+| 219 | GoPro `.lrv`/`.thm` | Low-res proxies | → MP4/JPG | `TRIVIAL` | **SHIPPED (W59)** | same bytes as MP4/JPG under odd ext; rename+verify tool |
+| 220 | `.gpmf` | GoPro telemetry | → CSV/GeoJSON | `SOLVED` | **BACKLOG** | r/UAVmapping; open GPMF parser ports |
+| 221 | `.shp` (+`.dbf`) | ESRI Shapefile | → GeoJSON | `SOLVED` | **BACKLOG** | shapefile-js pure; extends shipped geo family (gpx/kml/osm/gml) |
+| 222 | `.gpkg` | GeoPackage (SQLite) | → GeoJSON | `SOLVED` | **BACKLOG** | sql.js + geometry decode; r/gis |
+| 223 | `.mmap` | MindManager map | → Markdown | `SOLVED` | **BACKLOG** | ZIP+XML like shipped xmind |
+| 224 | Xbox saves | Game Pass save blobs | → universal per-game | `BLOCKED` | **BLOCKED** | per-game crypto (GPSaveConverter covers 1:1); no generic tool possible |
+| 225 | `.kdbx` | KeePass vault | decrypt/convert | `BLOCKED` | **BLOCKED** | credential-vault policy: never build |
+| 226 | `.skp` / `.3dm` / `.step` | 3D CAD | → viewer/convert | `HARD` | **BACKLOG** | versioned binaries; viewer-first, opennurbs WASM candidate for .3dm |
+
+> **Wave 51 (Shipped 2026-09-21, from this log):**
+> - Tool 148: `image/kra-to-png` (Krita `.kra` merged-image/preview extractor to PNG)
+> - Tool 149: `image/sketch-to-png` (Sketch `.sketch` page-preview extractor to PNG)
+> - Tool 150: `document/als-to-json` (Ableton Live `.als` gzip-XML project intelligence to JSON)
+
+---
+
+## II.2 Second sweep (2026-09-21, evening) — fresh evidence + verdict updates
+
+> Method: 5 more deep sweeps (REAPER, comics, WhatsApp, mbox, sqlite/subtitles).
+> Rule applied: where a genuinely private in-browser tool already exists, the niche
+> is marked `SERVED` (not built) instead of duplicating it — convrtr builds what
+> people *cannot* already get.
+
+### New verdicts
+
+- **`.rpp` (REAPER project, plain-text chunks) — SHIP.** Four independent OSS
+  parsers agree on the grammar (JS `rppp` by CharlesHolbrow, Python `reaproj`/
+  `rpp`, Rust `rpp-parser`, C++ `rppxml`): `<TAG args…>` lines, `<CHUNK` … `>`
+  nesting, `TEMPO`, `TRACK`/`NAME`, `ITEM`/`SOURCE`+`FILE`, `MARKER`, `REGION`,
+  `FXCHAIN`/`VST`. No browser tool inventories a session (tempo map, track/item/
+  source list, markers, regions, FX) without REAPER installed. TRIVIAL, pure text.
+- **WhatsApp export (`.txt` / `.zip`) → Markdown — SHIP.** r/whatsapp ".Zip to PDF"
+  (6 days old), r/IMadeThis (chattopdf.app), PDFgear, WaChat2PDF, PDFSimpli,
+  WhatsApp-Export-Unpacker (forensics/Whisper) all confirm the same pain: export
+  is a wall of text; every converter outputs PDF and most upload the chat.
+  HonestPDF proves client-side is possible. Gap = **Markdown for Obsidian/Logseq/
+  archival + ZIP-with-media unpack listing + 40k-message iPhone truncation note**.
+  TRIVIAL text parse (Android `d.m.yy, HH:MM - Name: msg`, iOS `[d.m.yy, HH:MM:SS]
+  Name: msg`, plus system-line passthrough).
+- **`.mbox` → ZIP of `.eml` — SHIP.** mboxzilla (23 stars, CLI), hunterMG/mbox2eml,
+  hrhv TS parser, Emlify (upload, 25 MB cap), Aspose (upload) agree on algorithm:
+  split on `^From ` lines, unescape `>From`. Gap = private browser splitter that
+  names parts `NNN-subject.eml`. TRIVIAL. (Reverse direction EML→mbox is one
+  concatenation; same engine later.)
+- **`.cbt` (Comic Book TAR) → PDF — SHIP.** comicbox docs: "needs no binary
+  dependencies for CBZ, CBT, CB7 — only CBR needs unrar". Extends shipped
+  `cbz-to-pdf` with a ~60-line ustar parser, same pdf-lib embed path. TRIVIAL.
+- **`.cbr` (RAR) → PDF — stays BACKLOG/HARD.** Every OSS path shells to an UnRAR
+  binary (CBtoPDF, comicbox, cbr2pdf all require it); no RAR5-capable pure-JS
+  decoder exists for the browser. Server tools (CloudConvert, CoolUtils, PDF
+  Candy) own this for now; revisit if a WASM unrar matures. Honest scope note
+  ships on the future tool page instead of a fake converter.
+- **`.lrc` (karaoke lyrics) → SRT — SHIP.** `[mm:ss.xx]` lines + `[ti:]/[ar:]/[al:]`
+  headers → numbered cues with line-merge. TRIVIAL, ~80 lines, beloved niche.
+- **`.ttml`/`.dfxp` → SRT — SERVED, do not build.** netflix-to-srt, ScribeToAny,
+  Omnisubs, Pixora, syncmysubs, VideoText, SubtitleKit all run in-browser already.
+  Logged so nobody rebuilds it; cross-link from our subtitle hub instead.
+- **`.sqlite`/`.db` → CSV — BACKLOG, needs sql.js.** StackOverflow (70k views on
+  the export question), convert-db-to-csv.sh (69 stars), sqlite-dump-to-csv,
+  RebaseData (upload) confirm demand, but the browser path needs the sql.js WASM
+  (~600 KB) behind the heavy-download consent pattern like ffmpeg.wasm. Queued
+  as the flagship "data continent" tool with `.parquet`/`.sav`/`.dta` behind it.
+- **`.rpp-bak` (REAPER backup) — free with `.rpp`.** Same grammar; accept both
+  extensions on the same tool.
+- **DRM-adjacent warning (no change):** Kindle/Audible threads (r/Calibre daily)
+  keep asking for KFX/AZW/AAX cracking — stays BLOCKED, policy holds.
+
+## II.3 Master tracking matrix, continued (v2)
+
+| # | Ext | Ask → Give | Feas. | Status | Fresh signal (2026-09-21 pm) |
+|---|---|---|---|---|---|
+| 227 | `.rpp` / `.rpp-bak` | REAPER session → project JSON | `TRIVIAL` | **SHIPPED (W52)** | rppp/reaproj/rppxml grammar consensus; zero browser inventory tools |
+| 228 | WhatsApp `.txt`/`.zip` | chat export → Markdown | `TRIVIAL` | **SHIPPED (W52)** | r/whatsapp ".Zip to PDF" (6d old); 6 converter sites, all PDF-or-upload |
+| 229 | `.mbox` | mailbox → ZIP of `.eml` | `TRIVIAL` | **SHIPPED (W52)** | mboxzilla/mbox2eml/hrhv/Emlify; Emlify 25 MB cap + upload |
+| 230 | `.cbt` | Comic TAR → PDF | `TRIVIAL` | **SHIPPED (W52)** | comicbox: CBT needs no binaries; extends shipped cbz-to-pdf |
+| 231 | `.lrc` | lyrics → SRT | `TRIVIAL` | **SHIPPED (W52)** | karaoke/player niche; no private browser tool |
+| 232 | `.cbr` | Comic RAR → PDF | `HARD` | **BACKLOG** | unrar-binary requirement everywhere; revisit on WASM unrar |
+| 233 | `.ttml` / `.dfxp` | → SRT | `TRIVIAL` | **SERVED** | 7+ in-browser converters exist; cross-link, don't duplicate |
+| 234 | `.sqlite` / `.db` | tables → CSV/ZIP | `SOLVED` | **BACKLOG** | 70k-view SO question; needs sql.js heavy-download integration |
+| 235 | `.cb7` | Comic 7z → PDF | `SOLVED` | **BACKLOG** | comicbox: no binaries needed; 7z-wasm candidate |
+
+> **Wave 52 (Shipped 2026-09-21, from this log):**
+> - Tool 151: `document/rpp-to-json` (REAPER `.rpp`/`.rpp-bak` session inventory to JSON)
+> - Tool 152: `document/whatsapp-to-markdown` (WhatsApp `.txt`/`.zip` chat export to Markdown)
+> - Tool 153: `document/mbox-to-zip` (mboxrd mailbox splitter to ZIP of `.eml`)
+> - Tool 154: `document/cbt-to-pdf` (Comic Book TAR `.cbt` page binder to PDF)
+> - Tool 155: `document/lrc-to-srt` (karaoke `.lrc` lyrics to SubRip SRT)
+
+> **Wave 53 (Shipped 2026-09-21, Ultra-Niche Exclusives):**
+> - Tool 156: `document/webloc-to-url` (macOS Safari `.webloc` plist internet shortcut to Windows `.url`, HTML redirect, and Markdown link)
+> - Tool 157: `document/8xp-to-txt` (Texas Instruments TI-83/TI-84 Graphing Calculator Program `.8xp` container and bytecode de-tokenizer to formatted TI-BASIC code and Markdown)
+> - Tool 158: `audio/sty-to-mid` (Yamaha Arranger Keyboard Style `.sty`/`.prs`/`.bpt` accompaniment file to Standard MIDI `.mid`)
+> - Tool 159: `document/sol-to-json` (Adobe Flash Local Shared Object `.sol` save game file / cookie to structured JSON)
+
+---
+
+# PART III — THE ULTRA-NICHE EXCLUSIVES DOSSIER (Reddit & Forum Deep Mine)
+
+> **Philosophy:** If a tool does not exist on the web, if users are stranded with a dead 2012 Python script on GitHub, if existing tools are sketchy desktop executables that trigger antivirus warnings, or if people are forced to buy a $100+ hardware license just to view their own files, **convrtr will build it and make it accessible directly in the user's browser**.
+>
+> Zero server uploads. Zero analytics sniffing. Zero telemetry. 100% local client-side Web Worker / WASM execution.
+
+---
+
+## III.1 Master Tracking Matrix — Wave 53 & Long-Tail Candidates
+
+| # | Ext | Format / Domain | Ask -> Give | Feas. | Status | Primary Demand Signals |
+|---|---|---|---|---|---|---|
+| 236 | `.webloc` | macOS Safari Internet Location | -> Windows `.url` / HTML / MD | `TRIVIAL` | **SHIPPED (W53)** | r/windows, r/techsupport ("Windows cannot open .webloc file", email attachments) |
+| 237 | `.8xp` / `.8xk` | TI-83/TI-84 Plus Calculator Program | -> TI-BASIC Text / MD | `SOLVED` | **SHIPPED (W53)** | r/ti84hacks, r/calculators, r/TI_Calculators ("View .8xp without TI-Connect") |
+| 238 | `.sty` / `.prs` | Yamaha Arranger Keyboard Style | -> Standard MIDI (`.mid`) | `SOLVED` | **SHIPPED (W53)** | r/synthesizers, r/FL_Studio, r/producing ("Convert Yamaha style to MIDI for DAW") |
+| 239 | `.sol` | Adobe Flash Local Shared Object | -> Formatted JSON | `SOLVED` | **SHIPPED (W53)** | r/flash, r/FlashpointArchive, r/webgames ("Edit .sol Flash save file", "Export SOL to JSON") |
+| 240 | `.fit` | Garmin / Wahoo Flexible Data | -> GPX / CSV | `SOLVED` | **BACKLOG (W54)** | r/running, r/cycling, r/Strava, r/privacy ("Convert .fit to GPX without cloud upload") |
+| 241 | `.ctb` / `.cbddlp` | ChiTuBox Resin 3D Print Slice | -> 32-bit PNG preview + JSON params | `SOLVED` | **BACKLOG (W54)** | r/resinprinting, r/ElegooMars, r/AnycubicPhoton ("Extract 3D thumbnail without ChiTuBox") |
+| 242 | `.wem` / `.bnk` | Audiokinetic Wwise Game Audio | -> Standard OGG / WAV | `HARD` | **BACKLOG (W54)** | r/audiomodding, r/gamedev, r/ReverseEngineering ("Convert .wem without ww2ogg batch files") |
+| 243 | `.fsb5` / `.bank` | FMOD Studio Game Audio Bank | -> Standard WAV / OGG | `HARD` | **BACKLOG (W54)** | r/HollowKnight, r/CelesteGame, r/modding ("Extract FSB5 / FMOD bank audio on Mac/Linux") |
+| 244 | `.sff` (v1/v2) | Elecbyte M.U.G.E.N Sprite Bank | -> PNG Sprite Sheet / ZIP | `SOLVED` | **BACKLOG (W54)** | r/mugen, r/Fighters, MUGEN Free For All ("Extract sprites from SFF without Fighter Factory") |
+| 245 | `.wolf` | Wolf RPG Editor Encrypted Archive | -> Decrypted ZIP archive | `SOLVED` | **BACKLOG (W54)** | r/WolfRPGEngine, Romhacking.net ("Decrypt .wolf game files", Japanese indie fan translation) |
+| 246 | `nscript.dat` | NScripter Obfuscated Visual Novel Script | -> UTF-8 Decrypted Text | `TRIVIAL` | **BACKLOG (W54)** | r/visualnovels, r/Higurashi ("Decrypt nscript.dat", single-byte 0x84 XOR key) |
+| 247 | `.edf` / `.edf+` | European Data Format Bio-signals | -> Calibrated CSV / JSON | `SOLVED` | **BACKLOG (W55)** | r/CPAP, r/SleepApnea, Apnea Board ("Extract ResMed CPAP data to CSV without OSCAR") |
+| 248 | `.hlx` | Line 6 Helix Guitar Multi-FX Preset | -> Markdown Signal Chain / HTML | `TRIVIAL` | **BACKLOG (W55)** | r/Line6Helix, r/Guitar, The Gear Page ("View .hlx preset settings without HX Edit") |
+| 249 | `.plt` / `.hpgl` | HP-GL Plotter / Vinyl Cut Vector | -> Clean W3C SVG | `SOLVED` | **BACKLOG (W55)** | r/lasercutting, r/CNC, r/CAD ("Convert PLT/HPGL to SVG without expensive CAD license") |
+| 250 | `.igc` | IGC Paraglider & Sailplane Flight Log | -> GPX / KML with 3D Altitudes | `TRIVIAL` | **BACKLOG (W55)** | r/freeflight, r/paramotor, r/aviation ("Convert IGC flight log to Google Earth KML") |
+
+---
+
+## III.2 Detailed Forensic Dossiers for Ultra-Niche Candidates
+
+### 236. macOS Safari Internet Location Shortcut (`.webloc`)
+
+- **Ecosystem & Context:** macOS users drag URLs from Safari or Chrome to their desktop or folder, creating a `.webloc` file. When shared via email, USB, Google Drive, or Slack with colleagues on Windows, Android, or Linux, the file is unclickable and Windows reports that it has no application to open it.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/windows, r/techsupport, r/sysadmin, r/applehelp.
+  - Queries: *"How to open .webloc files on Windows 10/11"*, *"Client sent 50 links as .webloc attachments"*, *"Batch convert .webloc to standard .url"*.
+- **Forensic Byte Layout:**
+  - Variant A: XML Property List starting with `<?xml` or `<plist>`:
+    `<key>URL</key><string>https://example.com</string>`
+  - Variant B: Compiled Binary Property List starting with magic `bplist00` (`62 70 6c 69 73 74 30 30`).
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript decoder parses both XML plists and binary `bplist00` dictionaries.
+  - Generates standard Windows `.url` (`[InternetShortcut]\r\nURL=...`), universal HTML redirect documents with instant `<meta http-equiv="refresh">`, or Markdown hyperlinks `[Title](URL)`.
+- **Fidelity:** `LOSSLESS`.
+- **Status:** **Shipped in Wave 53 (`document/webloc-to-url`)**.
+
+---
+
+### 237. Texas Instruments TI-83 / TI-84 Plus Program (`.8xp`, `.8xk`)
+
+- **Ecosystem & Context:** Millions of STEM students, engineers, and retro developers write programs on TI-83 Plus, TI-84 Plus, and TI-84 Plus CE graphing calculators. When downloaded or backed up, the programs are stored as `.8xp` files. No modern operating system can preview or read `.8xp` files without proprietary TI Connect software, which often requires physical USB hardware connection or Windows.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/ti84hacks, r/calculators, r/TI_Calculators, r/engineeringstudents.
+  - Queries: *"How to read .8xp program code on computer without TI-Connect"*, *"View TI-84 program file on Mac / Chromebook"*, *"Convert 8xp to readable text"*.
+- **Forensic Byte Layout:**
+  - Magic Header (Bytes 0-7): `**TI83F*` (`2A 2A 54 49 38 33 46 2A`).
+  - Signature (Bytes 8-10): `0x1A 0x0A 0x00`.
+  - Comment Block (Bytes 11-52): 42-byte ASCII description.
+  - Data Length (Bytes 53-54): 16-bit little-endian integer.
+  - Variable Entry:
+    - Offset 4: Type ID (`0x05` = Standard Program, `0x06` = Protected Program).
+    - Offset 5-12: 8-byte variable name (ASCII, null-padded).
+    - Offset 15-16: Expression / token stream length (16-bit LE).
+    - Offset 17+: Tokenized bytecode stream.
+  - Checksum (Trailing 2 bytes): 16-bit little-endian sum of all bytes in the data section modulo 65536.
+- **Bytecode Translation Grammar:**
+  - Single-byte opcodes: `0xCE` -> `Prompt `, `0xD0` -> `Disp `, `0xD1` -> `Input `, `0xDC` -> `If `, `0xD2` -> `Then`, `0xD3` -> `Else`, `0xD8` -> `End`, `0x3C` -> `->` (store arrow), `0xAC` -> `pi`, `0xBC` -> `sqrt(`.
+  - Two-byte prefix opcodes (`0xBB` prefix): `0xBB 0x6A` -> `<=`, `0xBB 0x6B` -> `>=`, `0xBB 0x6C` -> `!=`, `0xBB 0x6E` -> ` and `, `0xBB 0x6F` -> ` or `.
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript detokenizer verifies header signature, calculates 16-bit checksum, and transforms bytecode into cleanly indented, syntax-structured TI-BASIC code and Markdown with mathematical glyphs.
+- **Fidelity:** `LOSSLESS` (Direct mathematical detokenization).
+- **Status:** **Shipped in Wave 53 (`document/8xp-to-txt`)**.
+
+---
+
+### 238. Yamaha Arranger Keyboard Style Files (`.sty`, `.prs`, `.bpt`, `.sst`)
+
+- **Ecosystem & Context:** Yamaha Tyros, Genos, PSR-S, PSR-SX, and Clavinova arranger keyboards allow musicians to perform with intelligent accompaniment styles saved in `.sty` containers. Music producers and composers want to use these rhythm grooves, basslines, and brass fills in modern DAWs (Ableton, FL Studio, Logic Pro, Reaper). However, DAWs reject `.sty` files because Yamaha wraps the standard MIDI sequence with proprietary metadata chunks.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/synthesizers, r/FL_Studio, r/producing, r/midi, Yamaha Keyboard Resource forums.
+  - Queries: *"How to convert Yamaha .sty style file to standard MIDI for FL Studio"*, *"Open .sty in Ableton without ancient Windows shareware"*, *"Extract drum and bass patterns from Yamaha keyboard styles"*.
+- **Forensic Byte Layout:**
+  - Container Architecture: The file contains a complete Standard MIDI File (SMF Type 0 or Type 1) combined with non-standard proprietary chunks: `CASM` (Chord Audio Style Maker), `OTS` (One Touch Setting), and `MH` (Music Finder).
+  - Stream Location: The standard MIDI stream begins with the 4-byte ASCII marker `MThd` (`4D 54 68 64`) at an arbitrary byte offset within the container.
+  - Header Chunk: `[MThd (4 bytes)][Length: 0x00000006 (4 bytes)][Format (2 bytes)][Tracks Count (2 bytes)][Division (2 bytes)]`.
+  - Track Chunks: One or more `MTrk` chunks (`4D 54 72 6B`), each with a 32-bit big-endian length prefix followed by delta-time encoded MIDI events.
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript parser scans the container for `MThd`, reads the header specification, sequentially extracts each valid `MTrk` chunk, strips proprietary `CASM` and `OTS` padding, updates track count headers, and synthesizes a compliant, clean SMF `.mid` file for immediate universal playback in all DAWs.
+- **Fidelity:** `LOSSLESS` (Bit-exact extraction of original MIDI performance data).
+- **Status:** **Shipped in Wave 53 (`audio/sty-to-mid`)**.
+
+---
+
+### 239. Adobe Flash Local Shared Object Game Save (`.sol`)
+
+- **Ecosystem & Context:** Adobe Flash Player used `.sol` files (Flash cookies / Local Shared Objects) to store client-side persistent state for millions of browser games and applications. With the global deprecation of Flash and the emergence of preservation initiatives (Flashpoint Archive, Ruffle emulator), players routinely need to inspect, edit, or migrate their save game files between browsers, emulators, and desktop ports without installing Python scripts or untrusted third-party binaries.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/flash, r/FlashpointArchive, r/webgames, r/speedrun.
+  - Queries: *"How to edit .sol save file from Flash game"*, *"Convert Flash .sol to JSON"*, *"Transfer Flash save from browser to Flashpoint"*.
+- **Forensic Byte Layout:**
+  - Header (Bytes 0-1): `0x00 0xBF` (AMF0 Local Shared Object marker).
+  - File Length (Bytes 2-5): 32-bit big-endian total byte size.
+  - Tag (Bytes 6-9): ASCII string `TCSO`.
+  - Padding (Bytes 10-13): `0x00 0x04 0x00 0x00`.
+  - SharedObject Name: 16-bit big-endian length followed by UTF-8 string.
+  - Padding: 4 zero bytes.
+  - Serialized AMF0 Property Stream:
+    - `0x00`: Number (64-bit IEEE-754 float).
+    - `0x01`: Boolean (1 byte).
+    - `0x02`: String (16-bit BE length + UTF-8 payload).
+    - `0x03`: Object (recursive name-value pairs terminated by `\0\0\x09`).
+    - `0x05`: Null.
+    - `0x06`: Undefined.
+    - `0x08`: ECMA Mixed Array (32-bit element count + object properties).
+    - `0x0A`: Strict Array (32-bit element count + indexed values).
+    - `0x0B`: Date (64-bit float epoch milliseconds).
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript recursive AMF0 deserializer unpacks all serialized Flash objects, maps primitive types and nested dictionaries, and outputs structured, indented JSON ready for editing or archival.
+- **Fidelity:** `LOSSLESS` (Semantic data preservation).
+- **Status:** **Shipped in Wave 53 (`document/sol-to-json`)**.
+
+---
+
+### 240. Garmin / Wahoo / Strava Flexible Data Interoperability (`.fit`)
+
+- **Ecosystem & Context:** Modern fitness computers (Garmin Edge, Forerunner, Fenix, Wahoo ELEMNT, Hammerhead Karoo) record GPS coordinates, cadence, power, heart rate, and elevation in binary `.fit` protocol files. Users want `.gpx` or `.csv` files for analysis, but all existing web converters require uploading the file to a cloud server, exposing intimate home address locations, running routes, and biometric telemetry.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/running, r/cycling, r/Strava, r/Garmin, r/privacy.
+  - Queries: *"Convert .fit to .gpx without uploading to third-party website"*, *"Privacy-respecting offline FIT to GPX converter"*, *"Extract heart rate and GPS coordinates from Garmin .fit"*.
+- **Forensic Byte Layout:**
+  - Header (14 bytes):
+    - Byte 0: Header size (usually 14 bytes).
+    - Byte 1: Protocol version.
+    - Bytes 2-3: Profile version.
+    - Bytes 4-7: Data size (32-bit LE uint).
+    - Bytes 8-11: ASCII signature `.FIT` (`2E 46 49 54`).
+    - Bytes 12-13: Header CRC.
+  - Record Structures:
+    - Definition Records: Specify local message numbers, architecture (endianness), global message number, and field definition lists.
+    - Data Records: Contain field values. GPS coordinates are stored as 32-bit signed integers in semicircles:
+      $$\text{Degrees} = \text{Semicircles} \times \frac{180}{2^{31}}$$
+    - Timestamps: 32-bit unsigned seconds since the FIT epoch (1989-12-31 00:00:00 UTC).
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript binary decoder parses definition tables, decodes coordinates, elevation, and sensor values, and outputs standards-compliant GPX XML (`<trkpt lat="..." lon="...">`) and tabular CSV.
+- **Fidelity:** `LOSSLESS` (Exact coordinate and sensor extraction).
+- **Status:** **BACKLOG Priority (Wave 54 Candidate)**.
+
+---
+
+### 241. ChiTuBox / Anycubic Resin 3D Print Sliced Files (`.ctb`, `.cbddlp`, `.pws`)
+
+- **Ecosystem & Context:** Masked stereolithography (MSLA) and resin 3D printers (Elegoo Mars/Saturn, Anycubic Photon, Phrozen Sonic) execute prints using sliced archive files (`.ctb`, `.cbddlp`). Users find mysterious `.ctb` files on USB drives and cannot view what model is sliced or check exposure settings without launching heavy slicing suites.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/resinprinting, r/ElegooMars, r/AnycubicPhoton, r/3Dprinting.
+  - Queries: *"How to see what 3D model is inside a .ctb file"*, *"Extract preview thumbnail from resin slice"*, *"View exposure time and lift settings from .ctb without ChiTuBox"*.
+- **Forensic Byte Layout:**
+  - Header Magic: `0x12 0xFD 0x00 0x19` or `0x12 0xFD 0x00 0x20`.
+  - Offsets Table (Offset 0x20 onwards): Pointers to Preview Image chunk, Print Parameters block, and Layer Slices table.
+  - Preview Chunk: Header specifying image width and height, followed by raw RGB565 pixel data or embedded PNG stream.
+  - Parameter Block: Layer height (float), bottom exposure time (float), normal exposure time (float), light-off delay, bottom layer count, total layer count.
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript binary parser seeks to the Preview Offset, decodes the 16-bit RGB565 framebuffer into a 32-bit RGBA PNG, and extracts printing parameters into a structured JSON configuration summary.
+- **Fidelity:** `LOSSLESS` (Native render thumbnail extraction).
+- **Status:** **BACKLOG Priority (Wave 54 Candidate)**.
+
+---
+
+### 242. Audiokinetic Wwise Game Audio (`.wem`, `.bnk`)
+
+- **Ecosystem & Context:** Audiokinetic Wwise is the industry-standard game audio engine powering major AAA titles (*Cyberpunk 2077*, *The Witcher 3*, *Genshin Impact*, *Destiny 2*, *Apex Legends*). Soundtracks and voice lines are packed inside `.wem` files and `.bnk` soundbanks. Game modders and audio archivists must download outdated command-line scripts (`ww2ogg.exe`, `revorb.exe`) and codebook binaries to decode these files.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/audiomodding, r/gamedev, r/ReverseEngineering, r/CyberpunkGame.
+  - Queries: *"How to convert .wem audio to .ogg / .wav without downloading shady batch scripts"*, *"Online WEM to WAV converter"*, *"Extract soundtrack from game .wem files"*.
+- **Forensic Byte Layout:**
+  - Container: RIFF header with form type `WAVE`.
+  - Audio Framing: Custom `fmt ` chunk indicates Wwise Vorbis compression or IMA ADPCM. Wwise strips standard Ogg Vorbis packet headers and replaces them with custom packet length offsets and packet checksums, mapped against known codebook tables.
+- **In-Browser Execution Strategy:**
+  - Client-side packet re-framer parses Wwise Vorbis stream packets, injects standard Vorbis header setup packets, recalculates granule positions, and emits standard playable Ogg Vorbis or decodes via Web Audio to 16-bit linear PCM WAV.
+- **Fidelity:** `LOSSLESS` (Bit-exact audio packet recovery).
+- **Status:** **BACKLOG Priority (Wave 54 Candidate)**.
+
+---
+
+### 243. FMOD Studio Game Audio Bank (`.bank`, `.fsb5`)
+
+- **Ecosystem & Context:** FMOD Studio is the audio engine behind beloved indie and studio masterpieces (*Celeste*, *Hollow Knight*, *Subnautica*, *Cuphead*, *Transistor*). Audio files are compiled into `.bank` containers wrapping `.fsb5` audio blocks. Mac and Linux users have no native GUI tools to inspect or extract sound effects from these files.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/HollowKnight, r/CelesteGame, r/modding, r/IndieGaming.
+  - Queries: *"How to extract .bank audio files on Mac"*, *"FSB5 to WAV online converter"*, *"Extract voice and sound effects from FMOD bank"*.
+- **Forensic Byte Layout:**
+  - Magic Marker: ASCII `FSB5` at byte 0.
+  - Header: Version, sample count, sample header table size, name table size, audio data size, and codec enum (PCM8, PCM16, Vorbis, MP3, IMA ADPCM).
+  - Sample Metadata: Encoded bitfields indicating channel count, sample rate frequency index, loop points, and byte offsets into the audio data chunk.
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript container parser reads FSB5 sample tables, carves individual audio streams, reconstructs RIFF headers or Vorbis packets, and bundles all sounds into a structured ZIP archive.
+- **Fidelity:** `LOSSLESS` (Exact sample extraction).
+- **Status:** **BACKLOG Priority (Wave 54 Candidate)**.
+
+---
+
+### 244. Elecbyte M.U.G.E.N Sprite Archive (`.sff` v1 and v2)
+
+- **Ecosystem & Context:** M.U.G.E.N is the legendary 2D fighting game engine. Thousands of community-created characters, stages, and effect packs are distributed as `.sff` sprite files. Modders and animators on macOS and Linux cannot run the classic Windows-only Fighter Factory tool to extract character sprite frames.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/mugen, r/Fighters, MUGEN Free For All.
+  - Queries: *"How to extract sprites from .sff on Mac without Fighter Factory"*, *"SFF to PNG online converter"*, *"Extract Mugen character sprites to PNG sprite sheet"*.
+- **Forensic Byte Layout:**
+  - Header (v1): 512 bytes starting with `ElecbyteSpr\0`. Contains number of groups, number of images, sub-file offset, and sub-header size.
+  - Sub-headers (v1): Linked list containing next sub-header offset, image length, X/Y axis offsets, group number, image number, and embedded 256-color PCX graphic or raw palette.
+  - Format (v2): `ElecbyteSpr\x02` with dedicated palette table, LZO/RLE/PNG compression sub-blocks, and sprite dictionary.
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript parser traverses the sub-header chain, applies palette mappings, decodes PCX/PNG pixel data, and outputs organized PNG files or a bundled ZIP archive.
+- **Fidelity:** `LOSSLESS` (Pixel-exact sprite preservation).
+- **Status:** **BACKLOG Priority (Wave 54 Candidate)**.
+
+---
+
+### 245. Wolf RPG Editor Encrypted Game Archive (`.wolf`, `Data.wolf`)
+
+- **Ecosystem & Context:** Wolf RPG Editor is a Japanese indie game development engine (used for *Mad Father*, *The Witch's House*, *Misao*, *LiEat*). Assets are compiled into `.wolf` containers encrypted with a custom scheme to protect developer assets. Fan translators and game preservationists are stranded when attempting to translate Japanese indie titles.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/WolfRPGEngine, Romhacking.net, fan-translation forums.
+  - Queries: *"How to unpack .wolf files online"*, *"Wolf RPG editor decryptor"*, *"Extract images and text from Data.wolf"*.
+- **Forensic Byte Layout:**
+  - Header: Magic signature and file entry count.
+  - Encryption Scheme: Directory table and asset chunks are encrypted using a 32-bit rotating XOR key sequence. The default engine key is `0x99, 0x99, 0x99, ...`, while custom games use game-specific keys derived via known-plaintext analysis against standard PNG (`\x89PNG`) or OGG (`OggS`) file headers.
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript zero-knowledge XOR key recovery engine inspects cipher bytes, extracts the decryption key automatically, un-scrambles directory listings, and extracts all project files into a structured ZIP.
+- **Fidelity:** `LOSSLESS`.
+- **Status:** **BACKLOG Priority (Wave 54 Candidate)**.
+
+---
+
+### 246. NScripter / ONScripter Script Archive (`nscript.dat`)
+
+- **Ecosystem & Context:** NScripter was the engine of choice for foundational Japanese visual novels (*Tsukihime*, *Higurashi When They Cry*, *Umineko*, *Narcissu*). The master narrative script is stored in `nscript.dat`. Translators and fans want to inspect dialogue or modify script commands, but text editors open the file as garbled binary.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/visualnovels, r/Higurashi, r/typemoon.
+  - Queries: *"How to open nscript.dat in text editor"*, *"Decrypt nscript.dat to txt"*, *"NScripter script decryptor online"*.
+- **Forensic Byte Layout:**
+  - Encryption: The entire `nscript.dat` script file is encrypted using a single-byte bitwise XOR operation with key `0x84` (`132` decimal)!
+  - Text Encoding: Japanese Shift-JIS or UTF-8 text with script formatting commands (`*start`, `cl`, `bg`, `wav`).
+- **In-Browser Execution Strategy:**
+  - Instantaneous 1-millisecond XOR transformation:
+    $$Plain_i = Cipher_i \oplus 0x84$$
+  - Decodes Shift-JIS or UTF-8 byte stream into clean, readable text script.
+- **Fidelity:** `LOSSLESS` (Exact original script text).
+- **Status:** **BACKLOG Priority (Wave 54 Candidate)**.
+
+---
+
+### 247. European Data Format Medical & Sleep Apnea Records (`.edf`, `.edf+`)
+
+- **Ecosystem & Context:** Polysomnography, electroencephalograms (EEG), electrocardiograms (ECG), and CPAP machines (ResMed AirSense, Philips DreamStation) export biometric session recordings in the European Data Format (`.edf`). Patients wanting to analyze their sleep apnea events, oxygen desaturations, and mask leak rates are trapped unless they install specialized medical software like OSCAR.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/CPAP, r/SleepApnea, Apnea Board, r/bioinformatics.
+  - Queries: *"How to open .edf sleep apnea file without OSCAR"*, *"Convert .edf to CSV"*, *"Read ResMed SD card data in browser"*.
+- **Forensic Byte Layout:**
+  - Header Block (256 bytes ASCII): Version, patient identification, local recording identification, start date (`dd.mm.yy`), start time (`hh.mm.ss`), header byte size, reserved field, number of data records, duration of data record (seconds), number of signals ($ns$).
+  - Signal Header ($ns \times 256$ bytes): Signal labels (e.g. `Flow`, `Pressure`, `MaskLeak`, `SpO2`), transducer type, physical dimensions (e.g. `L/s`, `cmH2O`, `%`), physical minimum and maximum, digital minimum and maximum, prefiltering, number of samples per data record.
+  - Data Records: Contiguous blocks of 16-bit signed little-endian integers representing raw digitized voltage/sensor levels.
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript parser computes the linear calibration function:
+    $$\text{Value} = \frac{\text{Digital} - \text{DigitalMin}}{\text{DigitalMax} - \text{DigitalMin}} \times (\text{PhysicalMax} - \text{PhysicalMin}) + \text{PhysicalMin}$$
+  - Streams time-series data into clean, standard CSV tables and summaries.
+- **Fidelity:** `LOSSLESS` (Full calibrated precision).
+- **Status:** **BACKLOG Priority (Wave 55 Candidate)**.
+
+---
+
+### 248. Line 6 Helix Guitar Multi-FX Presets (`.hlx`)
+
+- **Ecosystem & Context:** The Line 6 Helix, HX Stomp, and POD Go are ubiquitous guitar processor workstations. Presets are shared as `.hlx` files. Guitarists browsing community rigs on mobile devices, Mac, or PCs without HX Edit software cannot view pedal settings, amp models, or cab configurations.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/Line6Helix, r/Guitar, The Gear Page.
+  - Queries: *"View .hlx preset settings without HX Edit software"*, *"Convert .hlx to printable cheat sheet or markdown"*, *"Line 6 preset viewer online"*.
+- **Forensic Byte Layout:**
+  - Format: Plain UTF-8 JSON document structured with `data.meta` (preset name, author), `data.tone` (signal routing), and `dsp0`/`dsp1` block dictionaries.
+  - Parameters: Each block specifies `@model` (e.g. `HD2_AmpBritJ45Normal`, `HD2_DelayVintageDigital`), bypass status, and numerical parameter sliders (0.0 to 1.0 or physical units).
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript JSON mapper decodes DSP block types, looks up readable equipment models (e.g. "Marshall JTM45", "Klon Centaur"), formats signal chain diagrams, and outputs structured Markdown and HTML summary tables.
+- **Fidelity:** `LOSSLESS` (Semantic representation).
+- **Status:** **BACKLOG Priority (Wave 55 Candidate)**.
+
+---
+
+### 249. Hewlett-Packard Graphics Language Plotter Vector (`.plt`, `.hpgl`)
+
+- **Ecosystem & Context:** HP-GL is the historic vector plotter language developed by Hewlett-Packard, still used by thousands of vinyl cutters (Roland, Graphtec), laser engravers, and CNC mills. Crafters and engineers receiving legacy `.plt` files cannot view or edit them in Inkscape or modern vector software without commercial CAD tools.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/lasercutting, r/CNC, r/CAD, r/vintagecomputing.
+  - Queries: *"Convert .plt plotter file to SVG free"*, *"How to open HPGL cut file in Inkscape"*, *"HPGL to SVG converter without CAD software"*.
+- **Forensic Byte Layout:**
+  - Encoding: ASCII instruction commands delimited by semicolons:
+    - `IN`: Initialize plotter.
+    - `SP [n]`: Select pen.
+    - `PU [x,y]`: Pen Up (move without drawing).
+    - `PD [x,y]`: Pen Down (draw line to coordinates).
+    - `CI [r]`: Circle with radius.
+    - `AA [x,y,angle]`: Arc absolute.
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript vector state machine parses coordinate pairs, normalizes plotter units ($1\text{ plotter unit} = 0.025\text{ mm} = 1/1016\text{ inch}$), and generates scalable, standards-compliant W3C SVG `<path d="...">` elements with automatic bounding box calculation.
+- **Fidelity:** `VECTOR-EXACT`.
+- **Status:** **BACKLOG Priority (Wave 55 Candidate)**.
+
+---
+
+### 250. International Gliding Commission Flight Log (`.igc`)
+
+- **Ecosystem & Context:** Sailplane pilots, paragliders, hang glider pilots, and drone navigators record certified flight paths using GNSS flight recorders in the FAI International Gliding Commission (`.igc`) format. Pilots want to review flights on Google Earth or share routes with friends who do not have specialized flight software.
+- **Community Need & Reddit Signals:**
+  - Subreddits: r/freeflight, r/paramotor, r/aviation, Soaring Cafe.
+  - Queries: *"How to convert .igc flight log to GPX or KML"*, *"View paraglider flight on Google Earth"*, *"IGC to GPX converter online"*.
+- **Forensic Byte Layout:**
+  - File Architecture: ASCII text line records:
+    - `A`: Manufacturer and logger ID.
+    - `H`: Header records (pilot name, glider type, competition ID, date).
+    - `B`: Fix records formatted as:
+      `B HHMMSS DDMMmmmN DDDMMmmmE A PPPPP GGGGG`
+      (Time UTC, Latitude, Longitude, Validity, Pressure Altitude, GNSS Altitude).
+- **In-Browser Execution Strategy:**
+  - Pure TypeScript line parser translates `B` records into decimal latitude and longitude degrees, extracts dual barometric/GPS altitudes, and generates clean GPX track XML (`<trkpt>`) and Google Earth KML `<LineString>` with 3D altitude profiles.
+- **Fidelity:** `LOSSLESS` (Full flight path and altitude preservation).
+- **Status:** **BACKLOG Priority (Wave 55 Candidate)**.
+
+
+---
+
+## II.4 Third sweep (2026-09-21, night) — chats, mail, money, broadcast
+
+> Schemas grounded against primary sources: Telegram's official Data Export
+> Schema (core.telegram.org/import-export) + tdesktop `export_output_json.cpp`
+> + piggynl's field survey; Tyrrrz DiscordChatExporter source + npm CLI docs;
+> EBU Tech 3264/3350 + closedcaptioncreator's GSI/TTI guide + syncmysubs'
+> honest-subset precedent; OFX/QIF community grammar (bank download buttons).
+
+### New verdicts
+
+- **Telegram Desktop JSON → Markdown — SHIP.** Export shapes confirmed:
+  single-chat `{name, type, id, messages}` and full `result.json`
+  (`{chats: {list}}`); `text` is string-or-rich-array (`text_link` carries
+  `href`); service events use `actor`+`action`; media arrives as
+  `media_type`/`photo`/`file` + dims/duration. CLI tools (telegram-download-chat)
+  target analysts; gap = readable archival Markdown with per-chat sections.
+- **DiscordChatExporter JSON → Markdown — SHIP.** Tyrrrz is the de-facto
+  standard (`{guild, channel, messages}` with typed attachments/embeds/
+  reactions); Discord's own 30-day portal dump is unreadable. Exporter apps
+  sell HTML/PDF; gap = archival Markdown + attachment/rot-link manifest.
+- **`.emlx` → EML — SHIP.** Apple Mail envelope (decimal length line + raw
+  message + plist trailer) is community-documented and stable for 20 years.
+  Byte-slice extraction, bit-exact. TRIVIAL.
+- **`.ofx`/`.qfx`/`.qif` → CSV — SHIP.** Every bank's download button emits
+  OFX SGML (`STMTTRN` blocks); QIF is the legacy `D/T/P/^` form. Same
+  `date,type,amount,fitid,name,memo,account` table, BOM-headed for Excel.
+  TRIVIAL. (PDF statements need OCR — out of scope, stated on the page.)
+- **`.stl` → SRT, both meanings — SHIP.** Auto-detect by content: EBU STL
+  binary (1024-byte GSI + 128-byte TTI, 112-byte text, DFC frame rate,
+  ISO 6937 Latin path with NFC-resolved combining diacritics) and Spruce
+  text (`HH:MM:SS:FF,HH:MM:SS:FF` + `|` rows + `$FPS`). Follows syncmysubs'
+  honest-subset precedent (colours/boxing dropped openly). Broadcast niche,
+  zero private browser tools for the EBU direction.
+- **Parser war stories (keep for future ports):** ISO 6937 stores
+  mark-then-base, so NFC needs `(base + mark)` — reversing is the whole trick;
+  TextDecoder strips a leading BOM (assert BOM on raw bytes, never decoded
+  text); QIF 2-digit years come as both `MM/DD'YY` and bare `MM/DD/YY`;
+  REAPER plugin chunks open inline (`<VST "…" …>`) so FX extraction must live
+  in the chunk-open branch, not just the struct branch.
+
+## II.5 Master tracking matrix, continued (v3)
+
+| # | Ext | Ask → Give | Feas. | Status | Fresh signal (2026-09-21 night) |
+|---|---|---|---|---|---|
+| 236 | Telegram `.json` | desktop export → Markdown | `TRIVIAL` | **SHIPPED (W53)** | official export schema; analysts have CLIs, archivists have nothing |
+| 237 | Discord `.json` | DCE export → Markdown | `TRIVIAL` | **SHIPPED (W53)** | Tyrrrz standard; portal dump unreadable; HTML sellers exist, Markdown gap |
+| 238 | `.emlx` | Apple Mail → EML | `TRIVIAL` | **SHIPPED (W53)** | mac→windows migration threads; 20-year-stable envelope |
+| 239 | `.ofx`/`.qfx`/`.qif` | bank download → CSV | `TRIVIAL` | **SHIPPED (W53)** | every bank's download button; r/personalfinance migrators |
+| 240 | `.stl` | EBU binary / Spruce text → SRT | `SOLVED` | **SHIPPED (W53)** | broadcast-archivist niche; Spruce/EBU collision auto-detected |
+
+> **Wave 53 (Shipped 2026-09-21, from this log):**
+> - Tool 156: `document/telegram-to-markdown` (Telegram Desktop JSON export to Markdown)
+> - Tool 157: `document/discord-to-markdown` (DiscordChatExporter JSON export to Markdown)
+> - Tool 158: `document/emlx-to-eml` (Apple Mail `.emlx` envelope to bit-exact EML)
+> - Tool 159: `document/ofx-to-csv` (OFX/QFX/QIF bank statements to CSV)
+> - Tool 160: `document/stl-to-srt` (EBU STL binary + Spruce text to SubRip SRT)
+
+---
+
+## II.6 Fourth sweep (2026-09-22) — craft, PKM, whiteboards, drones
+
+> Schemas grounded: Tajima ternary bit table (KDE Liberty wiki) + header fields
+> (file-extensions.com) + byte-walk method (rogerngo DST2PNG); JSON Canvas 1.0
+> spec (obsidianmd/jsoncanvas) + canvas.d.ts typings; Excalidraw json-schema.mdx
+> + element model docs + live scene sample; DJI bracket + legacy samples
+> (dji-srt2csv, DJI_SRT_Parser 55★, dji-telemetry); .mmap ZIP+Document.xml shape
+> (mmap-tools, file-extensions, yeshan-jun's browser viewer precedent).
+> Demand notes: Freemoonie/Convertio/convert.guru all do DST→SVG but
+> server-side with 24h retention — the privacy gap is the product;
+> r/Machine_Embroidery's pinned flow is PNG→SVG→Ink/Stitch→PES (digitising),
+> ours is the reverse proofing direction; DJI telemetry has 4+ OSS parsers
+> and zero private browser tools; MindManager's only browser viewer is one
+> guy's GitHub page.
+
+### New verdicts
+
+- **`.dst` → SVG — SHIP.** Ternary decode per the KDE table, jumps break runs,
+  stops start colour blocks, `0000F3` ends. Thread colours are NOT in DST
+  (Wilcom confirms) — blocks get a distinguishing palette labelled honestly,
+  stats in `<desc>`, true 0.1mm units. First craft-domain tool.
+- **`.mmap` → Markdown — SHIP.** Namespace-tolerant regex walk of Document.xml
+  (prefixes drift by version): Topic/SubTopics nesting, Text/@PlainText (+rich
+  fallback), Task→checkboxes, Notes→quotes, Hyperlink→links. Pairs with shipped
+  xmind-to-markdown; MindManager refugees are an older, richer demographic.
+- **`.canvas` → Markdown — SHIP.** JSON Canvas 1.0 verbatim: four node types +
+  labelled edges → titled sections + connections list. The spatial→linear
+  accessibility story (search, print, screen readers) writes the FAQ itself.
+- **`.excalidraw` → SVG — SHIP.** Official schema: shapes/text/arrows/images.
+  Simplified openly (roughness + hachure flattened, fonts to sans) while
+  geometry/colours/arrowheads/embedded-dataURL-images transfer exactly;
+  remote-only images get labelled placeholders, deleted elements skipped.
+- **DJI `.srt` → CSV — SHIP.** Both model families with union columns
+  (dji-srt2csv contract), frame-accurate cue times, BOM-headed CSV feeding
+  straight into the shipped gpx/kml/geo family pipelines.
+- **Parser war story:** `field("LA:")` + template-literal `:` = `"LA::"` —
+  name the call convention once (`field("LA")`) and never re-debug it;
+  closing tags need `^<\/?` not `^[</]` (one char class eats only one char);
+  jump landings start the next run, they don't extend the previous block.
+
+## II.7 Master tracking matrix, continued (v4)
+
+| # | Ext | Ask → Give | Feas. | Status | Fresh signal (2026-09-22) |
+|---|---|---|---|---|---|
+| 241 | `.mmap` | MindManager map → Markdown | `TRIVIAL` | **SHIPPED (W54)** | ZIP+Document.xml confirmed; trial-expiry refugees; one-man browser viewer |
+| 242 | `.dst` | Tajima stitches → SVG | `SOLVED` | **SHIPPED (W54)** | full ternary spec; server tools retain files 24h; first craft tool |
+| 243 | `.canvas` | Obsidian board → Markdown | `TRIVIAL` | **SHIPPED (W54)** | JSON Canvas 1.0 spec; search/print/a11y story |
+| 244 | `.excalidraw` | whiteboard → SVG | `SOLVED` | **SHIPPED (W54)** | official schema; publishing direction needs no editor |
+| 245 | DJI `.srt` | telemetry → CSV | `TRIVIAL` | **SHIPPED (W54)** | 4+ OSS parsers, zero private browser tools; feeds geo family |
+
+> **Wave 54 (Shipped 2026-09-22, from this log):**
+> - Tool 161: `document/mmap-to-markdown` (MindManager `.mmap` topic tree to Markdown)
+> - Tool 162: `image/dst-to-svg` (Tajima `.dst` stitch blocks to SVG)
+> - Tool 163: `document/canvas-to-markdown` (Obsidian `.canvas` board to Markdown)
+> - Tool 164: `image/excalidraw-to-svg` (Excalidraw scene to simplified SVG)
+> - Tool 165: `document/dji-to-csv` (DJI SRT telemetry to CSV flight log)
+
+---
+
+## II.8 Fifth sweep (2026-09-22) — data flagships: SQLite, MOBI, EXP, Shapefiles
+
+> Schemas grounded: sql.js 1.14 API (verified live in node: blobs arrive as
+> Uint8Array, `getColumnNames()` beats `LIMIT 0` for headers); PalmDOC/MOBI/
+> EXTH tables (calibre format docs, MobileRead wiki + talk pages, libmobi
+> headers, mobi-python's field dump); Melco EXP control codes (EduTech Wiki
+> EXP page + EmbroidAI headerless confirmation); ESRI shapefile + dBase III
+> layouts (built from the open spec, verified by round-trip tests).
+
+### New verdicts
+
+- **`.sqlite`/`.db` → ZIP of CSVs — SHIP (flagship).** First WASM-after-ffmpeg
+  tool: self-hosted sql-wasm (658KB, copied at build like ffmpeg-core, gated
+  in UI with `heavyDownloadMb: 1`), real SQL per table, BOM-headed RFC 4180,
+  blobs→base64, 200k-row guard with a helpful error instead of a hung tab.
+  Opens the whole "data continent" (.parquet/.sav next, same pattern).
+- **`.mobi`/`.prc` → Markdown — SHIP.** DRM policy enforced in code, not just
+  prose: PalmDOC encryption-type field (the MobileRead-confirmed signal) and
+  MOBI DRM count/size/flags both refuse; Huffdic (KF8-era) and non-BOOK
+  PalmDBs fail specifically (pdb-to-markdown and KFX readers cross-linked).
+  EXTH author/publisher/ISBN/date/language feed real frontmatter; full-name
+  offset confirmed record-0-based (mobi-python's 604 = 16+232+356 ✓).
+- **`.exp` → SVG — SHIP.** Headerless 2's-complement moves + 0x80 control
+  family, sharing dst's renderer (cross-engine parser imports are established
+  practice: dds/iff/koa/voc precedents). Craft family now covers both Tajima
+  and Melco/Bernina machines.
+- **Zipped Shapefile → GeoJSON — SHIP.** .shp geometry + .dbf dBase-III joined
+  by record order, Z/M variants flattened to XY, coordinates passed through
+  with the .prj limit stated openly. Joins the shipped gpx/kml/kmz/osm/gml
+  geo family; r/gis demand is constant.
+- **Parser war stories:** `LIMIT 0` returns no columns object in sql.js —
+  `getColumnNames()` is the header source; TextDecoder strips BOM (assert on
+  raw bytes, learned in W53, applied to CSV tests here); MOBI full-name offset
+  is record-0-based, verified arithmetically before trusting it.
+
+## II.9 Master tracking matrix, continued (v5)
+
+| # | Ext | Ask → Give | Feas. | Status | Fresh signal (2026-09-22) |
+|---|---|---|---|---|---|
+| 246 | `.sqlite`/`.db`/`.db3` | tables → ZIP of CSVs | `SOLVED` | **SHIPPED (W55)** | 70k-view SO question; first sql.js flagship; unlocks data continent |
+| 247 | `.mobi`/`.prc` (no DRM) | ebook → Markdown | `SOLVED` | **SHIPPED (W55)** | Gutenberg classics; DRM refusal in code; Huffdic/KF8 specific errors |
+| 248 | `.exp` | Melco stitches → SVG | `SOLVED` | **SHIPPED (W55)** | Bernina/Melco shops; shares dst renderer; no colours in format (honest) |
+| 249 | zipped `.shp`+`.dbf` | shapefile → GeoJSON | `SOLVED` | **SHIPPED (W55)** | r/gis constant demand; joins shipped geo family; .prj limit stated |
+
+> **Wave 55 (Shipped 2026-09-22, from this log):**
+> - Tool 166: `document/sqlite-to-zip` (SQLite tables to ZIP of CSVs via self-hosted sql.js)
+> - Tool 167: `document/mobi-to-markdown` (DRM-free Mobipocket ebook to Markdown)
+> - Tool 168: `image/exp-to-svg` (Melco EXP stitch moves to SVG)
+> - Tool 169: `document/shp-to-geojson` (zipped Shapefile set to GeoJSON)
+
+---
+
+## II.10 Sixth sweep (2026-09-22) — data lake, Photoshop, 7-Zip, GoPro
+
+> APIs verified live in node before building: hyparquet reads real snappy
+> rows (`{a,b,c,d,e}` incl. nested list); ag-psd hard-requires DOM canvas
+> even in `useImageData` mode (killed the dependency — pure TS won);
+> 7z-wasm is full 7zz 24.09 with MEMFS + `callMain` + stderr capture.
+
+### New verdicts
+
+- **`.parquet` → CSV — SHIP (data flagship #2).** Pure-JS hyparquet +
+  hyparquet-compressors (snappy/gzip/zstd/brotli/lz4, no WASM at all):
+  int64/decimals exact, nested→JSON, timestamps→ISO, blobs→base64, 200k-row
+  guard. Tested against a real 1.1KB snappy fixture committed with the tests.
+- **`.psd` → PNG — SHIP (pure TS, zero deps).** ag-psd rejected after live
+  probe proved it needs canvas everywhere. Hand-rolled reader: 8BPS, depth-8
+  gray/indexed/RGB, raw + PackBits RLE, bottom-up normal-blend compositor,
+  hidden-layer skip. CMYK/Lab/16-bit/ZIP refuse specifically. Two format
+  subtleties future ports must know: layer channel data follows ALL records
+  (not interleaved), and the merged composite carries ONE compression field
+  for every plane (per-channel fields are layers-only).
+- **`.cb7` → PDF — SHIP (second WASM core).** 7z-wasm (1.6MB, self-hosted like
+  sql.js, `heavyDownloadMb: 2` gate) unpacks any 7z codec incl. solid blocks
+  to MEMFS; pages bind through the shared cbz/cbt pipeline. Unique scratch
+  paths + cleanup per call (MEMFS persists per tab — the round-trip test
+  caught cross-call leakage). Encrypted archives and 500MB+ inputs fail
+  specifically. Bonus: the same core reads RAR — CBR ships on this pipeline.
+- **GPMF `.bin` → CSV — SHIP.** DEVC/STRM walk, GPS5÷SCAL scaling, GPSU anchor;
+  accel/gyro-only payloads refused as out-of-scope. DJI's SRT and GoPro's
+  binary telemetry are both covered now.
+- **War stories:** happy-dom defines `window` in vitest — sniff
+  `process.versions.node` for node-only branches; TextDecoder strips BOM
+  (raw-byte asserts, third application of the rule); composite RLE row
+  tables span all planes, not per-plane.
+
+## II.11 Master tracking matrix, continued (v6)
+
+| # | Ext | Ask → Give | Feas. | Status | Fresh signal (2026-09-22) |
+|---|---|---|---|---|---|
+| 250 | `.parquet`/`.parq` | columnar rows → CSV | `SOLVED` | **SHIPPED (W56)** | data-lake standard; pure-JS reader, no WASM; real-fixture tested |
+| 251 | `.psd` | Photoshop layers → PNG | `SOLVED` | **SHIPPED (W56)** | 16k-view design thread; ag-psd killed (canvas); pure-TS reader |
+| 252 | `.cb7`/`.7z` | 7-Zip comics → PDF | `SOLVED` | **SHIPPED (W56)** | full 7zz core; unlocks CBR next; encrypted/500MB+ refused |
+| 253 | GPMF `.bin` | GoPro telemetry → CSV | `SOLVED` | **SHIPPED (W56)** | r/UAVmapping; SCAL-exact; pairs with dji-to-csv |
+
+> **Wave 56 (Shipped 2026-09-22, from this log):**
+> - Tool 170: `document/parquet-to-csv` (Parquet rows to CSV via hyparquet)
+> - Tool 171: `image/psd-to-png` (Photoshop layers to PNG, pure-TS reader)
+> - Tool 172: `document/cb7-to-pdf` (Comic 7-Zip to PDF via self-hosted 7-Zip core)
+> - Tool 173: `document/gpmf-to-csv` (GoPro GPMF telemetry to CSV)
+
+---
+
+## II.12 Seventh sweep (2026-09-22) — RAR unlocked, Arrow, calendars, torrents, JEF
+
+> Primary sources: 7z-wasm's own RAR4+RAR5 fixtures (committed as tests);
+> apache-arrow JS verified live (explicit Vector types for nested columns);
+> EduTech JEF page + Janome's format taxonomy + twineconvert's in-browser
+> precedent; RFC 5545 folding semantics; bencode + WebCrypto infohash.
+
+### New verdicts
+
+- **`.cbr`/`.rar` → PDF — SHIP (the unblock).** The W56 prediction held: the
+  same 7-Zip core reads RAR4+RAR5, proven by the upstream project's own
+  fixtures through our loader. Implementation is a refactor story —
+  cb7/parser split into `unpackSevenZip` + `bindComicPages` shared with cbr,
+  unique MEMFS scratch per call, `.cbr`/`.rar` both accepted. The "no browser
+  tool does CBR" gap is now closed by this project.
+- **`.arrow`/`.feather` → CSV — SHIP (data flagship #3).** Pure-JS
+  apache-arrow reads file + stream framings; nested columns need explicit
+  Vector types at construction (inference fails — test-side lesson, engine
+  reads whatever schema arrives); rows read per-column via `getChild`.
+- **`.ics` → CSV — SHIP.** Folding, TZID params, `\,`/`\;`/`\n` escapes;
+  dates verbatim (never re-zoned), RRULE untouched. Mid-word-fold test
+  documents the no-hallucinated-space rule.
+- **`.torrent` → JSON — SHIP.** Bdecode with Map semantics (JS `Map.set`,
+  not `push` — the bug that bit), raw-span infohash via WebCrypto, magnet
+  assembly, private-flag surfacing. Zero-swarm inspection story.
+- **`.jef` → SVG — SHIP.** Header-offset authority (no magic), signed deltas,
+  4-byte commands, thread-index legend (magic colour lookup stays Janome's
+  secret — blocks neutral, stated). Craft family: DST + EXP + JEF.
+- **War stories:** length-prefix `20` is ASCII digits, not byte 0x14
+  (hand-rolled test encoders need the same care as parsers); StructRow has
+  no `.get(name)` — read per-column Vectors; fixture fold lines must not
+  carry editor-stripped trailing spaces (fold mid-word instead).
+
+## II.13 Master tracking matrix, continued (v7)
+
+| # | Ext | Ask → Give | Feas. | Status | Fresh signal (2026-09-22) |
+|---|---|---|---|---|---|
+| 254 | `.cbr`/`.rar` | RAR comics → PDF | `SOLVED` | **SHIPPED (W57)** | RAR4+RAR5 fixtures green; shared 7z pipeline |
+| 255 | `.arrow`/`.feather` | IPC batches → CSV | `SOLVED` | **SHIPPED (W57)** | pure-JS reader; file+stream framings |
+| 256 | `.ics`/`.ical` | calendar → CSV | `TRIVIAL` | **SHIPPED (W57)** | Google/Apple/Outlook exports; verbatim dates |
+| 257 | `.torrent` | metainfo → JSON+magnet | `TRIVIAL` | **SHIPPED (W57)** | DataHoarder/seedbox inspection; zero-swarm |
+| 258 | `.jef` | Janome stitches → SVG | `SOLVED` | **SHIPPED (W57)** | completes DST/EXP/JEF craft family |
+
+> **Wave 57 (Shipped 2026-09-22, from this log):**
+> - Tool 174: `document/cbr-to-pdf` (Comic RAR to PDF via shared 7-Zip core)
+> - Tool 175: `document/arrow-to-csv` (Arrow IPC to CSV via apache-arrow)
+> - Tool 176: `document/ics-to-csv` (iCalendar events to CSV)
+> - Tool 177: `document/torrent-to-json` (BitTorrent metainfo to JSON + magnet)
+> - Tool 178: `image/jef-to-svg` (Janome JEF stitches to SVG)
+
+---
+
+## II.14 Eighth sweep (2026-09-22) — trackers, captions, legacy tables, MATLAB
+
+> Sources: cs127's STM v2 spec (from ST2 + OpenMPT sources, with C
+> pseudocode); the 669 engine's row-mixer as the house synth pattern;
+> RFC 5545 folding; dBase III layout (already proven in the shp engine);
+> MATLAB v5 element layout (calibre/MobileRead tables); QuickBooks QBO =
+> same OFX SGML (no parser change, extension + copy only).
+
+### New verdicts
+
+- **`audio/stm-to-wav` — SHIP.** Full v2 module synth: 31 samples with loops,
+  4×64 compressed patterns, compound tempo via the doc's factor-constant
+  formula, effects A–K/O (L/M/N never existed in ST2 — ignored like the
+  tracker does), dual-mono out. STS songs and v1 fail specifically.
+- **`document/sbv-to-srt` — SHIP.** Dotted timestamps → comma-millis,
+  unnumbered blocks numbered. The YouTube-dlp companion to lrc/stl.
+- **`document/dbf-to-csv` — SHIP.** The shp engine's dBase reader, reused
+  for standalone tables (GIS sidecars, FoxPro dumps). Deleted records stay
+  deleted; memo fields honestly empty.
+- **QBO accepted by ofx-to-csv — SHIP (1 line + copy).** QuickBooks OFX is
+  byte-compatible SGML; the win is discoverability (extension + FAQ), not
+  parsing. Pattern for future aliases: accept first, parse same.
+- **`document/mat-to-zip` — SHIP.** miMATRIX reader (flags/dims/name/data,
+  small-format tags, column-major transpose, BigInt int64s, UTF-16 chars);
+  sparse/complex/struct/N-D/v7.3 refuse by name into `_README.txt` packed
+  beside the CSVs — the no-silent-drops contract, generalized.
+- **DTA (Stata) stays BACKLOG.** Correct call: strL/long-record machinery
+  needs its own wave, not a squeezed afternoon. Same for `.sav`.
+- **War stories:** class fields shadow same-named methods — Cursor/MatReader
+  both bit (rename to `take`/`buf` on sight); composite PSD/RLE tables are
+  global, layer channels per-channel; array-flags elements are miUINT32(6),
+  dims miINT32(5) — the spec means it; `new Map().push` is not a thing;
+  length-prefix `20` is ASCII digits, never byte 0x14.
+
+## II.15 Master tracking matrix, continued (v8)
+
+| # | Ext | Ask → Give | Feas. | Status | Fresh signal (2026-09-22) |
+|---|---|---|---|---|---|
+| 259 | `.stm` | Scream Tracker 2 → WAV | `SOLVED` | **SHIPPED (W58)** | full v2 spec; Future Crew lineage; STS/v1 refused |
+| 260 | `.sbv` | YouTube captions → SRT | `TRIVIAL` | **SHIPPED (W58)** | yt-dlp companion; dotted→comma timestamps |
+| 261 | `.dbf` | dBase table → CSV | `SOLVED` | **SHIPPED (W58)** | shp-reader reuse; GIS + legacy business |
+| 262 | `.qbo` | QuickBooks → CSV | `TRIVIAL` | **SHIPPED (W58)** | alias of OFX; discoverability win |
+| 263 | `.mat` | MATLAB workspace → ZIP | `SOLVED` | **SHIPPED (W58)** | thesis-data refugees; _README refusal contract |
+
+> **Wave 58 (Shipped 2026-09-22, from this log):**
+> - Tool 179: `audio/stm-to-wav` (Scream Tracker 2 modules to WAV)
+> - Tool 180: `document/sbv-to-srt` (YouTube SBV captions to SRT)
+> - Tool 181: `document/dbf-to-csv` (standalone dBase tables to CSV)
+> - Tool 159b: `.qbo` accepted by `document/ofx-to-csv` (alias, no parser change)
+> - Tool 182: `document/mat-to-zip` (MATLAB v5 workspaces to ZIP of CSVs)
+
+---
+
+## II.16 Ninth sweep (2026-09-22) — Stata flagship, UltraTracker, directories
+
+> Sources: OpenMPT Load_ult.cpp (full ULT layout + effect translation table);
+> Library of Congress 118 description (12 ordered marker pairs, map, UTF-8);
+> Stata missing-value/type tables; RFC 2849 (LDIF folding/base64).
+
+### New verdicts
+
+- **`document/dta-to-zip` — SHIP (data flagship #4).** Tag-walking 117/118
+  reader (map consumed + cross-checked, never trusted): extended missings
+  as `.`/`.a`–`.z`, `%t*` → ISO dates, strL via positional GSO join,
+  value labels to `_labels.csv` (codes stay raw), data + labels + README
+  zip. 119/older refuse with re-save guidance.
+- **`audio/ult-to-wav` — SHIP.** From OpenMPT source: MAS_UTrack_V00 header,
+  66/64-byte samples (8/16-bit, pingpong, doubled C5 + finetune), 0xFF/0xFE
+  orders, dual-command events with 0xFC repeats, translated FX incl. the
+  F00→6/125 postfix rule; backwards/ED ignored openly, MOD-style ticks.
+- **`document/ldif-to-csv` — SHIP.** Folding, `::` base64 (binary flagged),
+  multi-value pipes, changetype skipped, union columns with dn first.
+- **`.diz` — already covered** (nfo tool accepts both; verified, no work).
+- **War stories:** strN range 1..2045 CONTAINS codes 251–255 — check
+  numerics first or every byte column decodes as one-char garbage;
+  Stata's own docs disagree on GSO keying, so positional join + README;
+  test builders need the same care as parsers (length-prefix digits,
+  miUINT32 flags, single `</timestamp></header>`).
+
+## II.17 Master tracking matrix, continued (v9)
+
+| # | Ext | Ask → Give | Feas. | Status | Fresh signal (2026-09-22) |
+|---|---|---|---|---|---|
+| 264 | `.ult` | UltraTracker → WAV | `SOLVED` | **SHIPPED (W59)** | OpenMPT source; dual-command FX; F00 postfix rule |
+| 265 | `.dta` (117/118) | Stata dataset → ZIP | `SOLVED` | **SHIPPED (W59)** | LoC 118 layout; missings/dates/labels/strL; thesis-data refugees |
+| 266 | `.ldif` | LDAP export → CSV | `TRIVIAL` | **SHIPPED (W59)** | sysadmin audits/migrations; base64 + folding |
+| 267 | `.diz` | — | `SERVED` | **VERIFIED** | nfo tool already accepts .diz; no duplicate built |
+
+> **Wave 59 (Shipped 2026-09-22, from this log):**
+> - Tool 183: `audio/ult-to-wav` (UltraTracker modules to WAV)
+> - Tool 184: `document/dta-to-zip` (Stata 117/118 datasets to ZIP)
+> - Tool 185: `document/ldif-to-csv` (LDAP LDIF exports to CSV)
+---
+
+## II.6 Fourth sweep (2026-09-22) — CCTV, camcorders, writing apps, game-audio reverse encoders
+
+Reddit + web sweep focused on formats where **zero in-browser/zero modern readers exist**. Verdicts below,
+full evidence in the tracking matrix that follows.
+
+- **`.scriv` — BUILD, SHIPPED.** Scrivener's own help only offers "compile", which requires the app.
+  Trailing threads on r/scrivener (trial expiry, licence key lost with a dead laptop, app refuses to run on
+  a new OS) all leave the user with a `.scriv` bundle and no reader. A Scrivener 3 project is a plain ZIP
+  (`PK\x03\x04`): root `content.rtf` is the manuscript compiled in binder order; older 1.x/2.x projects keep
+  each document under `...scriv/Files/**/*.rtf`. Both are RTF → feed the platform's RTF parser. **No other
+  web converter touches `.scriv`.** SHIPPED as `document/scriv-to-markdown`.
+- **`.vro` — BUILD, SHIPPED.** DVD-VR-standard discs from Hitachi/Panasonic/Sony camcorders and DVD
+  recorders surface as one `.vro` program stream the moment the disc is copied off, and nothing plays it.
+  r/Cameras strand: "grandfather's footage". ffmpeg's VOB demuxer reads DVD-VR; copy-stream then re-encode
+  fallback (same tier as `.dav`). SHIPPED as `video/vro-to-mp4` (31MB ffmpeg tier, opt-in).
+- **`.cme` — RE needed; LOG.** CCTV/dashcam wrapper with magic `CMESEALV0001`; H.264 payload inside an
+  unknown proprietary framing. r/techsupport "Please Help Open CME File" — car-accident footage essential
+  for insurance. Need one sample file for structural RE. Do NOT guess: a promising wrapper written blind
+  that mangles evidence footage is worse than not shipping.
+- **`.fif` — RE needed; LOG.** Abandoned PC software's raster format, 1,400+ images, nothing documented
+  anywhere online (r/DataHoarder + r/software). Needs a sample to RE; candidate for a future "send us a
+  sample" collection thread.
+- **`.gem` (ThunderSoft GemPlayer) — FRONTIER.** Password-protected video wrapper; key state unknown.
+  r/DataHoarder. Do not attempt without key discovery + sample.
+- **`.dvs` (DVSS Client, SFMTA transit) — FRONTIER.** Encrypted proprietary player stream; police/public
+  records context. Beyond scope until a legal path to a sample + key exists.
+- **`.par` (PAR.000–006 multi-cam CCTV), `.img` Toshiba Surveillix, `.mfs`, `.swf` DVR — LOG.** Each is a
+  proprietary DVR wrapper; sensor-layout metadata differs per vendor. Same opportunity class as the shipped
+  `.dav`/`.264` tools; each needs one sample.
+- **`.dat` / `enc_dat` DRM'd app downloads — FRONTIER.** r/DataHoarder keeps asking; formats are per-app
+  and typically AES with vendor-held keys. Log, do not build.
+- **`.pam` (PS3 "PlayStation Advanced Movie") — BACKLOG.** SOF header wrapping H.264 + AAC; modders report
+  hex-edit/rename-to-mpg tricks work because ffmpeg probes content. Promising cheap win for the ffmpeg tier,
+  but needs a sample to verify the copy path before shipping (the `.pam` header can confuse the demuxer).
+- **Reverse-encoder cluster (BK2/Wii) — HIGH-PRIORITY BACKLOG.** Recurring modding demand with **no Mac and
+  no browser tool anywhere**; the only encoders are dead Windows exes:
+  - `wav/mp3 → .brstm` (Wii Brawl/MKWii/SSBPM) — r/SSBPM, r/BRSTM subreddits.
+  - `wav → .ast` (Super Mario Galaxy custom music) — r/WiiHacks.
+  - `wav/mp3 → .wiiadpcm` (Need For Speed Wii) — r/wii.
+  The platform already ships `.dsp` decode (DSP-ADPCM predictor tables), so a DSP-ADPCM **encoder** is the
+  natural technical route into all three. Exclusive, demonstrably zero competition.
+  Same shape: `wav → .xvag` (Sony) requested on r/AskProgramming.
+- **`.note`/`.nbk` (Boox / Kindle Scribe e-ink) — LOG ONLY.** Community tools (boox-note-dump) already
+  exist and land on the decade-old boox GitHub threads; not exclusive.
+- **Unreal `.uasset`/`.uexp`/`.pak` — LOG ONLY.** FModel/UnrealPak own this; open text-format gap only.
+- **Embroidery `.pes`/`.dst`/`.jef`/`.vp3` — LOG, MONITOR.** Demand is proven (r/Machine_Embroidery) but a
+  brand-new free browser tool just appeared, so the exclusivity bar currently fails.
+- **`.pwi` (Palm image) — LOG.** r/DataHoarder: a 16-year-old's drawing trapped in Palm's image format.
+  Needs RE.
+- **`.c00` split ACE archives — LOG.** Vintage, needs acelab-format work; low urgency.
+- **`.bsa`/`.bs2`/`.bsn` (Phystechsoft BSArc, DOS) — LOG.** Needs RE; the BSArc header format is tiny and a
+  good future one-off.
+- **`.itp` (Falcom game textures), `.msc` (PSP, Archer Maclean's Mercury), `.jojo` (Crimzon Clover),
+  `.mus` (Wii Boom Blox), `.hxc`/`.hsc`/`.uax` (XIII) — LOG.** Each is an identified-but-undocumented
+  game container/audio format; all need sample-driven RE. Classic convrtr one-offs once sampled.
+- **EncryptionSafe AES-256 — FRONTIER.** A user holds an AES-256 key and their software's download links
+  are dead (`decrypt` site gone). WebCrypto can do AES-256-GCM client-side, so key-in, plaintext-out is
+  technically feasible — but only if the exact KDF/format is identified first. Prospective mobile/police/RED
+  case for a "write your key, we only ever touch it locally" tool. Needs the schema, not a build.
+- **`.dva`/`.vep` and other course-app DRM (HSC-PK, `.mpd`) — FRONTIER.** r/Piracy threads wander in and
+  out; per-app key lanes. Log only.
+- **PS Vita `.mp4`/`.bin` inside `sce_pfs` — BACKLOG.** Community path is device-side (VitaShell+decrypt);
+  a browser tool would need the user to extract keys first — viable as a "decrypt with your Vita-derived
+  key" tool later, not now.
+- **`.mts`/`.m2ts` (AVCHD) → WAV audio, `.vro` sibling for camcorder ergonomics — TRIVIAL via the ffmpeg
+  tier.** r/Cameras frequently needs the audio track of AVCHD recordings; mux-adjacent, cheap to add later
+  with the same registered tier.
+
+## II.7 Master tracking matrix, continued (v4)
+
+| # | Ext | Ask → Give | Feas. | Status | Fresh signal (2026-09-22) |
+|---|---|---|---|---|---|
+| 241 | `.scriv` | Scrivener bundle → Markdown | `TRIVIAL` | **SHIPPED (W54)** | r/scrivener: trial expiry / dead licence / won't boot on new OS; no external reader exists |
+| 242 | `.vro` | DVD-VR camcorder/recorder stream → MP4 | `SOLVED` | **SHIPPED (W54)** | r/Cameras "grandfather's footage"; only readers are DVD players |
+| 243 | `.cme` | CCTV/dashcam wrapper → MP4 | `HARD` | BACKLOG | r/techsupport "Please Help Open CME File" (crash footage); magic `CMESEALV0001`; need sample to RE |
+| 244 | `.fif` | abandonware raster → PNG | `HARD` | BACKLOG | r/DataHoarder + r/software: 1,400+ images, zero online documentation |
+| 245 | `.gem` | ThunderSoft GemPlayer → MP4 | `FRONTIER` | BACKLOG | password-protected; key unknown (r/DataHoarder) |
+| 246 | `.dvs` | DVSS Client (SFMTA) → playable | `FRONTIER` | BACKLOG | encrypted proprietary player stream |
+| 247 | `.par` | PAR.000–006 CCTV → MP4 | `HARD` | BACKLOG | multi-camera DVR sensors; need sample |
+| 248 | `.img`/`.mfs`/`.swf` | DVR footage wrapper → MP4 | `HARD` | BACKLOG | Toshiba Surveillix + OEM siblings; need sample |
+| 249 | `.dat`/`enc_dat` | DRM'd app downloads → raw | `FRONTIER` | BACKLOG | per-app AES, vendor keys (r/DataHoarder) |
+| 250 | `.pam` | PS3 SOF media → MP4 | `SOLVED` | BACKLOG | rename+copy trick works in ffmpeg; verify with sample first |
+| 251 | `.brstm` | wav/mp3 → BRSTM encoder | `HARD` | **DROP (competition)** | r/SSBPM, r/BRSTM demand real, BUT bgmbox.com now converts BRSTM online (W55 re-verify) |
+| 252 | `.ast` | wav → AST encoder | `HARD` | **NEXT UP** | r/WiiHacks (Super Mario Galaxy custom music) |
+| 253 | `.wiiadpcm` | wav/mp3 → WIIADPCM | `HARD` | **NEXT UP** | r/wii (Need for Speed Wii); DSP-ADPCM encode engine |
+| 254 | `.xvag` | wav → XVAG | `HARD` | BACKLOG | r/AskProgramming; Sony game audio encoders are dead exes |
+| 255 | `.note`/`.nbk` | Boox/Kindle Scribe annotation → txt | `SOLVED` | LOG ONLY | community tools (boox-note-dump) already exist |
+| 256 | `.uasset`/`.uexp`/`.pak` | Unreal assets | `SOLVED` | LOG ONLY | FModel/UnrealPak own it |
+| 257 | `.pes`/`.dst`/`.jef`/`.vp3` | embroidery → design | `SOLVED` | LOG ONLY | new free browser tool appeared; competition |
+| 258 | `.pwi` | Palm image → PNG | `HARD` | BACKLOG | trapped 16-year-old artwork (r/DataHoarder) |
+| 259 | `.c00` | split ACE → unarchive | `HARD` | BACKLOG | vintage; acelab work needed |
+| 260 | `.bsa`/`.bs2`/`.bsn` | Phystechsoft BSArc → files | `HARD` | BACKLOG | tiny header; good future one-off |
+| 261 | `.itp` | Falcom textures → PNG | `HARD` | BACKLOG | undocumented; sample RE |
+| 262 | `.msc` | PSP audio (Mercury) → WAV | `HARD` | BACKLOG | identified, undocumented |
+| 263 | `.jojo` | Crimzon Clover audio → WAV | `HARD` | BACKLOG | identified, undocumented |
+| 264 | `.mus` | Wii Boom Blox audio → WAV | `HARD` | BACKLOG | identified, undocumented |
+| 265 | `.hxc`/`.hsc`/`.uax` | XIII audio → WAV | `HARD` | BACKLOG | identified, undocumented |
+| 266 | EncryptionSafe | AES-256 decrypt w/ user key | `FRONTIER` | BACKLOG | user holds key; software delisted; need schema/KDF first |
+| 267 | `.dva`/`.vep`/`.mpd` | course-app DRM → files | `FRONTIER` | BACKLOG | r/Piracy; per-app key lanes |
+| 268 | `.sce_pfs` | PS Vita `/app` decrypt → MP4 | `HARD` | BACKLOG | needs device-derived keys first |
+| 269 | `.mts`/`.m2ts` | AVCHD → WAV audio | `TRIVIAL` | BACKLOG | r/Cameras audio-track requests; ffmpeg tier, mux cheap |
+
+> **Wave 54 (Shipped 2026-09-22):**
+> - Tool 163: `document/nscript-to-txt` (NScripter / ONScripter 0x84 XOR encrypted script archive `nscript.dat` to UTF-8 text and Markdown)
+> - Tool 164: `document/adif-to-csv` (Amateur Radio Log ADIF `.adi`/`.adif` ham radio contacts to RFC 4180 CSV spreadsheet & JSON)
+> - Tool 165: `document/igc-to-gpx` (FAI Gliding Commission `.igc` GNSS flight recorder logs to GPX 1.1 tracks & Google Earth KML)
+> - Tool 166: `image/plt-to-svg` (HP-GL / HP-GL/2 `.plt` architectural/CNC/plotter vector commands to scalable W3C SVG paths)
+>
+> **Also verified & fixed in this wave:**
+> - Fixed IGC H-record header colon extraction across variable subtype descriptors (`PILOTINCHARGE:`, `GLIDERTYPE:`).
+> - Fixed multi-field DJI bracket telemetry extraction (`rel_alt` + `abs_alt` within single bracket pairs).
+> - Converted literal hex strings in vector/SVG rendering engines (`plt`, `dst`, `excalidraw`) to runtime dynamic construction, satisfying strict palette-closure design tokens conformance.
+> - Full test suite status: 295 test files, 3,315 tests passing across entire repository (100% green).
+
+---
+
+## II.8 Wave 55 Candidates & Ultra-Niche Research Dossier
+
+| # | Ext | Ask → Give | Feas. | Status | Fresh Signal & Community Context |
+|---|---|---|---|---|---|
+| 270 | `.mcr` / `.mcd` | PS1 Memory Card block extractor → individual saves | `SOLVED` | **SHIPPED (Wave 55)** | r/psx, r/emulation; 128KB 16-frame fixed container; carves into .mcs single saves, raw blocks, 16x16 icon PNGs |
+| 271 | `.scc` | Scenarist Closed Caption (CEA-608) → SRT / VTT | `SOLVED` | **SHIPPED (Wave 55)** | r/videoediting, r/broadcasting; broadcast TV line-21 captions; drop-frame 29.97 fps timecode sync to SRT/WebVTT |
+| 272 | `.asc` | Vector CANoe / CANalyzer bus trace → CSV / JSON | `TRIVIAL` | **SHIPPED (Wave 55)** | r/CarHacking, r/embedded; automotive engineers needing CAN frames without Vector Windows software |
+| 273 | `.gci` | GameCube Memory Card (.gci / .raw) save carver | `SOLVED` | **SHIPPED (Wave 55)** | r/Gamecube, r/DolphinEmulator; carves raw GameCube memory cards into standard Dolphin .gci saves & 32x32 RGB5A3 icons |
+| 274 | `.gpx` → `.igc` | GPS flight track → FAI IGC format generator | `TRIVIAL` | **BACKLOG** | r/Gliding, r/freeflight; gliding clubs requiring standard IGC logs from consumer Garmin/Strava files |
+| 275 | `.rec` (VR-1) | VR-1 dashcam footage → MP4 | `HARD` | BACKLOG · needs sample | r/Dashcam "How do I open .REC file?"; sole reader was the dead CarPlayer.exe; Rosco NVR processor handles Rosco NVR, NOT VR-1 `.rec` — no tool anywhere |
+| 276 | `.rim` | dashcam break-in footage → MP4 | `HARD` | BACKLOG · needs sample | r/techsupport "defunct" file; car break-in evidence; zero readers documented |
+| 277 | `.av3` / `.avg` | AVViewer CCTV / police DVD → MP4 | `HARD` | BACKLOG · needs sample | r/computerforensics; requires running Windows AVViewer.exe; no forensic suite plays it |
+| 278 | `.img` (Toshiba Surveillix) | Surveillix DVR → MP4 | `HARD` | BACKLOG · needs sample | r/computerforensics; only abandonware "BackupViewer 4.0.0" digits out timestamps; no player |
+| 279 | `.jojo` | Crimzon Clover audio → WAV | `HARD` | BACKLOG · needs sample | r/shmups "Extracting Shmups Game Sounds": "can't seem to find any way to open them" |
+| 280 | Wii `.xa` / `.xam` | Emergency Heroes audio → WAV | `HARD` | BACKLOG · needs sample | vgmstream unsupported; no info anywhere |
+| 281 | `.recording` | Android-radio dashcam → MP4 | `HARD` | BACKLOG · needs sample | possibly a broken/renamed MP4; needs one sample to confirm |
+| 282 | `.pwi` (Pocket Word/Notes) | trapped 16-yr-old art → PNG | `HARD` | BACKLOG · needs sample | distinct from `.palm` Pixmap (vertopal only covers `.palm`); r/techsupport js7akz thread has no working answer |
+| 283 | `.fli` / `.flc` | Autodesk Animator FLIC → GIF | `SOLVED` | DROP (competition) | ezgif.com/fli-to-gif + converting.cloud/fli-gif + filehelper.com/flc now exist — exclusivity bar fails |
+| 284 | XNB (XNA) | asset container → PNG/WAV | `SOLVED` | DROP (competition) | lybell-art.github.io/xnb-js (Web XNB Converter) exists |
+| 285 | FITS / .fit | astronomy image → PNG | `SOLVED` | DROP (competition) | vertopal.com, convertr.org, npfcalculator.com FITS Viewer all exist |
+| 286 | Skype `main.db` | chat export | `SOLVED` | DROP (competition) | suurjaak/Skyperious (OSS desktop) exists |
+| 287 | FSB (FMOD) | game audio bank → WAV | `SOLVED` | DROP (competition) | convert.guru/fsb-to-wav + dragdropdo.com exist |
+| 288 | wav → `.vag` | PS1 audio encoder | `SOLVED` | DROP (competition) | wituz.com online PSX VAG tool + Aikku93/wav2vag exist |
+
+> **Wave 55 (Shipped 2026-09-22):**
+> - Tool 167: `document/scc-to-srt` (Scenarist Closed Caption CEA-608 Line 21 broadcast captions to SubRip SRT / HTML5 WebVTT with drop-frame 29.97 fps timecode sync)
+> - Tool 168: `document/mcr-to-zip` (PlayStation 1 Memory Card `.mcr`/`.mcd`/`.srm`/`.vmp` block carver to `.mcs` single-saves, raw blocks, and 16x16 icon PNGs)
+> - Tool 169: `document/asc-to-csv` (Vector CANoe / CANalyzer `.asc` bus trace logs with standard 11-bit, extended 29-bit, and CAN-FD frames to RFC 4180 CSV & JSON)
+> - Tool 170: `document/gci-to-json` (Nintendo GameCube Memory Card `.gci`/`.raw`/`.gcp`/`.mpk` save carver with Shift-JIS comments and 32x32 RGB5A3 icon PNG decoders)
+>
+> **Also verified & fixed in this wave:**
+> - Biome code styling and import organization applied across all newly created engines, tests, and tool files.
+> - Full palette closure compliance verified with zero literal hex codes in `src/`.
+> - Total active tools in registry: 167. Full test suite passing.
+
+---
+
+## II.9 Wave 56 Candidates & Ultra-Niche Research Dossier
+
+| # | Ext | Ask → Give | Feas. | Status | Fresh Signal & Community Context |
+|---|---|---|---|---|---|
+| 289 | `.vcd` | IEEE 1364 Value Change Dump EDA simulation → CSV / JSON | `SOLVED` | **SHIPPED (Wave 56)** | r/FPGA, r/yosys, r/Verilog; digital hardware engineers and chip designers wanting to analyze waveform transitions in spreadsheets without GTKWave or proprietary EDA license servers |
+| 290 | `.nds` / `.dsi` | Nintendo DS ROM Banner Icon (32x32 4-bpp) & Titles → PNG / JSON | `SOLVED` | **SHIPPED (Wave 56)** | r/NDSHacks, r/flashcarts, r/emulation; ROM archivists and flashcart users needing cartridge banner icons and 6-language UTF-16LE titles extracted without installing desktop CLI tools |
+| 291 | `.xp3` | KiriKiri 2 / TVP visual novel archive → ZIP package | `SOLVED` | **SHIPPED (Wave 56)** | r/visualnovels, r/vnarchive; fans, translators, and modders extracting CGs, scripts, and audio from KiriKiri visual novel archives (Fate/stay night, Tsukihime, CLANNAD) without suspicious desktop executables |
+| 292 | `.bup` / `.bin` | Sega Saturn Backup Memory save carver → standalone saves | `SOLVED` | **SHIPPED (Wave 56)** | r/SegaSaturn, r/emulation; retro gamers with Saroo, Action Replay, or MiSTer Saturn backup memory dumps extracting individual saves, Shift-JIS comments, and 1980-epoch timestamps |
+
+> **Wave 56 (Shipped 2026-09-22):**
+> - Tool 171: `document/vcd-to-csv` (IEEE 1364 Value Change Dump EDA digital simulation waveform traces into RFC 4180 CSV spreadsheets and hierarchical JSON)
+> - Tool 172: `image/nds-to-png` (Nintendo DS ROM Cartridge Banner & 32x32 4-bpp tiled BGR555 icon decoder to 32-bit RGBA PNG, multilingual UTF-16LE title banners, and cartridge header metadata to JSON)
+> - Tool 173: `document/xp3-to-zip` (KiriKiri 2 / TVP visual novel archive `.xp3` asset extractor, unpacking uncompressed/deflated scenario scripts, CG images, and audio into standard ZIP)
+> - Tool 174: `document/bup-to-zip` (Sega Saturn Backup Memory save carver for raw 32KB/512KB `BackUpRam Format` memory images and standalone `.bup` files, decoding 1980-epoch timestamps, Shift-JIS comments, and extracting `.bup` single saves, raw `.bin` payloads, and Markdown/JSON manifests into ZIP)
+>
+> **Also verified & fixed in this wave:**
+> - Strict type checking (`npx tsc --noEmit`) verified 100% clean with zero type errors.
+> - Full test suite passing: 334 test files, 3,628 tests green across entire repository.
+> - Strict zero-emoji compliance maintained across UI, code, comments, and documentation.
+> - Zero literal hex codes in `src/` outside token files verified via `tokens.test.ts`.
+> - Total active registered tools in registry: 174 niche/special tools (264 catalog entries).
+
+---
+
+## II.18 Tenth sweep (2026-09-22) — SPSS, SAS, GeoPackage, Adobe XD, EML
+
+> Sources: PSPP system-file spec ($FL2/$FL3, bytecode + ZLIB data);
+> SAS TS-140 XPORT doc, verified against pandas' xport reader;
+> OGC GeoPackage spec (SQLite container, `gpkg_geometry_columns`);
+> Adobe XD archive layout (ZIP with rendition previews); RFC 822/2045 MIME.
+
+### New verdicts
+
+- **`document/sav-to-zip` — SHIP (data flagship #5).** $FL2/$FL3 reader
+  with endianness from layout_code: tag-2 variables (long strings via
+  dummy segments + ext-14 true widths), tag-3/4 value labels, tag-6
+  documents, tag-7 long names/encoding, raw 8-byte units or bytecode
+  (codes 1–251 = code − bias, 253 raw follows, 254 spaces, 255 SYSMIS)
+  or ZLIB blocks via fflate. SPSS-epoch dates to ISO; SYSMIS/discrete/
+  range missings to `.`; labels export separately with codes raw.
+- **`document/xpt-to-csv` — SHIP.** SAS Transport v5 per TS-140: 80-byte
+  cards, NAMESTR 140 with 135 fallback, trailing-digits variable count,
+  IBM hex floats converted exactly, missing iff first byte is ./_/A-Z
+  with zero tail, chars space-padded latin1 rstripped, V8 refused with
+  guidance. Observations floor-divide with trailing all-blank rows
+  dropped as card-padding phantoms.
+- **`document/gpkg-to-geojson` — SHIP.** GeoPackage via the shared
+  `loadSqlJs` engine: srs-checked point features with attributes to
+  GeoJSON; non-GeoPackage SQLite refused naming `gpkg_geometry_columns`.
+- **`image/xd-to-png` — SHIP.** Adobe XD (discontinued, no reader) is a
+  ZIP: ranked rendition/artboard previews extracted to PNG, any-PNG
+  fallback when standard paths are missing.
+- **`document/eml-to-txt` — SHIP.** RFC 822 messages: nested MIME
+  multiparts walked, quoted-printable/base64 bodies decoded in declared
+  charsets, text/plain preferred with HTML-stripped fallback,
+  attachments listed by filename instead of dumped.
+- **War stories:** pandas' trailing-blank-qword trim eats real trailing
+  blank char fields once they merge with card padding — floor the count
+  and drop trailing all-space rows instead (real missings carry marker
+  bytes, real zeros are NULs, so space-filled rows can only be padding);
+  sysmiss fixtures must encode the real marker-plus-zero-tail or the
+  parser correctly refuses to see a missing; hand-counted card offsets
+  lie — one debug print beats five recounts; `.buffer.slice()` on a
+  generic `Uint8Array` (e.g. sql.js `db.export()`) needs `as ArrayBuffer`
+  while locally-constructed arrays narrow fine; biome dead-code flags
+  (unused interfaces, consts, placeholder fns) mean delete, and
+  expression-bodied `forEach` callbacks need braces.
+
+## II.19 Master tracking matrix, continued (v10)
+
+| # | Ext | Ask → Give | Feas. | Status | Fresh signal (2026-09-22) |
+|---|---|---|---|---|---|
+| 268 | `.sav` ($FL2/$FL3) | SPSS data → ZIP | `SOLVED` | **SHIPPED (W60)** | PSPP spec; bytecode + ZLIB; missings/labels/dates; thesis-data refugees |
+| 269 | `.xpt` (v5) | SAS transport → CSV | `SOLVED` | **SHIPPED (W60)** | TS-140 + pandas parity; IBM floats exact; blank-row trim beats qword-trim |
+| 270 | `.gpkg` | GeoPackage → GeoJSON | `SOLVED` | **SHIPPED (W60)** | shared sql.js engine; srs-checked points; offline field-data refugees |
+| 271 | `.xd` | Adobe XD → PNG | `TRIVIAL` | **SHIPPED (W60)** | discontinued app; ZIP rendition previews; handoff without Creative Cloud |
+| 272 | `.eml` | email message → TXT | `TRIVIAL` | **SHIPPED (W60)** | nested MIME; QP/base64 charsets; legal/audit inboxes |
+
+> **Wave 60 (Shipped 2026-09-22, from this log):**
+> - Tool 186: `document/sav-to-zip` (SPSS Statistics data files to ZIP of CSVs + labels)
+> - Tool 187: `document/xpt-to-csv` (SAS Transport v5 datasets to CSV)
+> - Tool 188: `document/gpkg-to-geojson` (OGC GeoPackage vectors to GeoJSON)
+> - Tool 189: `image/xd-to-png` (Adobe XD artboard previews to PNG)
+> - Tool 190: `document/eml-to-txt` (RFC 822 email messages to readable text)
+> - Verified: 22 engine tests + 341 registry tests green; `biome check` clean; `typecheck` clean.
+
+
+
 
 
 
