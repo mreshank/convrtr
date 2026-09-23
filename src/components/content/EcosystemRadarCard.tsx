@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { type SubscriptionChannel, subscribeUser } from "@/lib/subscriptions";
+import {
+	type SubscriptionChannel,
+	subscribeUser,
+	syncSubscriptionRemote,
+} from "@/lib/subscriptions";
 
 export function EcosystemRadarCard() {
 	const [email, setEmail] = useState("");
@@ -31,14 +35,25 @@ export function EcosystemRadarCard() {
 		if (!email.trim()) return;
 		setIsSubmitting(true);
 		const result = subscribeUser(email, channels, "radar");
-		setIsSubmitting(false);
+		const submittedEmail = email.trim();
 
 		if (result.success) {
 			setStatus({ text: result.message, type: "success" });
 			setEmail("");
+			void syncSubscriptionRemote(submittedEmail, channels, "radar").then(
+				(emailed) => {
+					if (emailed) {
+						setStatus({
+							text: "Subscribed. Check your inbox for a confirmation email.",
+							type: "success",
+						});
+					}
+				},
+			);
 		} else {
 			setStatus({ text: result.message, type: "error" });
 		}
+		setIsSubmitting(false);
 	};
 
 	return (

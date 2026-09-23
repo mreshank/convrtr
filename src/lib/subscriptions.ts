@@ -100,7 +100,9 @@ export function subscribeUser(
 	}
 
 	const list = getSubscribers();
-	const existingIndex = list.findIndex((s) => s.email.toLowerCase() === trimmed);
+	const existingIndex = list.findIndex(
+		(s) => s.email.toLowerCase() === trimmed,
+	);
 
 	const existing = existingIndex >= 0 ? list[existingIndex] : undefined;
 	if (existing) {
@@ -144,6 +146,41 @@ export function subscribeUser(
 export function deleteSubscriber(id: string): void {
 	const list = getSubscribers().filter((s) => s.id !== id);
 	saveSubscribers(list);
+}
+
+/**
+ * Best-effort remote sync: POSTs the subscription to the first-party
+ * Resend endpoint for double-opt-in / welcome email + Audience sync.
+ * Local-first UX is authoritative — this never throws and never blocks
+ * the UI. Returns true only on explicit 2xx.
+ */
+export async function syncSubscriptionRemote(
+	email: string,
+	channels: SubscriptionChannel[] = ["extension", "ecosystem"],
+	source: Subscriber["source"] = "extension-waitlist",
+): Promise<boolean> {
+	try {
+		if (typeof fetch === "undefined") return false;
+		if (typeof navigator !== "undefined" && !navigator.onLine) return false;
+		const controller = new AbortController();
+		const timer = setTimeout(() => controller.abort(), 8000);
+		try {
+			const res = await fetch("/api/subscribe", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Accept: "application/json",
+				},
+				body: JSON.stringify({ email, channels, source }),
+				signal: controller.signal,
+			});
+			return res.ok;
+		} finally {
+			clearTimeout(timer);
+		}
+	} catch {
+		return false;
+	}
 }
 
 export function toggleSubscriberStatus(id: string): void {

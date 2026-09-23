@@ -65,6 +65,12 @@ export function AdminDashboardPage() {
 	const [campaignSubject, setCampaignSubject] = useState("");
 	const [campaignAudience, setCampaignAudience] = useState<string>("extension");
 	const [campaignBody, setCampaignBody] = useState("");
+	const [campaignSecret, setCampaignSecret] = useState("");
+	const [campaignSending, setCampaignSending] = useState(false);
+	const [campaignStatus, setCampaignStatus] = useState<{
+		type: "success" | "error";
+		text: string;
+	} | null>(null);
 	const [campaignLogs, setCampaignLogs] = useState<
 		Array<{ date: string; subject: string; recipients: number }>
 	>([]);
@@ -82,6 +88,12 @@ export function AdminDashboardPage() {
 	useEffect(() => {
 		setLocalOverride(hasLocalAdminOverride());
 		refreshData();
+		try {
+			const saved = sessionStorage.getItem("convrtr_admin_api_secret");
+			if (saved) setCampaignSecret(saved);
+		} catch {
+			// Storage unavailable
+		}
 
 		// Initial audit log
 		setAuditLogs([
@@ -202,28 +214,86 @@ export function AdminDashboardPage() {
 		logAction(`Deleted broadcast: ${id}`);
 	};
 
-	const handleSendCampaign = (e: React.FormEvent) => {
+	const handleSendCampaign = async (e: React.FormEvent) => {
 		e.preventDefault();
-		if (!campaignSubject.trim() || !campaignBody.trim()) return;
-		const recipientCount =
+		if (!campaignSubject.trim() || !campaignBody.trim() || campaignSending)
+			return;
+		if (!campaignSecret.trim()) {
+			setCampaignStatus({
+				type: "error",
+				text: "ADMIN_API_SECRET required — paste it below. It is kept in sessionStorage only, never committed.",
+			});
+			return;
+		}
+		const activeSubs = subscribers.filter((s) => s.status === "active");
+		const targeted =
 			campaignAudience === "extension"
-				? subscribers.filter((s) => s.channels.includes("extension")).length +
-					1420
-				: subscribers.length + 1420;
-
-		setCampaignLogs((prev) => [
-			{
-				date: new Date().toISOString(),
-				subject: campaignSubject,
-				recipients: recipientCount,
-			},
-			...prev,
-		]);
-		logAction(
-			`Dispatched simulated email campaign "${campaignSubject}" to ${recipientCount} recipients`,
-		);
-		setCampaignSubject("");
-		setCampaignBody("");
+				? activeSubs.filter((s) => s.channels.includes("extension"))
+				: activeSubs;
+		// Server caps at 500; slice here so the UI count matches reality.
+		// Benchmark 1,420 is display-only — only real local emails can receive.
+		const recipients = targeted.map((s) => s.email).slice(0, 500);
+		if (recipients.length === 0) {
+			setCampaignStatus({
+				type: "error",
+				text: "No active local subscribers match this audience. Real sends go only to local emails (benchmark count is display-only).",
+			});
+			return;
+		}
+		setCampaignSending(true);
+		setCampaignStatus(null);
+		try {
+			try {
+				sessionStorage.setItem("convrtr_admin_api_secret", campaignSecret);
+			} catch {
+				// Storage unavailable
+			}
+			const res = await fetch("/api/campaign", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Accept: "application/json",
+					Authorization: `Bearer ${campaignSecret.trim()}`,
+				},
+				body: JSON.stringify({
+					subject: campaignSubject.trim(),
+					bodyMarkdown: campaignBody.trim(),
+					recipients,
+				}),
+			});
+			const data = (await res.json().catch(() => ({}))) as {
+				sent?: number;
+				error?: string;
+			};
+			if (!res.ok) {
+				throw new Error(data.error || `Dispatch failed (${res.status})`);
+			}
+			const sent = typeof data.sent === "number" ? data.sent : recipients.length;
+			setCampaignLogs((prev) => [
+				{
+					date: new Date().toISOString(),
+					subject: campaignSubject,
+					recipients: sent,
+				},
+				...prev,
+			]);
+			logAction(
+				`Dispatched Resend campaign "${campaignSubject}" to ${sent} recipients`,
+			);
+			setCampaignStatus({
+				type: "success",
+				text: `Dispatched via Resend to ${sent} recipients.`,
+			});
+			setCampaignSubject("");
+			setCampaignBody("");
+		} catch (err) {
+			const text =
+				err instanceof Error ? err.message : "Dispatch failed";
+			setCampaignStatus({ type: "error", text });
+			logAction(`Campaign dispatch failed: ${text}`);
+		} finally {
+			setCampaignSending(false);
+		}
 	};
 
 	// -------------------------------------------------------------
@@ -1722,8 +1792,21 @@ export function AdminDashboardPage() {
 								textTransform: "uppercase",
 							}}
 						>
-							COMPOSE DISPATCH CAMPAIGN // SUBSCRIBER NOTIFICATION
+							COMPOSE DISPATCH CAMPAIGN // RESEND BROADCAST
 						</span>
+						<p
+							className="mono"
+							style={{
+								fontSize: "var(--mono-size)",
+								color: "var(--ink-muted)",
+								margin: 0,
+							}}
+						>
+							Sends via Resend from your @convrtr.mreshank.com domain.
+							Real sends go only to active local subscribers (benchmark
+							1,420 is display-only). Server caps at 500 recipients per
+							dispatch.
+						</p>
 
 						<div>
 							<label
@@ -1753,13 +1836,19 @@ export function AdminDashboardPage() {
 							>
 								<option value="extension">
 									Chrome Extension Waitlist (
-									{subscribers.filter((s) => s.channels.includes("extension"))
-										.length + 1420}{" "}
-									recipients)
+									{
+										subscribers.filter(
+											(s) =>
+												s.status === "active" &&
+												s.channels.includes("extension"),
+										).length
+									}{" "}
+									real recipients)
 								</option>
 								<option value="all">
-									All Ecosystem Subscribers ({subscribers.length + 1420}{" "}
-									recipients)
+									All Ecosystem Subscribers (
+									{subscribers.filter((s) => s.status === "active").length}{" "}
+									real recipients)
 								</option>
 							</select>
 						</div>
@@ -1803,8 +1892,65 @@ export function AdminDashboardPage() {
 							}}
 						/>
 
+						<div>
+							<label
+								className="meta"
+								style={{
+									color: "var(--ink-muted)",
+									fontSize: "var(--mono-size)",
+									display: "block",
+									marginBottom: "calc(var(--space-base) / 4)",
+								}}
+							>
+								ADMIN_API_SECRET (Bearer — session only, never committed)
+							</label>
+							<input
+								type="password"
+								placeholder="Paste ADMIN_API_SECRET from Vercel env"
+								value={campaignSecret}
+								onChange={(e) => setCampaignSecret(e.target.value)}
+								required
+								style={{
+									width: "100%",
+									padding: "calc(var(--space-base) / 2) var(--space-base)",
+									borderWidth: "var(--rule-width)",
+									borderStyle: "solid",
+									borderColor: "var(--rule)",
+									backgroundColor: "var(--ground)",
+									color: "var(--ink)",
+									fontFamily: "var(--font-mono)",
+									fontSize: "var(--mono-size)",
+									outline: "none",
+								}}
+							/>
+						</div>
+
+						{campaignStatus && (
+							<div
+								role="status"
+								style={{
+									padding: "calc(var(--space-base) / 2) var(--space-base)",
+									borderWidth: "var(--rule-width)",
+									borderStyle: "solid",
+									borderColor:
+										campaignStatus.type === "success"
+											? "var(--accent)"
+											: "var(--rule-strong)",
+									color:
+										campaignStatus.type === "success"
+											? "var(--accent)"
+											: "var(--ink)",
+									fontFamily: "var(--font-mono)",
+									fontSize: "var(--mono-size)",
+								}}
+							>
+								{campaignStatus.text}
+							</div>
+						)}
+
 						<button
 							type="submit"
+							disabled={campaignSending}
 							style={{
 								alignSelf: "flex-start",
 								padding: "var(--space-base) var(--gap-md)",
@@ -1815,11 +1961,12 @@ export function AdminDashboardPage() {
 								fontSize: "var(--mono-size)",
 								fontWeight: 600,
 								border: "none",
-								cursor: "pointer",
+								cursor: campaignSending ? "wait" : "pointer",
 								textTransform: "uppercase",
+								opacity: campaignSending ? 0.6 : 1,
 							}}
 						>
-							Simulate Campaign Dispatch ➔
+							{campaignSending ? "Dispatching via Resend…" : "Send Campaign via Resend ➔"}
 						</button>
 					</form>
 

@@ -21,6 +21,7 @@ export interface DispatchResult {
 const DEFAULT_RECEIVER_EMAIL = "contact@mreshank.com";
 const DEFAULT_ENDPOINT = `https://formsubmit.co/ajax/${DEFAULT_RECEIVER_EMAIL}`;
 const LOCAL_STORAGE_QUEUE_KEY = "convrtr_pending_submissions";
+const RESEND_ENDPOINT = "/api/send";
 
 /**
  * Fetches with a hard deadline.
@@ -133,6 +134,20 @@ export async function dispatchFormSubmission(
 		};
 	}
 
+	// 1. Primary: first-party Resend intake (same-origin JSON metadata only —
+	// never file bytes). Falls through silently when the static preview has
+	// no /api/* functions or the mail service is unconfigured.
+	if (await postToResendIntake(payload)) {
+		return {
+			success: true,
+			mode: "online_transmitted",
+			mailtoUrl,
+			ticketMarkdown,
+			message:
+				"TRANSMISSION SUCCESSFUL. Your message has been received by the project maintainer.",
+		};
+	}
+
 	const endpoint = process.env.NEXT_PUBLIC_FORM_ENDPOINT || DEFAULT_ENDPOINT;
 
 	try {
@@ -218,6 +233,11 @@ export async function flushPendingSubmissions(): Promise<{
 	let flushedCount = 0;
 
 	for (const item of queue) {
+		// Queued items retry Resend first — same metadata-only contract.
+		if (await postToResendIntake(item)) {
+			flushedCount++;
+			continue;
+		}
 		try {
 			const res = await postWithTimeout(endpoint, {
 				method: "POST",
@@ -275,5 +295,44 @@ function saveToPendingQueue(payload: FormPayload): void {
 		);
 	} catch {
 		// Ignore storage quota errors
+	}
+}
+
+/**
+ * Primary intake: first-party Resend endpoint (Vercel Function).
+ *
+ * Sends JSON metadata only — never file bytes. Returns true only on an
+ * explicit 2xx; every other outcome (404 in static preview, 503 when the
+ * mail service is unconfigured, timeout, offline) falls through so the
+ * caller can try FormSubmit / local queue. Never throws.
+ */
+async function postToResendIntake(payload: FormPayload): Promise<boolean> {
+	try {
+		if (typeof fetch === "undefined") return false;
+		const res = await postWithTimeout(
+			RESEND_ENDPOINT,
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Accept: "application/json",
+				},
+				body: JSON.stringify({
+					type: payload.type,
+					topicOrCategory: payload.topicOrCategory,
+					name: payload.name,
+					email: payload.email,
+					subject: payload.subject,
+					message: payload.message,
+					rating: payload.rating,
+					recentError: payload.recentError,
+					diagnosticReportMarkdown: payload.diagnosticReportMarkdown,
+				}),
+			},
+			8000,
+		);
+		return res.ok;
+	} catch {
+		return false;
 	}
 }

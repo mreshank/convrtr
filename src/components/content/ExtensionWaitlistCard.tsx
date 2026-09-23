@@ -8,6 +8,7 @@ import {
 	getSubscriptionStats,
 	type SubscriptionChannel,
 	subscribeUser,
+	syncSubscriptionRemote,
 } from "@/lib/subscriptions";
 
 const FEATURES = [
@@ -76,16 +77,30 @@ export function ExtensionWaitlistCard() {
 		if (!email.trim()) return;
 		setIsSubmitting(true);
 		const result = subscribeUser(email, channels, "extension-waitlist");
-		setIsSubmitting(false);
+		const submittedEmail = email.trim();
 
 		if (result.success) {
 			setStatus({ text: result.message, type: "success" });
 			setEmail("");
 			const stats = getSubscriptionStats();
 			setSubCount(stats.benchmarkWaitlistTotal);
+			// Fire-and-forget welcome email + Audience sync; local state stays authoritative.
+			void syncSubscriptionRemote(
+				submittedEmail,
+				channels,
+				"extension-waitlist",
+			).then((emailed) => {
+				if (emailed) {
+					setStatus({
+						text: "Subscribed. Check your inbox for a confirmation email.",
+						type: "success",
+					});
+				}
+			});
 		} else {
 			setStatus({ text: result.message, type: "error" });
 		}
+		setIsSubmitting(false);
 	};
 
 	return (
@@ -184,10 +199,10 @@ export function ExtensionWaitlistCard() {
 						maxWidth: "65ch",
 					}}
 				>
-					The universal in-browser media converter brought directly to your daily
-					workflow. Convert, transpile, extract, and inspect assets across any
-					webpage without leaving your tab. Zero file bytes or metadata ever leave
-					your machine.
+					The universal in-browser media converter brought directly to your
+					daily workflow. Convert, transpile, extract, and inspect assets across
+					any webpage without leaving your tab. Zero file bytes or metadata ever
+					leave your machine.
 				</p>
 
 				<div
