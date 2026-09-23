@@ -26,6 +26,46 @@ export const SAFE_SAME_ORIGIN_RESOURCE_TYPES = new Set([
 ]);
 
 /**
+ * First-party mail intake endpoints (Vercel Functions). These accept JSON
+ * metadata only — contact text, subscription email, campaign subject/body —
+ * never file bytes. Conversions never POST here; conversion specs still
+ * fail on any other same-origin POST with a body.
+ *
+ * The 64 KB cap matters: the largest legitimate mail payload (support
+ * ticket + full diagnostics) is under 30 KB, while any file exfiltration
+ * would be orders of magnitude larger.
+ */
+export const ALLOWED_MAIL_ENDPOINTS = new Set([
+	"/api/send",
+	"/api/subscribe",
+	"/api/unsubscribe",
+	"/api/campaign",
+]);
+
+const MAX_MAIL_BODY_BYTES = 64 * 1024;
+
+function isAllowedMailRequest(request: Request): boolean {
+	let pathname = "";
+	try {
+		pathname = new URL(request.url()).pathname;
+	} catch {
+		return false;
+	}
+	if (!ALLOWED_MAIL_ENDPOINTS.has(pathname)) return false;
+	if (request.method() !== "POST") return false;
+	const headers = request.headers();
+	const contentType = headers["content-type"] ?? headers["Content-Type"] ?? "";
+	if (typeof contentType === "string" && contentType !== "") {
+		if (!contentType.includes("application/json")) return false;
+	}
+	const postData = request.postDataBuffer();
+	if (postData !== null && postData.length > MAX_MAIL_BODY_BYTES) {
+		return false;
+	}
+	return true;
+}
+
+/**
  * Decides whether a request could plausibly be carrying user file bytes off
  * the device.
  *
@@ -39,9 +79,11 @@ export const SAFE_SAME_ORIGIN_RESOURCE_TYPES = new Set([
  * 2. Only once a request is known to be same-origin do method/body/resource
  *    type get to exempt it: a same-origin GET/HEAD of one of the app's own
  *    static resource types is the app loading itself, not a leak.
- * 3. Everything else same-origin — any non-GET/HEAD method, or any request
- *    carrying a body — is still suspicious, since the pipeline never needs
- *    to send file bytes anywhere, including to itself.
+ * 3. Same-origin POSTs to the first-party mail intake endpoints
+ *    (`isAllowedMailRequest`) are metadata only and explicitly allowed.
+ * 4. Everything else same-origin — any other non-GET/HEAD method, or any
+ *    request carrying a body — is still suspicious, since the pipeline
+ *    never needs to send file bytes anywhere, including to itself.
  */
 export function isSuspiciousRequest(
 	request: Request,
@@ -56,6 +98,8 @@ export function isSuspiciousRequest(
 	}
 
 	if (!sameOrigin) return true;
+
+	if (isAllowedMailRequest(request)) return false;
 
 	const method = request.method();
 	const postData = request.postDataBuffer();
