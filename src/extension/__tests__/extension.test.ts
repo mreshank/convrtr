@@ -20,7 +20,7 @@ describe("convrtr Chrome Extension Manifest & Configuration", () => {
 
 		expect(manifest.manifest_version).toBe(3);
 		expect(manifest.name).toBe("convrtr");
-		expect(manifest.version).toBe("0.2.6");
+		expect(manifest.version).toBe("0.2.7");
 		expect(typeof manifest.description).toBe("string");
 		expect(manifest.description.length).toBeGreaterThan(10);
 	});
@@ -66,7 +66,7 @@ describe("convrtr Chrome Extension Manifest & Configuration", () => {
 			"Ctrl+Shift+Comma",
 		);
 		expect(manifest.commands?.open_side_panel).toBeDefined();
-		expect(manifest.commands?.capture_tab).toBeDefined();
+		expect(manifest.commands?.open_studio).toBeDefined();
 		expect(manifest.omnibox?.keyword).toBe("cv");
 	});
 

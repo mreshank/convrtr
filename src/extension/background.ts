@@ -1,9 +1,10 @@
 /**
  * convrtr — Background Service Worker (Manifest V3)
  *
- * Manages context menus, side panel triggers, keyboard shortcuts,
- * viewport screenshot capture, webpage asset extraction, dynamic
- * icon badging, and Omnibox search.
+ * Manages context menus, side panel and popup view orchestration,
+ * keyboard shortcuts, dynamic icon badging, and Omnibox search.
+ *
+ * Strict policy: Zero emojis in code, logs, and comments.
  */
 
 import { TOOLS } from "@/core/registry";
@@ -19,7 +20,7 @@ if (chrome.sidePanel?.setPanelBehavior) {
 		});
 }
 
-// Fallback action click listener ensuring side panel opens on icon click
+// Action click listener ensuring side panel opens on icon click
 chrome.action?.onClicked?.addListener(async (tab) => {
 	try {
 		if (tab?.windowId) {
@@ -77,206 +78,6 @@ function updateExtensionBadge(
 	}
 }
 
-/**
- * Captures the current visible tab viewport as a high-resolution PNG
- * and stages it into the converter in the Side Panel.
- */
-async function captureTabToConvrtr(windowId?: number) {
-	try {
-		let winId = windowId;
-		if (!winId) {
-			const win = await chrome.windows.getLastFocused();
-			winId = win.id;
-		}
-		if (!winId) return;
-
-		const dataUrl = await chrome.tabs.captureVisibleTab(winId, {
-			format: "png",
-		});
-		if (!dataUrl) return;
-
-		const filename = `capture-${Date.now()}.png`;
-		const stagedItem = {
-			dataUrl,
-			filename,
-			timestamp: Date.now(),
-		};
-
-		await chrome.storage.session.set({ latestStagedMedia: stagedItem });
-		await chrome.sidePanel.open({ windowId: winId });
-
-		chrome.runtime
-			.sendMessage({
-				type: "CONVRTR_STAGE_MEDIA",
-				data: stagedItem,
-			})
-			.catch(() => {});
-	} catch (err) {
-		console.error("[convrtr:bg] Failed to capture tab:", err);
-	}
-}
-
-/**
- * Extracts images, audio/video sources, canvases, inline SVGs, and linked documents
- * from the active webpage and stages them into convrtr.
- */
-async function extractPageAssets(tabId: number, windowId?: number) {
-	try {
-		if (windowId) {
-			await chrome.sidePanel.open({ windowId });
-		}
-
-		const results = await chrome.scripting.executeScript({
-			target: { tabId },
-			func: () => {
-				const urls = new Set<string>();
-				const textAssets: Array<{ text: string; filename: string }> = [];
-
-				// 1. Responsive & Standard Images
-				for (const img of Array.from(document.images)) {
-					const src = img.currentSrc || img.src;
-					if (src && !src.startsWith("data:")) urls.add(src);
-				}
-
-				// 2. Picture source tags
-				for (const source of Array.from(
-					document.querySelectorAll<HTMLSourceElement>("picture > source"),
-				)) {
-					if (source.srcset) {
-						const first = source.srcset.split(",")[0]?.trim().split(/\s+/)[0];
-						if (first && !first.startsWith("data:")) urls.add(first);
-					}
-				}
-
-				// 3. Audio & Video
-				for (const media of Array.from(
-					document.querySelectorAll<HTMLMediaElement>("video, audio"),
-				)) {
-					if (media.src && !media.src.startsWith("data:")) {
-						urls.add(media.src);
-					}
-					if (media instanceof HTMLVideoElement && media.poster) {
-						if (!media.poster.startsWith("data:")) urls.add(media.poster);
-					}
-					for (const src of Array.from(
-						media.querySelectorAll<HTMLSourceElement>("source"),
-					)) {
-						if (src.src && !src.src.startsWith("data:")) urls.add(src.src);
-					}
-				}
-
-				// 4. Inline SVGs (serialize top icons/illustrations)
-				let svgCount = 0;
-				for (const svg of Array.from(
-					document.querySelectorAll<SVGSVGElement>("svg"),
-				)) {
-					if (svgCount >= 10) break;
-					const rect = svg.getBoundingClientRect();
-					if (rect.width >= 16 && rect.height >= 16) {
-						try {
-							const serializer = new XMLSerializer();
-							const xml = serializer.serializeToString(svg);
-							if (xml.length > 50 && xml.length < 500000) {
-								svgCount++;
-								textAssets.push({
-									text: xml,
-									filename: `extracted-icon-${svgCount}.svg`,
-								});
-							}
-						} catch {
-							// ignore
-						}
-					}
-				}
-
-				// 5. Canvas elements
-				let canvasCount = 0;
-				for (const canvas of Array.from(
-					document.querySelectorAll<HTMLCanvasElement>("canvas"),
-				)) {
-					if (canvasCount >= 5) break;
-					if (canvas.width >= 16 && canvas.height >= 16) {
-						try {
-							const dataUrl = canvas.toDataURL("image/png");
-							canvasCount++;
-							textAssets.push({
-								text: dataUrl,
-								filename: `canvas-render-${canvasCount}.png`,
-							});
-						} catch {
-							// ignore
-						}
-					}
-				}
-
-				// 6. Linked media & document assets
-				const docExts = [
-					".pdf",
-					".svg",
-					".docx",
-					".xlsx",
-					".csv",
-					".json",
-					".md",
-					".zip",
-					".mp3",
-					".mp4",
-					".webp",
-					".heic",
-				];
-				for (const anchor of Array.from(
-					document.querySelectorAll<HTMLAnchorElement>("a[href]"),
-				)) {
-					const href = anchor.href;
-					if (!href || href.startsWith("javascript:") || href.startsWith("#")) {
-						continue;
-					}
-					try {
-						const pathname = new URL(href).pathname.toLowerCase();
-						if (docExts.some((ext) => pathname.endsWith(ext))) {
-							urls.add(href);
-						}
-					} catch {
-						// ignore
-					}
-				}
-
-				return {
-					urls: Array.from(urls).slice(0, 40),
-					textAssets,
-				};
-			},
-		});
-
-		const extracted = results[0]?.result as
-			| {
-					urls: string[];
-					textAssets: Array<{ text: string; filename: string }>;
-			  }
-			| undefined;
-
-		if (
-			extracted &&
-			(extracted.urls.length > 0 || extracted.textAssets.length > 0)
-		) {
-			const stagedItem = {
-				urls: extracted.urls,
-				textAssets: extracted.textAssets,
-				timestamp: Date.now(),
-			};
-			await chrome.storage.session.set({ latestStagedMedia: stagedItem });
-			chrome.runtime
-				.sendMessage({
-					type: "CONVRTR_STAGE_MEDIA",
-					data: stagedItem,
-				})
-				.catch(() => {});
-		}
-	} catch (scriptErr) {
-		console.error("[convrtr:bg] Error extracting page assets:", scriptErr);
-	}
-}
-
 // Setup context menus on installation or update
 chrome.runtime.onInstalled.addListener(async () => {
 	try {
@@ -311,26 +112,20 @@ chrome.runtime.onInstalled.addListener(async () => {
 		});
 
 		chrome.contextMenus.create({
-			id: "convrtr_capture_tab",
-			title: "Capture visible page to convrtr",
-			contexts: ["page"],
-		});
-
-		chrome.contextMenus.create({
-			id: "convrtr_extract_page_media",
-			title: "Extract all media & assets on page with convrtr",
-			contexts: ["page"],
-		});
-
-		chrome.contextMenus.create({
 			id: "convrtr_open_popup",
-			title: "Open Quick Popup (⌘⇧,)",
+			title: "Open Quick Popup (Command+Shift+,)",
 			contexts: ["page"],
 		});
 
 		chrome.contextMenus.create({
 			id: "convrtr_open_sidepanel",
-			title: "Open convrtr Side Panel (⌘⇧C)",
+			title: "Open Side Panel (Command+Shift+C)",
+			contexts: ["page"],
+		});
+
+		chrome.contextMenus.create({
+			id: "convrtr_open_studio",
+			title: "Open Full Studio Tab (Command+Shift+O)",
 			contexts: ["page"],
 		});
 
@@ -353,32 +148,27 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 	if (!tab?.windowId) return;
 
 	try {
-		// 1. Viewport Screenshot capture
-		if (info.menuItemId === "convrtr_capture_tab") {
-			await captureTabToConvrtr(tab.windowId);
-			return;
-		}
-
-		// 2. Open Quick Popup explicitly
+		// 1. Open Quick Popup explicitly
 		if (info.menuItemId === "convrtr_open_popup") {
-			await openQuickPopup();
+			await openQuickPopup(tab.windowId);
 			return;
 		}
 
-		// 3. Open Side Panel explicitly
+		// 2. Open Side Panel explicitly
 		if (info.menuItemId === "convrtr_open_sidepanel") {
 			await chrome.sidePanel.open({ windowId: tab.windowId });
 			return;
 		}
 
-		// Open Side Panel immediately for other contextual staging actions
-		await chrome.sidePanel.open({ windowId: tab.windowId });
-
-		// 4. Handle extracting all media & vector assets
-		if (info.menuItemId === "convrtr_extract_page_media" && tab.id) {
-			await extractPageAssets(tab.id, tab.windowId);
+		// 3. Open Studio Tab explicitly
+		if (info.menuItemId === "convrtr_open_studio") {
+			const tabUrl = chrome.runtime.getURL("tab.html");
+			await chrome.tabs.create({ url: tabUrl });
 			return;
 		}
+
+		// Open Side Panel immediately for other contextual staging actions
+		await chrome.sidePanel.open({ windowId: tab.windowId });
 
 		// 4. Handle selected text/code
 		if (info.selectionText) {
@@ -518,17 +308,24 @@ chrome.omnibox.onInputEntered.addListener(async (text) => {
  * Tries chrome.action.openPopup() first (native toolbar popup, Chrome 127+),
  * falling back to a dedicated compact floating window.
  */
-async function openQuickPopup() {
+async function openQuickPopup(targetWindowId?: number) {
 	try {
-		const focusedWindow = await chrome.windows.getLastFocused({
-			populate: false,
-		});
+		const focusedWindow = targetWindowId
+			? await chrome.windows.get(targetWindowId)
+			: await chrome.windows.getLastFocused({ populate: false });
+
+		const winId = focusedWindow?.id;
+
+		// Close side panel if open in that window to ensure mutual exclusivity
+		if (winId && typeof chrome.sidePanel?.close === "function") {
+			chrome.sidePanel.close({ windowId: winId }).catch(() => {});
+		}
 
 		// Attempt native toolbar popup via Chrome 127+ API
 		if (typeof chrome.action?.openPopup === "function") {
 			try {
 				await chrome.action.setPopup({ popup: "popup.html" });
-				await chrome.action.openPopup({ windowId: focusedWindow?.id });
+				await chrome.action.openPopup({ windowId: winId });
 				// Restore empty popup so subsequent icon clicks continue opening the side panel
 				setTimeout(async () => {
 					await chrome.action.setPopup({ popup: "" }).catch(() => {});
@@ -539,7 +336,7 @@ async function openQuickPopup() {
 			}
 		}
 
-		// Floating popup window (resilient across all browser versions)
+		// Floating popup window fallback
 		const width = 580;
 		const height = 640;
 		const left =
@@ -562,7 +359,7 @@ async function openQuickPopup() {
 	}
 }
 
-// Handle keyboard shortcuts (Command+Shift+Comma / Command+Shift+C / Command+Shift+S)
+// Handle keyboard shortcuts (Command+Shift+Comma / Command+Shift+C / Command+Shift+O)
 chrome.commands.onCommand.addListener(async (command) => {
 	if (command === "open_popup") {
 		try {
@@ -582,12 +379,15 @@ chrome.commands.onCommand.addListener(async (command) => {
 				err,
 			);
 		}
-	} else if (command === "capture_tab") {
+	} else if (command === "open_studio") {
 		try {
-			const currentWindow = await chrome.windows.getCurrent();
-			await captureTabToConvrtr(currentWindow.id);
+			const tabUrl = chrome.runtime.getURL("tab.html");
+			await chrome.tabs.create({ url: tabUrl });
 		} catch (err) {
-			console.error("[convrtr:bg] Error capturing tab from shortcut:", err);
+			console.error(
+				"[convrtr:bg] Error opening studio tab from shortcut:",
+				err,
+			);
 		}
 	}
 });
@@ -597,7 +397,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 	if (message?.type === "OPEN_POPUP") {
 		(async () => {
 			try {
-				await openQuickPopup();
+				await openQuickPopup(message.windowId);
 				sendResponse({ ok: true });
 			} catch (err) {
 				sendResponse({ ok: false, error: String(err) });
@@ -609,9 +409,13 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 	if (message?.type === "OPEN_SIDE_PANEL") {
 		(async () => {
 			try {
-				const currentWindow = await chrome.windows.getCurrent();
-				if (currentWindow.id) {
-					await chrome.sidePanel.open({ windowId: currentWindow.id });
+				let winId = message.windowId;
+				if (!winId) {
+					const currentWindow = await chrome.windows.getCurrent();
+					winId = currentWindow?.id;
+				}
+				if (winId) {
+					await chrome.sidePanel.open({ windowId: winId });
 					sendResponse({ ok: true });
 				} else {
 					sendResponse({ ok: false, error: "No active window" });
@@ -620,7 +424,26 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 				sendResponse({ ok: false, error: String(err) });
 			}
 		})();
-		return true; // Keep channel open for async response
+		return true;
+	}
+
+	if (message?.type === "CLOSE_SIDE_PANEL") {
+		(async () => {
+			try {
+				let winId = message.windowId;
+				if (!winId) {
+					const win = await chrome.windows.getLastFocused();
+					winId = win?.id;
+				}
+				if (winId && typeof chrome.sidePanel?.close === "function") {
+					await chrome.sidePanel.close({ windowId: winId }).catch(() => {});
+				}
+				sendResponse({ ok: true });
+			} catch (err) {
+				sendResponse({ ok: false, error: String(err) });
+			}
+		})();
+		return true;
 	}
 
 	if (message?.type === "OPEN_FULL_TAB") {
@@ -636,31 +459,13 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 		return true;
 	}
 
-	if (message?.type === "CAPTURE_TAB") {
+	if (message?.type === "CLOSE_TAB") {
 		(async () => {
 			try {
-				await captureTabToConvrtr();
-				sendResponse({ ok: true });
-			} catch (err) {
-				sendResponse({ ok: false, error: String(err) });
-			}
-		})();
-		return true;
-	}
-
-	if (message?.type === "EXTRACT_PAGE_ASSETS") {
-		(async () => {
-			try {
-				const [activeTab] = await chrome.tabs.query({
-					active: true,
-					currentWindow: true,
-				});
-				if (activeTab?.id) {
-					await extractPageAssets(activeTab.id, activeTab.windowId);
-					sendResponse({ ok: true });
-				} else {
-					sendResponse({ ok: false, error: "No active tab" });
+				if (message.tabId) {
+					await chrome.tabs.remove(message.tabId);
 				}
+				sendResponse({ ok: true });
 			} catch (err) {
 				sendResponse({ ok: false, error: String(err) });
 			}

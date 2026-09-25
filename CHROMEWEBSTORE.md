@@ -2,8 +2,8 @@
 
 Single source of truth for the Chrome Web Store listing metadata, permissions justifications, privacy disclosures, and version history for **convrtr**.
 
-**Last Updated:** 2026-09-22  
-**Current Version:** 0.2.6  
+**Last Updated:** 2026-09-26  
+**Current Version:** 0.2.7  
 **Manifest Version:** 3  
 
 ---
@@ -17,7 +17,7 @@ convrtr
 
 ### Single Purpose Statement (for Developer Dashboard)
 ```
-Converts files and web media directly within your browser using local WebAssembly processing.
+Converts files directly within your browser using local WebAssembly processing.
 ```
 
 ### Short Description (max 132 characters)
@@ -33,20 +33,20 @@ convrtr is a private, client-side file converter that runs entirely inside your 
 Convert images, audio, video, and documents locally without uploading your files to remote servers. No account registration, no server queues, and no network latency.
 
 FEATURES:
-• Native Side Panel — Open convrtr beside your active browser tab to convert files without switching windows.
-• Quick Popup & Studio Views — Convert files in a compact popup via keyboard shortcut (Command+Shift+Comma) or expand into a full-screen workspace.
+• Native Side Panel & Quick Popup — Open convrtr beside your active browser tab or trigger a compact popup via keyboard shortcut (Command+Shift+Comma).
+• Full Tab Studio — Expand seamlessly into a full-screen technical workspace (Command+Shift+O).
+• Mutual Exclusivity & Seamless Resumption — Switching between Side Panel, Quick Popup, and Studio automatically closes the previous surface while persisting and continuing queue operations instantly via local IndexedDB storage.
+• Comprehensive Keyboard Shortcuts — High-productivity instrument controls: Command+O (open files), Command+Enter (start conversion), Command+D (download ZIP), Command+A (select all), Delete (remove items), Command+K (search), and ? (shortcuts modal).
 • Context Menu Conversion — Right-click images, media elements, or links on any webpage to stage and convert them directly.
-• Visible Viewport Capture — Capture the visible portion of your current browser tab (Command+Shift+S) and stage it directly for conversion.
-• Webpage Media Staging — Stage images, audio, video, and vector graphics from web pages into the converter with a single click.
 • Omnibox Navigation — Type "cv" in Chrome's address bar to quickly find supported conversion options.
 • 100% Client-Side Processing — All file processing runs locally on your machine via WebAssembly and Web Workers.
 • Complete Privacy — Zero files or telemetry are transmitted across the network. Works completely offline.
 
 HOW TO USE:
-1. Click the convrtr extension icon in your Chrome toolbar to open the Side Panel.
-2. Drag and drop a file or select one from your computer.
-3. Choose your target format.
-4. Click Convert to process the file locally and save the result to your Downloads folder.
+1. Click the convrtr extension icon in your Chrome toolbar to open the Side Panel, or use keyboard shortcuts.
+2. Drag and drop files or press Command+O to select from your computer.
+3. Choose your target format or use the quick format presets (P).
+4. Press Command+Enter to process files locally and save results to your Downloads folder.
 
 PRIVACY & SECURITY:
 convrtr is designed from the ground up for privacy. It does not collect, store, or transmit personal data or file contents. All conversions occur entirely on your local machine using client-side WebAssembly, Canvas, and Web Workers.
@@ -55,8 +55,8 @@ PERMISSIONS:
 • sidePanel: Displays the converter beside your active tab for side-by-side workflow.
 • storage: Passes temporary session references between background events and the converter interface. No browsing history or personal data is stored.
 • contextMenus: Lets you right-click web media or links to stage them for conversion.
-• scripting: Inspects media elements on the active page to stage them into the converter upon explicit user request.
-• activeTab: Grants temporary, user-invoked access to capture the visible tab or stage media upon explicit command without broad host permissions.
+• scripting: Stages media into the converter upon explicit user request.
+• activeTab: Grants temporary, user-invoked access to stage media upon explicit command without broad host permissions.
 
 SUPPORT & CONTACT:
 Email: contact@mreshank.com
@@ -64,7 +64,7 @@ Help & Diagnostic Center: https://convrtr.mreshank.com/support
 Privacy Policy: https://convrtr.mreshank.com/privacy
 Source Code & Issues: https://github.com/mreshank/convrtr
 
-Version 0.2.6 — WebAssembly Content Security Policy update enabling full local in-browser codec execution.
+Version 0.2.7 — Seamless session persistence across views, mutual view exclusivity, technical keyboard shortcuts, full local WASM bundling, and strict accessibility optimizations.
 ```
 
 ### Category
@@ -134,6 +134,15 @@ Every permission declared in `manifest.json` is strictly justified below for the
 ---
 
 ## 4. Version History
+
+### 0.2.7 — 2026-09-26
+- Implemented mutual view exclusivity across extension surfaces: opening Quick Popup, Side Panel, or Studio Tab automatically closes the previously active surface.
+- Implemented seamless session persistence and resumption: active conversion queue items, configuration parameters, and binary file buffers automatically save to IndexedDB and resume seamlessly across all extension views.
+- Stripped extraneous non-core clutter: completely removed non-functional capture, extract, and paste buttons along with unnecessary background context menus.
+- Bundled full offline WebAssembly dependencies (`7z-wasm`, `sql-wasm`, `libflac`, `silk`, `ffmpeg`) into extension package for 100% self-contained offline conversions.
+- Comprehensive accessibility (A11Y) enhancements: WCAG-compliant high-contrast `:focus-visible` outlines, ARIA live announcer regions for background operations, landmark structures, and screen-reader status notices.
+- Added technical keyboard shortcuts (`Command+O`, `Command+Enter`, `Command+D`, `Command+A`, `Command+K`, `Delete`, `1`, `2`, `3`, `P`, `H`, `?`, `Esc`) and in-product Dieter Rams technical instrument cheatsheet modal.
+- Added dedicated shortcut `Command+Shift+O` (`Ctrl+Shift+O`) to open Full Tab Studio.
 
 ### 0.2.6 — 2026-09-22
 - Added `content_security_policy.extension_pages` declaring `'wasm-unsafe-eval'` to resolve Chromium Manifest V3 WebAssembly instantiation blocks across extension surfaces (enables local MozJPEG, Oxipng, libheif, and SILK conversion without server interaction).

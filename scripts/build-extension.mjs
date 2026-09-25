@@ -113,6 +113,30 @@ async function copyStaticExtensionAssets() {
 		await cp(ffmpegSource, resolve(outDir, "ffmpeg"), { recursive: true });
 		console.log("  → Copied ffmpeg/");
 	}
+
+	const sevenZipSource = resolve(root, "public/7z");
+	if (existsSync(sevenZipSource)) {
+		await cp(sevenZipSource, resolve(outDir, "7z"), { recursive: true });
+		console.log("  → Copied 7z/");
+	}
+
+	const sqljsSource = resolve(root, "public/sql-wasm");
+	if (existsSync(sqljsSource)) {
+		await cp(sqljsSource, resolve(outDir, "sql-wasm"), { recursive: true });
+		console.log("  → Copied sql-wasm/");
+	}
+
+	const flacSource = resolve(
+		root,
+		"node_modules/libflacjs/dist/libflac.min.wasm.wasm",
+	);
+	if (existsSync(flacSource)) {
+		await cp(flacSource, resolve(outDir, "libflac.min.wasm.wasm"));
+		const assetsDir = resolve(outDir, "assets");
+		await mkdir(assetsDir, { recursive: true });
+		await cp(flacSource, resolve(assetsDir, "libflac.min.wasm.wasm"));
+		console.log("  → Copied libflac.min.wasm.wasm");
+	}
 }
 
 async function packageExtensionZip() {

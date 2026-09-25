@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { KeyboardShortcutsModal } from "@/components/instrument/KeyboardShortcutsModal";
 import { MasterConverterClient } from "@/components/instrument/MasterConverterClient";
 import {
 	clearHistory,
@@ -28,27 +29,11 @@ const QUICK_PRESETS = [
 	{ id: "mp4-mp3", label: "MP4➔MP3", from: "mp4", to: "mp3" },
 ] as const;
 
-/**
- * Converts a data URL into a native File object for local conversion.
- */
-function dataUrlToFile(dataUrl: string, filename: string): File {
-	const [header, base64] = dataUrl.split(",");
-	const mime = header?.match(/:(.*?);/)?.[1] || "image/png";
-	const binary = atob(base64 || "");
-	const array = new Uint8Array(binary.length);
-	for (let i = 0; i < binary.length; i++) {
-		array[i] = binary.charCodeAt(i);
-	}
-	return new File([array], filename, {
-		type: mime,
-		lastModified: Date.now(),
-	});
-}
-
 export function ExtensionApp({ mode }: ExtensionAppProps) {
 	const [statusNotice, setStatusNotice] = useState<string | null>(null);
 	const [showHistory, setShowHistory] = useState(false);
 	const [showPresets, setShowPresets] = useState(true);
+	const [showShortcuts, setShowShortcuts] = useState(false);
 	const [historyQuery, setHistoryQuery] = useState("");
 	const [historyRecords, setHistoryRecords] = useState<
 		ConversionHistoryRecord[]
@@ -64,7 +49,7 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 		};
 	}, []);
 
-	// Ingest single media URL
+	// Ingest single media URL (e.g. from context menu)
 	const ingestMediaUrl = useCallback(
 		async (url: string, suggestedName?: string) => {
 			try {
@@ -94,54 +79,7 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 		[],
 	);
 
-	// Ingest multiple media URLs (from "Extract all media on page")
-	const ingestMultipleUrls = useCallback(async (urls: string[]) => {
-		setStatusNotice(`Extracting ${urls.length} media items from page...`);
-		const files: File[] = [];
-
-		for (let i = 0; i < urls.length; i++) {
-			const url = urls[i];
-			if (!url) continue;
-			try {
-				const res = await fetch(url);
-				if (!res.ok) continue;
-				const blob = await res.blob();
-				let filename = `extracted-media-${i + 1}`;
-				try {
-					const pathname = new URL(url).pathname;
-					const last = pathname.split("/").filter(Boolean).pop();
-					if (last) filename = decodeURIComponent(last);
-				} catch {
-					// Fallback filename
-				}
-				files.push(
-					new File([blob], filename, {
-						type: blob.type || "application/octet-stream",
-						lastModified: Date.now(),
-					}),
-				);
-			} catch {
-				// Continue with other URLs
-			}
-		}
-
-		if (files.length > 0) {
-			window.dispatchEvent(
-				new CustomEvent("convrtr:ingest", {
-					detail: { files },
-				}),
-			);
-			setStatusNotice(
-				`Successfully extracted and queued ${files.length} items`,
-			);
-			setTimeout(() => setStatusNotice(null), 4000);
-		} else {
-			setStatusNotice("No accessible media could be extracted from page");
-			setTimeout(() => setStatusNotice(null), 4000);
-		}
-	}, []);
-
-	// Ingest text snippet
+	// Ingest text snippet (e.g. from context menu)
 	const ingestText = useCallback((text: string, suggestedName?: string) => {
 		const filename = suggestedName || "snippet.txt";
 		const file = new File([text], filename, {
@@ -155,19 +93,6 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 			}),
 		);
 		setStatusNotice(`Staged text snippet "${filename}" for conversion`);
-		setTimeout(() => setStatusNotice(null), 4000);
-	}, []);
-
-	// Ingest Data URL screenshot
-	const ingestDataUrl = useCallback((dataUrl: string, filename?: string) => {
-		const fname = filename || `capture-${Date.now()}.png`;
-		const file = dataUrlToFile(dataUrl, fname);
-		window.dispatchEvent(
-			new CustomEvent("convrtr:ingest", {
-				detail: { files: [file] },
-			}),
-		);
-		setStatusNotice(`Staged page capture "${fname}" for conversion`);
 		setTimeout(() => setStatusNotice(null), 4000);
 	}, []);
 
@@ -190,7 +115,7 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 		};
 	}, [ingestMediaUrl]);
 
-	// Ingest media, text, screenshots, or multiple URLs from session storage or message passing
+	// Ingest media or text from session storage or message passing
 	useEffect(() => {
 		async function checkStagedMedia() {
 			if (typeof chrome === "undefined" || !chrome.storage?.session) return;
@@ -199,41 +124,15 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 					"latestStagedMedia",
 				)) as {
 					latestStagedMedia?: {
-						dataUrl?: string;
 						url?: string;
-						urls?: string[];
 						text?: string;
-						textAssets?: Array<{ text: string; filename: string }>;
 						filename?: string;
 					};
 				};
 				const staged = sessionData.latestStagedMedia;
 				if (staged) {
 					await chrome.storage.session.remove("latestStagedMedia");
-					if (staged.dataUrl) {
-						ingestDataUrl(staged.dataUrl, staged.filename);
-					} else if (staged.textAssets && staged.textAssets.length > 0) {
-						const files = staged.textAssets.map((asset) => {
-							if (asset.text.startsWith("data:")) {
-								return dataUrlToFile(asset.text, asset.filename);
-							}
-							return new File([asset.text], asset.filename, {
-								type: asset.filename.endsWith(".svg")
-									? "image/svg+xml"
-									: "text/plain",
-								lastModified: Date.now(),
-							});
-						});
-						window.dispatchEvent(
-							new CustomEvent("convrtr:ingest", { detail: { files } }),
-						);
-						setStatusNotice(
-							`Staged ${files.length} vector and page assets for conversion`,
-						);
-						setTimeout(() => setStatusNotice(null), 4000);
-					} else if (staged.urls && staged.urls.length > 0) {
-						void ingestMultipleUrls(staged.urls);
-					} else if (staged.url) {
+					if (staged.url) {
 						void ingestMediaUrl(staged.url, staged.filename);
 					} else if (staged.text) {
 						ingestText(staged.text, staged.filename);
@@ -250,39 +149,13 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 			const msg = message as {
 				type?: string;
 				data?: {
-					dataUrl?: string;
 					url?: string;
-					urls?: string[];
 					text?: string;
-					textAssets?: Array<{ text: string; filename: string }>;
 					filename?: string;
 				};
 			};
 			if (msg?.type === "CONVRTR_STAGE_MEDIA") {
-				if (msg.data?.dataUrl) {
-					ingestDataUrl(msg.data.dataUrl, msg.data.filename);
-				} else if (msg.data?.textAssets && msg.data.textAssets.length > 0) {
-					const files = msg.data.textAssets.map((asset) => {
-						if (asset.text.startsWith("data:")) {
-							return dataUrlToFile(asset.text, asset.filename);
-						}
-						return new File([asset.text], asset.filename, {
-							type: asset.filename.endsWith(".svg")
-								? "image/svg+xml"
-								: "text/plain",
-							lastModified: Date.now(),
-						});
-					});
-					window.dispatchEvent(
-						new CustomEvent("convrtr:ingest", { detail: { files } }),
-					);
-					setStatusNotice(
-						`Staged ${files.length} vector and page assets for conversion`,
-					);
-					setTimeout(() => setStatusNotice(null), 4000);
-				} else if (msg.data?.urls && msg.data.urls.length > 0) {
-					void ingestMultipleUrls(msg.data.urls);
-				} else if (msg.data?.url) {
+				if (msg.data?.url) {
 					void ingestMediaUrl(msg.data.url, msg.data.filename);
 				} else if (msg.data?.text) {
 					ingestText(msg.data.text, msg.data.filename);
@@ -296,7 +169,7 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 				chrome.runtime.onMessage.removeListener(messageListener);
 			};
 		}
-	}, [ingestDataUrl, ingestMediaUrl, ingestMultipleUrls, ingestText]);
+	}, [ingestMediaUrl, ingestText]);
 
 	// Clipboard Paste integration (Cmd+V / Ctrl+V)
 	useEffect(() => {
@@ -305,7 +178,8 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 			if (
 				activeElement &&
 				(activeElement.tagName === "INPUT" ||
-					activeElement.tagName === "TEXTAREA")
+					activeElement.tagName === "TEXTAREA" ||
+					(activeElement as HTMLElement).isContentEditable)
 			) {
 				return;
 			}
@@ -360,101 +234,206 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 		};
 	}, []);
 
-	const handleOpenSidePanel = async () => {
-		try {
-			if (typeof chrome !== "undefined" && chrome.sidePanel?.open) {
-				const currentWindow = await chrome.windows.getCurrent();
-				if (currentWindow?.id) {
-					await chrome.sidePanel.open({ windowId: currentWindow.id });
+	/**
+	 * Seamless view switcher:
+	 * 1. Synchronously dispatches session flush event so active files and operations are saved to IndexedDB.
+	 * 2. Launches the target view (Side Panel, Popup, or Full Studio Tab).
+	 * 3. Autocloses the current view so only one active view is open at any time.
+	 */
+	const switchView = useCallback(
+		async (targetMode: ExtensionMode) => {
+			if (targetMode === mode) return;
+
+			// Flush current active queue state to IndexedDB before closing
+			window.dispatchEvent(new CustomEvent("convrtr:flush-session"));
+			await new Promise((resolve) => setTimeout(resolve, 60));
+
+			if (targetMode === "sidepanel") {
+				try {
+					if (typeof chrome !== "undefined" && chrome.sidePanel?.open) {
+						const currentWindow = await chrome.windows.getCurrent();
+						if (currentWindow?.id) {
+							await chrome.sidePanel.open({ windowId: currentWindow.id });
+						}
+					} else if (
+						typeof chrome !== "undefined" &&
+						chrome.runtime?.sendMessage
+					) {
+						await chrome.runtime.sendMessage({ type: "OPEN_SIDE_PANEL" });
+					}
+				} catch (err) {
+					console.warn("[convrtr] Error switching to side panel:", err);
+				}
+
+				// Autoclose current view
+				if (mode === "tab") {
+					if (typeof chrome !== "undefined" && chrome.tabs?.getCurrent) {
+						const currentTab = await chrome.tabs.getCurrent();
+						if (currentTab?.id) {
+							await chrome.tabs.remove(currentTab.id);
+							return;
+						}
+					}
 					window.close();
+				} else if (mode === "popup") {
+					window.close();
+				}
+				return;
+			}
+
+			if (targetMode === "popup") {
+				try {
+					if (typeof chrome !== "undefined" && chrome.runtime?.sendMessage) {
+						const currentWindow = await chrome.windows.getCurrent();
+						await chrome.runtime.sendMessage({
+							type: "OPEN_POPUP",
+							windowId: currentWindow?.id,
+						});
+					} else {
+						window.open("/popup.html", "_blank", "width=580,height=640");
+					}
+				} catch (err) {
+					console.warn("[convrtr] Error switching to popup:", err);
+				}
+
+				// Autoclose current view
+				if (mode === "sidepanel") {
+					try {
+						if (typeof chrome !== "undefined" && chrome.sidePanel?.close) {
+							const currentWindow = await chrome.windows.getCurrent();
+							if (currentWindow?.id) {
+								await chrome.sidePanel
+									.close({ windowId: currentWindow.id })
+									.catch(() => {});
+							}
+						}
+					} catch {
+						// Fallback to window.close
+					}
+					window.close();
+				} else if (mode === "tab") {
+					if (typeof chrome !== "undefined" && chrome.tabs?.getCurrent) {
+						const currentTab = await chrome.tabs.getCurrent();
+						if (currentTab?.id) {
+							await chrome.tabs.remove(currentTab.id);
+							return;
+						}
+					}
+					window.close();
+				}
+				return;
+			}
+
+			if (targetMode === "tab") {
+				try {
+					if (typeof chrome !== "undefined") {
+						if (chrome.tabs?.create) {
+							await chrome.tabs.create({
+								url: chrome.runtime.getURL("tab.html"),
+							});
+						} else if (chrome.runtime?.sendMessage) {
+							await chrome.runtime.sendMessage({ type: "OPEN_FULL_TAB" });
+						}
+					}
+				} catch (err) {
+					console.warn("[convrtr] Error switching to studio tab:", err);
+				}
+
+				// Autoclose current view
+				if (mode === "sidepanel") {
+					try {
+						if (typeof chrome !== "undefined" && chrome.sidePanel?.close) {
+							const currentWindow = await chrome.windows.getCurrent();
+							if (currentWindow?.id) {
+								await chrome.sidePanel
+									.close({ windowId: currentWindow.id })
+									.catch(() => {});
+							}
+						}
+					} catch {
+						// Fallback to window.close
+					}
+					window.close();
+				} else if (mode === "popup") {
+					window.close();
+				}
+			}
+		},
+		[mode],
+	);
+
+	// Handle in-app keyboard shortcuts
+	useEffect(() => {
+		const handleKeyDown = (e: KeyboardEvent) => {
+			const target = e.target as HTMLElement | null;
+			if (
+				target &&
+				(target.tagName === "INPUT" ||
+					target.tagName === "TEXTAREA" ||
+					target.tagName === "SELECT" ||
+					target.isContentEditable)
+			) {
+				return;
+			}
+
+			// '?' or Shift+'/': Toggle shortcuts guide modal
+			if (e.key === "?" || (e.shiftKey && e.key === "/")) {
+				e.preventDefault();
+				setShowShortcuts((prev) => !prev);
+				return;
+			}
+
+			// '1': Switch to side panel
+			if (e.key === "1") {
+				e.preventDefault();
+				void switchView("sidepanel");
+				return;
+			}
+
+			// '2': Switch to quick popup
+			if (e.key === "2") {
+				e.preventDefault();
+				void switchView("popup");
+				return;
+			}
+
+			// '3': Switch to full tab studio
+			if (e.key === "3") {
+				e.preventDefault();
+				void switchView("tab");
+				return;
+			}
+
+			// 'p' or 'P': Toggle presets bar
+			if (e.key.toLowerCase() === "p" && !e.metaKey && !e.ctrlKey) {
+				e.preventDefault();
+				setShowPresets((prev) => !prev);
+				return;
+			}
+
+			// 'h' or 'H': Toggle history drawer
+			if (e.key.toLowerCase() === "h" && !e.metaKey && !e.ctrlKey) {
+				e.preventDefault();
+				setShowHistory((prev) => !prev);
+				return;
+			}
+
+			// 'Escape': Close open modal or drawer
+			if (e.key === "Escape") {
+				if (showShortcuts) {
+					setShowShortcuts(false);
+					return;
+				}
+				if (showHistory) {
+					setShowHistory(false);
 					return;
 				}
 			}
-		} catch (err) {
-			console.warn("[convrtr] Direct side panel open warning:", err);
-		}
-		if (typeof chrome !== "undefined" && chrome.runtime?.sendMessage) {
-			await chrome.runtime.sendMessage({ type: "OPEN_SIDE_PANEL" });
-			window.close();
-		}
-	};
+		};
 
-	const handleOpenPopup = async () => {
-		if (typeof chrome !== "undefined" && chrome.runtime?.sendMessage) {
-			await chrome.runtime.sendMessage({ type: "OPEN_POPUP" }).catch(() => {});
-		} else {
-			window.open("/popup.html", "_blank", "width=580,height=640");
-		}
-	};
-
-	const handleOpenFullTab = async () => {
-		if (typeof chrome !== "undefined") {
-			if (chrome.tabs?.create) {
-				await chrome.tabs.create({ url: chrome.runtime.getURL("tab.html") });
-			} else if (chrome.runtime?.sendMessage) {
-				await chrome.runtime.sendMessage({ type: "OPEN_FULL_TAB" });
-			}
-		}
-	};
-
-	const handleCaptureVisibleTab = async () => {
-		if (typeof chrome !== "undefined" && chrome.runtime?.sendMessage) {
-			setStatusNotice("Capturing visible page...");
-			await chrome.runtime.sendMessage({ type: "CAPTURE_TAB" });
-		}
-	};
-
-	const handleExtractAllPageAssets = async () => {
-		if (typeof chrome !== "undefined" && chrome.runtime?.sendMessage) {
-			setStatusNotice("Scanning page for media and vector assets...");
-			await chrome.runtime.sendMessage({ type: "EXTRACT_PAGE_ASSETS" });
-		}
-	};
-
-	const handlePasteFromClipboardButton = async () => {
-		if (typeof navigator === "undefined" || !navigator.clipboard?.read) {
-			setStatusNotice(
-				"Press ⌘V (or Ctrl+V) to paste files from your clipboard",
-			);
-			setTimeout(() => setStatusNotice(null), 3000);
-			return;
-		}
-
-		try {
-			const clipboardItems = await navigator.clipboard.read();
-			const files: File[] = [];
-			for (const item of clipboardItems) {
-				for (const type of item.types) {
-					if (type.startsWith("image/") || type === "application/pdf") {
-						const blob = await item.getType(type);
-						const ext = type.split("/")[1] || "png";
-						files.push(
-							new File([blob], `pasted-${Date.now()}.${ext}`, {
-								type,
-								lastModified: Date.now(),
-							}),
-						);
-					}
-				}
-			}
-
-			if (files.length > 0) {
-				window.dispatchEvent(
-					new CustomEvent("convrtr:ingest", {
-						detail: { files },
-					}),
-				);
-				setStatusNotice(`Pasted ${files.length} file(s) from clipboard`);
-				setTimeout(() => setStatusNotice(null), 4000);
-			} else {
-				setStatusNotice("No image or document detected in clipboard");
-				setTimeout(() => setStatusNotice(null), 3000);
-			}
-		} catch {
-			setStatusNotice("Press ⌘V (or Ctrl+V) to paste directly");
-			setTimeout(() => setStatusNotice(null), 3000);
-		}
-	};
+		window.addEventListener("keydown", handleKeyDown);
+		return () => window.removeEventListener("keydown", handleKeyDown);
+	}, [switchView, showShortcuts, showHistory]);
 
 	// Filtered history records
 	const filteredHistory = useMemo(() => {
@@ -493,254 +472,204 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 
 	const containerClass =
 		mode === "popup"
-			? "convrtr-popup-shell p-4"
+			? "convrtr-popup-shell p-3 sm:p-4"
 			: mode === "sidepanel"
 				? "convrtr-sidepanel-shell p-3 sm:p-4"
 				: "convrtr-tab-shell p-4 sm:p-8";
 
 	return (
 		<div className={containerClass}>
-			{/* Popup Mode Helper Banner */}
-			{mode === "popup" && (
-				<div
-					className="mono text-[11px] px-3 py-2 border mb-3 flex items-center justify-between gap-2"
-					style={{
-						borderColor: "var(--rule-subtle)",
-						background: "var(--surface)",
-						color: "var(--ink)",
-					}}
-				>
-					<span className="truncate">
-						Quick Popup [⌘⇧,]. Dock alongside tabs:
-					</span>
-					<button
-						type="button"
-						onClick={handleOpenSidePanel}
-						className="mono text-[10px] px-2.5 py-1 border font-semibold shrink-0 cursor-pointer"
-						style={{
-							background: "var(--accent)",
-							color: "var(--ground)",
-							borderColor: "var(--accent)",
-						}}
-						title="Dock in Chrome Side Panel (⌘⇧C)"
-					>
-						DOCK IN SIDE PANEL ↗
-					</button>
-				</div>
-			)}
-
 			{/* Top Extension Header */}
 			<header
-				className="flex flex-col gap-2.5 border-b pb-3 mb-3"
+				className="flex items-center justify-between border-b pb-3 mb-3"
 				style={{ borderColor: "var(--rule)" }}
 			>
-				{/* Row 1: Brand identity, mode, history, and studio expand */}
-				<div className="flex items-center justify-between">
-					<div className="flex items-center gap-2">
-						<div
-							className="flex items-center justify-center w-6 h-6 border shrink-0"
-							style={{
-								background: "var(--surface)",
-								borderColor: "var(--rule-strong)",
-							}}
+				{/* Brand Identity & Current Mode Badge */}
+				<div className="flex items-center gap-2">
+					<div
+						className="flex items-center justify-center w-6 h-6 border shrink-0"
+						style={{
+							background: "var(--surface)",
+							borderColor: "var(--rule-strong)",
+						}}
+					>
+						<svg
+							width="12"
+							height="12"
+							viewBox="0 0 32 32"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="4"
+							strokeLinecap="square"
+							strokeLinejoin="miter"
+							aria-hidden="true"
 						>
-							<svg
-								width="12"
-								height="12"
-								viewBox="0 0 32 32"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth="4"
-								strokeLinecap="square"
-								strokeLinejoin="miter"
-								aria-hidden="true"
-							>
-								<path d="M11 7 L23 16 L11 25" />
-							</svg>
-						</div>
-
-						<div className="flex items-baseline gap-1.5">
-							<span
-								className="mono font-bold tracking-tight text-[13px] uppercase"
-								style={{ color: "var(--ink)" }}
-							>
-								convrtr
-							</span>
-							<span
-								className="mono text-[9px] uppercase px-1.5 py-0.5 border font-semibold"
-								style={{
-									borderColor: "var(--rule)",
-									color: "var(--accent)",
-									background: "var(--surface)",
-								}}
-								title={
-									mode === "sidepanel"
-										? "Docked Side Panel (Shortcut: ⌘⇧C or Ctrl+Shift+C)"
-										: mode === "popup"
-											? "Quick Popup (Shortcut: ⌘⇧, or Ctrl+Shift+,)"
-											: "Full Tab Studio"
-								}
-							>
-								{mode === "sidepanel"
-									? "SIDE PANEL [⌘⇧C]"
-									: mode === "popup"
-										? "POPUP [⌘⇧,]"
-										: "STUDIO"}
-							</span>
-						</div>
+							<path d="M11 7 L23 16 L11 25" />
+						</svg>
 					</div>
 
-					<div className="flex items-center gap-1.5">
+					<div className="flex items-baseline gap-1.5">
+						<h1
+							className="mono font-bold tracking-tight text-[13px] uppercase m-0 leading-none"
+							style={{ color: "var(--ink)" }}
+						>
+							convrtr
+						</h1>
+						<span
+							className="mono text-[9px] uppercase px-1.5 py-0.5 border font-semibold"
+							style={{
+								borderColor: "var(--rule)",
+								color: "var(--accent)",
+								background: "var(--surface)",
+							}}
+							title={
+								mode === "sidepanel"
+									? "Docked Side Panel (Shortcut: ⌘⇧C or 1)"
+									: mode === "popup"
+										? "Quick Popup (Shortcut: ⌘⇧, or 2)"
+										: "Full Tab Studio (Shortcut: ⌘⇧O or 3)"
+							}
+						>
+							{mode === "sidepanel"
+								? "SIDE PANEL [⌘⇧C]"
+								: mode === "popup"
+									? "POPUP [⌘⇧,]"
+									: "STUDIO [⌘⇧O]"}
+						</span>
+					</div>
+				</div>
+
+				{/* Navigation & Mode Switch Actions */}
+				<div className="flex items-center gap-1.5 flex-wrap">
+					<button
+						type="button"
+						onClick={() => setShowPresets((prev) => !prev)}
+						aria-label="Toggle Quick Format Presets Bar (P)"
+						className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer"
+						style={{
+							background: showPresets ? "var(--surface)" : "transparent",
+							color: showPresets ? "var(--accent)" : "var(--ink-muted)",
+							borderColor: showPresets ? "var(--accent)" : "var(--rule)",
+						}}
+						title="Toggle Quick Format Presets (P)"
+					>
+						PRESETS
+					</button>
+
+					<button
+						type="button"
+						onClick={() => setShowHistory((prev) => !prev)}
+						aria-label="Toggle Conversion History Drawer (H)"
+						className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer"
+						style={{
+							background: showHistory ? "var(--surface)" : "transparent",
+							color: showHistory ? "var(--accent)" : "var(--ink-muted)",
+							borderColor: showHistory ? "var(--accent)" : "var(--rule)",
+						}}
+						title="Toggle Conversion History (H)"
+					>
+						HISTORY
+						{historyRecords.length > 0 ? ` (${historyRecords.length})` : ""}
+					</button>
+
+					<button
+						type="button"
+						onClick={() => setShowShortcuts((prev) => !prev)}
+						aria-label="View Keyboard Shortcuts Guide (?)"
+						className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer"
+						style={{
+							background: showShortcuts ? "var(--surface)" : "transparent",
+							color: showShortcuts ? "var(--accent)" : "var(--ink-muted)",
+							borderColor: showShortcuts ? "var(--accent)" : "var(--rule)",
+						}}
+						title="Keyboard Shortcuts Cheat Sheet (?)"
+					>
+						KEYS [?]
+					</button>
+
+					{/* Mutually Exclusive Mode Switches: only show alternatives to current view */}
+					{mode !== "sidepanel" && (
 						<button
 							type="button"
-							onClick={() => setShowPresets((prev) => !prev)}
+							onClick={() => void switchView("sidepanel")}
+							aria-label="Dock into Side Panel and close current view (1)"
 							className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer"
 							style={{
-								background: showPresets ? "var(--surface)" : "transparent",
-								color: showPresets ? "var(--accent)" : "var(--ink-muted)",
-								borderColor: showPresets ? "var(--accent)" : "var(--rule)",
+								background: "var(--surface)",
+								color: "var(--accent)",
+								borderColor: "var(--accent)",
 							}}
-							title="Toggle Quick Format Presets"
+							title="Dock into Side Panel (Autocloses current view & resumes operations) [1]"
 						>
-							PRESETS
+							SIDEBAR ↗
 						</button>
+					)}
 
+					{mode !== "popup" && (
 						<button
 							type="button"
-							onClick={() => setShowHistory((prev) => !prev)}
-							className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer"
-							style={{
-								background: showHistory ? "var(--surface)" : "transparent",
-								color: showHistory ? "var(--accent)" : "var(--ink-muted)",
-								borderColor: showHistory ? "var(--accent)" : "var(--rule)",
-							}}
-							title="Toggle Conversion History"
-						>
-							HISTORY
-							{historyRecords.length > 0 ? ` (${historyRecords.length})` : ""}
-						</button>
-
-						{mode === "sidepanel" && (
-							<button
-								type="button"
-								onClick={handleOpenPopup}
-								className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer"
-								style={{
-									background: "transparent",
-									color: "var(--ink)",
-									borderColor: "var(--rule)",
-								}}
-								title="Open Quick Popup (⌘⇧, or Ctrl+Shift+,)"
-							>
-								POPUP ↗
-							</button>
-						)}
-
-						{mode === "popup" && (
-							<button
-								type="button"
-								onClick={handleOpenSidePanel}
-								className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer"
-								style={{
-									background: "var(--surface)",
-									color: "var(--accent)",
-									borderColor: "var(--accent)",
-								}}
-								title="Dock in Chrome Side Panel (⌘⇧C or Ctrl+Shift+C)"
-							>
-								SIDE PANEL ↗
-							</button>
-						)}
-
-						<button
-							type="button"
-							onClick={handleOpenFullTab}
+							onClick={() => void switchView("popup")}
+							aria-label="Open Quick Popup and close current view (2)"
 							className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer"
 							style={{
 								background: "transparent",
 								color: "var(--ink)",
 								borderColor: "var(--rule)",
 							}}
-							title="Expand to Full Tab Studio"
+							title="Open Quick Popup (Autocloses current view & resumes operations) [2]"
+						>
+							POPUP ↗
+						</button>
+					)}
+
+					{mode !== "tab" && (
+						<button
+							type="button"
+							onClick={() => void switchView("tab")}
+							aria-label="Open Full Studio Tab and close current view (3)"
+							className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer"
+							style={{
+								background: "transparent",
+								color: "var(--ink)",
+								borderColor: "var(--rule)",
+							}}
+							title="Open Full Studio Tab (Autocloses current view & resumes operations) [3]"
 						>
 							STUDIO ↗
 						</button>
+					)}
 
-						<a
-							href={`${SITE}/support`}
-							target="_blank"
-							rel="noreferrer"
-							className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer inline-flex items-center"
-							style={{
-								background: "transparent",
-								color: "var(--ink)",
-								borderColor: "var(--rule)",
-							}}
-							title="Live Diagnostics & Troubleshooting Center"
-						>
-							SUPPORT ↗
-						</a>
-
-						<a
-							href={`${SITE}/feedback`}
-							target="_blank"
-							rel="noreferrer"
-							className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer inline-flex items-center"
-							style={{
-								background: "transparent",
-								color: "var(--ink)",
-								borderColor: "var(--rule)",
-							}}
-							title="Submit Feedback or Format Proposals"
-						>
-							FEEDBACK ↗
-						</a>
-					</div>
-				</div>
-
-				{/* Row 2: 3-column utility grid */}
-				<div className="grid grid-cols-3 gap-1.5">
-					<button
-						type="button"
-						onClick={handleCaptureVisibleTab}
-						className="mono text-[10px] py-1.5 px-2 border flex items-center justify-center transition-colors cursor-pointer text-center"
+					<a
+						href={`${SITE}/support`}
+						target="_blank"
+						rel="noreferrer"
+						aria-label="Open Live Diagnostics & Support Center"
+						className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer inline-flex items-center"
 						style={{
-							background: "var(--surface)",
+							background: "transparent",
 							color: "var(--ink)",
 							borderColor: "var(--rule)",
 						}}
-						title="Capture visible tab viewport screenshot (⌘⇧S)"
+						title="Diagnostics & Troubleshooting Center"
 					>
-						<span className="truncate">CAPTURE</span>
-					</button>
+						SUPPORT ↗
+					</a>
 
-					<button
-						type="button"
-						onClick={handleExtractAllPageAssets}
-						className="mono text-[10px] py-1.5 px-2 border flex items-center justify-center transition-colors cursor-pointer text-center"
+					<a
+						href={`${SITE}/feedback`}
+						target="_blank"
+						rel="noreferrer"
+						aria-label="Submit Feedback or Format Proposals"
+						className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer inline-flex items-center"
 						style={{
-							background: "var(--surface)",
+							background: "transparent",
 							color: "var(--ink)",
 							borderColor: "var(--rule)",
 						}}
-						title="Extract all media & SVGs from current webpage"
+						title="Feedback & Proposals"
 					>
-						<span className="truncate">EXTRACT</span>
-					</button>
-
-					<button
-						type="button"
-						onClick={handlePasteFromClipboardButton}
-						className="mono text-[10px] py-1.5 px-2 border flex items-center justify-center transition-colors cursor-pointer text-center"
-						style={{
-							background: "var(--surface)",
-							color: "var(--ink)",
-							borderColor: "var(--rule)",
-						}}
-						title="Paste image/document from clipboard (⌘V)"
-					>
-						<span className="truncate">PASTE ⌘V</span>
-					</button>
+						FEEDBACK ↗
+					</a>
 				</div>
 			</header>
 
@@ -762,8 +691,8 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 							key={p.id}
 							type="button"
 							onClick={() => {
-								setStatusNotice(`Preset active: [${p.label}]`);
-								setTimeout(() => setStatusNotice(null), 3500);
+								setStatusNotice(`Preset selected: [${p.label}]`);
+								setTimeout(() => setStatusNotice(null), 3000);
 							}}
 							className="mono text-[10px] px-2 py-0.5 border shrink-0 transition-colors cursor-pointer whitespace-nowrap"
 							style={{
@@ -781,6 +710,7 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 			{/* History Drawer with Search & Export */}
 			{showHistory && (
 				<section
+					aria-labelledby="history-heading"
 					className="border p-4 mb-4 flex flex-col gap-3"
 					style={{
 						borderColor: "var(--rule-strong)",
@@ -794,6 +724,7 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 					>
 						<div className="flex items-center gap-2">
 							<span
+								id="history-heading"
 								className="mono text-[11px] font-semibold"
 								style={{ color: "var(--accent)" }}
 							>
@@ -812,6 +743,7 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 									<button
 										type="button"
 										onClick={handleExportCsv}
+										aria-label="Export history as CSV"
 										className="mono text-[10px] px-2 py-0.5 border cursor-pointer"
 										style={{
 											borderColor: "var(--rule)",
@@ -825,6 +757,7 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 									<button
 										type="button"
 										onClick={handleExportJson}
+										aria-label="Export history as JSON"
 										className="mono text-[10px] px-2 py-0.5 border cursor-pointer"
 										style={{
 											borderColor: "var(--rule)",
@@ -844,6 +777,7 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 										clearHistory();
 										setHistoryRecords([]);
 									}}
+									aria-label="Clear all conversion history records"
 									className="mono text-[10px] px-2 py-0.5 border cursor-pointer"
 									style={{
 										borderColor: "var(--rule)",
@@ -857,6 +791,7 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 							<button
 								type="button"
 								onClick={() => setShowHistory(false)}
+								aria-label="Close history drawer"
 								className="mono text-[11px] cursor-pointer ml-1"
 								style={{ color: "var(--ink-muted)" }}
 							>
@@ -872,6 +807,7 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 							value={historyQuery}
 							onChange={(e) => setHistoryQuery(e.target.value)}
 							placeholder="Filter history by file name, format, or status..."
+							aria-label="Filter conversion history"
 							className="mono text-[11px] px-2.5 py-1.5 border w-full outline-none"
 							style={{
 								background: "var(--ground)",
@@ -946,7 +882,7 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 				</section>
 			)}
 
-			{/* Notification bar for context menu / staging / paste actions */}
+			{/* Status Banner */}
 			{statusNotice && (
 				<div
 					className="mono text-[11px] px-3 py-1.5 border mb-3 flex items-center justify-between"
@@ -960,6 +896,7 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 					<button
 						type="button"
 						onClick={() => setStatusNotice(null)}
+						aria-label="Dismiss status notification"
 						className="cursor-pointer opacity-70 hover:opacity-100 ml-2"
 					>
 						✕
@@ -967,14 +904,27 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 				</div>
 			)}
 
+			{/* Accessible Live Region */}
+			<div role="status" aria-live="polite" className="sr-only">
+				{statusNotice}
+			</div>
+
 			{/* Main Universal Converter Engine & UI */}
 			<main className="flex-1 flex flex-col min-w-0">
 				<MasterConverterClient
 					initialFrom={initialFrom}
 					initialTo={initialTo}
 					showExtensionCallout={false}
+					persistSession={true}
 				/>
 			</main>
+
+			{/* Keyboard Shortcuts Modal */}
+			<KeyboardShortcutsModal
+				isOpen={showShortcuts}
+				onClose={() => setShowShortcuts(false)}
+				isExtensionMode={true}
+			/>
 		</div>
 	);
 }

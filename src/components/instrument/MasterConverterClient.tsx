@@ -13,6 +13,12 @@ import {
 	saveOutput,
 } from "@/core/io";
 import { preflight } from "@/core/io/preflight";
+import {
+	clearActiveSession,
+	loadActiveSession,
+	type SerializedItem,
+	saveActiveSession,
+} from "@/core/io/session-store";
 import { type ZipEntry, zipOutputs } from "@/core/io/zip";
 import { JobError, runJob, runManyJob } from "@/core/pipeline/client";
 import { resolveConcurrency, runPool } from "@/core/pipeline/pool";
@@ -434,15 +440,18 @@ export function MasterConverterClient({
 	initialFrom,
 	initialTo,
 	showExtensionCallout = true,
+	persistSession = false,
 }: {
 	initialFrom?: string;
 	initialTo?: string;
 	showExtensionCallout?: boolean;
+	persistSession?: boolean;
 } = {}) {
 	const fileInputId = useId();
 	const addMoreInputId = useId();
 	const secondaryDropInputId = useId();
 	const [items, setItems] = useState<MasterItem[]>([]);
+	const [a11yAnnouncement, setA11yAnnouncement] = useState("");
 	const [configuredPreset, setConfiguredPreset] =
 		useState<ConfiguredPreset | null>(() => {
 			const f = (initialFrom ?? "").trim().toUpperCase();
@@ -490,6 +499,9 @@ export function MasterConverterClient({
 	const controllerRef = useRef<AbortController | null>(null);
 	const startedAtRef = useRef<number>(0);
 	const addMoreInputRef = useRef<HTMLInputElement>(null);
+	const runConversionBatchRef = useRef<
+		((toConvert: MasterItem[]) => Promise<void>) | null
+	>(null);
 
 	// Read URL query parameters on mount
 	useEffect(() => {
@@ -689,6 +701,206 @@ export function MasterConverterClient({
 			);
 		};
 	}, []);
+
+	// Session Persistence: Restore session on mount when enabled
+	useEffect(() => {
+		if (!persistSession) return;
+		let cancelled = false;
+
+		(async () => {
+			const saved = await loadActiveSession();
+			if (cancelled || !saved || !saved.items || saved.items.length === 0)
+				return;
+
+			const restoredItems: MasterItem[] = saved.items.map((sItem) => {
+				const file = new File([sItem.fileData], sItem.name, {
+					type: sItem.type,
+					lastModified: sItem.lastModified,
+				});
+				const availableTargets = getAvailableTargetFormatsForFile(file);
+				const matchedTarget = availableTargets.find(
+					(t) => t.id === sItem.targetId || t.ext === sItem.targetExt,
+				);
+				const routeInfo = sItem.targetExt
+					? findConversionRoute(sItem.ext, sItem.targetExt)
+					: undefined;
+				const tool =
+					matchedTarget?.tool ??
+					routeInfo?.tool ??
+					(sItem.targetExt
+						? findToolForConversion(sItem.ext, sItem.targetExt)
+						: undefined);
+				const route =
+					matchedTarget?.route ??
+					routeInfo?.route ??
+					(tool ? [tool] : undefined);
+
+				return {
+					id: sItem.id,
+					file,
+					ext: sItem.ext,
+					selected: sItem.selected,
+					targetExt: sItem.targetExt,
+					targetId: sItem.targetId,
+					toolId: tool?.id ?? sItem.toolId,
+					tool,
+					route,
+					customParams: sItem.customParams,
+					status: sItem.status === "converting" ? "queued" : sItem.status,
+					ratio: sItem.ratio,
+					phase: sItem.phase,
+					output: sItem.output,
+					outputSize: sItem.outputSize,
+					outputName: sItem.outputName,
+					durationMs: sItem.durationMs,
+					errorDetail: sItem.errorDetail,
+					error: sItem.error,
+					lineage: sItem.lineage,
+				};
+			});
+
+			setItems(restoredItems);
+			if (saved.globalTarget) setGlobalTarget(saved.globalTarget);
+			if (saved.qualityPreset)
+				setQualityPreset(saved.qualityPreset as QualityPreset);
+			if (saved.configuredPreset) setConfiguredPreset(saved.configuredPreset);
+
+			setA11yAnnouncement(
+				`Resumed session with ${restoredItems.length} file${restoredItems.length === 1 ? "" : "s"}.`,
+			);
+
+			const queued = restoredItems.filter(
+				(i) => i.status === "queued" && i.targetExt && i.tool,
+			);
+			if (queued.length > 0) {
+				setTimeout(() => {
+					runConversionBatchRef.current?.(queued);
+				}, 150);
+			}
+		})();
+
+		return () => {
+			cancelled = true;
+		};
+	}, [persistSession]);
+
+	// Session Persistence: Debounced save when items or queue settings change
+	useEffect(() => {
+		if (!persistSession) return;
+		if (items.length === 0) {
+			void clearActiveSession();
+			return;
+		}
+
+		const timer = setTimeout(async () => {
+			try {
+				const serializedItems: SerializedItem[] = await Promise.all(
+					items.map(async (item) => {
+						const fileData = await item.file.arrayBuffer();
+						return {
+							id: item.id,
+							name: item.file.name,
+							size: item.file.size,
+							type: item.file.type,
+							lastModified: item.file.lastModified,
+							fileData,
+							ext: item.ext,
+							selected: item.selected,
+							targetExt: item.targetExt,
+							targetId: item.targetId,
+							toolId: item.toolId,
+							customParams: item.customParams,
+							status: item.status,
+							ratio: item.ratio,
+							phase: item.phase,
+							output: item.output,
+							outputSize: item.outputSize,
+							outputName: item.outputName,
+							durationMs: item.durationMs,
+							errorDetail: item.errorDetail,
+							error: item.error,
+							lineage: item.lineage,
+						};
+					}),
+				);
+
+				await saveActiveSession({
+					updatedAt: Date.now(),
+					globalTarget,
+					qualityPreset,
+					configuredPreset,
+					items: serializedItems,
+				});
+			} catch (err) {
+				console.warn("[convrtr:session] Auto-save error:", err);
+			}
+		}, 350);
+
+		return () => clearTimeout(timer);
+	}, [items, persistSession, globalTarget, qualityPreset, configuredPreset]);
+
+	// Session Persistence: Immediate flush on view transition event
+	useEffect(() => {
+		if (!persistSession) return;
+
+		const handleFlush = async (e: Event) => {
+			const customEvent = e as CustomEvent<{ callback?: () => void }>;
+			if (items.length === 0) {
+				await clearActiveSession();
+				customEvent.detail?.callback?.();
+				return;
+			}
+
+			try {
+				const serializedItems: SerializedItem[] = await Promise.all(
+					items.map(async (item) => {
+						const fileData = await item.file.arrayBuffer();
+						return {
+							id: item.id,
+							name: item.file.name,
+							size: item.file.size,
+							type: item.file.type,
+							lastModified: item.file.lastModified,
+							fileData,
+							ext: item.ext,
+							selected: item.selected,
+							targetExt: item.targetExt,
+							targetId: item.targetId,
+							toolId: item.toolId,
+							customParams: item.customParams,
+							status: item.status,
+							ratio: item.ratio,
+							phase: item.phase,
+							output: item.output,
+							outputSize: item.outputSize,
+							outputName: item.outputName,
+							durationMs: item.durationMs,
+							errorDetail: item.errorDetail,
+							error: item.error,
+							lineage: item.lineage,
+						};
+					}),
+				);
+
+				await saveActiveSession({
+					updatedAt: Date.now(),
+					globalTarget,
+					qualityPreset,
+					configuredPreset,
+					items: serializedItems,
+				});
+			} catch (err) {
+				console.warn("[convrtr:session] Flush session failed:", err);
+			} finally {
+				customEvent.detail?.callback?.();
+			}
+		};
+
+		window.addEventListener("convrtr:flush-session", handleFlush);
+		return () => {
+			window.removeEventListener("convrtr:flush-session", handleFlush);
+		};
+	}, [items, persistSession, globalTarget, qualityPreset, configuredPreset]);
 
 	const selectedItems = items.filter((item) => item.selected);
 	const selectedCount = selectedItems.length;
@@ -1036,11 +1248,13 @@ export function MasterConverterClient({
 		);
 		if (toConvert.length === 0) return;
 
-		// Heavy download check
+		// Heavy download check (bypassed in extension where codecs are locally bundled)
+		const isExtension =
+			typeof chrome !== "undefined" && Boolean(chrome.runtime?.id);
 		const heavy = toConvert.find(
 			(item) => item.tool?.heavyDownloadMb && item.tool.heavyDownloadMb > 0,
 		);
-		if (heavy?.tool) {
+		if (heavy?.tool && !isExtension) {
 			try {
 				if (localStorage.getItem(HEAVY_DOWNLOAD_KEY) !== "yes") {
 					setHeavyTool(heavy.tool);
@@ -1085,11 +1299,15 @@ export function MasterConverterClient({
 	};
 
 	const runConversionBatch = async (toConvert: MasterItem[]) => {
+		runConversionBatchRef.current = runConversionBatch;
 		const controller = new AbortController();
 		controllerRef.current = controller;
 		startedAtRef.current = Date.now();
 		setIsConverting(true);
 		setTopError(null);
+		setA11yAnnouncement(
+			`Starting conversion for ${toConvert.length} file${toConvert.length === 1 ? "" : "s"}.`,
+		);
 
 		// Initialize selected items as queued
 		setItems((prev) =>
@@ -1325,8 +1543,8 @@ export function MasterConverterClient({
 		1,
 	);
 
-	// Keyboard shortcuts: Cmd+Enter (Convert), Shift+Cmd+C (Continue Outputs), Shift+Cmd+S (Download ZIP)
-	// biome-ignore lint/correctness/useExhaustiveDependencies: Handlers are invoked via keyboard shortcut based on isConverting/selectedCount/doneCount
+	// Keyboard shortcuts: Cmd+O (Open), Cmd+Enter (Convert), Cmd+D / Shift+Cmd+S (Download ZIP), Shift+Cmd+C (Continue Outputs), Cmd+A (Select All), Delete (Remove), Cmd+K (Search), Esc (Cancel)
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Handlers and state triggers are invoked via keyboard shortcut based on active state
 	useEffect(() => {
 		const handleKeyDown = (e: KeyboardEvent) => {
 			const target = e.target as HTMLElement | null;
@@ -1334,33 +1552,91 @@ export function MasterConverterClient({
 				target &&
 				(target.tagName === "INPUT" ||
 					target.tagName === "TEXTAREA" ||
-					target.tagName === "SELECT")
+					target.tagName === "SELECT" ||
+					target.isContentEditable)
 			) {
 				return;
 			}
 
 			const isMod = e.metaKey || e.ctrlKey;
+
+			// Cmd+O / Ctrl+O: Open file picker
+			if (isMod && !e.shiftKey && e.key.toLowerCase() === "o") {
+				e.preventDefault();
+				const fileInput = document.getElementById(
+					fileInputId,
+				) as HTMLInputElement | null;
+				fileInput?.click();
+				return;
+			}
+
+			// Cmd+Enter / Ctrl+Enter: Start conversion
 			if (isMod && !e.shiftKey && e.key === "Enter") {
 				e.preventDefault();
 				if (!isConverting && selectedCount > 0) {
 					void startConversion();
 				}
-			} else if (isMod && e.shiftKey && (e.key === "C" || e.key === "c")) {
-				e.preventDefault();
-				if (doneCount > 0) {
-					handleContinueOutputs();
-				}
-			} else if (isMod && e.shiftKey && (e.key === "S" || e.key === "s")) {
+				return;
+			}
+
+			// Cmd+D / Ctrl+D or Shift+Cmd+S: Download all as ZIP
+			if (
+				(isMod && !e.shiftKey && e.key.toLowerCase() === "d") ||
+				(isMod && e.shiftKey && e.key.toLowerCase() === "s")
+			) {
 				e.preventDefault();
 				if (doneCount > 0) {
 					void handleDownloadAllZip();
 				}
+				return;
+			}
+
+			// Shift+Cmd+C: Continue outputs
+			if (isMod && e.shiftKey && e.key.toLowerCase() === "c") {
+				e.preventDefault();
+				if (doneCount > 0) {
+					handleContinueOutputs();
+				}
+				return;
+			}
+
+			// Cmd+A / Ctrl+A: Select all items
+			if (isMod && !e.shiftKey && e.key.toLowerCase() === "a") {
+				e.preventDefault();
+				setAllSelection(true);
+				return;
+			}
+
+			// Delete / Backspace: Remove selected items
+			if (e.key === "Delete" || (isMod && e.key === "Backspace")) {
+				e.preventDefault();
+				setItems((prev) => prev.filter((i) => !i.selected));
+				return;
+			}
+
+			// Cmd+K / Ctrl+K: Focus target search or format selector
+			if (isMod && !e.shiftKey && e.key.toLowerCase() === "k") {
+				e.preventDefault();
+				const searchInput = document.getElementById(
+					"convrtr-table-search",
+				) as HTMLInputElement | null;
+				if (searchInput) {
+					searchInput.focus();
+				}
+				return;
+			}
+
+			// Escape: Cancel ongoing conversion
+			if (e.key === "Escape" && isConverting) {
+				e.preventDefault();
+				cancelConversion();
+				return;
 			}
 		};
 
 		window.addEventListener("keydown", handleKeyDown);
 		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [isConverting, selectedCount, doneCount]);
+	}, [fileInputId, isConverting, selectedCount, doneCount]);
 
 	// Compute overall conversion progress percentage across active batch
 	const activeConvertingItems = items.filter(
@@ -1836,7 +2112,8 @@ export function MasterConverterClient({
 							className="text-[12px] m-0"
 							style={{ color: "var(--ink-muted)" }}
 						>
-							Convert files directly inside your browser Side Panel or right-click context menu.
+							Convert files directly inside your browser Side Panel or
+							right-click context menu.
 						</p>
 					</div>
 					<div className="flex items-center gap-2 shrink-0">
@@ -3583,6 +3860,11 @@ export function MasterConverterClient({
 					</div>
 				</div>
 			)}
+
+			{/* Accessibility Live Region for Screen Readers */}
+			<div role="status" aria-live="polite" className="sr-only">
+				{a11yAnnouncement}
+			</div>
 		</div>
 	);
 }
