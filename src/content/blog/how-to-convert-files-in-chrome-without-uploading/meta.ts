@@ -5,7 +5,7 @@ export const meta: BlogPostMeta = {
 	title:
 		"How to Convert Files Directly in Chrome Without Uploading to Remote Servers",
 	description:
-		"Convert web media, screenshots, and local files directly in Chrome Side Panel using client-side WebAssembly, zero-server uploads, and the official convrtr browser extension.",
+		"Convert web media, local files, and document assets directly in Chrome Side Panel using client-side WebAssembly, zero-server uploads, and the official convrtr browser extension.",
 	publishedAt: "2026-09-22",
 	relatedTools: [
 		"image/webp-to-png",

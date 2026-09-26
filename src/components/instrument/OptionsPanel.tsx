@@ -143,13 +143,7 @@ export function OptionsPanel({ tool, state, onChange, duration }: Props) {
 							aria-checked={selected}
 							aria-label={preset.label}
 							onClick={() => onChange(applyPreset(tool, preset.id))}
-							className="mono border px-4 py-2 text-[12px]"
-							style={{
-								color: selected ? "var(--ink)" : "var(--ink-muted)",
-								borderColor: selected ? "var(--ink)" : "var(--rule-strong)",
-								borderRadius: "var(--radius)",
-								background: "transparent",
-							}}
+							className={`m3-chip ${selected ? "m3-chip-active" : ""}`}
 						>
 							{preset.label}
 						</button>
@@ -167,16 +161,20 @@ export function OptionsPanel({ tool, state, onChange, duration }: Props) {
 				type="button"
 				onClick={() => setOpen((value) => !value)}
 				aria-expanded={open}
-				className="mono self-start text-[11px] tracking-[0.08em]"
-				style={{ color: "var(--ink-muted)", background: "transparent" }}
+				className="mono self-start text-[11px] tracking-[0.08em] rounded-full border px-3 py-1 transition-colors"
+				style={{
+					color: "var(--ink-muted)",
+					borderColor: "var(--rule-subtle)",
+					background: "transparent",
+				}}
 			>
 				ADVANCED {open ? "−" : "+"}
 			</button>
 
 			{open && (
 				<div
-					className="flex flex-col gap-6 border-t pt-4"
-					style={{ borderColor: "var(--rule-strong)" }}
+					className="m3-surface-card flex flex-col gap-6 p-4"
+					style={{ borderColor: "var(--rule-subtle)" }}
 				>
 					{groups.map((group) => (
 						<div key={group} className="flex flex-col gap-3">

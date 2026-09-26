@@ -883,11 +883,11 @@ export function buildExtensionJsonLd(url: string) {
 				isAccessibleForFree: true,
 				offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
 				description:
-					"Private in-browser file converter extension. Convert web media, screenshots, and local files directly in Chrome Side Panel using client-side WebAssembly.",
+					"Private in-browser file converter extension. Convert media, documents, and code directly in Chrome using client-side WebAssembly with zero server uploads.",
 				featureList: [
 					"Native Chrome Side Panel docking",
-					"Right-click context menu media conversion",
-					"Visible viewport screenshot capture and conversion",
+					"Adaptive 3-way interface (Side Panel, Quick Popup, Studio)",
+					"Right-click context menu media and code conversion",
 					"Quick popup with Command+Shift+Comma",
 					"Omnibox lookup keyword cv",
 					"Zero server uploads - 100% private WebAssembly",

@@ -46,28 +46,47 @@ export function DropField({ accept, formats, onFiles }: Props) {
 					input.current?.click();
 				}
 			}}
-			className="mono flex flex-col items-center gap-3 border p-8 text-center"
+			className="m3-surface-card mono flex flex-col items-center gap-3.5 border-dashed p-8 text-center transition-all duration-200"
 			style={{
 				borderColor: active ? "var(--ink)" : "var(--rule-strong)",
-				borderRadius: "var(--radius)",
 				cursor: "pointer",
 			}}
 		>
-			<span className="text-[13px]">DROP FILES HERE</span>
-			<span className="text-[12px]" style={{ color: "var(--ink-muted)" }}>
-				or click to browse
-			</span>
-			<div className="flex flex-wrap justify-center gap-2">
+			<div
+				className="flex h-10 w-10 items-center justify-center rounded-full border transition-all"
+				style={{
+					borderColor: active ? "var(--ink)" : "var(--rule-subtle)",
+					backgroundColor: "var(--ground)",
+					color: active ? "var(--accent)" : "var(--ink-muted)",
+				}}
+			>
+				<svg
+					width="18"
+					height="18"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					strokeWidth="1"
+					strokeLinecap="round"
+					strokeLinejoin="round"
+					aria-hidden="true"
+				>
+					<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+					<polyline points="17 8 12 3 7 8" />
+					<line x1="12" y1="3" x2="12" y2="15" />
+				</svg>
+			</div>
+			<div className="flex flex-col items-center gap-1">
+				<span className="text-[13px] font-medium tracking-[0.04em]">
+					DROP FILES HERE
+				</span>
+				<span className="text-[12px]" style={{ color: "var(--ink-muted)" }}>
+					or click to browse
+				</span>
+			</div>
+			<div className="flex flex-wrap justify-center gap-2 pt-1">
 				{formats.map((format) => (
-					<span
-						key={format}
-						className="border px-2 py-1 text-[11px] tracking-[0.08em]"
-						style={{
-							borderColor: "var(--rule-strong)",
-							borderRadius: "var(--radius)",
-							color: "var(--ink-muted)",
-						}}
-					>
+					<span key={format} className="m3-chip text-[11px] tracking-[0.04em]">
 						{format}
 					</span>
 				))}

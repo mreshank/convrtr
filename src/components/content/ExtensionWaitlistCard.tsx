@@ -54,7 +54,7 @@ export function ExtensionWaitlistCard() {
 		text: string;
 		type: "success" | "error";
 	} | null>(null);
-	const [subCount, setSubCount] = useState(1424);
+	const [_subCount, setSubCount] = useState(1424);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	useEffect(() => {
@@ -106,18 +106,7 @@ export function ExtensionWaitlistCard() {
 	return (
 		<div
 			id="extension-spotlight"
-			style={{
-				borderWidth: "var(--rule-width)",
-				borderStyle: "solid",
-				borderColor: "var(--rule)",
-				backgroundColor: "var(--surface)",
-				padding: "var(--gap-md)",
-				display: "flex",
-				flexDirection: "column",
-				gap: "var(--gap-md)",
-				width: "100%",
-				position: "relative",
-			}}
+			className="m3-surface-card relative flex w-full flex-col gap-[var(--gap-md)] p-[var(--gap-md)]"
 		>
 			{/* Top Eyebrow & Status Bar */}
 			<div
@@ -264,15 +253,9 @@ export function ExtensionWaitlistCard() {
 				{FEATURES.map((f) => (
 					<div
 						key={f.code}
+						className="m3-surface-card flex flex-col gap-2 p-[var(--gap-sm)]"
 						style={{
-							borderWidth: "var(--rule-width)",
-							borderStyle: "solid",
-							borderColor: "var(--rule)",
 							backgroundColor: "var(--ground)",
-							padding: "var(--gap-sm)",
-							display: "flex",
-							flexDirection: "column",
-							gap: "calc(var(--space-base) / 2)",
 						}}
 					>
 						<div
@@ -283,11 +266,9 @@ export function ExtensionWaitlistCard() {
 							}}
 						>
 							<span
-								className="mono"
+								className="m3-chip py-0.5 text-[10px] tracking-[0.08em]"
 								style={{
-									fontSize: "var(--mono-size)",
 									color: "var(--accent)",
-									letterSpacing: "0.08em",
 								}}
 							>
 								{f.code}
@@ -328,15 +309,10 @@ export function ExtensionWaitlistCard() {
 			{/* Interactive Waitlist Subscription Form */}
 			<div
 				id="extension-waitlist"
+				className="m3-surface-card flex flex-col gap-[var(--space-base)] p-[var(--gap-md)]"
 				style={{
-					borderWidth: "var(--rule-width)",
-					borderStyle: "solid",
 					borderColor: "var(--rule-strong)",
 					backgroundColor: "var(--ground)",
-					padding: "var(--gap-md)",
-					display: "flex",
-					flexDirection: "column",
-					gap: "var(--space-base)",
 				}}
 			>
 				<div>
@@ -392,75 +368,21 @@ export function ExtensionWaitlistCard() {
 						<button
 							type="button"
 							onClick={() => toggleChannel("extension")}
-							style={{
-								padding: "calc(var(--space-base) / 4) var(--space-base)",
-								borderRadius: "var(--radius-pill)",
-								borderWidth: "var(--rule-width)",
-								borderStyle: "solid",
-								borderColor: channels.includes("extension")
-									? "var(--rule-strong)"
-									: "var(--rule)",
-								backgroundColor: channels.includes("extension")
-									? "var(--ink)"
-									: "transparent",
-								color: channels.includes("extension")
-									? "var(--ground)"
-									: "var(--ink-muted)",
-								fontFamily: "var(--font-mono)",
-								fontSize: "var(--mono-size)",
-								cursor: "pointer",
-								textTransform: "uppercase",
-							}}
+							className={`m3-chip ${channels.includes("extension") ? "m3-chip-active" : ""}`}
 						>
 							[x] Chrome Extension Launch
 						</button>
 						<button
 							type="button"
 							onClick={() => toggleChannel("ecosystem")}
-							style={{
-								padding: "calc(var(--space-base) / 4) var(--space-base)",
-								borderRadius: "var(--radius-pill)",
-								borderWidth: "var(--rule-width)",
-								borderStyle: "solid",
-								borderColor: channels.includes("ecosystem")
-									? "var(--rule-strong)"
-									: "var(--rule)",
-								backgroundColor: channels.includes("ecosystem")
-									? "var(--ink)"
-									: "transparent",
-								color: channels.includes("ecosystem")
-									? "var(--ground)"
-									: "var(--ink-muted)",
-								fontFamily: "var(--font-mono)",
-								fontSize: "var(--mono-size)",
-								cursor: "pointer",
-								textTransform: "uppercase",
-							}}
+							className={`m3-chip ${channels.includes("ecosystem") ? "m3-chip-active" : ""}`}
 						>
 							[x] Ecosystem Releases
 						</button>
 						<button
 							type="button"
 							onClick={() => toggleChannel("releases")}
-							style={{
-								padding: "calc(var(--space-base) / 4) var(--space-base)",
-								borderRadius: "var(--radius-pill)",
-								borderWidth: "var(--rule-width)",
-								borderStyle: "solid",
-								borderColor: channels.includes("releases")
-									? "var(--rule-strong)"
-									: "var(--rule)",
-								backgroundColor: channels.includes("releases")
-									? "var(--ink)"
-									: "transparent",
-								color: channels.includes("releases")
-									? "var(--ground)"
-									: "var(--ink-muted)",
-								fontFamily: "var(--font-mono)",
-								fontSize: "var(--mono-size)",
-								cursor: "pointer",
-								textTransform: "uppercase",
-							}}
+							className={`m3-chip ${channels.includes("releases") ? "m3-chip-active" : ""}`}
 						>
 							[x] WASM Decoder Changelogs
 						</button>
@@ -480,36 +402,23 @@ export function ExtensionWaitlistCard() {
 							onChange={(e) => setEmail(e.target.value)}
 							placeholder="engineer@domain.com"
 							required
+							className="mono rounded-full border px-[var(--gap-sm)] py-[var(--space-base)] text-[var(--mono-size)] outline-none transition-colors focus:border-[var(--accent)]"
 							style={{
 								flex: 1,
 								minWidth: "16rem",
-								padding: "var(--space-base) var(--gap-sm)",
-								borderWidth: "var(--rule-width)",
-								borderStyle: "solid",
 								borderColor: "var(--rule-strong)",
 								backgroundColor: "var(--surface)",
 								color: "var(--ink)",
-								fontFamily: "var(--font-mono)",
-								fontSize: "var(--mono-size)",
-								borderRadius: "var(--radius-control)",
-								outline: "none",
 							}}
 						/>
 						<button
 							type="submit"
 							disabled={isSubmitting}
+							className="mono border border-transparent px-[var(--gap-md)] py-[var(--space-base)] text-[var(--mono-size)] font-semibold rounded-full uppercase tracking-[0.08em] transition-all hover:bg-[var(--accent)] hover:text-[var(--ground)]"
 							style={{
-								padding: "var(--space-base) var(--gap-md)",
-								borderRadius: "var(--radius-pill)",
 								backgroundColor: "var(--ink)",
 								color: "var(--ground)",
-								fontFamily: "var(--font-mono)",
-								fontSize: "var(--mono-size)",
-								fontWeight: 600,
-								border: "none",
 								cursor: "pointer",
-								textTransform: "uppercase",
-								letterSpacing: "0.08em",
 							}}
 						>
 							{isSubmitting ? "Subscribing..." : "Join Waitlist ➔"}

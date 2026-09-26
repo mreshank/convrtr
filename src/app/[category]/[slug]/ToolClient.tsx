@@ -917,10 +917,9 @@ export function ToolClient({ toolId }: { toolId: string }) {
 				<Link
 					href={masterHref}
 					data-testid="open-master-converter-btn"
-					className="group inline-flex items-center gap-2 border px-3 py-1.5 mono text-[11px] transition-all hover:border-[var(--accent)] hover:bg-[var(--surface)]"
+					className="group inline-flex items-center gap-2 border px-3.5 py-1.5 mono text-[11px] rounded-full transition-all hover:border-[var(--accent)] hover:bg-[var(--surface)]"
 					style={{
 						borderColor: "var(--rule)",
-						borderRadius: "var(--radius)",
 						background: "var(--ground)",
 						color: "var(--ink)",
 						textDecoration: "none",
@@ -933,10 +932,9 @@ export function ToolClient({ toolId }: { toolId: string }) {
 					/>
 					<span className="tracking-[0.04em]">OPEN IN MASTER CONVERTER</span>
 					<span
-						className="border px-1.5 py-0.5 text-[10px]"
+						className="rounded-full border px-2 py-0.5 text-[10px]"
 						style={{
 							borderColor: "var(--rule-strong)",
-							borderRadius: "var(--radius)",
 							color: "var(--accent)",
 							background: "var(--surface)",
 						}}
@@ -963,17 +961,10 @@ export function ToolClient({ toolId }: { toolId: string }) {
 						formats={tool.accept.ext.map((ext) => ext.toUpperCase())}
 						onFiles={handleFiles}
 					/>
-					<div
-						className="flex flex-wrap items-center justify-between gap-3 border border-dashed px-4 py-3"
-						style={{
-							borderColor: "var(--rule)",
-							borderRadius: "var(--radius)",
-							background: "var(--surface)",
-						}}
-					>
-						<div className="flex items-center gap-2">
+					<div className="m3-surface-card flex flex-wrap items-center justify-between gap-3 p-4 transition-all">
+						<div className="flex items-center gap-2.5">
 							<span
-								className="mono text-[10px] tracking-[0.06em]"
+								className="m3-chip py-0.5 text-[10px] tracking-[0.06em]"
 								style={{ color: "var(--accent)" }}
 							>
 								[ BATCH & MULTI-FILE STUDIO ]
@@ -999,13 +990,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 			)}
 
 			{file && (
-				<div
-					className="flex flex-col gap-6 border p-6"
-					style={{
-						borderColor: "var(--rule)",
-						borderRadius: "var(--radius)",
-					}}
-				>
+				<div className="m3-surface-card flex flex-col gap-6 p-6">
 					<div className="flex items-start justify-between gap-4">
 						<FileReadout
 							name={file.name}
@@ -1018,11 +1003,10 @@ export function ToolClient({ toolId }: { toolId: string }) {
 							type="button"
 							onClick={replace}
 							disabled={converting}
-							className="mono border px-3 py-1 text-[11px]"
+							className="mono border px-3 py-1 text-[11px] rounded-full transition-all hover:border-[var(--rule)] hover:text-[var(--ink)]"
 							style={{
 								color: "var(--ink-muted)",
-								borderColor: "var(--rule)",
-								borderRadius: "var(--radius)",
+								borderColor: "var(--rule-subtle)",
 								background: "transparent",
 							}}
 						>
@@ -1047,11 +1031,10 @@ export function ToolClient({ toolId }: { toolId: string }) {
 							<button
 								type="button"
 								onClick={cancel}
-								className="mono self-end border px-4 py-2 text-[12px]"
+								className="mono self-end border border-dashed px-4 py-1.5 text-[12px] rounded-full transition-all hover:bg-[var(--surface-alt)] hover:text-[var(--ink-inverse)]"
 								style={{
 									color: "var(--ink)",
 									borderColor: "var(--ink)",
-									borderStyle: "dashed",
 								}}
 							>
 								CANCEL
@@ -1083,11 +1066,10 @@ export function ToolClient({ toolId }: { toolId: string }) {
 										data-testid="continue-conversion-btn"
 										onClick={() => continueSingleConversion()}
 										aria-label="Continue converting output file"
-										className="mono border px-3 py-2 text-[12px] font-medium transition-all hover:bg-[var(--accent)] hover:text-[var(--ground)]"
+										className="mono border px-3.5 py-1.5 text-[12px] font-medium rounded-full transition-all hover:bg-[var(--accent)] hover:text-[var(--ground)]"
 										style={{
 											color: "var(--accent)",
 											borderColor: "var(--accent)",
-											borderRadius: "var(--radius)",
 											background: "transparent",
 											cursor: "pointer",
 										}}
@@ -1097,11 +1079,10 @@ export function ToolClient({ toolId }: { toolId: string }) {
 									<button
 										type="button"
 										onClick={save}
-										className="mono border px-4 py-2 text-[12px]"
+										className="mono border px-4 py-1.5 text-[12px] font-medium rounded-full transition-all hover:bg-[var(--ink)] hover:text-[var(--ground)]"
 										style={{
 											color: "var(--ink)",
 											borderColor: "var(--ink)",
-											borderRadius: "var(--radius)",
 											cursor: "pointer",
 										}}
 									>
@@ -1129,14 +1110,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 											data-testid={`continue-as-${opt.ext}`}
 											onClick={() => continueSingleConversion(opt.ext)}
 											aria-label={`Continue conversion to ${opt.label}`}
-											className="mono border px-2 py-0.5 text-[10px] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
-											style={{
-												color: "var(--ink)",
-												borderColor: "var(--rule-strong)",
-												borderRadius: "var(--radius)",
-												background: "var(--surface)",
-												cursor: "pointer",
-											}}
+											className="m3-chip py-0.5 text-[10px] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
 										>
 											→ {opt.label}
 										</button>
@@ -1189,7 +1163,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 						<button
 							type="button"
 							onClick={convert}
-							className="mono self-end border px-4 py-2 text-[12px]"
+							className="mono self-end border px-5 py-2 text-[12px] font-semibold rounded-full transition-all hover:bg-[var(--ink)] hover:text-[var(--ground)]"
 							style={{
 								color: "var(--ink)",
 								borderColor: "var(--ink)",
@@ -1202,13 +1176,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 			)}
 
 			{combining && (
-				<div
-					className="flex flex-col gap-6 border p-6"
-					style={{
-						borderColor: "var(--rule)",
-						borderRadius: "var(--radius)",
-					}}
-				>
+				<div className="m3-surface-card flex flex-col gap-6 p-6">
 					<div className="flex items-start justify-between gap-4">
 						<FileReadout
 							name={`${items.length} FILES`}
@@ -1222,10 +1190,11 @@ export function ToolClient({ toolId }: { toolId: string }) {
 						<button
 							type="button"
 							onClick={replace}
-							className="mono border px-4 py-2 text-[12px]"
+							className="mono border px-3 py-1 text-[11px] rounded-full transition-all hover:border-[var(--rule)] hover:text-[var(--ink)]"
 							style={{
 								color: "var(--ink-muted)",
-								borderColor: "var(--rule)",
+								borderColor: "var(--rule-subtle)",
+								background: "transparent",
 							}}
 						>
 							REPLACE
@@ -1258,11 +1227,10 @@ export function ToolClient({ toolId }: { toolId: string }) {
 							<button
 								type="button"
 								onClick={cancel}
-								className="mono self-end border px-4 py-2 text-[12px]"
+								className="mono self-end border border-dashed px-4 py-1.5 text-[12px] rounded-full transition-all hover:bg-[var(--surface-alt)] hover:text-[var(--ink-inverse)]"
 								style={{
 									color: "var(--ink)",
 									borderColor: "var(--ink)",
-									borderStyle: "dashed",
 								}}
 							>
 								CANCEL
@@ -1309,11 +1277,10 @@ export function ToolClient({ toolId }: { toolId: string }) {
 										data-testid="continue-conversion-btn"
 										onClick={() => continueSingleConversion()}
 										aria-label="Continue converting output file"
-										className="mono border px-3 py-2 text-[12px] font-medium transition-all hover:bg-[var(--accent)] hover:text-[var(--ground)]"
+										className="mono border px-3.5 py-1.5 text-[12px] font-medium rounded-full transition-all hover:bg-[var(--accent)] hover:text-[var(--ground)]"
 										style={{
 											color: "var(--accent)",
 											borderColor: "var(--accent)",
-											borderRadius: "var(--radius)",
 											background: "transparent",
 											cursor: "pointer",
 										}}
@@ -1323,7 +1290,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 									<button
 										type="button"
 										onClick={saveCombined}
-										className="mono border px-4 py-2 text-[12px]"
+										className="mono border px-4 py-1.5 text-[12px] font-medium rounded-full transition-all hover:bg-[var(--ink)] hover:text-[var(--ground)]"
 										style={{ color: "var(--ink)", borderColor: "var(--ink)" }}
 									>
 										SAVE
@@ -1350,14 +1317,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 											data-testid={`combine-continue-as-${opt.ext}`}
 											onClick={() => continueSingleConversion(opt.ext)}
 											aria-label={`Continue conversion to ${opt.label}`}
-											className="mono border px-2 py-0.5 text-[10px] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
-											style={{
-												color: "var(--ink)",
-												borderColor: "var(--rule-strong)",
-												borderRadius: "var(--radius)",
-												background: "var(--surface)",
-												cursor: "pointer",
-											}}
+											className="m3-chip py-0.5 text-[10px] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
 										>
 											→ {opt.label}
 										</button>
@@ -1371,7 +1331,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 						<button
 							type="button"
 							onClick={convertMany}
-							className="mono self-end border px-4 py-2 text-[12px]"
+							className="mono self-end border px-5 py-2 text-[12px] font-semibold rounded-full transition-all hover:bg-[var(--ink)] hover:text-[var(--ground)]"
 							style={{ color: "var(--ink)", borderColor: "var(--ink)" }}
 						>
 							CONVERT
@@ -1381,13 +1341,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 			)}
 
 			{items.length > 1 && !combining && (
-				<div
-					className="flex flex-col gap-6 border p-6"
-					style={{
-						borderColor: "var(--rule)",
-						borderRadius: "var(--radius)",
-					}}
-				>
+				<div className="m3-surface-card flex flex-col gap-6 p-6">
 					<div className="flex items-start justify-between gap-4">
 						<FileReadout
 							name={`${items.length} FILES`}
@@ -1402,11 +1356,10 @@ export function ToolClient({ toolId }: { toolId: string }) {
 							type="button"
 							onClick={replace}
 							disabled={batchConverting}
-							className="mono border px-3 py-1 text-[11px]"
+							className="mono border px-3 py-1 text-[11px] rounded-full transition-all hover:border-[var(--rule)] hover:text-[var(--ink)]"
 							style={{
 								color: "var(--ink-muted)",
-								borderColor: "var(--rule)",
-								borderRadius: "var(--radius)",
+								borderColor: "var(--rule-subtle)",
 								background: "transparent",
 							}}
 						>
@@ -1434,11 +1387,10 @@ export function ToolClient({ toolId }: { toolId: string }) {
 							<button
 								type="button"
 								onClick={batchCancel}
-								className="mono self-end border px-4 py-2 text-[12px]"
+								className="mono self-end border border-dashed px-4 py-1.5 text-[12px] rounded-full transition-all hover:bg-[var(--surface-alt)] hover:text-[var(--ink-inverse)]"
 								style={{
 									color: "var(--ink)",
 									borderColor: "var(--ink)",
-									borderStyle: "dashed",
 								}}
 							>
 								CANCEL
@@ -1454,11 +1406,10 @@ export function ToolClient({ toolId }: { toolId: string }) {
 										type="button"
 										data-testid="batch-continue-btn"
 										onClick={() => continueAllBatch()}
-										className="mono border px-4 py-2 text-[12px] font-medium transition-all hover:bg-[var(--accent)] hover:text-[var(--ground)]"
+										className="mono border px-4 py-2 text-[12px] font-medium rounded-full transition-all hover:bg-[var(--accent)] hover:text-[var(--ground)]"
 										style={{
 											color: "var(--accent)",
 											borderColor: "var(--accent)",
-											borderRadius: "var(--radius)",
 											background: "transparent",
 											cursor: "pointer",
 										}}
@@ -1473,14 +1424,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 												type="button"
 												data-testid={`batch-continue-as-${opt.ext}`}
 												onClick={() => continueAllBatch(opt.ext)}
-												className="mono border px-3 py-2 text-[11px] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
-												style={{
-													color: "var(--ink)",
-													borderColor: "var(--rule-strong)",
-													borderRadius: "var(--radius)",
-													background: "var(--surface)",
-													cursor: "pointer",
-												}}
+												className="m3-chip py-0.5 text-[10px] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
 											>
 												→ {opt.label}
 											</button>
@@ -1488,7 +1432,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 									<button
 										type="button"
 										onClick={saveAllZip}
-										className="mono border px-4 py-2 text-[12px]"
+										className="mono border px-4 py-2 text-[12px] font-medium rounded-full transition-all hover:bg-[var(--ink)] hover:text-[var(--ground)]"
 										style={{
 											color: "var(--ink)",
 											borderColor: "var(--ink)",
@@ -1501,7 +1445,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 							<button
 								type="button"
 								onClick={batchConvert}
-								className="mono border px-4 py-2 text-[12px]"
+								className="mono border px-5 py-2 text-[12px] font-semibold rounded-full transition-all hover:bg-[var(--ink)] hover:text-[var(--ground)]"
 								style={{
 									color: "var(--ink)",
 									borderColor: "var(--ink)",

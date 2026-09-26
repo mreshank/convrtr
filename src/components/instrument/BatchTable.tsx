@@ -128,178 +128,184 @@ export function BatchTable({
 	inputFormat,
 }: Props) {
 	return (
-		<table
-			data-testid="batch-table"
-			className="mono w-full border-collapse text-[12px]"
-			style={{ borderColor: "var(--rule)" }}
-		>
-			<caption className="sr-only">Batch conversion results</caption>
-			<thead>
-				<tr>
-					<th
-						scope="col"
-						className="border-b px-2 py-2 text-left font-normal"
-						style={{ ...cellStyle, color: "var(--ink-muted)" }}
-					>
-						FILE
-					</th>
-					<th
-						scope="col"
-						className="border-b px-2 py-2 text-right font-normal"
-						style={{ ...cellStyle, color: "var(--ink-muted)" }}
-					>
-						IN
-					</th>
-					<th
-						scope="col"
-						className="border-b px-2 py-2 text-right font-normal"
-						style={{ ...cellStyle, color: "var(--ink-muted)" }}
-					>
-						OUT
-					</th>
-					<th
-						scope="col"
-						className="border-b px-2 py-2 text-right font-normal"
-						style={{ ...cellStyle, color: "var(--ink-muted)" }}
-					>
-						DELTA
-					</th>
-					<th
-						scope="col"
-						className="border-b px-2 py-2 text-center font-normal"
-						style={{ ...cellStyle, color: "var(--ink-muted)" }}
-					>
-						FIDELITY
-					</th>
-					<th
-						scope="col"
-						className="border-b px-2 py-2 text-left font-normal"
-						style={{ ...cellStyle, color: "var(--ink-muted)" }}
-					>
-						STATUS
-					</th>
-					<th
-						scope="col"
-						className="border-b px-2 py-2 text-right font-normal"
-						style={{ ...cellStyle, color: "var(--ink-muted)" }}
-					>
-						<span className="sr-only">Actions</span>
-					</th>
-				</tr>
-			</thead>
-			<tbody>
-				{rows.map((row) => (
-					<Fragment key={row.id}>
-						<tr data-testid="batch-row" data-status={row.status}>
-							<td
-								className={`border-b px-2 py-2 text-left${
-									row.status === "error" ? " border-l" : ""
-								}`}
-								style={
-									row.status === "error"
-										? {
-												...cellStyle,
-												borderLeftColor: "var(--ink)",
-												borderLeftStyle: "dashed",
-											}
-										: cellStyle
-								}
-							>
-								{row.name}
-							</td>
-							<td
-								className="mono border-b px-2 py-2 text-right"
-								style={cellStyle}
-							>
-								{formatBytes(row.inputSize)}
-							</td>
-							<td
-								className="mono border-b px-2 py-2 text-right"
-								style={cellStyle}
-							>
-								{row.status === "done" && row.outputSize !== undefined
-									? formatBytes(row.outputSize)
-									: "—"}
-							</td>
-							<td
-								className="mono border-b px-2 py-2 text-right"
-								style={cellStyle}
-							>
-								{row.status === "done" && row.outputSize !== undefined
-									? formatDelta(row.inputSize, row.outputSize)
-									: "—"}
-							</td>
-							<td className="border-b px-2 py-2 text-center" style={cellStyle}>
-								<FidelityScore
-									score={fidelity.score}
-									label={fidelity.label}
-									fidelity={fidelity.state}
-									size={20}
-								/>
-							</td>
-							<td
-								className="border-b px-2 py-2 text-left"
-								style={{ ...cellStyle, color: statusColor(row) }}
-							>
-								{statusLabel(row)}
-							</td>
-							<td className="border-b px-2 py-2 text-right" style={cellStyle}>
-								{row.status === "done" && row.outputSize !== undefined && (
-									<div className="flex items-center justify-end gap-1.5">
-										{onContinueRow && (
+		<div className="m3-surface-card overflow-hidden">
+			<table
+				data-testid="batch-table"
+				className="mono w-full border-collapse text-[12px]"
+				style={{ borderColor: "var(--rule)" }}
+			>
+				<caption className="sr-only">Batch conversion results</caption>
+				<thead>
+					<tr>
+						<th
+							scope="col"
+							className="border-b px-3 py-2.5 text-left font-normal"
+							style={{ ...cellStyle, color: "var(--ink-muted)" }}
+						>
+							FILE
+						</th>
+						<th
+							scope="col"
+							className="border-b px-3 py-2.5 text-right font-normal"
+							style={{ ...cellStyle, color: "var(--ink-muted)" }}
+						>
+							IN
+						</th>
+						<th
+							scope="col"
+							className="border-b px-3 py-2.5 text-right font-normal"
+							style={{ ...cellStyle, color: "var(--ink-muted)" }}
+						>
+							OUT
+						</th>
+						<th
+							scope="col"
+							className="border-b px-3 py-2.5 text-right font-normal"
+							style={{ ...cellStyle, color: "var(--ink-muted)" }}
+						>
+							DELTA
+						</th>
+						<th
+							scope="col"
+							className="border-b px-3 py-2.5 text-center font-normal"
+							style={{ ...cellStyle, color: "var(--ink-muted)" }}
+						>
+							FIDELITY
+						</th>
+						<th
+							scope="col"
+							className="border-b px-3 py-2.5 text-left font-normal"
+							style={{ ...cellStyle, color: "var(--ink-muted)" }}
+						>
+							STATUS
+						</th>
+						<th
+							scope="col"
+							className="border-b px-3 py-2.5 text-right font-normal"
+							style={{ ...cellStyle, color: "var(--ink-muted)" }}
+						>
+							<span className="sr-only">Actions</span>
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					{rows.map((row) => (
+						<Fragment key={row.id}>
+							<tr data-testid="batch-row" data-status={row.status}>
+								<td
+									className={`border-b px-3 py-2.5 text-left${
+										row.status === "error" ? " border-l" : ""
+									}`}
+									style={
+										row.status === "error"
+											? {
+													...cellStyle,
+													borderLeftColor: "var(--ink)",
+													borderLeftStyle: "dashed",
+												}
+											: cellStyle
+									}
+								>
+									{row.name}
+								</td>
+								<td
+									className="mono border-b px-3 py-2.5 text-right"
+									style={cellStyle}
+								>
+									{formatBytes(row.inputSize)}
+								</td>
+								<td
+									className="mono border-b px-3 py-2.5 text-right"
+									style={cellStyle}
+								>
+									{row.status === "done" && row.outputSize !== undefined
+										? formatBytes(row.outputSize)
+										: "—"}
+								</td>
+								<td
+									className="mono border-b px-3 py-2.5 text-right"
+									style={cellStyle}
+								>
+									{row.status === "done" && row.outputSize !== undefined
+										? formatDelta(row.inputSize, row.outputSize)
+										: "—"}
+								</td>
+								<td
+									className="border-b px-3 py-2.5 text-center"
+									style={cellStyle}
+								>
+									<FidelityScore
+										score={fidelity.score}
+										label={fidelity.label}
+										fidelity={fidelity.state}
+										size={20}
+									/>
+								</td>
+								<td
+									className="border-b px-3 py-2.5 text-left"
+									style={{ ...cellStyle, color: statusColor(row) }}
+								>
+									{statusLabel(row)}
+								</td>
+								<td
+									className="border-b px-3 py-2.5 text-right"
+									style={cellStyle}
+								>
+									{row.status === "done" && row.outputSize !== undefined && (
+										<div className="flex items-center justify-end gap-1.5">
+											{onContinueRow && (
+												<button
+													type="button"
+													onClick={() => onContinueRow(row.id)}
+													aria-label={`Continue conversion for ${row.name}`}
+													className="mono border px-2.5 py-1 text-[11px] font-medium rounded-full transition-all hover:bg-[var(--accent)] hover:text-[var(--ground)]"
+													style={{
+														color: "var(--accent)",
+														borderColor: "var(--accent)",
+														background: "transparent",
+														cursor: "pointer",
+													}}
+												>
+													CONTINUE →
+												</button>
+											)}
 											<button
 												type="button"
-												onClick={() => onContinueRow(row.id)}
-												aria-label={`Continue conversion for ${row.name}`}
-												className="mono border px-2 py-1 text-[11px] font-medium"
+												onClick={() => onSaveRow(row.id)}
+												aria-label={`Save ${row.name}`}
+												className="mono border px-2.5 py-1 text-[11px] font-medium rounded-full transition-all hover:bg-[var(--ink)] hover:text-[var(--ground)]"
 												style={{
-													color: "var(--accent)",
-													borderColor: "var(--accent)",
-													borderRadius: "var(--radius)",
+													color: "var(--ink)",
+													borderColor: "var(--ink)",
 													background: "transparent",
 													cursor: "pointer",
 												}}
 											>
-												CONTINUE →
+												SAVE
 											</button>
-										)}
-										<button
-											type="button"
-											onClick={() => onSaveRow(row.id)}
-											aria-label={`Save ${row.name}`}
-											className="mono border px-2 py-1 text-[11px]"
-											style={{
-												color: "var(--ink)",
-												borderColor: "var(--ink)",
-												borderRadius: "var(--radius)",
-												background: "transparent",
-												cursor: "pointer",
-											}}
-										>
-											SAVE
-										</button>
-									</div>
-								)}
-							</td>
-						</tr>
-						{row.status === "error" && (
-							<tr data-testid="batch-row-error">
-								<td
-									colSpan={COLUMN_COUNT}
-									className="border-b p-0"
-									style={cellStyle}
-								>
-									<ErrorPanel
-										code={row.code}
-										detail={row.message}
-										inputFormat={inputFormat}
-									/>
+										</div>
+									)}
 								</td>
 							</tr>
-						)}
-					</Fragment>
-				))}
-			</tbody>
-		</table>
+							{row.status === "error" && (
+								<tr data-testid="batch-row-error">
+									<td
+										colSpan={COLUMN_COUNT}
+										className="border-b p-0"
+										style={cellStyle}
+									>
+										<ErrorPanel
+											code={row.code}
+											detail={row.message}
+											inputFormat={inputFormat}
+										/>
+									</td>
+								</tr>
+							)}
+						</Fragment>
+					))}
+				</tbody>
+			</table>
+		</div>
 	);
 }

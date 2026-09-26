@@ -8,7 +8,7 @@ import { SITE } from "@/lib/site";
 export function generateMetadata(): Metadata {
 	const title = "Chrome Extension — convrtr";
 	const description =
-		"Convert web media, screenshots, and local files directly in Chrome Side Panel using client-side WebAssembly with zero server uploads.";
+		"Convert web media, documents, and local files directly in Chrome Side Panel using client-side WebAssembly with zero server uploads.";
 	return {
 		title,
 		description,

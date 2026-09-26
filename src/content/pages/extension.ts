@@ -3,7 +3,7 @@ import type { SectionedPageContent } from "./types";
 
 export const extensionContent: SectionedPageContent = {
 	title: "Chrome Extension",
-	updated: "22 September 2026",
+	updated: "26 September 2026",
 	sections: [
 		{
 			eyebrow: "SIDE PANEL WORKFLOW",
@@ -21,23 +21,23 @@ export const extensionContent: SectionedPageContent = {
 		{
 			eyebrow: "CONTEXT MENU INTEGRATION",
 			lead: "Right-click web media to convert instantly.",
-			cont: "Extract and convert images, audio, and vector graphics.",
+			cont: "Stage and convert images, audio, video, links, and code.",
 			paragraphs: [
-				`Right-click any image, video, audio element, or linked file on any
+				`Right-click any image, video, audio element, link, or text snippet on any
 				webpage and select 'Convert with convrtr' to stage it immediately into
 				the local converter pipeline. Eliminate manual saving, renaming, and
 				re-uploading workflows.`,
 			],
 		},
 		{
-			eyebrow: "VISIBLE VIEWPORT CAPTURE",
-			lead: "Capture visible page regions and convert on the fly.",
-			cont: "Command+Shift+S triggers instant screenshot conversion.",
+			eyebrow: "ADAPTIVE 3-WAY WORKSPACE",
+			lead: "Docked Side Panel, Quick Popup, or Full Tab Studio.",
+			cont: "Command+Shift+O triggers the full technical studio workspace.",
 			paragraphs: [
-				`Press Command+Shift+S (Ctrl+Shift+S on Windows/Linux) or use the context
-				menu to capture the visible portion of your current browser tab. The capture
-				is staged directly into our image converter tools, ready for instant export
-				to PNG, JPG, WebP, AVIF, or PDF with zero server transmission.`,
+				`Work your way with three coordinated surfaces: the native Side Panel beside
+				your browsing (Command+Shift+C), a compact floating Quick Popup (Command+Shift+Comma),
+				or an expanded Full Tab Studio (Command+Shift+O). Switching views automatically preserves
+				your active conversion queue and parameters across surfaces via local storage.`,
 			],
 		},
 		{
@@ -67,9 +67,9 @@ export const extensionContent: SectionedPageContent = {
 			lead: "Strictly minimal permissions per Chrome Web Store guidelines.",
 			cont: "No access to browsing history, passwords, or personal data.",
 			paragraphs: [
-				`The extension requires only activeTab (for user-initiated viewport captures),
+				`The extension requires only activeTab (for user-initiated context menu staging),
 				sidePanel (to display the dock), contextMenus (for right-click staging),
-				scripting (to extract media on user request), and storage (ephemeral session
+				scripting (to stage media or text snippets on user request), and storage (ephemeral session
 				coordination). We request zero host permissions and omit both tabs and
 				downloads permissions.`,
 			],

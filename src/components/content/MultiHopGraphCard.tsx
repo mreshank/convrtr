@@ -30,7 +30,11 @@ const ROUTING_PRESETS: RoutingExample[] = [
 	{
 		from: "XM",
 		to: "MP3",
-		hops: ["XM (FastTracker II)", "PCM 16-bit Float Stream", "MP3 (320kbps CBR)"],
+		hops: [
+			"XM (FastTracker II)",
+			"PCM 16-bit Float Stream",
+			"MP3 (320kbps CBR)",
+		],
 		engines: ["FastTracker Synthesizer", "LAME.js (CBR Encoder)"],
 		description:
 			"Renders 90s tracker chiptune audio channels in real-time float PCM, encoded into high-fidelity MP3 without server transcoding.",
@@ -50,19 +54,7 @@ export function MultiHopGraphCard() {
 	const active = (ROUTING_PRESETS[activeIdx] ?? ROUTING_PRESETS[0])!;
 
 	return (
-		<div
-			style={{
-				borderWidth: "var(--rule-width)",
-				borderStyle: "solid",
-				borderColor: "var(--rule)",
-				backgroundColor: "var(--surface)",
-				padding: "var(--gap-md)",
-				display: "flex",
-				flexDirection: "column",
-				gap: "var(--gap-md)",
-				width: "100%",
-			}}
-		>
+		<div className="m3-surface-card flex w-full flex-col gap-[var(--gap-md)] p-[var(--gap-md)]">
 			<div
 				style={{
 					display: "flex",
@@ -97,15 +89,12 @@ export function MultiHopGraphCard() {
 					</h3>
 				</div>
 				<span
-					className="mono"
+					className="mono rounded-full border px-3 py-1"
 					style={{
 						fontSize: "var(--mono-size)",
 						color: "var(--ink-muted)",
-						borderWidth: "var(--rule-width)",
-						borderStyle: "solid",
-						borderColor: "var(--rule)",
-						padding: "calc(var(--space-base) / 4) var(--space-base)",
-						borderRadius: "var(--radius-control)",
+						borderColor: "var(--rule-subtle)",
+						backgroundColor: "var(--surface)",
 					}}
 				>
 					147 WASM ENGINES ACTIVE
@@ -141,23 +130,7 @@ export function MultiHopGraphCard() {
 							key={`${preset.from}-${preset.to}`}
 							type="button"
 							onClick={() => setActiveIdx(idx)}
-							style={{
-								padding: "calc(var(--space-base) / 4) var(--space-base)",
-								borderRadius: "var(--radius-pill)",
-								borderWidth: "var(--rule-width)",
-								borderStyle: "solid",
-								borderColor: isSelected
-									? "var(--rule-strong)"
-									: "var(--rule)",
-								backgroundColor: isSelected ? "var(--ink)" : "transparent",
-								color: isSelected ? "var(--ground)" : "var(--ink-muted)",
-								fontFamily: "var(--font-mono)",
-								fontSize: "var(--mono-size)",
-								fontWeight: 600,
-								cursor: "pointer",
-								letterSpacing: "0.06em",
-								textTransform: "uppercase",
-							}}
+							className={`m3-chip ${isSelected ? "m3-chip-active" : ""}`}
 						>
 							{preset.from} ➔ {preset.to}
 						</button>
@@ -167,15 +140,9 @@ export function MultiHopGraphCard() {
 
 			{/* Interactive Flow Nodes */}
 			<div
+				className="m3-surface-card flex flex-col gap-[var(--gap-sm)] p-[var(--gap-md)]"
 				style={{
-					borderWidth: "var(--rule-width)",
-					borderStyle: "solid",
-					borderColor: "var(--rule)",
 					backgroundColor: "var(--ground)",
-					padding: "var(--gap-md)",
-					display: "flex",
-					flexDirection: "column",
-					gap: "var(--gap-sm)",
 				}}
 			>
 				<div
@@ -196,16 +163,13 @@ export function MultiHopGraphCard() {
 							}}
 						>
 							<div
+								className="m3-surface-card"
 								style={{
-									borderWidth: "var(--rule-width)",
-									borderStyle: "solid",
 									borderColor:
 										hIdx === 0 || hIdx === active.hops.length - 1
 											? "var(--accent)"
-											: "var(--rule)",
-									backgroundColor: "var(--surface)",
+											: "var(--rule-subtle)",
 									padding: "var(--space-base) var(--gap-sm)",
-									borderRadius: "var(--radius-control)",
 								}}
 							>
 								<div
@@ -273,21 +237,7 @@ export function MultiHopGraphCard() {
 							ENGINES EXECUTED:
 						</span>
 						{active.engines.map((eng) => (
-							<span
-								key={eng}
-								className="mono"
-								style={{
-									fontSize: "var(--mono-size)",
-									color: "var(--ink)",
-									backgroundColor: "var(--surface)",
-									padding:
-										"calc(var(--space-base) / 4) calc(var(--space-base) / 2)",
-									borderRadius: "var(--radius-control)",
-									borderWidth: "var(--rule-width)",
-									borderStyle: "solid",
-									borderColor: "var(--rule)",
-								}}
-							>
+							<span key={eng} className="m3-chip py-0.5 text-[11px]">
 								{eng}
 							</span>
 						))}

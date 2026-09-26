@@ -50,12 +50,11 @@ When browsing documentation, image libraries, or web applications, you no longer
 - Select **Convert with convrtr** from the context menu.
 - The media is staged directly into the converter, decoded, and ready for instant conversion to your desired format.
 
-### 3. Visible Viewport Capture
-Need to extract a visual reference, code block, or dashboard metric?
+### 3. Adaptive 3-Way Workspace & Full Tab Studio
+Need a larger technical canvas or rapid single-file conversion?
 
-- Press `Command+Shift+S` (or `Ctrl+Shift+S`) or select **Capture visible page** from the context menu.
-- The extension takes a high-fidelity capture of your current tab viewport and stages it immediately into tools like [PNG to WebP](/image/png-to-webp) or [JPG to PDF](/document/jpg-to-pdf).
-- Zero third-party screenshot software required.
+- Switch seamlessly between the docked Side Panel (`Command+Shift+C`), floating Quick Popup (`Command+Shift+Comma`), and Full Tab Studio (`Command+Shift+O`).
+- The extension coordinates view lifecycle automatically and synchronizes active conversion queues via local IndexedDB storage so you never lose progress when switching surfaces.
 
 ---
 
@@ -79,7 +78,7 @@ Following least-privilege principles, the convrtr extension requests only the mi
 | `storage` | Uses `chrome.storage.session` to pass temporary, ephemeral file references between background events and the converter. No browsing history or personal data is persisted. |
 | `contextMenus` | Creates context menu entries to stage clicked media into the converter. |
 | `scripting` | Inspects media elements on the active page only upon explicit user request. |
-| `activeTab` | Grants temporary permission to capture the visible tab or stage media upon an explicit user gesture (`Command+Shift+S` or context menu click). |
+| `activeTab` | Grants temporary permission to stage clicked media or code snippets upon an explicit user gesture (such as context menu clicks). |
 
 Noticeably absent from our manifest:
 - **No `tabs` permission:** convrtr never reads your open tabs, navigation URLs, or browsing history.
