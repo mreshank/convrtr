@@ -49,6 +49,10 @@ export const gpkgToGeoJson: Tool = {
 				a: "No. SQL reads, binary decoding and GeoJSON writing all run inside your browser.",
 			},
 		],
-		related: ["document/shp-to-geojson", "document/sqlite-to-zip", "document/gpx-to-geojson"],
+		related: [
+			"document/shp-to-geojson",
+			"document/sqlite-to-zip",
+			"document/gpx-to-geojson",
+		],
 	},
 };

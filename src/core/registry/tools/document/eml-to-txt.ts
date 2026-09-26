@@ -48,6 +48,10 @@ export const emlToTxt: Tool = {
 				a: "No. MIME parsing and decoding run entirely inside your browser.",
 			},
 		],
-		related: ["document/mbox-to-zip", "document/msg-to-eml", "document/emlx-to-eml"],
+		related: [
+			"document/mbox-to-zip",
+			"document/msg-to-eml",
+			"document/emlx-to-eml",
+		],
 	},
 };

@@ -48,6 +48,10 @@ export const savToZip: Tool = {
 				a: "No. Dictionary parsing, inflation, decoding and zipping run entirely inside your browser — survey microdata stays yours.",
 			},
 		],
-		related: ["document/dta-to-zip", "document/sqlite-to-zip", "document/parquet-to-csv"],
+		related: [
+			"document/dta-to-zip",
+			"document/sqlite-to-zip",
+			"document/parquet-to-csv",
+		],
 	},
 };

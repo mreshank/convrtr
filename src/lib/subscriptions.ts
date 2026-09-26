@@ -2,7 +2,7 @@
  * Subscription System & Audience Management.
  *
  * Local-first persistence for:
- * - Chrome Extension launch waitlist
+ * - Release radar: extension updates, events, and announcements
  * - Ecosystem & product updates
  * - Engine format decoders and release notes
  * - Security & privacy compliance dispatches
@@ -25,7 +25,7 @@ export interface Subscriber {
 }
 
 const STORAGE_KEY = "convrtr_subscribers";
-const INITIAL_WAITLIST_BENCHMARK = 1420;
+const INITIAL_SUBSCRIBER_BENCHMARK = 1420;
 
 // Benchmark seed subscribers for immediate telemetry in local-first environment
 const SEED_SUBSCRIBERS: Subscriber[] = [
@@ -138,7 +138,8 @@ export function subscribeUser(
 	saveSubscribers(list);
 	return {
 		success: true,
-		message: "You are subscribed for Chrome Extension & ecosystem updates.",
+		message:
+			"You are subscribed for release updates, events, and ecosystem news.",
 		subscriber: newSub,
 	};
 }
@@ -214,7 +215,7 @@ export function getSubscriptionStats(): {
 
 	return {
 		totalCount: list.length,
-		benchmarkWaitlistTotal: INITIAL_WAITLIST_BENCHMARK + list.length,
+		benchmarkWaitlistTotal: INITIAL_SUBSCRIBER_BENCHMARK + list.length,
 		extensionCount,
 		ecosystemCount,
 		releasesCount,

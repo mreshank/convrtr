@@ -48,6 +48,10 @@ export const xptToCsv: Tool = {
 				a: "No. Card-stream parsing, float conversion and CSV writing all run inside your browser.",
 			},
 		],
-		related: ["document/dta-to-zip", "document/sav-to-zip", "document/sqlite-to-zip"],
+		related: [
+			"document/dta-to-zip",
+			"document/sav-to-zip",
+			"document/sqlite-to-zip",
+		],
 	},
 };

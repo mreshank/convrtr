@@ -22,10 +22,7 @@ export function generateMetadata(): Metadata {
 
 export default function IssuesPage() {
 	return (
-		<ArticlePage
-			title="Issues"
-			dateline="Redirecting to GitHub"
-		>
+		<ArticlePage title="Issues" dateline="Redirecting to GitHub">
 			<IssuesRedirectClient />
 		</ArticlePage>
 	);

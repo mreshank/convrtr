@@ -306,7 +306,7 @@ export function ExtensionWaitlistCard() {
 				))}
 			</div>
 
-			{/* Interactive Waitlist Subscription Form */}
+			{/* Interactive Release Radar Subscription Form */}
 			<div
 				id="extension-waitlist"
 				className="m3-surface-card flex flex-col gap-[var(--space-base)] p-[var(--gap-md)]"
@@ -370,7 +370,7 @@ export function ExtensionWaitlistCard() {
 							onClick={() => toggleChannel("extension")}
 							className={`m3-chip ${channels.includes("extension") ? "m3-chip-active" : ""}`}
 						>
-							[x] Chrome Extension Launch
+							[x] Extension Updates
 						</button>
 						<button
 							type="button"
@@ -421,7 +421,7 @@ export function ExtensionWaitlistCard() {
 								cursor: "pointer",
 							}}
 						>
-							{isSubmitting ? "Subscribing..." : "Join Waitlist ➔"}
+							{isSubmitting ? "Subscribing..." : "Subscribe for Updates ➔"}
 						</button>
 					</div>
 				</form>

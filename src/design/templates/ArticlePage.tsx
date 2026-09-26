@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import type { PageSection } from "@/content/pages/types";
 import { FusedHeadline } from "@/design/families";
-import { Breadcrumbs, type BreadcrumbItem } from "@/design/primitives";
+import { type BreadcrumbItem, Breadcrumbs } from "@/design/primitives";
 
 type Props = {
 	title: string;

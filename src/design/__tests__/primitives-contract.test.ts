@@ -197,6 +197,9 @@ const CLIENT_COMPONENT_ALLOWLIST = new Set([
 	"Tooltip.tsx",
 	// `AdminDashboardPage` holds interactive state for tabs, sub management, and dispatch logs.
 	"AdminDashboardPage.tsx",
+	// `LineageExplorer` holds the active source format -- picking a format
+	// re-branches the live lineage tree, which only a client component can do.
+	"LineageExplorer.tsx",
 ]);
 
 function filesDeclaringUseClient(dir: string): string[] {

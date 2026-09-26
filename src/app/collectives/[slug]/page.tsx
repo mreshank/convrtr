@@ -108,7 +108,10 @@ export default async function CollectivePage({
 				]}
 				title={collective.title}
 				reason={collective.why}
-				count={{ value: tools.length, noun: tools.length === 1 ? "tool" : "tools" }}
+				count={{
+					value: tools.length,
+					noun: tools.length === 1 ? "tool" : "tools",
+				}}
 				showcase={showcase}
 				demo={DEMOS[collective.slug]}
 			/>

@@ -1,7 +1,11 @@
 import { Fragment, type ReactNode } from "react";
 import type { PageSection } from "@/content/pages/types";
 import { ProseSection } from "@/design/families";
-import { Breadcrumbs, type BreadcrumbItem, Hairline } from "@/design/primitives";
+import {
+	type BreadcrumbItem,
+	Breadcrumbs,
+	Hairline,
+} from "@/design/primitives";
 
 type Props = {
 	title: string;

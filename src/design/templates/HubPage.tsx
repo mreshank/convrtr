@@ -12,7 +12,11 @@ import {
 	type ListingItem,
 	ListingRows,
 } from "@/design/families";
-import { Breadcrumbs, type BreadcrumbItem, SectionSeparator } from "@/design/primitives";
+import {
+	type BreadcrumbItem,
+	Breadcrumbs,
+	SectionSeparator,
+} from "@/design/primitives";
 import { HALFTONE_FRAGMENT, ShaderSurface } from "@/design/texture";
 
 /**

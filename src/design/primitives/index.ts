@@ -13,7 +13,7 @@ export { SiteHeader } from "../chrome/SiteHeader";
 export { ToolsMegaMenu } from "../chrome/ToolsMegaMenu";
 export { ArrowUpRight } from "./ArrowUpRight";
 export { AsymCard } from "./AsymCard";
-export { Breadcrumbs, type BreadcrumbItem } from "./Breadcrumbs";
+export { type BreadcrumbItem, Breadcrumbs } from "./Breadcrumbs";
 export { DifferenceCursor } from "./DifferenceCursor";
 export { DisplayHeadline } from "./DisplayHeadline";
 export { Hairline } from "./Hairline";

@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import { unzipSync } from "fflate";
+import { describe, expect, it } from "vitest";
 import { convertVms, parseVmsSave } from "../parser";
 
 function makeSyntheticVmsSave(): Uint8Array {
@@ -37,12 +37,12 @@ function makeSyntheticVmsSave(): Uint8Array {
 	// 6. Icon frame 1 (512 bytes at 0x80)
 	// Fill with pattern
 	for (let i = 0; i < 512; i++) {
-		buffer[0x80 + i] = (i % 2 === 0 ? 0x12 : 0x21);
+		buffer[0x80 + i] = i % 2 === 0 ? 0x12 : 0x21;
 	}
 
 	// 7. Icon frame 2 (512 bytes at 0x80 + 512)
 	for (let i = 0; i < 512; i++) {
-		buffer[0x80 + 512 + i] = (i % 2 === 0 ? 0x22 : 0x11);
+		buffer[0x80 + 512 + i] = i % 2 === 0 ? 0x22 : 0x11;
 	}
 
 	// 8. Eyecatch (32-byte palette + 2016 bytes data at 0x80 + 1024)

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { toolsByCategory } from "@/core/registry/stats";
+import { CHROME_EXTENSION_URL } from "@/lib/site";
 import {
 	HALFTONE_FRAGMENT,
 	HERO_GLOW_FRAGMENT,
@@ -143,11 +144,16 @@ export function HeroBand({ lead, cont, cta, secondary }: Props) {
 							flexWrap: "wrap",
 						}}
 					>
-						<p className="meta" style={{ color: "var(--ink-muted)", margin: 0 }}>
-							Local file conversion // WebAssembly sandbox
+						<p
+							className="meta"
+							style={{ color: "var(--ink-muted)", margin: 0 }}
+						>
+							Local file conversion {"//"} WebAssembly sandbox
 						</p>
 						<Link
-							href="#extension-spotlight"
+							href={CHROME_EXTENSION_URL}
+							target="_blank"
+							rel="noopener noreferrer"
 							style={{
 								display: "inline-flex",
 								alignItems: "center",
@@ -165,7 +171,7 @@ export function HeroBand({ lead, cont, cta, secondary }: Props) {
 								textTransform: "uppercase",
 							}}
 						>
-							Chrome Extension [Soon] ↗
+							Chrome Extension [Live] ↗
 						</Link>
 					</div>
 

@@ -1,5 +1,5 @@
 /**
- * POST /api/subscribe — waitlist / newsletter subscribe.
+ * POST /api/subscribe — release radar / newsletter subscribe.
  *
  * Keeps the existing localStorage-first UX intact: the client still writes
  * locally, then POSTs here for the real double-opt-in + welcome email and
@@ -94,7 +94,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 				title: "You are on the list",
 				bodyHtml: `<p>Subscribed as <strong>${escapeHtml(rawEmail)}</strong> via <strong>${escapeHtml(source)}</strong>.</p>
         <p>Channels: <strong>${escapeHtml(channelList)}</strong></p>
-        <p>You will receive Chrome Extension launch notes, new WASM decoder changelogs, and ecosystem releases. No spam, no tracking pixels beyond Resend delivery basics.</p>
+        <p>You will receive extension changelogs, new WASM decoder drops, ecosystem releases, events, and product updates. No spam, no tracking pixels beyond Resend delivery basics.</p>
         <p style="font-size:11px;">Unsubscribe anytime: <a href="${escapeHtml(unsubscribeUrl)}">${escapeHtml(unsubscribeUrl)}</a></p>`,
 				footerNote:
 					"You received this because you subscribed on convrtr.mreshank.com. Unsubscribe via the link above.",

@@ -339,7 +339,7 @@ export function ComparisonView({ comparison }: Props) {
 							textTransform: "uppercase",
 						}}
 					>
-						[ BROWSER WORKFLOW // RIGHT-CLICK CONVERSION ]
+						[ BROWSER WORKFLOW {"//"} RIGHT-CLICK CONVERSION ]
 					</p>
 					<span
 						className="mono"
@@ -361,9 +361,9 @@ export function ComparisonView({ comparison }: Props) {
 				>
 					Converting files between {comparison.formatA.toUpperCase()} and{" "}
 					{comparison.formatB.toUpperCase()} frequently? The convrtr Chrome
-					Extension lets you right-click any image on any webpage or open the Side
-					Panel to convert assets instantly using local WebAssembly with zero server
-					uploads.
+					Extension lets you right-click any image on any webpage or open the
+					Side Panel to convert assets instantly using local WebAssembly with
+					zero server uploads.
 				</p>
 				<div
 					style={{

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Breadcrumbs, type BreadcrumbItem } from "@/design/primitives";
+import { type BreadcrumbItem, Breadcrumbs } from "@/design/primitives";
 
 type Props = {
 	/** The tool's category, in the mono label voice. */

@@ -30,10 +30,14 @@ describe("ComparisonView", () => {
 		render(<ComparisonView comparison={mockComparison} />);
 
 		// Specs & verdict
-		expect(screen.getByText("TECHNICAL SPECIFICATIONS COMPARISON")).toBeDefined();
+		expect(
+			screen.getByText("TECHNICAL SPECIFICATIONS COMPARISON"),
+		).toBeDefined();
 		expect(screen.getByText("ARCHITECTURAL VERDICT")).toBeDefined();
 		expect(
-			screen.getByText("Use WebP for web delivery; use PNG for master source assets."),
+			screen.getByText(
+				"Use WebP for web delivery; use PNG for master source assets.",
+			),
 		).toBeDefined();
 
 		// Related direct converters
@@ -44,7 +48,9 @@ describe("ComparisonView", () => {
 		expect(
 			screen.getByText("[ BROWSER WORKFLOW // RIGHT-CLICK CONVERSION ]"),
 		).toBeDefined();
-		const installLink = screen.getByText("INSTALL CHROME EXTENSION").closest("a");
+		const installLink = screen
+			.getByText("INSTALL CHROME EXTENSION")
+			.closest("a");
 		expect(installLink).toBeDefined();
 		expect(installLink?.getAttribute("href")).toBe(CHROME_EXTENSION_URL);
 		expect(installLink?.getAttribute("target")).toBe("_blank");

@@ -28,7 +28,10 @@ describe("Arrow IPC dump Engine", () => {
 	it("reads file-format batches into exact CSV", () => {
 		const file = makeArrowIpc();
 		const { columns, rowCount, csv } = dumpArrowToCsv(
-			file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength) as ArrayBuffer,
+			file.buffer.slice(
+				file.byteOffset,
+				file.byteOffset + file.byteLength,
+			) as ArrayBuffer,
 		);
 		expect(columns).toEqual(["id", "name", "flag", "tags"]);
 		expect(rowCount).toBe(3);

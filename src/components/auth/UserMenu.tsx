@@ -3,8 +3,8 @@
 import { UserButton, useUser } from "@clerk/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { hasLocalAdminOverride, isSuperAdminUser } from "@/lib/admin-auth";
 import { Tooltip } from "@/design/primitives/Tooltip";
+import { hasLocalAdminOverride, isSuperAdminUser } from "@/lib/admin-auth";
 import { AuthErrorBoundary } from "./AuthErrorBoundary";
 import { clerkAppearance } from "./clerk-theme";
 

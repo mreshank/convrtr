@@ -80,7 +80,9 @@ describe("buildHomeJsonLd", () => {
 		expect(org.name).toBe("convrtr");
 		expect(org.logo?.url).toContain("/icon.svg");
 		expect(org.sameAs).toContain("https://github.com/mreshank/convrtr");
-		expect(org.sameAs?.some((url) => url.includes("chromewebstore.google.com"))).toBe(true);
+		expect(
+			org.sameAs?.some((url) => url.includes("chromewebstore.google.com")),
+		).toBe(true);
 	});
 
 	it("emits WebApplication with zero price and privacy features", () => {
@@ -97,7 +99,9 @@ describe("buildHomeJsonLd", () => {
 
 	it("emits SiteNavigationElement sitelinks navigation", () => {
 		const nav = jsonLd["@graph"].find(
-			(n) => n["@type"] === "ItemList" && n["@id"]?.toString().includes("#navigation"),
+			(n) =>
+				n["@type"] === "ItemList" &&
+				n["@id"]?.toString().includes("#navigation"),
 		) as {
 			itemListElement: { "@type": string; name: string; url: string }[];
 		};
@@ -118,11 +122,13 @@ describe("buildToolJsonLd", () => {
 	it("emits a SoftwareApplication node that is free and linked to website", () => {
 		const app = graph["@graph"].find(
 			(n) => n["@type"] === "SoftwareApplication",
-		) as {
-			offers: { price: string };
-			applicationSubCategory?: string;
-			isPartOf?: { "@type": string };
-		} | undefined;
+		) as
+			| {
+					offers: { price: string };
+					applicationSubCategory?: string;
+					isPartOf?: { "@type": string };
+			  }
+			| undefined;
 		expect(app).toBeDefined();
 		expect(app?.offers.price).toBe("0");
 		expect(app?.applicationSubCategory).toBe("File Converter");

@@ -49,10 +49,7 @@ export default function CollectivesIndexPage() {
 				schema={buildCollectivesIndexJsonLd(COLLECTIVES, `${SITE}/collectives`)}
 			/>
 			<HubPage
-				breadcrumbs={[
-					{ name: "Home", href: "/" },
-					{ name: "Collectives" },
-				]}
+				breadcrumbs={[{ name: "Home", href: "/" }, { name: "Collectives" }]}
 				title="Collectives"
 				lede="Curated sets of tools built around a reason, not a file type."
 				count={{

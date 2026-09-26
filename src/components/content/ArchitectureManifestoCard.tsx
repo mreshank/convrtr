@@ -3,12 +3,14 @@ export function ArchitectureManifestoCard() {
 		{
 			dimension: "Data Location",
 			cloud: "Uploaded to third-party AWS/GCP buckets in plaintext.",
-			convrtr: "Never leaves your device. Processed in local WebAssembly memory.",
+			convrtr:
+				"Never leaves your device. Processed in local WebAssembly memory.",
 		},
 		{
 			dimension: "Queue Latency",
 			cloud: "30s to 15m server queue wait times depending on load.",
-			convrtr: "Instant 0ms start. Execution begins immediately on your CPU/GPU.",
+			convrtr:
+				"Instant 0ms start. Execution begins immediately on your CPU/GPU.",
 		},
 		{
 			dimension: "File Size Limit",
@@ -87,7 +89,7 @@ export function ArchitectureManifestoCard() {
 						backgroundColor: "var(--ground)",
 					}}
 				>
-					VERIFIED IN CI // 0 BYTES LEAKED
+					VERIFIED IN CI {"//"} 0 BYTES LEAKED
 				</span>
 			</div>
 

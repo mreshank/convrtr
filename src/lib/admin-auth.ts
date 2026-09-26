@@ -33,10 +33,12 @@ export function isSuperAdminEmail(email?: string | null): boolean {
 /**
  * Verifies if the active user object from Clerk possesses a Super Admin email.
  */
-export function isSuperAdminUser(user?: {
-	primaryEmailAddress?: { emailAddress?: string } | null;
-	emailAddresses?: Array<{ emailAddress?: string }>;
-} | null): boolean {
+export function isSuperAdminUser(
+	user?: {
+		primaryEmailAddress?: { emailAddress?: string } | null;
+		emailAddresses?: Array<{ emailAddress?: string }>;
+	} | null,
+): boolean {
 	if (!user) return false;
 	if (isSuperAdminEmail(user.primaryEmailAddress?.emailAddress)) {
 		return true;

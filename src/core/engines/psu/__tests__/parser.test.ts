@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import { unzipSync } from "fflate";
+import { describe, expect, it } from "vitest";
 import { convertPsuToZip, parsePsuContainer } from "../parser";
 
 function makeSyntheticPsu(): Uint8Array {

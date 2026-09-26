@@ -2,7 +2,7 @@
 
 import { useUser } from "@clerk/react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
 	hasLocalAdminOverride,
 	isSuperAdminEmail,
@@ -80,10 +80,10 @@ export function AdminDashboardPage() {
 		Array<{ timestamp: string; action: string; actor: string }>
 	>([]);
 
-	const refreshData = () => {
+	const refreshData = useCallback(() => {
 		setSubscribers(getSubscribers());
 		setBroadcasts(getBroadcasts());
-	};
+	}, []);
 
 	useEffect(() => {
 		setLocalOverride(hasLocalAdminOverride());
@@ -103,7 +103,7 @@ export function AdminDashboardPage() {
 				actor: "system",
 			},
 		]);
-	}, []);
+	}, [refreshData]);
 
 	const isSuperAdmin =
 		localOverride || (isLoaded && isSignedIn && isSuperAdminUser(user));
@@ -268,7 +268,8 @@ export function AdminDashboardPage() {
 			if (!res.ok) {
 				throw new Error(data.error || `Dispatch failed (${res.status})`);
 			}
-			const sent = typeof data.sent === "number" ? data.sent : recipients.length;
+			const sent =
+				typeof data.sent === "number" ? data.sent : recipients.length;
 			setCampaignLogs((prev) => [
 				{
 					date: new Date().toISOString(),
@@ -287,8 +288,7 @@ export function AdminDashboardPage() {
 			setCampaignSubject("");
 			setCampaignBody("");
 		} catch (err) {
-			const text =
-				err instanceof Error ? err.message : "Dispatch failed";
+			const text = err instanceof Error ? err.message : "Dispatch failed";
 			setCampaignStatus({ type: "error", text });
 			logAction(`Campaign dispatch failed: ${text}`);
 		} finally {
@@ -482,14 +482,16 @@ export function AdminDashboardPage() {
 	// AUTHORIZED SUPER ADMIN DASHBOARD VIEW
 	// -------------------------------------------------------------
 	const filteredSubscribers = subscribers.filter((s) => {
-		const matchesEmail = s.email.toLowerCase().includes(subSearch.toLowerCase());
+		const matchesEmail = s.email
+			.toLowerCase()
+			.includes(subSearch.toLowerCase());
 		const matchesChannel =
 			subChannelFilter === "all" ||
 			s.channels.includes(subChannelFilter as SubscriptionChannel);
 		return matchesEmail && matchesChannel;
 	});
 
-	const totalWaitlistEst = subscribers.length + 1420;
+	const totalSubscribedEst = subscribers.length + 1420;
 	const totalImpressions = broadcasts.reduce(
 		(sum, b) => sum + (b.impressions || 0),
 		0,
@@ -638,7 +640,10 @@ export function AdminDashboardPage() {
 					[
 						{ id: "kpis", label: "KPIs & Telemetry" },
 						{ id: "subscribers", label: `Subscribers (${subscribers.length})` },
-						{ id: "broadcasts", label: `Alerts & Banners (${broadcasts.length})` },
+						{
+							id: "broadcasts",
+							label: `Alerts & Banners (${broadcasts.length})`,
+						},
 						{ id: "extension", label: "Chrome Extension Radar" },
 						{ id: "campaigns", label: "Email Dispatcher" },
 						{ id: "audit", label: "Security Audit Log" },
@@ -706,7 +711,7 @@ export function AdminDashboardPage() {
 									fontSize: "var(--mono-size)",
 								}}
 							>
-								TOTAL WAITLISTED
+								TOTAL SUBSCRIBED
 							</div>
 							<div
 								className="mono"
@@ -717,7 +722,7 @@ export function AdminDashboardPage() {
 									lineHeight: 1.2,
 								}}
 							>
-								{totalWaitlistEst.toLocaleString()}
+								{totalSubscribedEst.toLocaleString()}
 							</div>
 							<div
 								className="mono"
@@ -882,45 +887,45 @@ export function AdminDashboardPage() {
 								gap: "var(--space-base)",
 							}}
 						>
-							{(["extension", "ecosystem", "releases", "security"] as const).map(
-								(ch) => {
-									const count = subscribers.filter((s) =>
-										s.channels.includes(ch),
-									).length;
-									return (
+							{(
+								["extension", "ecosystem", "releases", "security"] as const
+							).map((ch) => {
+								const count = subscribers.filter((s) =>
+									s.channels.includes(ch),
+								).length;
+								return (
+									<div
+										key={ch}
+										style={{
+											padding: "var(--space-base)",
+											borderWidth: "var(--rule-width)",
+											borderStyle: "solid",
+											borderColor: "var(--rule)",
+											backgroundColor: "var(--ground)",
+										}}
+									>
 										<div
-											key={ch}
+											className="meta"
 											style={{
-												padding: "var(--space-base)",
-												borderWidth: "var(--rule-width)",
-												borderStyle: "solid",
-												borderColor: "var(--rule)",
-												backgroundColor: "var(--ground)",
+												color: "var(--ink-muted)",
+												fontSize: "var(--mono-size)",
+												textTransform: "uppercase",
 											}}
 										>
-											<div
-												className="meta"
-												style={{
-													color: "var(--ink-muted)",
-													fontSize: "var(--mono-size)",
-													textTransform: "uppercase",
-												}}
-											>
-												{ch}
-											</div>
-											<div
-												className="mono"
-												style={{
-													fontSize: "var(--headline-size)",
-													color: "var(--ink)",
-												}}
-											>
-												{count}
-											</div>
+											{ch}
 										</div>
-									);
-								},
-							)}
+										<div
+											className="mono"
+											style={{
+												fontSize: "var(--headline-size)",
+												color: "var(--ink)",
+											}}
+										>
+											{count}
+										</div>
+									</div>
+								);
+							})}
 						</div>
 					</div>
 				</div>
@@ -1167,9 +1172,7 @@ export function AdminDashboardPage() {
 											borderWidth: "var(--rule-width)",
 											borderStyle: "solid",
 											borderColor:
-												s.status === "active"
-													? "var(--accent)"
-													: "var(--rule)",
+												s.status === "active" ? "var(--accent)" : "var(--rule)",
 											backgroundColor: "transparent",
 											color:
 												s.status === "active"
@@ -1252,6 +1255,7 @@ export function AdminDashboardPage() {
 						>
 							<div>
 								<label
+									htmlFor="new-bc-type"
 									className="meta"
 									style={{
 										color: "var(--ink-muted)",
@@ -1263,14 +1267,14 @@ export function AdminDashboardPage() {
 									Type
 								</label>
 								<select
+									id="new-bc-type"
 									value={newBcType}
 									onChange={(e) =>
 										setNewBcType(e.target.value as BroadcastType)
 									}
 									style={{
 										width: "100%",
-										padding:
-											"calc(var(--space-base) / 2) var(--space-base)",
+										padding: "calc(var(--space-base) / 2) var(--space-base)",
 										borderWidth: "var(--rule-width)",
 										borderStyle: "solid",
 										borderColor: "var(--rule)",
@@ -1289,6 +1293,7 @@ export function AdminDashboardPage() {
 
 							<div>
 								<label
+									htmlFor="new-bc-level"
 									className="meta"
 									style={{
 										color: "var(--ink-muted)",
@@ -1300,14 +1305,14 @@ export function AdminDashboardPage() {
 									Level
 								</label>
 								<select
+									id="new-bc-level"
 									value={newBcLevel}
 									onChange={(e) =>
 										setNewBcLevel(e.target.value as BroadcastLevel)
 									}
 									style={{
 										width: "100%",
-										padding:
-											"calc(var(--space-base) / 2) var(--space-base)",
+										padding: "calc(var(--space-base) / 2) var(--space-base)",
 										borderWidth: "var(--rule-width)",
 										borderStyle: "solid",
 										borderColor: "var(--rule)",
@@ -1326,6 +1331,7 @@ export function AdminDashboardPage() {
 
 							<div>
 								<label
+									htmlFor="new-bc-target"
 									className="meta"
 									style={{
 										color: "var(--ink-muted)",
@@ -1337,14 +1343,14 @@ export function AdminDashboardPage() {
 									Target Route
 								</label>
 								<select
+									id="new-bc-target"
 									value={newBcTarget}
 									onChange={(e) =>
 										setNewBcTarget(e.target.value as BroadcastTarget)
 									}
 									style={{
 										width: "100%",
-										padding:
-											"calc(var(--space-base) / 2) var(--space-base)",
+										padding: "calc(var(--space-base) / 2) var(--space-base)",
 										borderWidth: "var(--rule-width)",
 										borderStyle: "solid",
 										borderColor: "var(--rule)",
@@ -1577,14 +1583,11 @@ export function AdminDashboardPage() {
 										type="button"
 										onClick={() => handleToggleBroadcast(bc.id)}
 										style={{
-											padding:
-												"calc(var(--space-base) / 4) var(--space-base)",
+											padding: "calc(var(--space-base) / 4) var(--space-base)",
 											borderRadius: "var(--radius-pill)",
 											borderWidth: "var(--rule-width)",
 											borderStyle: "solid",
-											borderColor: bc.active
-												? "var(--accent)"
-												: "var(--rule)",
+											borderColor: bc.active ? "var(--accent)" : "var(--rule)",
 											backgroundColor: bc.active
 												? "var(--ground)"
 												: "transparent",
@@ -1642,7 +1645,7 @@ export function AdminDashboardPage() {
 							textTransform: "uppercase",
 						}}
 					>
-						CHROME WEB STORE // RELEASE STATUS
+						CHROME WEB STORE {"//"} RELEASE STATUS
 					</span>
 					<h3
 						style={{
@@ -1683,7 +1686,10 @@ export function AdminDashboardPage() {
 							</div>
 							<div
 								className="mono"
-								style={{ fontSize: "var(--headline-size)", color: "var(--ink)" }}
+								style={{
+									fontSize: "var(--headline-size)",
+									color: "var(--ink)",
+								}}
 							>
 								0.2.1
 							</div>
@@ -1736,7 +1742,10 @@ export function AdminDashboardPage() {
 							</div>
 							<div
 								className="mono"
-								style={{ fontSize: "var(--headline-size)", color: "var(--ink)" }}
+								style={{
+									fontSize: "var(--headline-size)",
+									color: "var(--ink)",
+								}}
 							>
 								V3 Compliant
 							</div>
@@ -1752,9 +1761,9 @@ export function AdminDashboardPage() {
 						}}
 					>
 						Package bundle `convrtr-extension-v0.2.1.zip` built with full Side
-						Panel, Quick Popup, Omnibox, and Content Script DOM media
-						extraction modules. When approved, trigger the broadcast launch
-						campaign to notify all waitlisted users.
+						Panel, Quick Popup, Omnibox, and Content Script DOM media extraction
+						modules. Extension is live — use the broadcast campaign to notify
+						all subscribed users about updates and events.
 					</p>
 				</div>
 			)}
@@ -1792,7 +1801,7 @@ export function AdminDashboardPage() {
 								textTransform: "uppercase",
 							}}
 						>
-							COMPOSE DISPATCH CAMPAIGN // RESEND BROADCAST
+							COMPOSE DISPATCH CAMPAIGN {"//"} RESEND BROADCAST
 						</span>
 						<p
 							className="mono"
@@ -1802,14 +1811,14 @@ export function AdminDashboardPage() {
 								margin: 0,
 							}}
 						>
-							Sends via Resend from your @convrtr.mreshank.com domain.
-							Real sends go only to active local subscribers (benchmark
-							1,420 is display-only). Server caps at 500 recipients per
-							dispatch.
+							Sends via Resend from your @convrtr.mreshank.com domain. Real
+							sends go only to active local subscribers (benchmark 1,420 is
+							display-only). Server caps at 500 recipients per dispatch.
 						</p>
 
 						<div>
 							<label
+								htmlFor="campaign-audience"
 								className="meta"
 								style={{
 									color: "var(--ink-muted)",
@@ -1821,6 +1830,7 @@ export function AdminDashboardPage() {
 								Target Audience
 							</label>
 							<select
+								id="campaign-audience"
 								value={campaignAudience}
 								onChange={(e) => setCampaignAudience(e.target.value)}
 								style={{
@@ -1835,7 +1845,7 @@ export function AdminDashboardPage() {
 								}}
 							>
 								<option value="extension">
-									Chrome Extension Waitlist (
+									Extension Updates (
 									{
 										subscribers.filter(
 											(s) =>
@@ -1847,8 +1857,8 @@ export function AdminDashboardPage() {
 								</option>
 								<option value="all">
 									All Ecosystem Subscribers (
-									{subscribers.filter((s) => s.status === "active").length}{" "}
-									real recipients)
+									{subscribers.filter((s) => s.status === "active").length} real
+									recipients)
 								</option>
 							</select>
 						</div>
@@ -1894,6 +1904,7 @@ export function AdminDashboardPage() {
 
 						<div>
 							<label
+								htmlFor="admin-api-secret"
 								className="meta"
 								style={{
 									color: "var(--ink-muted)",
@@ -1905,6 +1916,7 @@ export function AdminDashboardPage() {
 								ADMIN_API_SECRET (Bearer — session only, never committed)
 							</label>
 							<input
+								id="admin-api-secret"
 								type="password"
 								placeholder="Paste ADMIN_API_SECRET from Vercel env"
 								value={campaignSecret}
@@ -1966,7 +1978,9 @@ export function AdminDashboardPage() {
 								opacity: campaignSending ? 0.6 : 1,
 							}}
 						>
-							{campaignSending ? "Dispatching via Resend…" : "Send Campaign via Resend ➔"}
+							{campaignSending
+								? "Dispatching via Resend…"
+								: "Send Campaign via Resend ➔"}
 						</button>
 					</form>
 
@@ -2022,7 +2036,7 @@ export function AdminDashboardPage() {
 								>
 									<span style={{ color: "var(--ink)" }}>{log.subject}</span>
 									<span style={{ color: "var(--ink-muted)" }}>
-										{log.recipients} recipients // {log.date}
+										{log.recipients} recipients {"//"} {log.date}
 									</span>
 								</div>
 							))
@@ -2058,9 +2072,9 @@ export function AdminDashboardPage() {
 					>
 						IMMUTABLE LOCAL AUDIT TRAIL (LAST 50 EVENTS)
 					</div>
-					{auditLogs.map((log, idx) => (
+					{auditLogs.map((log) => (
 						<div
-							key={`${log.timestamp}-${idx}`}
+							key={`${log.timestamp}-${log.action}`}
 							style={{
 								padding: "calc(var(--space-base) / 2) var(--space-base)",
 								borderBottomWidth: "var(--rule-width)",
@@ -2074,7 +2088,7 @@ export function AdminDashboardPage() {
 						>
 							<span style={{ color: "var(--ink)" }}>{log.action}</span>
 							<span style={{ color: "var(--ink-muted)" }}>
-								{log.actor} // {log.timestamp}
+								{log.actor} {"//"} {log.timestamp}
 							</span>
 						</div>
 					))}

@@ -2,7 +2,7 @@
  * Broadcasts, Alerts & Notification System.
  *
  * Enables Super Admins to push, track, and manage:
- * - Top-level announcement banners (e.g. Chrome Extension launch waitlist)
+ * - Top-level announcement banners (e.g. Chrome Extension live + release radar)
  * - Modal alerts & popups
  * - Floating notification toasts
  * - System updates and release reminders
@@ -37,16 +37,16 @@ const DISMISSED_KEY = "convrtr_dismissed_broadcasts";
 // Default system announcements
 const INITIAL_BROADCASTS: BroadcastMessage[] = [
 	{
-		id: "broadcast-ext-launch-01",
+		id: "broadcast-ext-live-01",
 		type: "banner",
-		title: "CHROME EXTENSION // STORE LAUNCH IN PROGRESS",
+		title: "CHROME EXTENSION // NOW LIVE",
 		content:
-			"convrtr for Chrome is submitted and launching soon. Dock side panels and convert files anywhere in 1 click.",
+			"convrtr for Chrome is live. Install in 1 click — subscribe for release radar, new decoders, events, and engine updates.",
 		level: "accent",
 		target: "all",
 		active: true,
 		cta: {
-			label: "JOIN WAITLIST ↗",
+			label: "GET RELEASE UPDATES ↗",
 			href: "#extension-waitlist",
 		},
 		createdAt: Date.now() - 86400000 * 2,
@@ -83,7 +83,25 @@ export function getBroadcasts(): BroadcastMessage[] {
 			return [...INITIAL_BROADCASTS];
 		}
 		const parsed = JSON.parse(raw);
-		if (Array.isArray(parsed)) return parsed as BroadcastMessage[];
+		if (Array.isArray(parsed)) {
+			// Migrate stale pre-launch banner cached in returning visitors.
+			// Old ID `broadcast-ext-launch-01` ("launching soon / waitlist")
+			// is replaced by `broadcast-ext-live-01` so the live copy shows.
+			const hasStale = (parsed as BroadcastMessage[]).some(
+				(m) => m?.id === "broadcast-ext-launch-01",
+			);
+			if (hasStale) {
+				const migrated = (parsed as BroadcastMessage[]).filter(
+					(m) => m?.id !== "broadcast-ext-launch-01",
+				);
+				if (!migrated.some((m) => m?.id === "broadcast-ext-live-01")) {
+					migrated.unshift(...INITIAL_BROADCASTS);
+				}
+				localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
+				return migrated;
+			}
+			return parsed as BroadcastMessage[];
+		}
 	} catch {
 		// LocalStorage access restricted
 	}
@@ -174,14 +192,17 @@ export function dismissBroadcast(id: string): void {
 	}
 }
 
-export function getActiveBroadcastsForPath(pathname: string): BroadcastMessage[] {
+export function getActiveBroadcastsForPath(
+	pathname: string,
+): BroadcastMessage[] {
 	const dismissed = getDismissedBroadcastIds();
 	const messages = getBroadcasts();
 	return messages.filter((m) => {
 		if (!m.active) return false;
 		if (dismissed.includes(m.id)) return false;
 		if (m.target === "all") return true;
-		if (m.target === "home" && (pathname === "/" || pathname === "")) return true;
+		if (m.target === "home" && (pathname === "/" || pathname === ""))
+			return true;
 		if (m.target === "convert" && pathname.startsWith("/convert")) return true;
 		if (m.target === "tools" && pathname.startsWith("/tools")) return true;
 		return false;
