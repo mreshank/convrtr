@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { toolsByCategory } from "@/core/registry/stats";
 import { PillLink } from "@/design/primitives/PillLink";
+import { RotatingHook } from "@/design/primitives/RotatingHook";
 import {
 	HALFTONE_FRAGMENT,
 	HERO_GLOW_FRAGMENT,
@@ -21,6 +22,9 @@ type Props = {
 	cont: string;
 	cta: Action;
 	secondary: Action;
+	/** Rotating hook lines under the pills. Optional so existing callers
+	 * and tests that pass only the four v2 props keep working. */
+	hooks?: string[];
 };
 
 /**
@@ -58,7 +62,7 @@ type Props = {
  * tree -- land underneath it, and `DotMatrix`'s grain -- still painted last,
  * still positioned -- stays on top of all of it, unchanged.
  */
-export function HeroBand({ lead, cont, cta, secondary }: Props) {
+export function HeroBand({ lead, cont, cta, secondary, hooks }: Props) {
 	return (
 		<DotMatrix>
 			<div style={{ position: "relative" }}>
@@ -168,6 +172,12 @@ export function HeroBand({ lead, cont, cta, secondary }: Props) {
 							{secondary.label}
 						</PillLink>
 					</div>
+
+					{hooks && hooks.length > 0 && (
+						<div style={{ marginTop: "var(--gap-sm)" }}>
+							<RotatingHook lines={hooks} />
+						</div>
+					)}
 
 					<div style={{ marginTop: "var(--gap-lg)" }}>
 						<BarChart data={toolsByCategory()} />

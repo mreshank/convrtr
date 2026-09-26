@@ -47,4 +47,24 @@ describe("StoryChapter", () => {
 		);
 		expect(screen.getByTestId("nested")).toBeDefined();
 	});
+
+	it("anchors itself for the progress rail and sticks its eyebrow", () => {
+		const { container } = render(
+			<StoryChapter
+				index="02"
+				eyebrow="THE JOURNEY"
+				title={{ lead: "One file,", cont: "five stages." }}
+				lede="Follow the file."
+			>
+				<p>child</p>
+			</StoryChapter>,
+		);
+		const section = container.querySelector("section");
+		expect(section?.getAttribute("id")).toBe("chapter-02");
+		expect(section?.getAttribute("data-story-chapter")).toBe("chapter-02");
+		expect(section?.style.scrollMarginTop).toContain("var(--navbar-height)");
+		const eyebrow = screen.getByText("CH.02 // THE JOURNEY");
+		expect(eyebrow.style.position).toBe("sticky");
+		expect(eyebrow.style.top).toBe("var(--navbar-height)");
+	});
 });

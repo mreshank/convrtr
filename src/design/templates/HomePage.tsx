@@ -1,4 +1,5 @@
 import type { HOME } from "@/app/home-content";
+import { StoryProgress } from "@/components/StoryProgress";
 import { ArchitectureManifestoCard } from "@/components/content/ArchitectureManifestoCard";
 import { EcosystemRadarCard } from "@/components/content/EcosystemRadarCard";
 import { ExtensionWaitlistCard } from "@/components/content/ExtensionWaitlistCard";
@@ -37,8 +38,10 @@ type Props = {
 export function HomePage({ content }: Props) {
 	const { chapters } = content;
 	return (
-		<EditorialPage
-			hero={<HeroBand {...content.hero} />}
+		<>
+			<StoryProgress items={content.chapterNav} />
+			<EditorialPage
+				hero={<HeroBand {...content.hero} />}
 			bands={[
 				{
 					key: "ch1-problem",
@@ -147,7 +150,8 @@ export function HomePage({ content }: Props) {
 					key: "compliance",
 					node: <ComplianceRow {...content.compliance} />,
 				},
-			]}
-		/>
+				]}
+			/>
+		</>
 	);
 }

@@ -23,6 +23,7 @@ export { MediaFrame } from "./MediaFrame";
 export { MonoMeta } from "./MonoMeta";
 export { PillLink } from "./PillLink";
 export { Reveal } from "./Reveal";
+export { RotatingHook } from "./RotatingHook";
 export { ScrollReveal } from "./ScrollReveal";
 export { SectionSeparator } from "./SectionSeparator";
 export { Tooltip } from "./Tooltip";

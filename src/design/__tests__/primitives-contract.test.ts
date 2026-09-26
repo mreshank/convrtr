@@ -203,6 +203,9 @@ const CLIENT_COMPONENT_ALLOWLIST = new Set([
 	// `CountUp` runs a requestAnimationFrame loop and reads the
 	// reduced-motion media query -- both runtime-only.
 	"CountUp.tsx",
+	// `RotatingHook` owns an interval timer and reads the reduced-motion
+	// media query -- both runtime-only.
+	"RotatingHook.tsx",
 	// `ScrollReveal` owns an IntersectionObserver per mount -- state a
 	// server component cannot hold.
 	"ScrollReveal.tsx",

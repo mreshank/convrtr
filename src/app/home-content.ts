@@ -6,15 +6,27 @@ import { conversionBranches, supportedFormats } from "@/core/registry/stats";
 export const SUPPORTED_FORMATS = supportedFormats();
 export const HEIC_BRANCHES = conversionBranches("heic");
 
+// Rotating hook lines under the hero pills: provocative, but every one
+// is a checkable fact -- zero upload endpoints, zero accounts, WASM-only
+// execution. The hook earns attention; the chapters that follow pay it off.
+export const HOOK_LINES = [
+	"0 bytes uploaded. Ever.",
+	"Every tool. Zero servers.",
+	"No account. No queue. No upload.",
+	"Your files never leave the room.",
+	"WASM in. File out. Nothing between.",
+];
+
 // v2's first screen: the fused headline, a pill pair. "Nothing uploads" is
 // the whole architecture claim in three words -- every conversion in
 // `src/core` runs client-side, and there is no account system or analytics
 // call anywhere in this codebase to contradict it.
 export const HERO_PROPS = {
 	lead: "Convert anything.",
-	cont: "Upload nothing.",
+	cont: "Nothing uploads.",
 	cta: { href: "/convert", label: "Start converting" },
 	secondary: { href: "/blog", label: "Read the blog" },
+	hooks: HOOK_LINES,
 };
 
 // What the browser actually does for heic-to-jpg: `heic.ts` decodes HEIC via
@@ -145,39 +157,45 @@ export const STORY_CHAPTERS = {
 		index: "01",
 		eyebrow: "THE PROBLEM",
 		title: { lead: "Cloud converters", cont: "are surveillance pipelines." },
-		lede: "Upload your file, wait in a queue, hope the server deletes it. Every step of that ritual exists to serve someone else's infrastructure. This chapter is why convrtr refuses to have a server at all.",
+		lede: "Every free converter is a deal you never read: your files for their server bill, your afternoon for their queue, your data for their retention policy. This chapter kills the deal.",
 	},
 	journey: {
 		index: "02",
 		eyebrow: "THE JOURNEY",
 		title: { lead: "One file,", cont: "five stages, zero uploads." },
-		lede: "Follow a photo from the moment it lands in the tab to the moment its converted twin downloads. Each stage below names the real code that runs it -- nothing here is a metaphor.",
+		lede: "Five stages. One tab. Zero uploads. Watch a file go from drag-and-drop to download without ever leaving your machine -- and every stage names the code that runs it, so you can check our work.",
 	},
 	graph: {
 		index: "03",
 		eyebrow: "THE GRAPH",
 		title: { lead: "Every format", cont: "is a node. Every tool is an edge." },
-		lede: "There is no menu of conversions because there doesn't need to be one: the registry is a graph, and the engine walks it. Pick a format and watch its lineage branch -- then follow a two-hop chain the router found on its own.",
+		lede: "Menus are for restaurants. convrtr is a graph with an engine that walks the shortest path while you watch. Pick a format below -- bet you can't find a dead end.",
 	},
 	refusals: {
 		index: "04",
 		eyebrow: "THE REFUSALS",
 		title: { lead: "What it is,", cont: "and what it will not do." },
-		lede: "Five properties the product holds, six behaviours it refuses. Each absence is checked against a file in this repo, not asserted in marketing copy.",
+		lede: "Most products list features. Ours lists refusals -- six things it will not do, each one checked against the codebase. This is what trust looks like when there is no server to trust.",
 	},
 	arsenal: {
 		index: "05",
 		eyebrow: "THE ARSENAL",
 		title: { lead: "One flat list.", cont: "Every tool, no menu." },
-		lede: "The registry keeps growing -- new decoders land without rearranging anything, because a graph has no shelves to restock.",
+		lede: "A menu would need restocking. A graph just grows: new decoders land and every format's lineage gets longer overnight. Below is the inventory, counted live.",
 	},
 	carry: {
 		index: "06",
 		eyebrow: "TAKE IT WITH YOU",
 		title: { lead: "In the tab,", cont: "in Chrome, in your inbox." },
-		lede: "The same engine, everywhere you already work: docked beside any page as an extension, or announced to your inbox the moment new decoders land.",
+		lede: "The engine fits in a tab. It also fits beside any tab -- and it lands in your inbox the moment new decoders drop. Take it with you. It was never theirs to keep.",
 	},
 };
+
+// The progress rail's stops, in story order. Derived from the chapters so
+// the rail can never name a chapter that does not exist.
+export const CHAPTER_NAV = (
+	Object.values(STORY_CHAPTERS) as { index: string; eyebrow: string }[]
+).map((chapter) => ({ index: chapter.index, eyebrow: chapter.eyebrow }));
 // The five stages every conversion passes through, in order. Each `detail`
 // names the real module or function responsible -- `detectFileExtension` and
 // `findConversionRoute` in `converter-match.ts`, the WASM workers under
@@ -236,6 +254,7 @@ export const HOME = {
 	compliance: COMPLIANCE_PROPS,
 	toolGrid: TOOL_GRID_PROPS,
 	chapters: STORY_CHAPTERS,
+	chapterNav: CHAPTER_NAV,
 	pipelineStages: PIPELINE_STAGES,
 	lineageSources: LINEAGE_SOURCES,
 };
