@@ -147,6 +147,33 @@ describe("buildToolJsonLd", () => {
 		) as { itemListElement: unknown[] } | undefined;
 		expect(crumbs?.itemListElement.length).toBe(3);
 	});
+
+	it("emits a TechArticle node with technical format specifications", () => {
+		const article = graph["@graph"].find((n) => n["@type"] === "TechArticle") as
+			| { headline: string; description: string }
+			| undefined;
+		expect(article).toBeDefined();
+		expect(article?.headline).toContain(pngToWebp.seo.h1);
+		expect(article?.description).toContain("Technical specifications");
+	});
+
+	it("falls back to technical FAQs when tool registry faq is empty", () => {
+		const toolWithoutFaq = {
+			...pngToWebp,
+			seo: { ...pngToWebp.seo, faq: [] },
+		};
+		const fallbackGraph = buildToolJsonLd(
+			toolWithoutFaq,
+			"https://convrtr.mreshank.com/image/png-to-webp",
+		) as unknown as {
+			"@graph": { "@type": string; [key: string]: unknown }[];
+		};
+		const faq = fallbackGraph["@graph"].find((n) => n["@type"] === "FAQPage") as
+			| { mainEntity: unknown[] }
+			| undefined;
+		expect(faq).toBeDefined();
+		expect(faq?.mainEntity.length).toBeGreaterThanOrEqual(4);
+	});
 });
 
 describe("buildCategoryJsonLd", () => {

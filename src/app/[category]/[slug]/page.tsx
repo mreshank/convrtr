@@ -26,14 +26,47 @@ export async function generateMetadata({
 	const { category, slug } = await params;
 	const tool = getTool(`${category}/${slug}`);
 	if (!tool) return {};
+	const rawFrom = tool.accept.ext[0] ?? tool.output.ext;
+	const rawTo = tool.output.ext;
+	const canonicalUrl = `${SITE}/${tool.id}`;
+
 	return {
 		title: tool.seo.title,
 		description: tool.seo.intent,
-		alternates: { canonical: `${SITE}/${tool.id}` },
+		alternates: { canonical: canonicalUrl },
+		keywords: [
+			`${rawFrom} to ${rawTo}`,
+			`convert ${rawFrom} to ${rawTo}`,
+			`${rawFrom} to ${rawTo} converter`,
+			`${rawFrom.toUpperCase()} to ${rawTo.toUpperCase()}`,
+			"private file converter",
+			"offline file converter",
+			"client side converter",
+			"zero upload converter",
+		],
+		robots: {
+			index: true,
+			follow: true,
+			googleBot: {
+				index: true,
+				follow: true,
+				"max-video-preview": -1,
+				"max-image-preview": "large",
+				"max-snippet": -1,
+			},
+		},
 		openGraph: {
 			title: tool.seo.title,
 			description: tool.seo.intent,
-			url: `${SITE}/${tool.id}`,
+			url: canonicalUrl,
+			type: "website",
+			siteName: "convrtr",
+			locale: "en_US",
+		},
+		twitter: {
+			card: "summary_large_image",
+			title: tool.seo.title,
+			description: tool.seo.intent,
 		},
 	};
 }

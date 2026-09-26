@@ -299,11 +299,11 @@ export function ToolClient({ toolId }: { toolId: string }) {
 		setBatchRows(
 			newItems.length > 1
 				? newItems.map((item) => ({
-						id: item.id,
-						name: item.file.name,
-						inputSize: item.file.size,
-						status: "queued" as const,
-					}))
+					id: item.id,
+					name: item.file.name,
+					inputSize: item.file.size,
+					status: "queued" as const,
+				}))
 				: [],
 		);
 	};
@@ -620,13 +620,13 @@ export function ToolClient({ toolId }: { toolId: string }) {
 						prev.map((row) =>
 							row.id === event.id
 								? {
-										id: row.id,
-										name: row.name,
-										inputSize: row.inputSize,
-										status: "converting",
-										ratio: event.ratio,
-										phase: event.phase,
-									}
+									id: row.id,
+									name: row.name,
+									inputSize: row.inputSize,
+									status: "converting",
+									ratio: event.ratio,
+									phase: event.phase,
+								}
 								: row,
 						),
 					);
@@ -648,13 +648,13 @@ export function ToolClient({ toolId }: { toolId: string }) {
 						prev.map((row) =>
 							row.id === event.id
 								? {
-										id: row.id,
-										name: row.name,
-										inputSize: row.inputSize,
-										status: "error",
-										code: event.code,
-										message: event.message,
-									}
+									id: row.id,
+									name: row.name,
+									inputSize: row.inputSize,
+									status: "error",
+									code: event.code,
+									message: event.message,
+								}
 								: row,
 						),
 					);
@@ -663,11 +663,11 @@ export function ToolClient({ toolId }: { toolId: string }) {
 						prev.map((row) =>
 							row.id === event.id
 								? {
-										id: row.id,
-										name: row.name,
-										inputSize: row.inputSize,
-										status: "cancelled",
-									}
+									id: row.id,
+									name: row.name,
+									inputSize: row.inputSize,
+									status: "cancelled",
+								}
 								: row,
 						),
 					);
@@ -681,12 +681,12 @@ export function ToolClient({ toolId }: { toolId: string }) {
 						prev.map((row) =>
 							row.id === event.id
 								? {
-										id: row.id,
-										name: row.name,
-										inputSize: row.inputSize,
-										status: "done",
-										outputSize: event.outputSize,
-									}
+									id: row.id,
+									name: row.name,
+									inputSize: row.inputSize,
+									status: "done",
+									outputSize: event.outputSize,
+								}
 								: row,
 						),
 					);

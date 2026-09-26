@@ -2,6 +2,11 @@ import type { BlogPostMeta } from "@/content/blog/types";
 import type { CollectiveMeta } from "@/content/collectives/types";
 import type { ComparisonMeta } from "@/content/compare/types";
 import type { Tool } from "@/core/registry";
+import {
+	getConversionBenchmark,
+	getFormatSpec,
+	getTechnicalFaq,
+} from "@/lib/format-specs";
 import { CHROME_EXTENSION_URL, SITE } from "@/lib/site";
 
 function getOrigin(url: string): string {
@@ -52,10 +57,7 @@ export function buildHomeJsonLd() {
 					width: "512",
 					height: "512",
 				},
-				sameAs: [
-					"https://github.com/mreshank/convrtr",
-					CHROME_EXTENSION_URL,
-				],
+				sameAs: ["https://github.com/mreshank/convrtr", CHROME_EXTENSION_URL],
 			},
 			{
 				"@type": "WebApplication",
@@ -125,6 +127,16 @@ export function buildToolJsonLd(tool: Tool, url: string) {
 	const origin = getOrigin(url);
 	const categoryLabel =
 		tool.category.charAt(0).toUpperCase() + tool.category.slice(1);
+	const rawFrom = tool.accept.ext[0] ?? tool.output.ext;
+	const rawTo = tool.output.ext;
+	const fromSpec = getFormatSpec(rawFrom, tool.category);
+	const toSpec = getFormatSpec(rawTo, tool.category);
+	const bench = getConversionBenchmark(
+		fromSpec,
+		toSpec,
+		tool.category,
+		tool.engines,
+	);
 
 	const graphNodes: Record<string, unknown>[] = [
 		{
@@ -132,7 +144,8 @@ export function buildToolJsonLd(tool: Tool, url: string) {
 			name: tool.seo.h1,
 			applicationCategory: "UtilitiesApplication",
 			applicationSubCategory: "File Converter",
-			operatingSystem: "Any",
+			operatingSystem:
+				"All (Browser-Based: macOS, Windows, Linux, iOS, Android)",
 			browserRequirements: "Requires WebAssembly and HTML5",
 			url,
 			isPartOf: { "@type": "WebSite", "@id": `${origin}/#website` },
@@ -143,6 +156,8 @@ export function buildToolJsonLd(tool: Tool, url: string) {
 				`Converts .${tool.accept.ext.join(", .")} to .${tool.output.ext}`,
 				"100% private client-side processing",
 				"Zero server upload",
+				bench.privacyGuarantee,
+				`Runtime: ${bench.runtimeEngine}`,
 			],
 		},
 		{
@@ -150,29 +165,52 @@ export function buildToolJsonLd(tool: Tool, url: string) {
 			name: tool.seo.h1,
 			description: tool.seo.intent,
 			totalTime: "PT10S",
+			estimatedCost: { "@type": "MonetaryAmount", currency: "USD", value: "0" },
+			tool: [
+				{
+					"@type": "HowToTool",
+					name: "Web browser with WebAssembly support",
+				},
+			],
+			supply: [
+				{
+					"@type": "HowToSupply",
+					name: `.${rawFrom} file`,
+				},
+			],
 			step: [
 				{
 					"@type": "HowToStep",
 					position: 1,
-					name: `Select .${tool.accept.ext[0]} file`,
-					text: `Drop your .${tool.accept.ext[0]} file onto the page or choose it from your device.`,
+					name: `Select .${rawFrom} file`,
+					text: `Stage your .${rawFrom} file by dragging and dropping onto the instrument or choosing from local device storage.`,
 					url: `${url}#step-1`,
 				},
 				{
 					"@type": "HowToStep",
 					position: 2,
-					name: "Choose quality preset",
-					text: "Choose how much quality you want to keep.",
+					name: "Choose quality preset and encoding options",
+					text: "Select target quality parameters (Lossless, Visually Lossless, Balanced, Smallest) or adjust advanced encoding controls.",
 					url: `${url}#step-2`,
 				},
 				{
 					"@type": "HowToStep",
 					position: 3,
-					name: `Download .${tool.output.ext} file`,
-					text: `Save the .${tool.output.ext} file to your device.`,
+					name: `Download .${rawTo} file`,
+					text: `Compile directly on your device via WebAssembly and save the .${rawTo} file to disk.`,
 					url: `${url}#step-3`,
 				},
 			],
+		},
+		{
+			"@type": "TechArticle",
+			"@id": `${url}#technical-dossier`,
+			headline: `${tool.seo.h1} — Technical Format Specifications & Conversion Dossier`,
+			description: `Technical specifications, bitstream magic bytes, MIME definitions, and local WebAssembly conversion benchmarks for ${fromSpec.name} (.${fromSpec.ext}) to ${toSpec.name} (.${toSpec.ext}).`,
+			url: `${url}#technical-dossier`,
+			inLanguage: "en-US",
+			author: { "@type": "Organization", name: "convrtr", url: origin },
+			publisher: { "@type": "Organization", name: "convrtr", url: origin },
 		},
 		{
 			"@type": "BreadcrumbList",
@@ -199,10 +237,15 @@ export function buildToolJsonLd(tool: Tool, url: string) {
 		},
 	];
 
-	if (tool.seo.faq && tool.seo.faq.length > 0) {
+	const faqSource =
+		tool.seo.faq && tool.seo.faq.length > 0
+			? tool.seo.faq
+			: getTechnicalFaq(fromSpec, toSpec, tool.seo.h1);
+
+	if (faqSource.length > 0) {
 		graphNodes.push({
 			"@type": "FAQPage",
-			mainEntity: tool.seo.faq.map((item) => ({
+			mainEntity: faqSource.map((item) => ({
 				"@type": "Question",
 				name: item.q,
 				acceptedAnswer: { "@type": "Answer", text: item.a },

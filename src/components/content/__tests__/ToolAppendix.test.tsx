@@ -106,6 +106,8 @@ describe("ToolAppendix", () => {
 			/>,
 		);
 
+		expect(screen.getByTestId("technical-dossier")).toBeDefined();
+		expect(screen.getByTestId("technical-specs-table")).toBeDefined();
 		expect(screen.getByTestId("related-converters")).toBeDefined();
 		expect(screen.getByText("Related Converters & Routing")).toBeDefined();
 	});

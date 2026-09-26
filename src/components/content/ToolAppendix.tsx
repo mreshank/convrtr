@@ -3,9 +3,11 @@ import type { BlogPostMeta } from "@/content/blog/types";
 import type { ComparisonMeta } from "@/content/compare/types";
 import type { Tool } from "@/core/registry";
 import { ArrowUpRight } from "@/design/primitives/ArrowUpRight";
+import { getFormatSpec, getTechnicalFaq } from "@/lib/format-specs";
 import { CHROME_EXTENSION_URL } from "@/lib/site";
 import { RelatedConverters } from "./RelatedConverters";
 import { RelatedReading } from "./RelatedReading";
+import { TechnicalDossier } from "./TechnicalDossier";
 
 export interface FAQItem {
 	q: string;
@@ -23,6 +25,30 @@ export function ToolAppendix({
 	posts: BlogPostMeta[];
 	tool?: Tool;
 }) {
+	const rawFrom = tool?.accept.ext[0] ?? tool?.output.ext ?? "";
+	const rawTo = tool?.output.ext ?? "";
+	const technicalFaqs =
+		tool && rawFrom && rawTo
+			? getTechnicalFaq(
+					getFormatSpec(rawFrom, tool.category),
+					getFormatSpec(rawTo, tool.category),
+					tool.seo.h1,
+				)
+			: [];
+
+	// Prefer custom FAQs declared on the tool, augmented with technical FAQs
+	const effectiveFaq =
+		faq.length > 0
+			? [
+					...faq,
+					...technicalFaqs.filter(
+						(tf) => !faq.some((f) => f.q.toLowerCase() === tf.q.toLowerCase()),
+					),
+				]
+			: tool
+				? technicalFaqs
+				: [];
+
 	return (
 		<div
 			data-testid="tool-appendix"
@@ -35,6 +61,9 @@ export function ToolAppendix({
 				margin: "0 auto",
 			}}
 		>
+			{/* Format Technical Specifications & In-Browser Telemetry Dossier */}
+			{tool && <TechnicalDossier tool={tool} />}
+
 			{/* High-powered internal routing & cross-converter mesh */}
 			{tool && <RelatedConverters tool={tool} />}
 
@@ -120,9 +149,10 @@ export function ToolAppendix({
 						margin: 0,
 					}}
 				>
-					Working with files across multiple web pages? The official convrtr Chrome Extension
-					adds native Side Panel docking, right-click context menu media extraction, and visible viewport
-					capture. Powered by the same zero-upload client-side WebAssembly engine.
+					Working with files across multiple web pages? The official convrtr
+					Chrome Extension adds native Side Panel docking, right-click context
+					menu media extraction, and visible viewport capture. Powered by the
+					same zero-upload client-side WebAssembly engine.
 				</p>
 
 				<div
@@ -333,7 +363,7 @@ export function ToolAppendix({
 			)}
 
 			{/* Visible FAQ Section for Schema.org FAQPage compliance */}
-			{faq.length > 0 && (
+			{effectiveFaq.length > 0 && (
 				<section
 					data-testid="tool-faq"
 					style={{
@@ -386,7 +416,7 @@ export function ToolAppendix({
 							gap: "var(--gap-sm)",
 						}}
 					>
-						{faq.map((item) => (
+						{effectiveFaq.map((item) => (
 							<div
 								key={item.q}
 								style={{
