@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { HeroActionInput } from "@/components/home/HeroActionInput";
 import { toolsByCategory } from "@/core/registry/stats";
 import { PillLink } from "@/design/primitives/PillLink";
 import { RotatingHook } from "@/design/primitives/RotatingHook";
@@ -154,6 +155,8 @@ export function HeroBand({ lead, cont, cta, secondary, hooks }: Props) {
 					</div>
 
 					<FusedHeadline as="h1" lead={lead} cont={cont} />
+
+					<HeroActionInput />
 
 					<div
 						style={{

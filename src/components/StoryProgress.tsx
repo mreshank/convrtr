@@ -92,15 +92,11 @@ export function StoryProgress({ items }: Props) {
 					>
 						<span
 							aria-hidden="true"
+							className={`inline-block h-0.5 transition-all duration-150 ${
+								isActive ? "w-5" : "w-2"
+							}`}
 							style={{
-								display: "inline-block",
-								width: isActive ? "20px" : "8px",
-								height: "2px",
-								backgroundColor: isActive
-									? "var(--accent)"
-									: "var(--rule)",
-								transition:
-									"width var(--dur-fade) var(--ease), background-color var(--dur-fade) var(--ease)",
+								backgroundColor: isActive ? "var(--accent)" : "var(--rule)",
 							}}
 						/>
 						{item.index}

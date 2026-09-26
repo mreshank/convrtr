@@ -9,6 +9,7 @@ export {
 	type CollectiveGridItem,
 	type CollectiveToolItem,
 } from "./CollectiveGrid";
+export { CommunityMarquee } from "./CommunityMarquee";
 export { ComplianceRow } from "./ComplianceRow";
 export { DotMatrix } from "./DotMatrix";
 export { FaqBand } from "./FaqBand";

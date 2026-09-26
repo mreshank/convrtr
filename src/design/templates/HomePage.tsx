@@ -1,13 +1,14 @@
 import type { HOME } from "@/app/home-content";
-import { StoryProgress } from "@/components/StoryProgress";
 import { ArchitectureManifestoCard } from "@/components/content/ArchitectureManifestoCard";
 import { EcosystemRadarCard } from "@/components/content/EcosystemRadarCard";
 import { ExtensionWaitlistCard } from "@/components/content/ExtensionWaitlistCard";
 import { MultiHopGraphCard } from "@/components/content/MultiHopGraphCard";
+import { StoryProgress } from "@/components/StoryProgress";
 import { TOOLS } from "@/core/registry";
 import {
 	BranchDiagram,
 	CategoryCards,
+	CommunityMarquee,
 	ComplianceRow,
 	DotMatrix,
 	FaqBand,
@@ -144,6 +145,15 @@ export function HomePage({ content }: Props) {
 								>
 									<FreeForeverBand />
 								</StoryChapter>
+							</>
+						),
+					},
+					{
+						key: "community",
+						node: (
+							<>
+								<SectionSeparator label="PROOF // COMMUNITY VOICE" />
+								<CommunityMarquee />
 							</>
 						),
 					},

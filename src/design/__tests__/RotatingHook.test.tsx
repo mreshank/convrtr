@@ -31,7 +31,10 @@ describe("RotatingHook", () => {
 		vi.useFakeTimers();
 		try {
 			render(
-				<RotatingHook lines={["First hook.", "Second hook."]} intervalMs={3000} />,
+				<RotatingHook
+					lines={["First hook.", "Second hook."]}
+					intervalMs={3000}
+				/>,
 			);
 			expect(screen.getByText("First hook.")).toBeDefined();
 			act(() => {

@@ -157,6 +157,7 @@ function CollectiveToolsDialog({
 			onKeyDown={(e) => {
 				if (e.key === "Escape") onClose();
 			}}
+			className="bg-black/80 backdrop-blur-sm"
 			style={{
 				position: "fixed",
 				inset: 0,
@@ -165,21 +166,15 @@ function CollectiveToolsDialog({
 				alignItems: "center",
 				justifyContent: "center",
 				padding: "var(--gap-md)",
-				background: "rgba(0, 0, 0, 0.8)",
 			}}
 		>
 			<div
 				ref={dialogRef}
+				className="w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden"
 				style={{
 					background: "var(--surface)",
 					border: "var(--rule-width) solid var(--rule)",
 					borderRadius: "var(--radius)",
-					width: "100%",
-					maxWidth: "640px",
-					maxHeight: "90vh",
-					display: "flex",
-					flexDirection: "column",
-					overflow: "hidden",
 				}}
 			>
 				<div

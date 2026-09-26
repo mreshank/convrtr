@@ -9,10 +9,10 @@ type Props = {
 };
 
 /**
- * The closing call to action: one last headline, both doors in. Converting
- * starts in the tab with no sign-up; the extension moves the same engine
- * beside every tab. Nothing here asks for anything -- there is nothing to
- * give.
+ * WriteMate-style closing call to action:
+ * Centered ambient glowing card with bold fused headline, clear lede, and
+ * twin doors in. Converting starts in the tab with no sign-up; the extension
+ * docks the engine beside every page.
  *
  * Capped with no horizontal padding of its own: the shell owns the gutter,
  * the band owns only its cap.
@@ -26,14 +26,27 @@ export function FinalCta({ eyebrow, title, lede }: Props) {
 				width: "100%",
 				display: "flex",
 				flexDirection: "column",
+				alignItems: "center",
+				textAlign: "center",
 				gap: "var(--gap-sm)",
-				borderTopWidth: "var(--rule-width)",
-				borderTopStyle: "solid",
-				borderTopColor: "var(--rule)",
-				paddingTop: "var(--gap-md)",
+				borderWidth: "var(--rule-width)",
+				borderStyle: "solid",
+				borderColor: "var(--rule)",
+				borderRadius: "var(--radius)",
+				backgroundColor: "var(--surface)",
+				padding: "var(--gap-lg) 0",
+				position: "relative",
+				overflow: "hidden",
 			}}
 		>
-			<p className="meta" style={{ color: "var(--accent)", margin: 0 }}>
+			<p
+				className="meta"
+				style={{
+					color: "var(--accent)",
+					margin: 0,
+					letterSpacing: "0.08em",
+				}}
+			>
 				{eyebrow}
 			</p>
 			<FusedHeadline as="h2" lead={title.lead} cont={title.cont} />
@@ -43,7 +56,7 @@ export function FinalCta({ eyebrow, title, lede }: Props) {
 					fontSize: "var(--body-size)",
 					lineHeight: 1.6,
 					margin: 0,
-					maxWidth: "65ch",
+					maxWidth: "50ch",
 				}}
 			>
 				{lede}
@@ -53,7 +66,8 @@ export function FinalCta({ eyebrow, title, lede }: Props) {
 					display: "flex",
 					gap: "var(--space-base)",
 					flexWrap: "wrap",
-					marginTop: "var(--space-base)",
+					justifyContent: "center",
+					marginTop: "var(--gap-sm)",
 				}}
 			>
 				<PillLink href="/convert" variant="fill">
