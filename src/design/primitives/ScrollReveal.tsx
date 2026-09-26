@@ -47,11 +47,17 @@ export function ScrollReveal({
 			setVisible(true);
 			return;
 		}
+		// Belt and suspenders: if the observer never fires (frozen frame,
+		// background tab throttling, exotic webview), the content must still
+		// arrive. Normal scrolling reveals long before this elapses, so it
+		// never fires for real users -- it only bounds the worst case.
+		const fallback = setTimeout(() => setVisible(true), 1500);
 		const observer = new IntersectionObserver(
 			(entries) => {
 				for (const entry of entries) {
 					if (entry.isIntersecting) {
 						setVisible(true);
+						clearTimeout(fallback);
 						observer.disconnect();
 					}
 				}
@@ -59,7 +65,10 @@ export function ScrollReveal({
 			{ threshold: 0.12 },
 		);
 		observer.observe(el);
-		return () => observer.disconnect();
+		return () => {
+			clearTimeout(fallback);
+			observer.disconnect();
+		};
 	}, [delayMs]);
 
 	return (

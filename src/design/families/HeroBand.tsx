@@ -126,7 +126,7 @@ export function HeroBand({ lead, cont, cta, secondary, hooks }: Props) {
 							className="meta"
 							style={{ color: "var(--ink-muted)", margin: 0 }}
 						>
-							Local file conversion {"//"} WebAssembly sandbox
+							Private by design {"//"} WebAssembly sandbox
 						</p>
 						<Link
 							href={CHROME_EXTENSION_URL}

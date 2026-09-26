@@ -23,7 +23,7 @@ const geistMono = Geist_Mono({
 });
 
 const TAGLINE =
-	"Free in-browser file converter for images, audio, video, documents and data. Every conversion runs on your device — no uploads, no accounts, no servers.";
+	"Private by design. Free in-browser file converter for images, audio, video, documents and data — every conversion runs on your device, with no uploads, no accounts, no servers.";
 
 export const metadata: Metadata = {
 	metadataBase: new URL(SITE),
@@ -32,6 +32,16 @@ export const metadata: Metadata = {
 		template: "%s — convrtr",
 	},
 	description: TAGLINE,
+	keywords: [
+		"private file converter",
+		"no upload converter",
+		"in-browser converter",
+		"offline file converter",
+		"private image converter",
+		"private pdf converter",
+		"client-side conversion",
+		"zero upload",
+	],
 	applicationName: "convrtr",
 	authors: [{ name: "convrtr", url: SITE }],
 	creator: "convrtr",

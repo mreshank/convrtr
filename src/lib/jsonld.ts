@@ -37,7 +37,7 @@ export function buildHomeJsonLd() {
 				name: "convrtr",
 				url: SITE,
 				description:
-					"Free in-browser file converter for images, audio, video, documents and data. Every conversion runs on your device — no uploads, no accounts, no servers.",
+					"Private by design. Free in-browser file converter for images, audio, video, documents and data — every conversion runs on your device, with no uploads, no accounts, no servers.",
 				potentialAction: {
 					"@type": "SearchAction",
 					target: {

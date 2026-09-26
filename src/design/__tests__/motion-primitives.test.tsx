@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { CountUp } from "@/design/primitives/CountUp";
 import { ScrollReveal } from "@/design/primitives/ScrollReveal";
@@ -56,6 +56,32 @@ describe("ScrollReveal", () => {
 		expect(
 			container.querySelector("[data-scroll-reveal][data-visible]"),
 		).not.toBeNull();
+	});
+
+	it("reveals via fallback when the observer stays silent", () => {
+		function SilentObserver() {
+			return { observe: vi.fn(), disconnect: vi.fn(), unobserve: vi.fn() };
+		}
+		vi.stubGlobal("IntersectionObserver", SilentObserver);
+		vi.useFakeTimers();
+		try {
+			const { container } = render(
+				<ScrollReveal>
+					<p>chapter body</p>
+				</ScrollReveal>,
+			);
+			expect(
+				container.querySelector("[data-scroll-reveal]:not([data-visible])"),
+			).not.toBeNull();
+			act(() => {
+				vi.advanceTimersByTime(1500);
+			});
+			expect(
+				container.querySelector("[data-scroll-reveal][data-visible]"),
+			).not.toBeNull();
+		} finally {
+			vi.useRealTimers();
+		}
 	});
 
 	it("reveals on first intersection and then stops observing", async () => {
