@@ -180,28 +180,32 @@ export function KeyboardShortcutsModal({
 		>
 			<div
 				ref={modalRef}
-				className="flex flex-col border max-w-lg w-full max-h-[90vh] overflow-hidden"
+				className="flex flex-col border max-w-lg w-full max-h-[90vh] overflow-hidden rounded-2xl"
 				style={{
-					background: "var(--ground)",
-					borderColor: "var(--rule-strong)",
+					background: "var(--surface)",
+					borderColor: "var(--rule)",
 				}}
 			>
 				{/* Dialog Header */}
 				<div
-					className="flex items-center justify-between border-b px-4 py-3"
-					style={{ borderColor: "var(--rule)" }}
+					className="flex items-center justify-between border-b px-5 py-3.5"
+					style={{ borderColor: "var(--rule-subtle)" }}
 				>
-					<div className="flex items-center gap-2">
+					<div className="flex items-center gap-2.5">
 						<span
-							className="mono text-[11px] font-bold uppercase tracking-wider"
+							className="mono text-[12px] font-bold uppercase tracking-wide"
 							style={{ color: "var(--accent)" }}
 						>
-							[ KEYBOARD SHORTCUTS ]
+							KEYBOARD SHORTCUTS
 						</span>
 						<span
 							id="shortcuts-dialog-title"
-							className="mono text-[10px] uppercase font-medium"
-							style={{ color: "var(--ink-muted)" }}
+							className="mono text-[10px] uppercase px-2 py-0.5 rounded-full border"
+							style={{
+								color: "var(--ink-muted)",
+								borderColor: "var(--rule-subtle)",
+								background: "var(--ground)",
+							}}
 						>
 							TECHNICAL INSTRUMENT
 						</span>
@@ -211,11 +215,11 @@ export function KeyboardShortcutsModal({
 						type="button"
 						onClick={onClose}
 						aria-label="Close keyboard shortcuts dialog"
-						className="mono text-[12px] px-2 py-0.5 border cursor-pointer transition-colors"
+						className="mono text-[11px] px-2.5 py-1 rounded-full border cursor-pointer transition-colors"
 						style={{
-							borderColor: "var(--rule)",
+							borderColor: "var(--rule-subtle)",
 							color: "var(--ink-muted)",
-							background: "var(--surface)",
+							background: "var(--ground)",
 						}}
 					>
 						✕ ESC
@@ -223,7 +227,7 @@ export function KeyboardShortcutsModal({
 				</div>
 
 				{/* Shortcuts Content */}
-				<div className="overflow-y-auto p-4 flex flex-col gap-5 max-h-[calc(90vh-100px)]">
+				<div className="overflow-y-auto p-5 flex flex-col gap-5 max-h-[calc(90vh-100px)]">
 					{sections.map((section) => (
 						<div key={section.title} className="flex flex-col gap-2">
 							<h3
@@ -239,10 +243,10 @@ export function KeyboardShortcutsModal({
 								{section.shortcuts.map((s) => (
 									<div
 										key={`${section.title}-${s.description}`}
-										className="flex items-center justify-between py-1 px-1.5 border text-[11px] mono"
+										className="flex items-center justify-between py-1.5 px-3 rounded-lg border text-[11px] mono transition-colors hover:border-[var(--rule)]"
 										style={{
 											borderColor: "var(--rule-subtle)",
-											background: "var(--surface)",
+											background: "var(--ground)",
 										}}
 									>
 										<span
@@ -255,10 +259,10 @@ export function KeyboardShortcutsModal({
 											{s.keys.map((k) => (
 												<kbd
 													key={`${s.description}-${k}`}
-													className="mono text-[10px] px-1.5 py-0.5 border font-semibold min-w-5 text-center"
+													className="mono text-[10px] px-2 py-0.5 rounded border font-semibold min-w-5 text-center"
 													style={{
-														borderColor: "var(--rule-strong)",
-														background: "var(--ground)",
+														borderColor: "var(--rule)",
+														background: "var(--surface)",
 														color: "var(--ink)",
 													}}
 												>
@@ -275,18 +279,18 @@ export function KeyboardShortcutsModal({
 
 				{/* Dialog Footer */}
 				<div
-					className="border-t px-4 py-2.5 flex items-center justify-between text-[10px] mono"
+					className="border-t px-5 py-3 flex items-center justify-between text-[11px] mono"
 					style={{
-						borderColor: "var(--rule)",
-						background: "var(--surface)",
+						borderColor: "var(--rule-subtle)",
+						background: "var(--ground)",
 						color: "var(--ink-muted)",
 					}}
 				>
-					<span>PRESS ? ANYWHERE TO TOGGLE THIS DIALOG</span>
+					<span>PRESS ? TO TOGGLE</span>
 					<button
 						type="button"
 						onClick={onClose}
-						className="mono text-[10px] px-3 py-1 border cursor-pointer font-medium"
+						className="mono text-[11px] px-4 py-1.5 rounded-full border cursor-pointer font-semibold transition-colors"
 						style={{
 							borderColor: "var(--accent)",
 							background: "var(--accent)",

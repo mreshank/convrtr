@@ -18,6 +18,9 @@ html,
 body {
 	margin: 0;
 	padding: 0;
+	width: 100%;
+	max-width: 100%;
+	overflow-x: hidden;
 	background-color: var(--ground);
 	color: var(--ink);
 	font-family: var(--font-sans);
@@ -27,6 +30,15 @@ body {
 	scrollbar-color: var(--rule-strong) var(--ground);
 	scrollbar-width: thin;
 	min-height: 100vh;
+	box-sizing: border-box;
+}
+
+#root {
+	width: 100%;
+	max-width: 100%;
+	min-width: 0;
+	overflow-x: hidden;
+	box-sizing: border-box;
 }
 
 /* Custom scrollbars */
@@ -68,6 +80,8 @@ body {
 	display: flex;
 	flex-direction: column;
 	width: 100%;
+	max-width: 100%;
+	min-width: 0;
 	min-height: 100vh;
 	box-sizing: border-box;
 	background-color: var(--ground);
@@ -103,8 +117,8 @@ a:focus-visible,
 input:focus-visible,
 select:focus-visible,
 [tabindex]:focus-visible {
-	outline: 2px solid var(--accent) !important;
-	outline-offset: 2px !important;
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
 }
 
 /* Accessible Screen Reader Only utility */
@@ -125,9 +139,113 @@ select:focus-visible,
 	*,
 	*::before,
 	*::after {
-		animation-duration: 0.01ms !important;
-		animation-iteration-count: 1 !important;
-		transition-duration: 0.01ms !important;
-		scroll-behavior: auto !important;
+		animation-duration: 0.01ms;
+		animation-iteration-count: 1;
+		transition-duration: 0.01ms;
+		scroll-behavior: auto;
 	}
+}
+
+/* Material M3 × convrtr Design Tokens & Components */
+.m3-surface-card {
+	background-color: var(--surface);
+	border: 1px solid var(--rule-subtle);
+	border-radius: 16px;
+	transition: border-color var(--dur-fade) var(--ease);
+}
+
+.m3-surface-card:hover {
+	border-color: var(--rule);
+}
+
+.m3-pill {
+	border-radius: var(--radius-pill);
+}
+
+.m3-icon-btn {
+	width: 32px;
+	height: 32px;
+	border-radius: var(--radius-pill);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid transparent;
+	background: transparent;
+	color: var(--ink-muted);
+	cursor: pointer;
+	transition: all var(--dur-fade) var(--ease);
+}
+
+.m3-icon-btn:hover {
+	background-color: var(--surface);
+	color: var(--ink);
+	border-color: var(--rule-subtle);
+}
+
+.m3-icon-btn-active {
+	background-color: var(--surface);
+	color: var(--accent);
+	border-color: var(--accent);
+}
+
+.m3-segmented {
+	display: inline-flex;
+	align-items: center;
+	border-radius: var(--radius-pill);
+	background: var(--surface);
+	border: 1px solid var(--rule);
+	padding: 2px;
+	gap: 2px;
+}
+
+.m3-segmented-btn {
+	border-radius: var(--radius-pill);
+	padding: 4px 10px;
+	font-size: 10px;
+	font-family: var(--font-mono);
+	border: 1px solid transparent;
+	background: transparent;
+	color: var(--ink-muted);
+	cursor: pointer;
+	transition: all var(--dur-fade) var(--ease);
+	white-space: nowrap;
+}
+
+.m3-segmented-btn:hover {
+	color: var(--ink);
+}
+
+.m3-segmented-btn-active {
+	background: var(--ground);
+	color: var(--accent);
+	border-color: var(--rule-subtle);
+	font-weight: 600;
+}
+
+.m3-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	border-radius: var(--radius-pill);
+	border: 1px solid var(--rule-subtle);
+	background: var(--surface);
+	color: var(--ink);
+	font-family: var(--font-mono);
+	font-size: 11px;
+	padding: 4px 12px;
+	transition: all var(--dur-fade) var(--ease);
+	cursor: pointer;
+	user-select: none;
+}
+
+.m3-chip:hover {
+	border-color: var(--rule);
+	background: var(--rule-subtle);
+}
+
+.m3-chip-active {
+	background: var(--accent);
+	color: var(--ground);
+	border-color: var(--accent);
+	font-weight: 600;
 }

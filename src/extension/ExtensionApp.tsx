@@ -474,23 +474,25 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 		mode === "popup"
 			? "convrtr-popup-shell p-3 sm:p-4"
 			: mode === "sidepanel"
-				? "convrtr-sidepanel-shell p-3 sm:p-4"
+				? "convrtr-sidepanel-shell p-2.5 sm:p-3"
 				: "convrtr-tab-shell p-4 sm:p-8";
 
 	return (
-		<div className={containerClass}>
-			{/* Top Extension Header */}
+		<div
+			className={`${containerClass} w-full max-w-full min-w-0 overflow-x-hidden`}
+		>
+			{/* Top Extension App Bar (Material M3 × convrtr) */}
 			<header
-				className="flex items-center justify-between border-b pb-3 mb-3"
-				style={{ borderColor: "var(--rule)" }}
+				className="flex flex-wrap items-center justify-between gap-2.5 border-b pb-3 mb-3.5 w-full max-w-full min-w-0"
+				style={{ borderColor: "var(--rule-subtle)" }}
 			>
-				{/* Brand Identity & Current Mode Badge */}
-				<div className="flex items-center gap-2">
+				{/* Brand Identity & Surface Indicator */}
+				<div className="flex items-center gap-2.5 min-w-0">
 					<div
-						className="flex items-center justify-center w-6 h-6 border shrink-0"
+						className="flex items-center justify-center w-7 h-7 rounded-lg shrink-0 border transition-transform hover:scale-105"
 						style={{
 							background: "var(--surface)",
-							borderColor: "var(--rule-strong)",
+							borderColor: "var(--rule)",
 						}}
 					>
 						<svg
@@ -500,25 +502,26 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 							fill="none"
 							stroke="currentColor"
 							strokeWidth="4"
-							strokeLinecap="square"
-							strokeLinejoin="miter"
+							strokeLinecap="round"
+							strokeLinejoin="round"
 							aria-hidden="true"
+							style={{ color: "var(--accent)" }}
 						>
 							<path d="M11 7 L23 16 L11 25" />
 						</svg>
 					</div>
 
-					<div className="flex items-baseline gap-1.5">
+					<div className="flex items-center gap-2 min-w-0">
 						<h1
-							className="mono font-bold tracking-tight text-[13px] uppercase m-0 leading-none"
+							className="mono font-bold tracking-tight text-[13px] uppercase m-0 leading-none shrink-0"
 							style={{ color: "var(--ink)" }}
 						>
 							convrtr
 						</h1>
 						<span
-							className="mono text-[9px] uppercase px-1.5 py-0.5 border font-semibold"
+							className="mono text-[9px] uppercase px-2.5 py-0.5 rounded-full font-semibold border truncate"
 							style={{
-								borderColor: "var(--rule)",
+								borderColor: "var(--rule-subtle)",
 								color: "var(--accent)",
 								background: "var(--surface)",
 							}}
@@ -531,210 +534,254 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 							}
 						>
 							{mode === "sidepanel"
-								? "SIDE PANEL [⌘⇧C]"
+								? "SIDE PANEL ⌘⇧C"
 								: mode === "popup"
-									? "POPUP [⌘⇧,]"
-									: "STUDIO [⌘⇧O]"}
+									? "POPUP ⌘⇧,"
+									: "STUDIO ⌘⇧O"}
 						</span>
 					</div>
 				</div>
 
-				{/* Navigation & Mode Switch Actions */}
-				<div className="flex items-center gap-1.5 flex-wrap">
+				{/* Unified Actions: M3 Segmented View Switcher & Icon Buttons */}
+				<div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+					{/* M3 Segmented View Switcher */}
+					<nav aria-label="Extension view switch" className="m3-segmented">
+						<button
+							type="button"
+							onClick={() => void switchView("sidepanel")}
+							aria-label="Dock into Side Panel (1)"
+							className={`m3-segmented-btn ${mode === "sidepanel" ? "m3-segmented-btn-active" : ""}`}
+							title="Dock into Side Panel (1)"
+						>
+							SIDEBAR
+						</button>
+						<button
+							type="button"
+							onClick={() => void switchView("popup")}
+							aria-label="Open Quick Popup (2)"
+							className={`m3-segmented-btn ${mode === "popup" ? "m3-segmented-btn-active" : ""}`}
+							title="Open Quick Popup (2)"
+						>
+							POPUP
+						</button>
+						<button
+							type="button"
+							onClick={() => void switchView("tab")}
+							aria-label="Open Full Studio Tab (3)"
+							className={`m3-segmented-btn ${mode === "tab" ? "m3-segmented-btn-active" : ""}`}
+							title="Open Full Studio Tab (3)"
+						>
+							STUDIO ↗
+						</button>
+					</nav>
+
+					<div
+						className="h-4 w-px mx-0.5"
+						style={{ background: "var(--rule-subtle)" }}
+						aria-hidden="true"
+					/>
+
+					{/* Quick Format Presets Toggle (M3 Icon Button) */}
 					<button
 						type="button"
 						onClick={() => setShowPresets((prev) => !prev)}
 						aria-label="Toggle Quick Format Presets Bar (P)"
-						className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer"
-						style={{
-							background: showPresets ? "var(--surface)" : "transparent",
-							color: showPresets ? "var(--accent)" : "var(--ink-muted)",
-							borderColor: showPresets ? "var(--accent)" : "var(--rule)",
-						}}
-						title="Toggle Quick Format Presets (P)"
+						aria-expanded={showPresets}
+						className={`m3-icon-btn ${showPresets ? "m3-icon-btn-active" : ""}`}
+						title="Quick Format Presets (P)"
 					>
-						PRESETS
+						<svg
+							width="14"
+							height="14"
+							viewBox="0 0 16 16"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							aria-hidden="true"
+						>
+							<line x1="2" y1="4" x2="14" y2="4" />
+							<line x1="2" y1="8" x2="14" y2="8" />
+							<line x1="2" y1="12" x2="14" y2="12" />
+							<circle cx="5" cy="4" r="1.5" fill="currentColor" />
+							<circle cx="11" cy="8" r="1.5" fill="currentColor" />
+							<circle cx="7" cy="12" r="1.5" fill="currentColor" />
+						</svg>
 					</button>
 
+					{/* Conversion History Drawer Toggle (M3 Icon Button) */}
 					<button
 						type="button"
 						onClick={() => setShowHistory((prev) => !prev)}
-						aria-label="Toggle Conversion History Drawer (H)"
-						className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer"
-						style={{
-							background: showHistory ? "var(--surface)" : "transparent",
-							color: showHistory ? "var(--accent)" : "var(--ink-muted)",
-							borderColor: showHistory ? "var(--accent)" : "var(--rule)",
-						}}
-						title="Toggle Conversion History (H)"
+						aria-label={`Toggle Conversion History Drawer (H)${historyRecords.length > 0 ? ` - ${historyRecords.length} items` : ""}`}
+						aria-expanded={showHistory}
+						className={`m3-icon-btn relative ${showHistory ? "m3-icon-btn-active" : ""}`}
+						title={
+							historyRecords.length > 0
+								? `Conversion History (${historyRecords.length}) (H)`
+								: "Conversion History (H)"
+						}
 					>
-						HISTORY
-						{historyRecords.length > 0 ? ` (${historyRecords.length})` : ""}
+						<svg
+							width="14"
+							height="14"
+							viewBox="0 0 16 16"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							aria-hidden="true"
+						>
+							<circle cx="8" cy="8" r="6" />
+							<polyline points="8 4.5 8 8 10.5 8" />
+						</svg>
+						{historyRecords.length > 0 && (
+							<span
+								className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full"
+								style={{ background: "var(--accent)" }}
+								aria-hidden="true"
+							/>
+						)}
 					</button>
 
+					{/* Keyboard Shortcuts Reference (M3 Icon Button) */}
 					<button
 						type="button"
 						onClick={() => setShowShortcuts((prev) => !prev)}
 						aria-label="View Keyboard Shortcuts Guide (?)"
-						className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer"
-						style={{
-							background: showShortcuts ? "var(--surface)" : "transparent",
-							color: showShortcuts ? "var(--accent)" : "var(--ink-muted)",
-							borderColor: showShortcuts ? "var(--accent)" : "var(--rule)",
-						}}
+						aria-expanded={showShortcuts}
+						className={`m3-icon-btn ${showShortcuts ? "m3-icon-btn-active" : ""}`}
 						title="Keyboard Shortcuts Cheat Sheet (?)"
 					>
-						KEYS [?]
+						<svg
+							width="14"
+							height="14"
+							viewBox="0 0 16 16"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							aria-hidden="true"
+						>
+							<rect x="2" y="3.5" width="12" height="9" rx="2" />
+							<path d="M4.5 6h.01M8 6h.01M11.5 6h.01M4.5 8.5h.01M8 8.5h.01M11.5 8.5h.01M5.5 10.5h5" />
+						</svg>
 					</button>
 
-					{/* Mutually Exclusive Mode Switches: only show alternatives to current view */}
-					{mode !== "sidepanel" && (
-						<button
-							type="button"
-							onClick={() => void switchView("sidepanel")}
-							aria-label="Dock into Side Panel and close current view (1)"
-							className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer"
-							style={{
-								background: "var(--surface)",
-								color: "var(--accent)",
-								borderColor: "var(--accent)",
-							}}
-							title="Dock into Side Panel (Autocloses current view & resumes operations) [1]"
-						>
-							SIDEBAR ↗
-						</button>
-					)}
-
-					{mode !== "popup" && (
-						<button
-							type="button"
-							onClick={() => void switchView("popup")}
-							aria-label="Open Quick Popup and close current view (2)"
-							className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer"
-							style={{
-								background: "transparent",
-								color: "var(--ink)",
-								borderColor: "var(--rule)",
-							}}
-							title="Open Quick Popup (Autocloses current view & resumes operations) [2]"
-						>
-							POPUP ↗
-						</button>
-					)}
-
-					{mode !== "tab" && (
-						<button
-							type="button"
-							onClick={() => void switchView("tab")}
-							aria-label="Open Full Studio Tab and close current view (3)"
-							className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer"
-							style={{
-								background: "transparent",
-								color: "var(--ink)",
-								borderColor: "var(--rule)",
-							}}
-							title="Open Full Studio Tab (Autocloses current view & resumes operations) [3]"
-						>
-							STUDIO ↗
-						</button>
-					)}
-
+					{/* Support & Diagnostics Center Link (M3 Icon Button) */}
 					<a
 						href={`${SITE}/support`}
 						target="_blank"
 						rel="noreferrer"
 						aria-label="Open Live Diagnostics & Support Center"
-						className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer inline-flex items-center"
-						style={{
-							background: "transparent",
-							color: "var(--ink)",
-							borderColor: "var(--rule)",
-						}}
-						title="Diagnostics & Troubleshooting Center"
+						className="m3-icon-btn"
+						title="Diagnostics & Support Center ↗"
 					>
-						SUPPORT ↗
+						<span className="sr-only">Live Diagnostics & Support Center</span>
+						<svg
+							width="14"
+							height="14"
+							viewBox="0 0 16 16"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							aria-hidden="true"
+						>
+							<circle cx="8" cy="8" r="6" />
+							<circle cx="8" cy="8" r="2.5" />
+							<line x1="8" y1="2" x2="8" y2="5.5" />
+							<line x1="8" y1="10.5" x2="8" y2="14" />
+							<line x1="2" y1="8" x2="5.5" y2="8" />
+							<line x1="10.5" y1="8" x2="14" y2="8" />
+						</svg>
 					</a>
 
+					{/* Feedback & Format Proposals Link (M3 Icon Button) */}
 					<a
 						href={`${SITE}/feedback`}
 						target="_blank"
 						rel="noreferrer"
 						aria-label="Submit Feedback or Format Proposals"
-						className="mono text-[10px] px-2 py-1 border transition-colors cursor-pointer inline-flex items-center"
-						style={{
-							background: "transparent",
-							color: "var(--ink)",
-							borderColor: "var(--rule)",
-						}}
-						title="Feedback & Proposals"
+						className="m3-icon-btn"
+						title="Feedback & Proposals ↗"
 					>
-						FEEDBACK ↗
+						<span className="sr-only">Submit Feedback or Format Proposals</span>
+						<svg
+							width="14"
+							height="14"
+							viewBox="0 0 16 16"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="1.5"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							aria-hidden="true"
+						>
+							<path d="M2.5 3.5h11v7h-6l-3.5 2.5V10.5H2.5v-7z" />
+							<line x1="5.5" y1="6" x2="10.5" y2="6" />
+							<line x1="5.5" y1="8" x2="8.5" y2="8" />
+						</svg>
 					</a>
 				</div>
 			</header>
 
-			{/* Quick Workflow Presets Bar */}
+			{/* Quick Workflow Presets Bar (M3 Suggestion Chips) */}
 			{showPresets && (
 				<nav
 					aria-label="Quick format presets"
-					className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-3 border-b no-scrollbar"
-					style={{ borderColor: "var(--rule-subtle)" }}
+					className="flex items-center gap-2 overflow-x-auto pb-2.5 mb-3.5 no-scrollbar w-full max-w-full min-w-0"
 				>
 					<span
-						className="mono text-[10px] uppercase shrink-0 font-medium mr-1"
+						className="mono text-[10px] uppercase shrink-0 font-semibold tracking-wide ml-0.5"
 						style={{ color: "var(--ink-muted)" }}
 					>
-						PRESETS:
+						PRESETS
 					</span>
 					{QUICK_PRESETS.map((p) => (
 						<button
 							key={p.id}
 							type="button"
 							onClick={() => {
-								setStatusNotice(`Preset selected: [${p.label}]`);
+								setStatusNotice(`Preset selected: ${p.label}`);
 								setTimeout(() => setStatusNotice(null), 3000);
 							}}
-							className="mono text-[10px] px-2 py-0.5 border shrink-0 transition-colors cursor-pointer whitespace-nowrap"
-							style={{
-								borderColor: "var(--rule)",
-								background: "var(--surface)",
-								color: "var(--ink)",
-							}}
+							className="m3-chip whitespace-nowrap"
 						>
-							{p.label}
+							<span>{p.label}</span>
 						</button>
 					))}
 				</nav>
 			)}
 
-			{/* History Drawer with Search & Export */}
+			{/* History Drawer with M3 Surface Card */}
 			{showHistory && (
 				<section
 					aria-labelledby="history-heading"
-					className="border p-4 mb-4 flex flex-col gap-3"
-					style={{
-						borderColor: "var(--rule-strong)",
-						background: "var(--surface)",
-						borderRadius: "var(--radius)",
-					}}
+					className="m3-surface-card p-4 mb-4 flex flex-col gap-3.5 w-full max-w-full min-w-0"
 				>
 					<div
-						className="flex items-center justify-between border-b pb-2 flex-wrap gap-2"
-						style={{ borderColor: "var(--rule)" }}
+						className="flex items-center justify-between border-b pb-2.5 flex-wrap gap-2"
+						style={{ borderColor: "var(--rule-subtle)" }}
 					>
 						<div className="flex items-center gap-2">
 							<span
 								id="history-heading"
-								className="mono text-[11px] font-semibold"
+								className="mono text-[11px] font-semibold tracking-wide"
 								style={{ color: "var(--accent)" }}
 							>
-								[ CONVERSION HISTORY ]
+								CONVERSION HISTORY
 							</span>
 							<span
-								className="mono text-[11px]"
-								style={{ color: "var(--ink-muted)" }}
+								className="mono text-[10px] px-2 py-0.5 rounded-full"
+								style={{
+									background: "var(--ground)",
+									color: "var(--ink-muted)",
+									border: "1px solid var(--rule-subtle)",
+								}}
 							>
-								{filteredHistory.length} of {historyRecords.length} records
+								{filteredHistory.length} of {historyRecords.length}
 							</span>
 						</div>
 						<div className="flex items-center gap-1.5">
@@ -744,7 +791,7 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 										type="button"
 										onClick={handleExportCsv}
 										aria-label="Export history as CSV"
-										className="mono text-[10px] px-2 py-0.5 border cursor-pointer"
+										className="mono text-[10px] px-2.5 py-1 rounded-full border cursor-pointer transition-colors"
 										style={{
 											borderColor: "var(--rule)",
 											color: "var(--ink)",
@@ -758,7 +805,7 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 										type="button"
 										onClick={handleExportJson}
 										aria-label="Export history as JSON"
-										className="mono text-[10px] px-2 py-0.5 border cursor-pointer"
+										className="mono text-[10px] px-2.5 py-1 rounded-full border cursor-pointer transition-colors"
 										style={{
 											borderColor: "var(--rule)",
 											color: "var(--ink)",
@@ -778,9 +825,9 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 										setHistoryRecords([]);
 									}}
 									aria-label="Clear all conversion history records"
-									className="mono text-[10px] px-2 py-0.5 border cursor-pointer"
+									className="mono text-[10px] px-2.5 py-1 rounded-full border cursor-pointer transition-colors"
 									style={{
-										borderColor: "var(--rule)",
+										borderColor: "var(--rule-subtle)",
 										color: "var(--ink-muted)",
 										background: "transparent",
 									}}
@@ -792,7 +839,7 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 								type="button"
 								onClick={() => setShowHistory(false)}
 								aria-label="Close history drawer"
-								className="mono text-[11px] cursor-pointer ml-1"
+								className="m3-icon-btn w-6 h-6 ml-0.5"
 								style={{ color: "var(--ink-muted)" }}
 							>
 								✕
@@ -800,26 +847,55 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 						</div>
 					</div>
 
-					{/* Search Filter Input */}
+					{/* M3 Search Filter Input */}
 					{historyRecords.length > 0 && (
-						<input
-							type="text"
-							value={historyQuery}
-							onChange={(e) => setHistoryQuery(e.target.value)}
-							placeholder="Filter history by file name, format, or status..."
-							aria-label="Filter conversion history"
-							className="mono text-[11px] px-2.5 py-1.5 border w-full outline-none"
+						<div
+							className="flex items-center gap-2 border px-3 py-1.5 rounded-full w-full"
 							style={{
 								background: "var(--ground)",
-								borderColor: "var(--rule)",
-								color: "var(--ink)",
+								borderColor: "var(--rule-subtle)",
 							}}
-						/>
+						>
+							<svg
+								width="13"
+								height="13"
+								viewBox="0 0 16 16"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="1.5"
+								strokeLinecap="round"
+								aria-hidden="true"
+								style={{ color: "var(--ink-muted)" }}
+							>
+								<circle cx="6.5" cy="6.5" r="4.5" />
+								<line x1="10" y1="10" x2="14" y2="14" />
+							</svg>
+							<input
+								type="text"
+								value={historyQuery}
+								onChange={(e) => setHistoryQuery(e.target.value)}
+								placeholder="Search conversions..."
+								aria-label="Filter conversion history"
+								className="mono text-[11px] bg-transparent w-full outline-none"
+								style={{ color: "var(--ink)" }}
+							/>
+							{historyQuery && (
+								<button
+									type="button"
+									onClick={() => setHistoryQuery("")}
+									aria-label="Clear history search query"
+									className="mono text-[10px] cursor-pointer"
+									style={{ color: "var(--ink-muted)" }}
+								>
+									✕
+								</button>
+							)}
+						</div>
 					)}
 
 					{filteredHistory.length === 0 ? (
 						<p
-							className="mono text-[11px] m-0 py-2 text-center"
+							className="mono text-[11px] m-0 py-3 text-center"
 							style={{ color: "var(--ink-muted)" }}
 						>
 							{historyRecords.length === 0
@@ -831,9 +907,9 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 							{filteredHistory.slice(0, 15).map((record) => (
 								<div
 									key={record.id}
-									className="flex items-center justify-between border p-2 text-[11px] mono"
+									className="flex items-center justify-between p-2.5 text-[11px] mono rounded-xl border transition-colors hover:border-[var(--rule)]"
 									style={{
-										borderColor: "var(--rule)",
+										borderColor: "var(--rule-subtle)",
 										background: "var(--ground)",
 									}}
 								>
@@ -852,18 +928,19 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 											{formatBytes(record.outputSize || 0)})
 										</span>
 									</div>
-									<div className="flex flex-col items-end shrink-0">
+									<div className="flex flex-col items-end shrink-0 gap-1">
 										<span
-											className="text-[10px] px-1 py-0.5 border"
+											className="text-[9px] px-2 py-0.5 rounded-full border font-semibold"
 											style={{
 												borderColor:
 													record.status === "success"
 														? "var(--accent)"
-														: "var(--rule)",
+														: "var(--rule-subtle)",
 												color:
 													record.status === "success"
 														? "var(--accent)"
 														: "var(--ink-muted)",
+												background: "var(--surface)",
 											}}
 										>
 											{record.status.toUpperCase()}
@@ -885,7 +962,7 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 			{/* Status Banner */}
 			{statusNotice && (
 				<div
-					className="mono text-[11px] px-3 py-1.5 border mb-3 flex items-center justify-between"
+					className="mono text-[11px] px-3.5 py-2 border rounded-full mb-3 flex items-center justify-between"
 					style={{
 						borderColor: "var(--accent)",
 						background: "var(--surface)",
@@ -910,7 +987,7 @@ export function ExtensionApp({ mode }: ExtensionAppProps) {
 			</div>
 
 			{/* Main Universal Converter Engine & UI */}
-			<main className="flex-1 flex flex-col min-w-0">
+			<main className="flex-1 flex flex-col min-w-0 max-w-full w-full overflow-x-hidden">
 				<MasterConverterClient
 					initialFrom={initialFrom}
 					initialTo={initialTo}

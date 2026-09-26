@@ -121,6 +121,8 @@ function categorizeFile(ext: string): FileCategory {
 	return "other";
 }
 
+const TABLE_MIN_WIDTH = 640;
+
 function CategoryGlyph({ category }: { category: FileCategory }) {
 	switch (category) {
 		case "image":
@@ -1779,7 +1781,10 @@ export function MasterConverterClient({
 			: 4;
 
 	return (
-		<div className="flex flex-col gap-6" data-testid="master-converter">
+		<div
+			className="flex flex-col gap-6 w-full max-w-full min-w-0"
+			data-testid="master-converter"
+		>
 			{/* Preview Modal */}
 			{activePreviewItem && (
 				<ImagePreviewModal
@@ -1943,97 +1948,105 @@ export function MasterConverterClient({
 							document.getElementById(fileInputId)?.click();
 						}
 					}}
-					className="mono relative flex flex-col items-center gap-4 border border-dashed p-12 text-center transition-all"
+					className="mono relative flex flex-col items-center gap-4 border border-dashed p-8 sm:p-12 text-center transition-all w-full max-w-full min-w-0 rounded-2xl"
 					style={{
-						borderColor: dropActive ? "var(--accent)" : "var(--rule-strong)",
-						background: dropActive ? "var(--surface)" : "transparent",
-						borderRadius: "var(--radius)",
+						borderColor: dropActive ? "var(--accent)" : "var(--rule)",
+						background: dropActive ? "var(--surface)" : "var(--surface)",
 						cursor: "pointer",
 					}}
 				>
-					{/* Blueprint technical corner markers */}
-					<span
-						className="absolute top-2 left-2 text-[10px]"
-						style={{ color: "var(--rule-strong)" }}
+					{/* Engine Overline Pill */}
+					<div
+						className="inline-flex items-center gap-2 px-3 py-1 rounded-full border text-[11px] mono"
+						style={{
+							borderColor: "var(--rule-subtle)",
+							background: "var(--ground)",
+						}}
 					>
-						┌
-					</span>
-					<span
-						className="absolute top-2 right-2 text-[10px]"
-						style={{ color: "var(--rule-strong)" }}
-					>
-						┐
-					</span>
-					<span
-						className="absolute bottom-2 left-2 text-[10px]"
-						style={{ color: "var(--rule-strong)" }}
-					>
-						└
-					</span>
-					<span
-						className="absolute bottom-2 right-2 text-[10px]"
-						style={{ color: "var(--rule-strong)" }}
-					>
-						┘
-					</span>
+						<span
+							className="w-1.5 h-1.5 rounded-full"
+							style={{ background: "var(--accent)" }}
+						/>
+						<span
+							style={{ color: "var(--accent)" }}
+							className="font-semibold tracking-wide uppercase text-[10px]"
+						>
+							CONVERSION ENGINE
+						</span>
+					</div>
 
-					{/* Terminal header bracket */}
-					<span
-						className="mono text-[11px] tracking-[0.08em]"
-						style={{ color: "var(--accent)" }}
+					{/* Center Modern Upload Icon */}
+					<div
+						className="w-14 h-14 rounded-full flex items-center justify-center border transition-all"
+						style={{
+							background: "var(--ground)",
+							borderColor: dropActive ? "var(--accent)" : "var(--rule)",
+							color: dropActive ? "var(--accent)" : "var(--ink)",
+						}}
 					>
-						[ UNIVERSAL MULTI-FORMAT PROCESSING ENGINE ]
-					</span>
+						<svg
+							width="24"
+							height="24"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="2"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							aria-hidden="true"
+						>
+							<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+							<polyline points="17 8 12 3 7 8" />
+							<line x1="12" y1="3" x2="12" y2="15" />
+						</svg>
+					</div>
 
 					{configuredPreset && (
 						<div
-							className="mono inline-flex items-center gap-2 px-3 py-1 text-[11px] border"
+							className="mono inline-flex items-center gap-2 px-3.5 py-1 text-[11px] rounded-full border"
 							style={{
 								borderColor: "var(--accent)",
-								borderRadius: "var(--radius)",
-								background: "var(--surface)",
+								background: "var(--ground)",
 								color: "var(--accent)",
 							}}
 						>
-							<span>● INSTANT DEFAULT:</span>
+							<span className="font-semibold">INSTANT DEFAULT:</span>
 							<span className="font-bold text-[var(--ink)]">
 								{configuredPreset.from} → {configuredPreset.to}
 							</span>
 						</div>
 					)}
 
-					<span className="text-[14px] font-medium tracking-[0.06em]">
-						DROP FILES HERE TO CONVERT
-					</span>
-					<span className="text-[13px]" style={{ color: "var(--ink-muted)" }}>
-						{configuredPreset
-							? `Drop your ${configuredPreset.from} files to convert instantly to ${configuredPreset.to}, or drop any files to batch convert`
-							: "Drop multiple files of any type, or click to browse"}
-					</span>
+					<div className="flex flex-col gap-1 items-center">
+						<span className="text-[15px] font-semibold tracking-tight text-[var(--ink)]">
+							DROP FILES HERE TO CONVERT
+						</span>
+						<span className="text-[12px] text-[var(--ink-muted)]">
+							{configuredPreset
+								? `Drop your ${configuredPreset.from} files to convert instantly to ${configuredPreset.to}, or click to browse`
+								: "Drop files of any type, or click to browse from device"}
+						</span>
+					</div>
 
 					{/* Supported Category Chips */}
-					<div className="flex flex-col gap-2 pt-2">
-						<div className="flex flex-wrap justify-center gap-3">
+					<div className="flex flex-col gap-2 pt-1">
+						<div className="flex flex-wrap justify-center gap-2">
 							{POPULAR_CATEGORIES.map((cat) => (
 								<div
 									key={cat.label}
-									className="flex items-center gap-1 border px-2 py-1"
+									className="flex items-center gap-1.5 border px-3 py-1 rounded-full text-[10px] mono"
 									style={{
-										borderColor: "var(--rule)",
-										borderRadius: "var(--radius)",
-										background: "var(--surface)",
+										borderColor: "var(--rule-subtle)",
+										background: "var(--ground)",
 									}}
 								>
 									<span
-										className="mono text-[10px]"
+										className="font-semibold"
 										style={{ color: "var(--accent)" }}
 									>
 										{cat.label}:
 									</span>
-									<span
-										className="mono text-[10px]"
-										style={{ color: "var(--ink-muted)" }}
-									>
+									<span style={{ color: "var(--ink-muted)" }}>
 										{cat.formats.join(" · ")}
 									</span>
 								</div>
@@ -2043,24 +2056,18 @@ export function MasterConverterClient({
 
 					{/* Security & Architecture Badge */}
 					<div
-						className="flex items-center gap-2 border px-3 py-1 mt-2"
+						className="flex items-center gap-2 border px-3.5 py-1 mt-1 rounded-full"
 						style={{
-							borderColor: "var(--rule)",
-							borderRadius: "var(--radius-pill)",
-							background: "var(--surface)",
+							borderColor: "var(--rule-subtle)",
+							background: "var(--ground)",
 						}}
 					>
 						<span
-							style={{
-								width: "var(--space-base)",
-								height: "var(--space-base)",
-								borderRadius: "50%",
-								background: "var(--accent)",
-								display: "inline-block",
-							}}
+							className="w-1.5 h-1.5 rounded-full"
+							style={{ background: "var(--accent)" }}
 						/>
 						<span
-							className="mono text-[11px]"
+							className="mono text-[10px]"
 							style={{ color: "var(--ink-muted)" }}
 						>
 							100% PRIVATE · CLIENT-SIDE WASM · ZERO SERVER UPLOADS
@@ -2153,72 +2160,44 @@ export function MasterConverterClient({
 
 			{/* Active Studio Workspace */}
 			{items.length > 0 && (
-				<div className="flex flex-col gap-4">
+				<div className="flex flex-col gap-4 w-full max-w-full min-w-0">
 					{/* High-Density Cockpit Telemetry Strip */}
 					<div
-						className="relative flex flex-wrap items-center justify-between gap-3 border px-4 py-2.5"
+						className="relative flex flex-wrap items-center justify-between gap-3 border px-4 py-3 w-full max-w-full min-w-0 rounded-2xl"
 						style={{
-							borderColor: "var(--rule)",
-							borderRadius: "var(--radius)",
+							borderColor: "var(--rule-subtle)",
 							background: "var(--surface)",
 						}}
 					>
-						{/* Corner ticks */}
-						<span
-							className="absolute top-1 left-1 text-[9px]"
-							style={{ color: "var(--rule)" }}
-						>
-							┌
-						</span>
-						<span
-							className="absolute top-1 right-1 text-[9px]"
-							style={{ color: "var(--rule)" }}
-						>
-							┐
-						</span>
-
 						{/* Left telemetry items */}
-						<div className="flex flex-wrap items-center gap-3">
-							<div className="flex items-center gap-1.5">
+						<div className="flex flex-wrap items-center gap-2.5">
+							<div
+								className="flex items-center gap-2 border px-3 py-1 rounded-full text-[11px] mono"
+								style={{
+									borderColor: "var(--rule-subtle)",
+									background: "var(--ground)",
+								}}
+							>
 								<span
-									style={{
-										width: "var(--space-base)",
-										height: "var(--space-base)",
-										borderRadius: "50%",
-										background: "var(--accent)",
-										display: "inline-block",
-									}}
+									className="w-2 h-2 rounded-full"
+									style={{ background: "var(--accent)" }}
 								/>
-								<span
-									className="mono text-[11px] font-medium"
-									style={{ color: "var(--ink)" }}
-								>
-									STUDIO QUEUE: {totalCount}{" "}
-									{totalCount === 1 ? "FILE" : "FILES"}
+								<span className="font-semibold" style={{ color: "var(--ink)" }}>
+									QUEUE: {totalCount} {totalCount === 1 ? "FILE" : "FILES"}
+								</span>
+								<span style={{ color: "var(--ink-muted)" }}>
+									({formatBytes(items.reduce((s, i) => s + i.file.size, 0))})
 								</span>
 							</div>
 
-							<div className="h-3 w-px" style={{ background: "var(--rule)" }} />
-
-							<span
-								className="mono text-[11px]"
-								style={{ color: "var(--ink-muted)" }}
-							>
-								{formatBytes(items.reduce((s, i) => s + i.file.size, 0))}{" "}
-								PAYLOAD
-							</span>
-
-							<div className="h-3 w-px" style={{ background: "var(--rule)" }} />
-
 							{/* Formats distribution pills */}
-							<div className="flex flex-wrap items-center gap-1">
+							<div className="flex flex-wrap items-center gap-1.5">
 								{formatBreakdown.slice(0, 4).map(([fmt, count]) => (
 									<span
 										key={fmt}
-										className="mono border px-1.5 py-0.2 text-[10px]"
+										className="mono border px-2.5 py-1 text-[10px] rounded-full"
 										style={{
-											borderColor: "var(--rule)",
-											borderRadius: "var(--radius)",
+											borderColor: "var(--rule-subtle)",
 											color: "var(--ink)",
 											background: "var(--ground)",
 										}}
@@ -2228,7 +2207,7 @@ export function MasterConverterClient({
 								))}
 								{formatBreakdown.length > 4 && (
 									<span
-										className="mono text-[10px]"
+										className="mono text-[10px] px-2"
 										style={{ color: "var(--ink-muted)" }}
 									>
 										+{formatBreakdown.length - 4} more
@@ -2240,11 +2219,14 @@ export function MasterConverterClient({
 						{/* Right telemetry: Concurrency & privacy */}
 						<div className="flex items-center gap-2">
 							<span
-								className="mono text-[10px]"
-								style={{ color: "var(--ink-muted)" }}
+								className="mono text-[10px] px-2.5 py-1 rounded-full border"
+								style={{
+									color: "var(--ink-muted)",
+									borderColor: "var(--rule-subtle)",
+									background: "var(--ground)",
+								}}
 							>
-								PARALLEL WORKERS: {detectedHardwareCores} CORES · 100%
-								IN-BROWSER
+								{detectedHardwareCores} CORES · 100% IN-BROWSER
 							</span>
 						</div>
 					</div>
@@ -2418,176 +2400,146 @@ export function MasterConverterClient({
 
 					{/* Controls & Customization Bar */}
 					<div
-						className="flex flex-col gap-3 border p-4"
+						className="flex flex-col gap-3.5 border p-4 w-full max-w-full min-w-0 rounded-2xl"
 						style={{
-							borderColor: "var(--rule)",
-							borderRadius: "var(--radius)",
+							borderColor: "var(--rule-subtle)",
 							background: "var(--surface)",
 						}}
 					>
 						{/* Top row: Selection count and quick selection actions */}
 						<div className="flex flex-wrap items-center justify-between gap-3">
-							<div className="flex flex-wrap items-center gap-3">
-								<span className="mono text-[13px] font-medium">
+							<div className="flex flex-wrap items-center gap-2.5">
+								<span className="mono text-[12px] font-semibold text-[var(--ink)]">
 									{selectedCount} of {totalCount} selected
 								</span>
 								{selectedCount > 0 && (
 									<span
-										className="mono text-[12px]"
+										className="mono text-[11px]"
 										style={{ color: "var(--ink-muted)" }}
 									>
 										({formatBytes(selectedBytes)})
 									</span>
 								)}
+								{/* biome-ignore lint/a11y/useSemanticElements: Segmented button group container */}
 								<div
-									className="h-3 w-px"
-									style={{ background: "var(--rule)" }}
-								/>
-								<div className="flex flex-wrap gap-1">
+									className="m3-segmented"
+									role="group"
+									aria-label="Batch selection controls"
+								>
 									<button
 										type="button"
 										onClick={() => setAllSelection(true)}
-										className="mono border px-2 py-0.5 text-[11px]"
-										style={{
-											borderColor: "var(--rule-strong)",
-											borderRadius: "var(--radius)",
-											color: "var(--ink)",
-											background: "transparent",
-											cursor: "pointer",
-										}}
+										className="m3-segmented-btn"
 									>
 										SELECT ALL
 									</button>
 									<button
 										type="button"
 										onClick={() => setAllSelection(false)}
-										className="mono border px-2 py-0.5 text-[11px]"
-										style={{
-											borderColor: "var(--rule-strong)",
-											borderRadius: "var(--radius)",
-											color: "var(--ink-muted)",
-											background: "transparent",
-											cursor: "pointer",
-										}}
+										className="m3-segmented-btn"
 									>
 										DESELECT
 									</button>
 									<button
 										type="button"
 										onClick={invertSelection}
-										className="mono border px-2 py-0.5 text-[11px]"
+										className="m3-segmented-btn"
+									>
+										INVERT
+									</button>
+								</div>
+								{totalCount > selectedCount && (
+									<button
+										type="button"
+										onClick={removeUnselected}
+										className="mono border px-2.5 py-1 text-[10px] rounded-full transition-colors cursor-pointer"
 										style={{
-											borderColor: "var(--rule-strong)",
-											borderRadius: "var(--radius)",
+											borderColor: "var(--rule-subtle)",
 											color: "var(--ink-muted)",
+											background: "var(--ground)",
+										}}
+									>
+										PRUNE UNCHECKED
+									</button>
+								)}
+								{doneCount > 0 && (
+									<button
+										type="button"
+										onClick={() => {
+											setItems((prev) =>
+												prev.map((item) => ({
+													...item,
+													selected: item.status === "done",
+												})),
+											);
+										}}
+										className="mono border px-2.5 py-1 text-[10px] rounded-full transition-colors cursor-pointer"
+										style={{
+											borderColor: "var(--rule-subtle)",
+											color: "var(--ink)",
+											background: "var(--ground)",
+										}}
+										title="Select only completed files"
+									>
+										DONE ({doneCount})
+									</button>
+								)}
+								{doneCount > 0 && (
+									<button
+										type="button"
+										onClick={pruneCompleted}
+										className="mono border px-2.5 py-1 text-[10px] rounded-full transition-colors cursor-pointer"
+										style={{
+											borderColor: "var(--rule-subtle)",
+											color: "var(--accent)",
+											background: "var(--ground)",
+										}}
+									>
+										PRUNE COMPLETED
+									</button>
+								)}
+								{doneCount > 0 && (
+									<button
+										type="button"
+										onClick={() => handleContinueOutputs()}
+										className="mono border px-3 py-1 text-[11px] font-semibold transition-all hover:bg-[var(--accent)] hover:text-[var(--ground)] inline-flex items-center gap-1.5 rounded-full"
+										style={{
+											borderColor: "var(--accent)",
+											color: "var(--accent)",
+											background: "transparent",
+											cursor: "pointer",
+										}}
+										title="Stage completed outputs for another conversion (Shift+Cmd+C)"
+									>
+										<span>
+											CONTINUE WITH OUTPUTS (
+											{selectedDoneItems.length > 0
+												? selectedDoneItems.length
+												: doneItems.length}
+											) →
+										</span>
+										<span className="opacity-75 text-[9px] tracking-wider font-sans">
+											⇧⌘C
+										</span>
+									</button>
+								)}
+								{canMergePdfs && (
+									<button
+										type="button"
+										data-testid="merge-selected-pdfs-btn"
+										onClick={handleMergePdfs}
+										disabled={isConverting}
+										className="mono border px-3 py-1 text-[11px] font-semibold transition-all hover:bg-[var(--accent)] hover:text-[var(--ground)] inline-flex items-center gap-1 rounded-full"
+										style={{
+											borderColor: "var(--accent)",
+											color: "var(--accent)",
 											background: "transparent",
 											cursor: "pointer",
 										}}
 									>
-										INVERT
+										<span>MERGE {selectedPdfs.length} PDFS</span>
 									</button>
-									{totalCount > selectedCount && (
-										<button
-											type="button"
-											onClick={removeUnselected}
-											className="mono border px-2 py-0.5 text-[11px]"
-											style={{
-												borderColor: "var(--rule)",
-												borderRadius: "var(--radius)",
-												color: "var(--ink-muted)",
-												background: "transparent",
-												cursor: "pointer",
-											}}
-										>
-											PRUNE UNCHECKED
-										</button>
-									)}
-									{doneCount > 0 && (
-										<button
-											type="button"
-											onClick={() => {
-												setItems((prev) =>
-													prev.map((item) => ({
-														...item,
-														selected: item.status === "done",
-													})),
-												);
-											}}
-											className="mono border px-2 py-0.5 text-[11px]"
-											style={{
-												borderColor: "var(--rule)",
-												borderRadius: "var(--radius)",
-												color: "var(--ink)",
-												background: "transparent",
-												cursor: "pointer",
-											}}
-											title="Select only completed files"
-										>
-											DONE ({doneCount})
-										</button>
-									)}
-									{doneCount > 0 && (
-										<button
-											type="button"
-											onClick={pruneCompleted}
-											className="mono border px-2 py-0.5 text-[11px]"
-											style={{
-												borderColor: "var(--rule)",
-												borderRadius: "var(--radius)",
-												color: "var(--accent)",
-												background: "transparent",
-												cursor: "pointer",
-											}}
-										>
-											PRUNE COMPLETED
-										</button>
-									)}
-									{doneCount > 0 && (
-										<button
-											type="button"
-											onClick={() => handleContinueOutputs()}
-											className="mono border px-2.5 py-0.5 text-[11px] font-medium transition-all hover:bg-[var(--accent)] hover:text-[var(--ground)] inline-flex items-center gap-1"
-											style={{
-												borderColor: "var(--accent)",
-												borderRadius: "var(--radius)",
-												color: "var(--accent)",
-												background: "transparent",
-												cursor: "pointer",
-											}}
-											title="Stage completed outputs for another conversion (Shift+Cmd+C)"
-										>
-											<span>
-												CONTINUE WITH OUTPUTS (
-												{selectedDoneItems.length > 0
-													? selectedDoneItems.length
-													: doneItems.length}
-												) →
-											</span>
-											<span className="opacity-75 text-[9px] tracking-wider font-sans">
-												⇧⌘C
-											</span>
-										</button>
-									)}
-									{canMergePdfs && (
-										<button
-											type="button"
-											data-testid="merge-selected-pdfs-btn"
-											onClick={handleMergePdfs}
-											disabled={isConverting}
-											className="mono border px-2.5 py-0.5 text-[11px] font-medium transition-all hover:bg-[var(--accent)] hover:text-[var(--ground)] inline-flex items-center gap-1"
-											style={{
-												borderColor: "var(--accent)",
-												borderRadius: "var(--radius)",
-												color: "var(--accent)",
-												background: "transparent",
-												cursor: isConverting ? "not-allowed" : "pointer",
-											}}
-											title="Merge selected PDF files into one combined PDF"
-										>
-											<span>⎘ MERGE {selectedPdfs.length} PDFS →</span>
-										</button>
-									)}
-								</div>
+								)}
 							</div>
 
 							{/* Add More Files Button */}
@@ -2595,13 +2547,11 @@ export function MasterConverterClient({
 								<button
 									type="button"
 									onClick={() => addMoreInputRef.current?.click()}
-									className="mono border px-3 py-1 text-[12px] font-medium"
+									className="mono border px-3.5 py-1 text-[12px] font-medium rounded-full cursor-pointer transition-colors"
 									style={{
 										borderColor: "var(--rule-strong)",
-										borderRadius: "var(--radius)",
 										color: "var(--ink)",
 										background: "var(--ground)",
-										cursor: "pointer",
 									}}
 								>
 									+ ADD FILES
@@ -2628,7 +2578,7 @@ export function MasterConverterClient({
 						{/* Bottom row: Global Target Selector, Quick Target Shortcuts & Quality Preset */}
 						<div
 							className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t"
-							style={{ borderColor: "var(--rule)" }}
+							style={{ borderColor: "var(--rule-subtle)" }}
 						>
 							<div className="flex flex-wrap items-center gap-3">
 								<div className="flex items-center gap-2">
@@ -2642,10 +2592,9 @@ export function MasterConverterClient({
 									{configuredPreset && (
 										<span
 											data-testid="controls-preset-pill"
-											className="mono border px-2 py-0.5 text-[10px]"
+											className="mono border px-2.5 py-0.5 text-[10px] rounded-full"
 											style={{
 												borderColor: "var(--accent)",
-												borderRadius: "var(--radius)",
 												color: "var(--accent)",
 												background: "var(--ground)",
 											}}
@@ -2657,13 +2606,11 @@ export function MasterConverterClient({
 										id="global-target-select"
 										value={globalTarget}
 										onChange={(e) => applyGlobalTarget(e.target.value)}
-										className="mono border px-2 py-1 text-[12px]"
+										className="mono border px-2.5 py-1 text-[12px] rounded-lg cursor-pointer"
 										style={{
-											borderColor: "var(--ink)",
-											borderRadius: "var(--radius)",
+											borderColor: "var(--rule-strong)",
 											background: "var(--ground)",
 											color: "var(--ink)",
-											cursor: "pointer",
 										}}
 									>
 										<option value="">Choose target...</option>
@@ -2690,7 +2637,7 @@ export function MasterConverterClient({
 									</select>
 								</div>
 
-								{/* One-click common target shortcuts */}
+								{/* One-click common target shortcuts as M3 Suggestion Chips */}
 								{commonTargets.length > 0 && (
 									<div className="flex flex-wrap items-center gap-1.5">
 										<span
@@ -2704,23 +2651,7 @@ export function MasterConverterClient({
 												key={target}
 												type="button"
 												onClick={() => applyGlobalTarget(target)}
-												className="mono border px-2 py-0.5 text-[11px]"
-												style={{
-													borderColor:
-														globalTarget === target
-															? "var(--accent)"
-															: "var(--rule-strong)",
-													background:
-														globalTarget === target
-															? "var(--accent)"
-															: "var(--ground)",
-													color:
-														globalTarget === target
-															? "var(--ground)"
-															: "var(--ink)",
-													borderRadius: "var(--radius)",
-													cursor: "pointer",
-												}}
+												className={`m3-chip ${globalTarget === target ? "m3-chip-active" : ""}`}
 											>
 												→ {target.toUpperCase()}
 											</button>
@@ -2744,13 +2675,11 @@ export function MasterConverterClient({
 									onChange={(e) =>
 										setQualityPreset(e.target.value as QualityPreset)
 									}
-									className="mono border px-2 py-1 text-[12px]"
+									className="mono border px-2.5 py-1 text-[12px] rounded-lg cursor-pointer"
 									style={{
 										borderColor: "var(--rule-strong)",
-										borderRadius: "var(--radius)",
 										background: "var(--ground)",
 										color: "var(--ink)",
-										cursor: "pointer",
 									}}
 								>
 									{QUALITY_PRESETS.map((preset) => (
@@ -2765,10 +2694,9 @@ export function MasterConverterClient({
 
 					{/* Search, Status Tabs & Category Filter Bar */}
 					<div
-						className="flex flex-col gap-2 border p-3"
+						className="flex flex-col gap-2.5 border p-3.5 w-full max-w-full min-w-0 rounded-2xl"
 						style={{
-							borderColor: "var(--rule)",
-							borderRadius: "var(--radius)",
+							borderColor: "var(--rule-subtle)",
 							background: "var(--surface)",
 						}}
 					>
@@ -2904,7 +2832,7 @@ export function MasterConverterClient({
 									value={tableSearch}
 									onChange={(e) => setTableSearch(e.target.value)}
 									aria-label="Filter batch files table"
-									className="mono border px-2 py-1 text-[12px]"
+									className="mono border px-2 py-1 text-[12px] w-full max-w-xs min-w-0"
 									style={{
 										borderColor: "var(--rule)",
 										borderRadius: "var(--radius)",
@@ -2998,12 +2926,18 @@ export function MasterConverterClient({
 
 					{/* File List Table */}
 					<div
-						className="overflow-x-auto border"
-						style={{ borderColor: "var(--rule)" }}
+						className="w-full max-w-full min-w-0 overflow-x-auto border rounded-2xl shadow-sm"
+						style={{
+							borderColor: "var(--rule-subtle)",
+							background: "var(--surface)",
+						}}
 					>
 						<table
-							className="mono w-full border-collapse text-[12px]"
-							style={{ borderColor: "var(--rule)" }}
+							className="mono min-w-full w-full border-collapse text-[12px]"
+							style={{
+								borderColor: "var(--rule-subtle)",
+								minWidth: `${TABLE_MIN_WIDTH}px`,
+							}}
 						>
 							<caption className="sr-only">
 								Master conversion file table
@@ -3127,10 +3061,10 @@ export function MasterConverterClient({
 															{item.file.name}
 														</span>
 														<span
-															className="border px-1.5 py-0.5 text-[10px]"
+															className="border px-2 py-0.5 text-[10px] rounded-full"
 															style={{
-																borderColor: "var(--rule-strong)",
-																borderRadius: "var(--radius)",
+																borderColor: "var(--rule-subtle)",
+																background: "var(--ground)",
 																color: "var(--ink-muted)",
 															}}
 														>
@@ -3139,13 +3073,12 @@ export function MasterConverterClient({
 														{item.lineage && (
 															<span
 																data-testid={`lineage-badge-${item.id}`}
-																className="mono border px-1.5 py-0.5 text-[9px] tracking-[0.03em] whitespace-nowrap"
+																className="mono border px-2 py-0.5 text-[9px] tracking-[0.03em] whitespace-nowrap rounded-full"
 																title={`Chained from ${item.lineage.parentName}`}
 																style={{
 																	borderColor: "var(--accent)",
-																	borderRadius: "var(--radius)",
 																	color: "var(--accent)",
-																	background: "var(--surface)",
+																	background: "var(--ground)",
 																}}
 															>
 																STEP {item.lineage.step} · FROM{" "}
@@ -3177,10 +3110,9 @@ export function MasterConverterClient({
 																onChange={(e) =>
 																	changeItemTarget(item.id, e.target.value)
 																}
-																className="mono border px-2 py-0.5 text-[11px]"
+																className="mono border px-2 py-1 text-[11px] rounded-lg"
 																style={{
-																	borderColor: "var(--rule-strong)",
-																	borderRadius: "var(--radius)",
+																	borderColor: "var(--rule-subtle)",
 																	background: "var(--ground)",
 																	color: "var(--ink)",
 																}}
@@ -3203,25 +3135,34 @@ export function MasterConverterClient({
 															item.tool.quality.advanced.length > 0 && (
 																<button
 																	type="button"
+																	id={`${item.id}-params-toggle-btn`}
 																	data-testid={`toggle-config-${item.id}`}
 																	onClick={() => toggleItemConfig(item.id)}
-																	className="mono border px-1.5 py-0.5 text-[10px]"
+																	className="mono border px-2 py-0.5 text-[10px] rounded-full"
 																	style={{
 																		borderColor: item.isConfigOpen
 																			? "var(--accent)"
-																			: "var(--rule-strong)",
+																			: "var(--rule-subtle)",
 																		color: item.isConfigOpen
 																			? "var(--accent)"
 																			: "var(--ink-muted)",
-																		borderRadius: "var(--radius)",
 																		background: item.isConfigOpen
 																			? "var(--surface)"
 																			: "transparent",
 																		cursor: "pointer",
 																	}}
+																	aria-label={
+																		item.isConfigOpen
+																			? "Close parameters (PARAMS)"
+																			: "Configure parameters (PARAMS)"
+																	}
+																	aria-expanded={Boolean(item.isConfigOpen)}
 																	title="Configure advanced parameters for this file"
 																>
-																	{item.isConfigOpen ? "▲ PARAMS" : "▼ PARAMS"}
+																	<span aria-hidden="true">
+																		{item.isConfigOpen ? "▲" : "▼"}
+																	</span>
+																	<span className="sr-only">PARAMS</span>
 																</button>
 															)}
 													</div>
@@ -3266,11 +3207,11 @@ export function MasterConverterClient({
 													{isConvertingRow ? (
 														<div className="flex flex-col gap-1">
 															<div
-																className="h-1 w-24 overflow-hidden"
-																style={{ background: "var(--rule)" }}
+																className="h-1.5 w-24 overflow-hidden rounded-full"
+																style={{ background: "var(--rule-subtle)" }}
 															>
 																<div
-																	className="h-full transition-all"
+																	className="h-full transition-all rounded-full"
 																	style={{
 																		width: `${item.ratio * 100}%`,
 																		background: "var(--accent)",
@@ -3284,12 +3225,11 @@ export function MasterConverterClient({
 														</div>
 													) : isDoneRow ? (
 														<span
-															className="mono border px-1.5 py-0.5 text-[10px]"
+															className="mono border px-2 py-0.5 text-[10px] rounded-full font-bold"
 															style={{
 																color: "var(--accent)",
 																borderColor: "var(--accent)",
-																borderRadius: "var(--radius)",
-																background: "var(--surface)",
+																background: "var(--ground)",
 															}}
 														>
 															✓ DONE
@@ -3342,11 +3282,10 @@ export function MasterConverterClient({
 																	type="button"
 																	onClick={() => setActivePreviewItem(item)}
 																	aria-label={`Preview ${item.file.name}`}
-																	className="mono border px-1.5 py-0.5 text-[10px]"
+																	className="mono border px-2.5 py-0.5 text-[10px] rounded-full hover:border-[var(--ink)]"
 																	style={{
 																		color: "var(--ink-muted)",
-																		borderColor: "var(--rule-strong)",
-																		borderRadius: "var(--radius)",
+																		borderColor: "var(--rule-subtle)",
 																		background: "transparent",
 																		cursor: "pointer",
 																	}}
@@ -3365,11 +3304,10 @@ export function MasterConverterClient({
 																			onClick={() => handleContinueRow(item)}
 																			aria-label={`Continue conversion for ${item.file.name}`}
 																			title={`Continue conversion from ${(item.tool?.output.ext ?? item.targetExt).toUpperCase()} output`}
-																			className="mono border px-2 py-0.5 text-[11px] font-medium transition-all hover:bg-[var(--accent)] hover:text-[var(--ground)]"
+																			className="mono border px-2.5 py-0.5 text-[11px] font-medium transition-all hover:bg-[var(--accent)] hover:text-[var(--ground)] rounded-full"
 																			style={{
 																				color: "var(--accent)",
 																				borderColor: "var(--accent)",
-																				borderRadius: "var(--radius)",
 																				background: "transparent",
 																				cursor: "pointer",
 																			}}
@@ -3390,10 +3328,9 @@ export function MasterConverterClient({
 																					}
 																					aria-label={`Continue conversion to ${opt.label}`}
 																					title={`Continue directly to ${opt.label}`}
-																					className="mono border px-1.5 py-0.5 text-[10px] opacity-80 hover:opacity-100 hover:border-[var(--accent)] hover:text-[var(--accent)]"
+																					className="mono border px-2 py-0.5 text-[10px] opacity-80 hover:opacity-100 hover:border-[var(--accent)] hover:text-[var(--accent)] rounded-full"
 																					style={{
-																						borderColor: "var(--rule-strong)",
-																						borderRadius: "var(--radius)",
+																						borderColor: "var(--rule-subtle)",
 																						color: "var(--ink)",
 																						background: "var(--surface)",
 																						cursor: "pointer",
@@ -3408,11 +3345,10 @@ export function MasterConverterClient({
 																type="button"
 																onClick={() => handleSaveRow(item)}
 																aria-label={`Save ${item.file.name}`}
-																className="mono border px-2 py-0.5 text-[11px]"
+																className="mono border px-3 py-0.5 text-[11px] font-semibold rounded-full"
 																style={{
 																	color: "var(--ground)",
 																	borderColor: "var(--accent)",
-																	borderRadius: "var(--radius)",
 																	background: "var(--accent)",
 																	cursor: "pointer",
 																}}
@@ -3426,7 +3362,7 @@ export function MasterConverterClient({
 															disabled={isConverting}
 															onClick={() => removeItem(item.id)}
 															aria-label={`Remove ${item.file.name}`}
-															className="mono px-1.5 py-0.5 text-[12px]"
+															className="mono px-2 py-0.5 text-[12px] rounded-full hover:bg-[var(--surface)] transition-colors"
 															style={{
 																color: "var(--ink-muted)",
 																background: "transparent",
@@ -3444,7 +3380,7 @@ export function MasterConverterClient({
 												<tr
 													data-testid={`config-row-${item.id}`}
 													style={{
-														background: "var(--surface)",
+														background: "var(--ground)",
 													}}
 												>
 													<td
@@ -3452,22 +3388,34 @@ export function MasterConverterClient({
 														className="border-b px-4 py-3"
 														style={cellStyle}
 													>
-														<div className="flex flex-col gap-2">
+														<div
+															className="flex flex-col gap-3 p-4 border rounded-xl"
+															style={{
+																borderColor: "var(--rule-subtle)",
+																background: "var(--surface)",
+															}}
+														>
 															<div className="flex items-center justify-between">
-																<span
-																	className="mono text-[11px] font-semibold"
-																	style={{ color: "var(--accent)" }}
-																>
-																	[ CONFIGURATION:{" "}
-																	{item.tool.seo.h1?.toUpperCase() ||
-																		item.tool.id.toUpperCase()}{" "}
-																	]
-																</span>
+																<div className="inline-flex items-center gap-2">
+																	<span className="mono text-[10px] tracking-wider uppercase font-semibold text-[var(--accent)] border border-[var(--accent)] px-2 py-0.5 rounded-full bg-[var(--ground)]">
+																		PARAMS
+																	</span>
+																	<span
+																		className="mono text-[11px] font-semibold"
+																		style={{ color: "var(--accent)" }}
+																	>
+																		[ CONFIGURATION:{" "}
+																		{item.tool.seo.h1?.toUpperCase() ||
+																			item.tool.id.toUpperCase()}{" "}
+																		]
+																	</span>
+																</div>
 																<button
 																	type="button"
 																	onClick={() => toggleItemConfig(item.id)}
-																	className="mono text-[10px]"
+																	className="mono text-[10px] border px-2.5 py-0.5 rounded-full hover:border-[var(--ink)] transition-colors"
 																	style={{
+																		borderColor: "var(--rule-subtle)",
 																		color: "var(--ink-muted)",
 																		cursor: "pointer",
 																	}}
@@ -3682,16 +3630,19 @@ export function MasterConverterClient({
 								document.getElementById(secondaryDropInputId)?.click();
 							}
 						}}
-						className="mono flex items-center justify-center border border-dashed py-3 text-center transition-all"
+						className="mono flex items-center justify-center border border-dashed py-3.5 text-center transition-all w-full max-w-full min-w-0 rounded-xl"
 						style={{
-							borderColor: dropActive ? "var(--accent)" : "var(--rule)",
-							background: dropActive ? "var(--surface)" : "transparent",
-							borderRadius: "var(--radius)",
+							borderColor: dropActive ? "var(--accent)" : "var(--rule-subtle)",
+							background: dropActive ? "var(--surface)" : "var(--ground)",
 							cursor: "pointer",
 						}}
 					>
-						<span className="text-[11px]" style={{ color: "var(--ink-muted)" }}>
-							+ DROP MORE FILES HERE OR CLICK TO BROWSE
+						<span
+							className="inline-flex items-center gap-2 text-[11px] font-medium"
+							style={{ color: "var(--ink-muted)" }}
+						>
+							<span className="text-[13px] leading-none">+</span>
+							<span>DROP MORE FILES HERE OR CLICK TO BROWSE</span>
 						</span>
 						<input
 							id={secondaryDropInputId}
@@ -3712,10 +3663,9 @@ export function MasterConverterClient({
 
 					{/* Action & Status Footer */}
 					<div
-						className="flex flex-wrap items-center justify-between gap-4 border p-4"
+						className="flex flex-wrap items-center justify-between gap-4 border p-4 w-full max-w-full min-w-0 rounded-2xl shadow-sm"
 						style={{
-							borderColor: "var(--rule)",
-							borderRadius: "var(--radius)",
+							borderColor: "var(--rule-subtle)",
 							background: "var(--surface)",
 						}}
 					>
@@ -3736,11 +3686,10 @@ export function MasterConverterClient({
 								<button
 									type="button"
 									onClick={retryAllFailed}
-									className="mono border px-2 py-1 text-[11px]"
+									className="mono border px-3 py-1 text-[11px] rounded-full"
 									style={{
 										color: "var(--accent)",
 										borderColor: "var(--accent)",
-										borderRadius: "var(--radius)",
 										background: "var(--ground)",
 										cursor: "pointer",
 									}}
@@ -3756,11 +3705,10 @@ export function MasterConverterClient({
 								<button
 									type="button"
 									onClick={cancelConversion}
-									className="mono border px-4 py-2 text-[12px]"
+									className="mono border px-4 py-2 text-[12px] rounded-full"
 									style={{
 										color: "var(--ink)",
 										borderColor: "var(--ink)",
-										borderRadius: "var(--radius-pill)",
 										background: "transparent",
 										cursor: "pointer",
 									}}
@@ -3772,11 +3720,10 @@ export function MasterConverterClient({
 									<button
 										type="button"
 										onClick={clearAll}
-										className="mono border px-3 py-2 text-[12px]"
+										className="mono border px-3.5 py-2 text-[12px] rounded-full hover:border-[var(--ink)] transition-colors"
 										style={{
 											color: "var(--ink-muted)",
-											borderColor: "var(--rule-strong)",
-											borderRadius: "var(--radius-pill)",
+											borderColor: "var(--rule-subtle)",
 											background: "transparent",
 											cursor: "pointer",
 										}}
@@ -3788,12 +3735,11 @@ export function MasterConverterClient({
 										<button
 											type="button"
 											onClick={handleDownloadAllZip}
-											className="mono border px-4 py-2 text-[12px] font-medium inline-flex items-center gap-1.5"
+											className="mono border px-4 py-2 text-[12px] font-medium inline-flex items-center gap-1.5 rounded-full"
 											style={{
 												color: "var(--ground)",
 												background: "var(--ink)",
 												borderColor: "var(--ink)",
-												borderRadius: "var(--radius-pill)",
 												cursor: "pointer",
 											}}
 										>
@@ -3809,11 +3755,10 @@ export function MasterConverterClient({
 											type="button"
 											data-testid="continue-outputs-btn"
 											onClick={() => handleContinueOutputs()}
-											className="mono border px-4 py-2 text-[12px] font-medium transition-all hover:bg-[var(--accent)] hover:text-[var(--ground)] inline-flex items-center gap-1.5"
+											className="mono border px-4 py-2 text-[12px] font-medium transition-all hover:bg-[var(--accent)] hover:text-[var(--ground)] inline-flex items-center gap-1.5 rounded-full"
 											style={{
 												color: "var(--accent)",
 												borderColor: "var(--accent)",
-												borderRadius: "var(--radius-pill)",
 												background: "transparent",
 												cursor: "pointer",
 											}}
@@ -3836,12 +3781,11 @@ export function MasterConverterClient({
 										type="button"
 										disabled={selectedCount === 0}
 										onClick={startConversion}
-										className="mono border px-6 py-2 text-[13px] font-medium transition-opacity inline-flex items-center gap-2"
+										className="mono border px-6 py-2 text-[13px] font-semibold transition-opacity inline-flex items-center gap-2 rounded-full shadow-sm"
 										style={{
 											color: "var(--ground)",
 											background: "var(--ink)",
 											borderColor: "var(--ink)",
-											borderRadius: "var(--radius-pill)",
 											opacity: selectedCount === 0 ? 0.4 : 1,
 											cursor: selectedCount === 0 ? "not-allowed" : "pointer",
 										}}
