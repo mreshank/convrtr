@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { CardHeader } from "@/design/families/CardHeader";
 
 interface RoutingExample {
 	from: string;
@@ -51,69 +52,35 @@ const ROUTING_PRESETS: RoutingExample[] = [
 
 export function MultiHopGraphCard() {
 	const [activeIdx, setActiveIdx] = useState(0);
-	const active = (ROUTING_PRESETS[activeIdx] ?? ROUTING_PRESETS[0])!;
+	const active = ROUTING_PRESETS[activeIdx] ??
+		ROUTING_PRESETS[0] ?? {
+			from: "",
+			to: "",
+			hops: [],
+			engines: [],
+			description: "",
+		};
 
 	return (
 		<div className="m3-surface-card flex w-full flex-col gap-[var(--gap-md)] p-[var(--gap-md)]">
-			<div
-				style={{
-					display: "flex",
-					justifyContent: "space-between",
-					alignItems: "flex-start",
-					flexWrap: "wrap",
-					gap: "var(--space-base)",
-				}}
-			>
-				<div>
+			<CardHeader
+				eyebrow="DYNAMIC ROUTING // MULTI-HOP GRAPH"
+				title="Intelligent path traversal."
+				lede="When you feed convrtr a file format that cannot be converted in a single hop, the graph engine automatically computes the shortest, highest-fidelity route across local decoders and encoders in real time."
+				badge={
 					<span
-						className="meta"
+						className="mono rounded-full border px-3 py-1"
 						style={{
-							color: "var(--accent)",
 							fontSize: "var(--mono-size)",
-							letterSpacing: "0.1em",
-							textTransform: "uppercase",
+							color: "var(--ink-muted)",
+							borderColor: "var(--rule-subtle)",
+							backgroundColor: "var(--surface)",
 						}}
 					>
-						DYNAMIC ROUTING {"//"} MULTI-HOP GRAPH
+						147 WASM ENGINES ACTIVE
 					</span>
-					<h3
-						style={{
-							fontSize: "var(--headline-size)",
-							letterSpacing: "var(--headline-tracking)",
-							fontWeight: 400,
-							margin: "calc(var(--space-base) / 2) 0 0",
-							color: "var(--ink)",
-						}}
-					>
-						Intelligent path traversal.
-					</h3>
-				</div>
-				<span
-					className="mono rounded-full border px-3 py-1"
-					style={{
-						fontSize: "var(--mono-size)",
-						color: "var(--ink-muted)",
-						borderColor: "var(--rule-subtle)",
-						backgroundColor: "var(--surface)",
-					}}
-				>
-					147 WASM ENGINES ACTIVE
-				</span>
-			</div>
-
-			<p
-				style={{
-					color: "var(--ink-muted)",
-					fontSize: "var(--body-size)",
-					lineHeight: 1.6,
-					margin: 0,
-					maxWidth: "65ch",
-				}}
-			>
-				When you feed convrtr a file format that cannot be converted in a single
-				hop, the graph engine automatically computes the shortest,
-				highest-fidelity route across local decoders and encoders in real time.
-			</p>
+				}
+			/>
 
 			{/* Presets Navigation */}
 			<div

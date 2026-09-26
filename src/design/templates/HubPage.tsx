@@ -72,7 +72,12 @@ type Props = {
 	 * as distinct groups in space rather than one flat ruled list. A hub
 	 * passes one or the other, never both.
 	 */
-	grid?: { heading?: string; unit?: string; items: GroupGridItem[] }[];
+	grid?: {
+		heading?: string;
+		unit?: string;
+		items: GroupGridItem[];
+		defaultOpen?: boolean;
+	}[];
 	/** Interactive blog cards with fuzzy search, tag filters, and sorting. */
 	blogPosts?: BlogGridItem[];
 	/** Curated collectives with interactive search, editorial mission, and tool pipeline. */
@@ -254,7 +259,7 @@ export function HubPage({
 						heading={section.heading}
 						total={section.items.length}
 						unit={section.unit}
-						defaultOpen={true}
+						defaultOpen={section.defaultOpen ?? true}
 					>
 						<GroupGrid items={section.items} />
 					</CollapsibleSection>

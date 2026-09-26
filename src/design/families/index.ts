@@ -1,6 +1,7 @@
 export { BarChart } from "./BarChart";
 export { BlogGrid, type BlogGridItem } from "./BlogGrid";
 export { BranchDiagram, branchPath } from "./BranchDiagram";
+export { CardHeader } from "./CardHeader";
 export { CollapsibleSection } from "./CollapsibleSection";
 export {
 	CollectiveGrid,
@@ -17,8 +18,9 @@ export { GroupGrid, type GroupGridItem } from "./GroupGrid";
 export { HeroBand } from "./HeroBand";
 export { LineageExplorer } from "./LineageExplorer";
 export { type ListingItem, ListingRows } from "./ListingRows";
-export { PipelineTimeline, type PipelineStage } from "./PipelineTimeline";
+export { type PipelineStage, PipelineTimeline } from "./PipelineTimeline";
 export { ProseSection } from "./ProseSection";
+export { StatusNotice } from "./StatusNotice";
 export { StoryChapter } from "./StoryChapter";
 export { TerminalPanel } from "./TerminalPanel";
 export { ToolGrid } from "./ToolGrid";

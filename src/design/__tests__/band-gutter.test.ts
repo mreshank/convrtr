@@ -124,6 +124,12 @@ const familyFiles = readdirSync(FAMILIES_DIR).filter((name) =>
  *                 with that ambient measure rather than duplicate it -- the
  *                 same trap `TerminalPanel`'s own doc comment records for a
  *                 capped element nested inside a narrower measure elsewhere.
+ *   CardHeader,
+ *   StatusNotice  the shared header and status notice composed INSIDE
+ *                 capped hosts (surface cards, chapter bodies). A cap here
+ *                 would measure against the host's inset box instead of the
+ *                 page, silently narrowing the header relative to its own
+ *                 card -- the same nested-measure trap as `ProseSection`.
  *
  * None of these renders a full-width page section on its own, so "every
  * band declares its own cap" below does not apply to them -- named here
@@ -131,10 +137,12 @@ const familyFiles = readdirSync(FAMILIES_DIR).filter((name) =>
  */
 const NOT_BAND_LEVEL = new Set([
 	"BarChart.tsx",
+	"CardHeader.tsx",
 	"CollapsibleSection.tsx",
 	"FusedHeadline.tsx",
 	"DotMatrix.tsx",
 	"ProseSection.tsx",
+	"StatusNotice.tsx",
 ]);
 
 describe("band gutter: one owner, not four patches", () => {

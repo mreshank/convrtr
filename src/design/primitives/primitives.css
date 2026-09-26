@@ -319,3 +319,23 @@ body.has-custom-cursor:has(a:hover, button:hover) [data-cursor] {
 	border-color: var(--accent);
 	font-weight: 600;
 }
+
+/*
+ * ScrollReveal: the system's slide-fade, triggered on viewport entry.
+ * The hidden state is set from the effect (data-scroll-reveal), never at
+ * server render, so no-JS and first paint always see full content.
+ * Reduced motion is covered by the universal transition collapse in
+ * globals.css -- no local media query needed.
+ */
+[data-scroll-reveal] {
+	opacity: 0;
+	transform: translateY(12px);
+	transition:
+		opacity var(--dur-fade) var(--ease),
+		transform var(--dur-fade) var(--ease);
+}
+
+[data-scroll-reveal][data-visible] {
+	opacity: 1;
+	transform: none;
+}

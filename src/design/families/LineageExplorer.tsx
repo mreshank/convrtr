@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { findConversionRoute } from "@/core/registry/converter-match";
 import { conversionBranches } from "@/core/registry/stats";
 import { branchPath } from "./BranchDiagram";
+import { CardHeader } from "./CardHeader";
 
 type Props = {
 	/** Input extensions worth exploring, richest lineage first. */
@@ -67,30 +68,10 @@ export function LineageExplorer({ sources }: Props) {
 			className="m3-surface-card flex w-full flex-col gap-[var(--gap-md)] p-[var(--gap-md)]"
 			style={{ maxWidth: "var(--max-width)", margin: "0 auto" }}
 		>
-			<div>
-				<span
-					className="meta"
-					style={{
-						color: "var(--accent)",
-						fontSize: "var(--mono-size)",
-						letterSpacing: "0.1em",
-						textTransform: "uppercase",
-					}}
-				>
-					LINEAGE EXPLORER {"//"} LIVE REGISTRY GRAPH
-				</span>
-				<h3
-					style={{
-						fontSize: "var(--headline-size)",
-						letterSpacing: "var(--headline-tracking)",
-						fontWeight: 400,
-						margin: "calc(var(--space-base) / 2) 0 0",
-						color: "var(--ink)",
-					}}
-				>
-					Pick a format. Watch it branch.
-				</h3>
-			</div>
+			<CardHeader
+				eyebrow="LINEAGE EXPLORER // LIVE REGISTRY GRAPH"
+				title="Pick a format. Watch it branch."
+			/>
 
 			<fieldset
 				style={{

@@ -1,3 +1,5 @@
+import { CardHeader } from "@/design/families/CardHeader";
+
 export function ArchitectureManifestoCard() {
 	const COMPARISONS = [
 		{
@@ -43,70 +45,29 @@ export function ArchitectureManifestoCard() {
 				width: "100%",
 			}}
 		>
-			<div
-				style={{
-					display: "flex",
-					justifyContent: "space-between",
-					alignItems: "flex-start",
-					flexWrap: "wrap",
-					gap: "var(--space-base)",
-				}}
-			>
-				<div>
+			<CardHeader
+				eyebrow="ARCHITECTURAL CONTRAST // THE LOCAL MANIFESTO"
+				title="Cloud converters are surveillance pipelines."
+				lede="Most online converters act as intermediaries that harvest file contents, charge subscription tolls, and subject sensitive documents to cloud breaches. convrtr replaces the entire cloud server farm with isolated in-browser WASM compilers."
+				wideLede
+				badge={
 					<span
-						className="meta"
+						className="mono"
 						style={{
-							color: "var(--accent)",
 							fontSize: "var(--mono-size)",
-							letterSpacing: "0.1em",
-							textTransform: "uppercase",
+							color: "var(--accent)",
+							borderWidth: "var(--rule-width)",
+							borderStyle: "solid",
+							borderColor: "var(--rule)",
+							padding: "calc(var(--space-base) / 4) var(--space-base)",
+							borderRadius: "var(--radius-control)",
+							backgroundColor: "var(--ground)",
 						}}
 					>
-						ARCHITECTURAL CONTRAST {"//"} THE LOCAL MANIFESTO
+						VERIFIED IN CI {"//"} 0 BYTES LEAKED
 					</span>
-					<h3
-						style={{
-							fontSize: "var(--headline-size)",
-							letterSpacing: "var(--headline-tracking)",
-							fontWeight: 400,
-							margin: "calc(var(--space-base) / 2) 0 0",
-							color: "var(--ink)",
-						}}
-					>
-						Cloud converters are surveillance pipelines.
-					</h3>
-				</div>
-				<span
-					className="mono"
-					style={{
-						fontSize: "var(--mono-size)",
-						color: "var(--accent)",
-						borderWidth: "var(--rule-width)",
-						borderStyle: "solid",
-						borderColor: "var(--rule)",
-						padding: "calc(var(--space-base) / 4) var(--space-base)",
-						borderRadius: "var(--radius-control)",
-						backgroundColor: "var(--ground)",
-					}}
-				>
-					VERIFIED IN CI {"//"} 0 BYTES LEAKED
-				</span>
-			</div>
-
-			<p
-				style={{
-					color: "var(--ink-muted)",
-					fontSize: "var(--body-size)",
-					lineHeight: 1.6,
-					margin: 0,
-					maxWidth: "var(--converter-width)",
-				}}
-			>
-				Most online converters act as intermediaries that harvest file contents,
-				charge subscription tolls, and subject sensitive documents to cloud
-				breaches. convrtr replaces the entire cloud server farm with isolated
-				in-browser WASM compilers.
-			</p>
+				}
+			/>
 
 			{/* Comparison Table */}
 			<div

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { ScrollReveal } from "@/design/primitives/ScrollReveal";
 import { FusedHeadline } from "./FusedHeadline";
 
 type Props = {
@@ -52,7 +53,7 @@ export function StoryChapter({ index, eyebrow, title, lede, children }: Props) {
 				>
 					{lede}
 				</p>
-				<div
+				<ScrollReveal
 					style={{
 						display: "flex",
 						flexDirection: "column",
@@ -61,7 +62,7 @@ export function StoryChapter({ index, eyebrow, title, lede, children }: Props) {
 					}}
 				>
 					{children}
-				</div>
+				</ScrollReveal>
 			</div>
 		</section>
 	);

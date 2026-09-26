@@ -128,6 +128,33 @@ describe("HubPage", () => {
 		expect(separator.getAttribute("aria-label")).toContain("BY TASK");
 	});
 
+	it("collapses a grid section by default when defaultOpen is false", () => {
+		render(
+			<HubPage
+				title="Browse"
+				lede="Test"
+				grid={[
+					{
+						heading: "BY FORMAT",
+						unit: "formats",
+						defaultOpen: false,
+						items: [
+							{
+								href: "/groups/format/png",
+								title: "PNG",
+								meta: "1 tool",
+								tools: [{ href: "/png-to-webp", title: "PNG to WebP" }],
+							},
+						],
+					},
+				]}
+			/>,
+		);
+
+		const formatButton = screen.getByRole("button", { name: /BY FORMAT/i });
+		expect(formatButton.getAttribute("aria-expanded")).toBe("false");
+	});
+
 	it("renders BlogGrid when given blogPosts", () => {
 		render(
 			<HubPage

@@ -200,6 +200,12 @@ const CLIENT_COMPONENT_ALLOWLIST = new Set([
 	// `LineageExplorer` holds the active source format -- picking a format
 	// re-branches the live lineage tree, which only a client component can do.
 	"LineageExplorer.tsx",
+	// `CountUp` runs a requestAnimationFrame loop and reads the
+	// reduced-motion media query -- both runtime-only.
+	"CountUp.tsx",
+	// `ScrollReveal` owns an IntersectionObserver per mount -- state a
+	// server component cannot hold.
+	"ScrollReveal.tsx",
 ]);
 
 function filesDeclaringUseClient(dir: string): string[] {

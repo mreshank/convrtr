@@ -119,6 +119,7 @@ export default function GroupsIndexPage() {
 						heading: "BY FORMAT",
 						unit: "formats",
 						items: formatGroups.map(toFormatItem),
+						defaultOpen: false,
 					},
 				]}
 			/>

@@ -96,4 +96,54 @@ describe("CollectiveGrid", () => {
 		fireEvent.click(clearBtn);
 		expect(screen.getByText("2 CURATED COLLECTIVES")).toBeDefined();
 	});
+
+	it("shows small collectives fully with no view-all CTA", () => {
+		render(<CollectiveGrid collectives={SAMPLE_COLLECTIVES} />);
+		expect(screen.queryByRole("button", { name: /VIEW ALL/i })).toBeNull();
+	});
+
+	it("truncates pipelines longer than 5 tools behind a view-all CTA that opens a dialog with the full list", () => {
+		const tools = Array.from({ length: 8 }, (_, i) => ({
+			id: `tool-${i + 1}`,
+			name: `Tool ${i + 1}`,
+			fromExt: "wav",
+			toExt: "mp3",
+			href: `/tool-${i + 1}`,
+		}));
+		render(
+			<CollectiveGrid
+				collectives={[
+					{
+						slug: "big-kit",
+						title: "Big kit",
+						why: "A large kit.",
+						tools,
+					},
+				]}
+			/>,
+		);
+
+		expect(screen.getByText("WORKFLOW PIPELINE (8 TOOLS)")).toBeDefined();
+		// Inline card shows only the first 5.
+		expect(screen.getByText("Tool 5")).toBeDefined();
+		expect(screen.queryByText("Tool 6")).toBeNull();
+
+		const viewAll = screen.getByRole("button", {
+			name: /VIEW ALL 8 TOOLS/i,
+		});
+		fireEvent.click(viewAll);
+
+		const dialog = screen.getByRole("dialog");
+		expect(dialog.getAttribute("data-collective-dialog")).toBe("big-kit");
+		// Dialog lists every tool, including the truncated ones.
+		expect(screen.getByText("Tool 6")).toBeDefined();
+		expect(screen.getByText("Tool 8")).toBeDefined();
+		expect(
+			screen.getByRole("link", { name: /Open full suite page/i }),
+		).toBeDefined();
+
+		// Escape closes the dialog.
+		fireEvent.keyDown(window, { key: "Escape" });
+		expect(screen.queryByRole("dialog")).toBeNull();
+	});
 });

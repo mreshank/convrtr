@@ -2,14 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { CardHeader } from "@/design/families/CardHeader";
 import { ArrowUpRight } from "@/design/primitives/ArrowUpRight";
+import { CountUp } from "@/design/primitives/CountUp";
+import { PillLink } from "@/design/primitives/PillLink";
 import { CHROME_EXTENSION_URL } from "@/lib/site";
-import {
-	getSubscriptionStats,
-	type SubscriptionChannel,
-	subscribeUser,
-	syncSubscriptionRemote,
-} from "@/lib/subscriptions";
+import { getSubscriptionStats } from "@/lib/subscriptions";
+import { SubscribeForm } from "./SubscribeForm";
 
 const FEATURES = [
 	{
@@ -44,63 +43,22 @@ const FEATURES = [
 	},
 ];
 
+const CHANNELS = [
+	{ value: "extension" as const, label: "Extension Updates" },
+	{ value: "ecosystem" as const, label: "Ecosystem Releases" },
+	{ value: "releases" as const, label: "WASM Decoder Changelogs" },
+];
+
 export function ExtensionWaitlistCard() {
-	const [email, setEmail] = useState("");
-	const [channels, setChannels] = useState<SubscriptionChannel[]>([
-		"extension",
-		"ecosystem",
-	]);
-	const [status, setStatus] = useState<{
-		text: string;
-		type: "success" | "error";
-	} | null>(null);
-	const [_subCount, setSubCount] = useState(1424);
-	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [subCount, setSubCount] = useState(1424);
 
 	useEffect(() => {
 		const stats = getSubscriptionStats();
 		setSubCount(stats.benchmarkWaitlistTotal);
 	}, []);
 
-	const toggleChannel = (ch: SubscriptionChannel) => {
-		if (channels.includes(ch)) {
-			if (channels.length > 1) {
-				setChannels(channels.filter((c) => c !== ch));
-			}
-		} else {
-			setChannels([...channels, ch]);
-		}
-	};
-
-	const handleSubmit = (e: React.FormEvent) => {
-		e.preventDefault();
-		if (!email.trim()) return;
-		setIsSubmitting(true);
-		const result = subscribeUser(email, channels, "extension-waitlist");
-		const submittedEmail = email.trim();
-
-		if (result.success) {
-			setStatus({ text: result.message, type: "success" });
-			setEmail("");
-			const stats = getSubscriptionStats();
-			setSubCount(stats.benchmarkWaitlistTotal);
-			// Fire-and-forget welcome email + Audience sync; local state stays authoritative.
-			void syncSubscriptionRemote(
-				submittedEmail,
-				channels,
-				"extension-waitlist",
-			).then((emailed) => {
-				if (emailed) {
-					setStatus({
-						text: "Subscribed. Check your inbox for a confirmation email.",
-						type: "success",
-					});
-				}
-			});
-		} else {
-			setStatus({ text: result.message, type: "error" });
-		}
-		setIsSubmitting(false);
+	const refreshCount = () => {
+		setSubCount(getSubscriptionStats().benchmarkWaitlistTotal);
 	};
 
 	return (
@@ -108,67 +66,36 @@ export function ExtensionWaitlistCard() {
 			id="extension-spotlight"
 			className="m3-surface-card relative flex w-full flex-col gap-[var(--gap-md)] p-[var(--gap-md)]"
 		>
-			{/* Top Eyebrow & Status Bar */}
 			<div
 				style={{
-					display: "flex",
-					justifyContent: "space-between",
-					alignItems: "flex-start",
-					flexWrap: "wrap",
-					gap: "var(--space-base)",
 					borderBottomWidth: "var(--rule-width)",
 					borderBottomStyle: "solid",
 					borderBottomColor: "var(--rule)",
 					paddingBottom: "var(--space-base)",
 				}}
 			>
-				<div>
-					<span
-						className="meta"
-						style={{
-							color: "var(--accent)",
-							fontSize: "var(--mono-size)",
-							letterSpacing: "0.1em",
-							textTransform: "uppercase",
-						}}
-					>
-						CHROME WEB STORE {"//"} MANIFEST V3 {"//"} NOW LIVE
-					</span>
-					<h2
-						style={{
-							fontSize: "var(--headline-size)",
-							letterSpacing: "var(--headline-tracking)",
-							fontWeight: 400,
-							margin: "calc(var(--space-base) / 2) 0 0",
-							color: "var(--ink)",
-						}}
-					>
-						convrtr inside Chrome.
-					</h2>
-				</div>
-				<div
-					style={{
-						display: "flex",
-						alignItems: "center",
-						gap: "var(--space-base)",
-					}}
-				>
-					<span
-						className="mono"
-						style={{
-							fontSize: "var(--mono-size)",
-							color: "var(--accent)",
-							borderWidth: "var(--rule-width)",
-							borderStyle: "solid",
-							borderColor: "var(--rule-strong)",
-							padding: "calc(var(--space-base) / 4) var(--space-base)",
-							borderRadius: "var(--radius-control)",
-							backgroundColor: "var(--ground)",
-						}}
-					>
-						● NOW LIVE ON CHROME WEB STORE
-					</span>
-				</div>
+				<CardHeader
+					eyebrow="CHROME WEB STORE // MANIFEST V3 // NOW LIVE"
+					title="convrtr inside Chrome."
+					headingLevel="h2"
+					badge={
+						<span
+							className="mono"
+							style={{
+								fontSize: "var(--mono-size)",
+								color: "var(--accent)",
+								borderWidth: "var(--rule-width)",
+								borderStyle: "solid",
+								borderColor: "var(--rule-strong)",
+								padding: "calc(var(--space-base) / 4) var(--space-base)",
+								borderRadius: "var(--radius-control)",
+								backgroundColor: "var(--ground)",
+							}}
+						>
+							● NOW LIVE ON CHROME WEB STORE
+						</span>
+					}
+				/>
 			</div>
 
 			{/* Description & Direct Store CTA */}
@@ -203,29 +130,15 @@ export function ExtensionWaitlistCard() {
 						marginTop: "calc(var(--space-base) / 2)",
 					}}
 				>
-					<a
+					<PillLink
 						href={CHROME_EXTENSION_URL}
-						target="_blank"
-						rel="noopener noreferrer"
-						data-cta-fill
-						style={{
-							display: "inline-flex",
-							alignItems: "center",
-							gap: "var(--space-base)",
-							height: "36px",
-							padding: "0 var(--gap-md)",
-							background: "var(--ink)",
-							color: "var(--ground)",
-							borderRadius: "var(--radius-pill)",
-							fontSize: "var(--label-size)",
-							letterSpacing: "var(--label-tracking)",
-							fontWeight: "var(--label-weight)",
-							textDecoration: "none",
-						}}
+						variant="fill"
+						size="sm"
+						external
 					>
 						<span>INSTALL FROM CHROME WEB STORE</span>
 						<ArrowUpRight size={14} />
-					</a>
+					</PillLink>
 
 					<Link
 						href="/extension"
@@ -306,7 +219,7 @@ export function ExtensionWaitlistCard() {
 				))}
 			</div>
 
-			{/* Interactive Release Radar Subscription Form */}
+			{/* Release Radar Subscription Panel */}
 			<div
 				id="extension-waitlist"
 				className="m3-surface-card flex flex-col gap-[var(--space-base)] p-[var(--gap-md)]"
@@ -315,158 +228,31 @@ export function ExtensionWaitlistCard() {
 					backgroundColor: "var(--ground)",
 				}}
 			>
-				<div>
-					<span
-						className="meta"
-						style={{
-							color: "var(--accent)",
-							fontSize: "var(--mono-size)",
-							letterSpacing: "0.08em",
-							textTransform: "uppercase",
-						}}
-					>
-						RELEASE RADAR {"//"} TECHNICAL CHANGELOGS
-					</span>
-					<h3
-						style={{
-							fontSize: "var(--body-size)",
-							fontWeight: 500,
-							margin: "calc(var(--space-base) / 2) 0 0",
-							color: "var(--ink)",
-						}}
-					>
-						Subscribe to Extension Changelogs & WASM Decoder Updates
-					</h3>
-					<p
-						style={{
-							color: "var(--ink-muted)",
-							fontSize: "var(--mono-size)",
-							margin: "calc(var(--space-base) / 4) 0 0",
-						}}
-					>
-						Receive technical release notes, new format additions, and engine
-						performance updates directly from the engineering team.
-					</p>
-				</div>
+				<CardHeader
+					eyebrow="RELEASE RADAR // TECHNICAL CHANGELOGS"
+					title="Subscribe to Extension Changelogs & WASM Decoder Updates"
+					lede="Receive technical release notes, new format additions, and engine performance updates directly from the engineering team."
+				/>
 
-				<form
-					onSubmit={handleSubmit}
+				<p
+					className="mono"
 					style={{
-						display: "flex",
-						flexDirection: "column",
-						gap: "var(--space-base)",
+						fontSize: "var(--mono-size)",
+						color: "var(--accent)",
+						margin: 0,
 					}}
 				>
-					{/* Channel Selection Chips */}
-					<div
-						style={{
-							display: "flex",
-							gap: "calc(var(--space-base) / 2)",
-							flexWrap: "wrap",
-						}}
-					>
-						<button
-							type="button"
-							onClick={() => toggleChannel("extension")}
-							className={`m3-chip ${channels.includes("extension") ? "m3-chip-active" : ""}`}
-						>
-							[x] Extension Updates
-						</button>
-						<button
-							type="button"
-							onClick={() => toggleChannel("ecosystem")}
-							className={`m3-chip ${channels.includes("ecosystem") ? "m3-chip-active" : ""}`}
-						>
-							[x] Ecosystem Releases
-						</button>
-						<button
-							type="button"
-							onClick={() => toggleChannel("releases")}
-							className={`m3-chip ${channels.includes("releases") ? "m3-chip-active" : ""}`}
-						>
-							[x] WASM Decoder Changelogs
-						</button>
-					</div>
+					<CountUp end={subCount} /> SUBSCRIBED {"//"} RELEASE RADAR
+				</p>
 
-					{/* Email Input & Submit Button */}
-					<div
-						style={{
-							display: "flex",
-							gap: "var(--space-base)",
-							flexWrap: "wrap",
-						}}
-					>
-						<input
-							type="email"
-							value={email}
-							onChange={(e) => setEmail(e.target.value)}
-							placeholder="engineer@domain.com"
-							required
-							className="mono rounded-full border px-[var(--gap-sm)] py-[var(--space-base)] text-[var(--mono-size)] outline-none transition-colors focus:border-[var(--accent)]"
-							style={{
-								flex: 1,
-								minWidth: "16rem",
-								borderColor: "var(--rule-strong)",
-								backgroundColor: "var(--surface)",
-								color: "var(--ink)",
-							}}
-						/>
-						<button
-							type="submit"
-							disabled={isSubmitting}
-							className="mono border border-transparent px-[var(--gap-md)] py-[var(--space-base)] text-[var(--mono-size)] font-semibold rounded-full uppercase tracking-[0.08em] transition-all hover:bg-[var(--accent)] hover:text-[var(--ground)]"
-							style={{
-								backgroundColor: "var(--ink)",
-								color: "var(--ground)",
-								cursor: "pointer",
-							}}
-						>
-							{isSubmitting ? "Subscribing..." : "Subscribe for Updates ➔"}
-						</button>
-					</div>
-				</form>
-
-				{/* Status Feedback */}
-				{status && (
-					<div
-						role="status"
-						style={{
-							padding: "calc(var(--space-base) / 2) var(--gap-sm)",
-							backgroundColor: "var(--surface)",
-							borderWidth: "var(--rule-width)",
-							borderStyle: "solid",
-							borderColor:
-								status.type === "success"
-									? "var(--accent)"
-									: "var(--rule-strong)",
-							color:
-								status.type === "success"
-									? "var(--accent)"
-									: "var(--ink-muted)",
-							fontFamily: "var(--font-mono)",
-							fontSize: "var(--mono-size)",
-							display: "flex",
-							justifyContent: "space-between",
-							alignItems: "center",
-						}}
-					>
-						<span>{status.text}</span>
-						<button
-							type="button"
-							onClick={() => setStatus(null)}
-							style={{
-								background: "transparent",
-								border: "none",
-								color: "var(--ink-muted)",
-								cursor: "pointer",
-								fontFamily: "var(--font-mono)",
-								fontSize: "var(--mono-size)",
-							}}
-						>
-							[close]
-						</button>
-					</div>
-				)}
+				<SubscribeForm
+					defaultChannels={["extension", "ecosystem"]}
+					source="extension-waitlist"
+					chips={CHANNELS}
+					emailPlaceholder="engineer@domain.com"
+					submitLabel="Subscribe for Updates ➔"
+					onSubscribed={refreshCount}
+				/>
 			</div>
 		</div>
 	);
