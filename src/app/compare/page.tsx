@@ -8,7 +8,7 @@ import { SITE } from "@/lib/site";
 export function generateMetadata(): Metadata {
 	const title = "Format vs Format Technical Comparisons — convrtr";
 	const description =
-		"Direct architectural comparisons between file formats. Compare compression ratios, bit depths, browser support, and quality metrics.";
+		"Head-to-head technical comparisons of file formats — compression, bit depth, transparency, browser support and quality. Know what changes before you convert.";
 	return {
 		title,
 		description,
@@ -29,7 +29,7 @@ export default function CompareIndexPage() {
 					{ name: "Format Comparisons" },
 				]}
 				title="Format Comparisons"
-				lede="Direct head-to-head technical comparisons between image, audio, and document formats."
+				lede="Head-to-head technical comparisons of image, audio, video and document formats — compression, quality and compatibility, so you know what changes before you convert."
 				count={{
 					value: COMPARISONS.length,
 					noun: "comparisons",

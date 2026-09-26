@@ -1,4 +1,5 @@
 import { TOOLS } from "@/core/registry";
+import { deriveTypeGroups } from "@/core/registry/groups";
 import { conversionBranches, supportedFormats } from "@/core/registry/stats";
 
 // Derived once, here, so page.tsx never calls the registry itself and every
@@ -17,13 +18,14 @@ export const HOOK_LINES = [
 	"WASM in. File out. Nothing between.",
 ];
 
-// v2's first screen: the fused headline, a pill pair. "Nothing uploads" is
-// the whole architecture claim in three words -- every conversion in
-// `src/core` runs client-side, and there is no account system or analytics
-// call anywhere in this codebase to contradict it.
+// v2's first screen: the fused headline, a pill pair. The H1 carries the
+// product keyword ("file converter") and the whole architecture claim in
+// one sentence -- every conversion in `src/core` runs client-side, and
+// there is no account system or analytics call anywhere in this codebase
+// to contradict it.
 export const HERO_PROPS = {
-	lead: "Convert anything.",
-	cont: "Nothing uploads.",
+	lead: "The file converter",
+	cont: "that uploads nothing.",
 	cta: { href: "/convert", label: "Start converting" },
 	secondary: { href: "/blog", label: "Read the blog" },
 	hooks: HOOK_LINES,
@@ -152,36 +154,42 @@ export const TOOL_GRID_PROPS = {
 // download -- in six chapters. Each chapter's eyebrow, headline and lede live
 // here, next to every other line of homepage copy, so the narrative arc can
 // be read and edited in one place rather than reconstructed from JSX.
+//
+// The flow follows the proven SaaS landing shape (hero, proof strip,
+// capability cards, problem, how-it-works, live demo, price, takeaway,
+// FAQ, final call) -- with honest substitutions where that shape fakes it:
+// real registry counts instead of logo soup, one true $0 plan instead of
+// tier theatre, and checkable answers instead of bought testimonials.
 export const STORY_CHAPTERS = {
-	problem: {
+	what: {
 		index: "01",
-		eyebrow: "THE PROBLEM",
+		eyebrow: "WHAT IT DOES",
+		title: { lead: "Start from the job,", cont: "not the format." },
+		lede: "Nobody wakes up wanting a transcoder. You are holding a photo, a clip, a dataset -- pick what it is and the graph handles the rest. Or skip straight to the flat list of everything.",
+	},
+	why: {
+		index: "02",
+		eyebrow: "WHY NOT CLOUD",
 		title: { lead: "Cloud converters", cont: "are surveillance pipelines." },
 		lede: "Every free converter is a deal you never read: your files for their server bill, your afternoon for their queue, your data for their retention policy. This chapter kills the deal.",
 	},
-	journey: {
-		index: "02",
-		eyebrow: "THE JOURNEY",
+	how: {
+		index: "03",
+		eyebrow: "HOW IT WORKS",
 		title: { lead: "One file,", cont: "five stages, zero uploads." },
 		lede: "Five stages. One tab. Zero uploads. Watch a file go from drag-and-drop to download without ever leaving your machine -- and every stage names the code that runs it, so you can check our work.",
 	},
 	graph: {
-		index: "03",
-		eyebrow: "THE GRAPH",
+		index: "04",
+		eyebrow: "WATCH IT THINK",
 		title: { lead: "Every format", cont: "is a node. Every tool is an edge." },
 		lede: "Menus are for restaurants. convrtr is a graph with an engine that walks the shortest path while you watch. Pick a format below -- bet you can't find a dead end.",
 	},
-	refusals: {
-		index: "04",
-		eyebrow: "THE REFUSALS",
-		title: { lead: "What it is,", cont: "and what it will not do." },
-		lede: "Most products list features. Ours lists refusals -- six things it will not do, each one checked against the codebase. This is what trust looks like when there is no server to trust.",
-	},
-	arsenal: {
+	free: {
 		index: "05",
-		eyebrow: "THE ARSENAL",
-		title: { lead: "One flat list.", cont: "Every tool, no menu." },
-		lede: "A menu would need restocking. A graph just grows: new decoders land and every format's lineage gets longer overnight. Below is the inventory, counted live.",
+		eyebrow: "FREE FOREVER",
+		title: { lead: "The whole product", cont: "is the free plan." },
+		lede: "No tiers, no trial, no contact-sales. $0 covers every tool because there are no servers to pay for -- compare that with the cloud toll on the right.",
 	},
 	carry: {
 		index: "06",
@@ -244,8 +252,116 @@ export const LINEAGE_SOURCES = supportedFormats()
 	.slice(0, 8)
 	.map((entry) => entry.ext);
 
+// The proof strip directly under the hero: the landing-page logo soup,
+// replaced with numbers that can be checked. Tool and format counts are
+// derived from the registry; the two zeroes are architectural facts (static
+// export, no upload endpoint) enforced by `e2e/network-guard.ts` in CI.
+export const STATS = [
+	{ value: TOOLS.length, label: "TOOLS, ALL CLIENT-SIDE" },
+	{ value: SUPPORTED_FORMATS.length, label: "FORMATS READ AND WRITTEN" },
+	{ value: 0, label: "SERVERS IN PRODUCTION" },
+	{ value: 0, label: "BYTES UPLOADED, EVER" },
+];
+
+export type CategoryCard = {
+	category: string;
+	label: string;
+	blurb: string;
+	count: number;
+	samples: { from: string; to: string; href: string }[];
+};
+
+const CATEGORY_BLURBS: Record<string, string> = {
+	image:
+		"Phone photos, modern codecs, game sprites -- decoded and re-encoded without leaving the tab.",
+	video:
+		"Phone clips, screen recordings, odd containers -- remuxed to plain MP4 on your own CPU.",
+	audio:
+		"Tracker chiptunes, voice memos, lossless masters -- rendered and encoded locally.",
+	document: "Ebooks, PDFs, markup -- converted and bound in the page.",
+	data: "Tabular dumps and structured files -- reshaped client-side, row by row.",
+};
+
+// The capability cards: one per file family, each with its live tool count
+// and three real sample routes pulled from the registry. Derived, so a new
+// tool reshapes its family's card on the next build with nobody editing copy.
+export const CATEGORY_CARDS: CategoryCard[] = deriveTypeGroups().map(
+	(group) => ({
+		category: group.category,
+		label: group.label,
+		blurb:
+			CATEGORY_BLURBS[group.category] ?? "Converted entirely in your browser.",
+		count: group.tools.length,
+		samples: group.tools
+			.filter(
+				(tool) =>
+					(tool.kind === "convert" || tool.kind === "extract") &&
+					(tool.accept.ext[0] ?? "") !== "",
+			)
+			.slice(0, 3)
+			.map((tool) => ({
+				from: (tool.accept.ext[0] ?? "").toLowerCase(),
+				to: tool.output.ext.toLowerCase(),
+				href: `/${tool.id}`,
+			})),
+	}),
+);
+
+// Asked constantly, answered without a sales team. Every answer is backed
+// by something checkable: the network guard in CI, the static export, the
+// service worker, the registry itself.
+export const FAQ_ITEMS = [
+	{
+		question: "Do my files get uploaded anywhere?",
+		answer:
+			"No. Every conversion runs in WebAssembly workers inside your browser tab, and there is no server endpoint to send them to. The CI network guard fails the build if a single byte leaves the device.",
+	},
+	{
+		question: "Do I need an account?",
+		answer:
+			"No. There is no sign-up, no sign-in, and no analytics beacon. Your history lives in your own browser storage and never syncs anywhere.",
+	},
+	{
+		question: "Does it work offline?",
+		answer:
+			"Yes, after your first visit. The service worker caches the app and its engines, and the conversion pipeline keeps running with the network cut -- proven by the offline end-to-end test, not claimed.",
+	},
+	{
+		question: "What does it cost?",
+		answer:
+			"$0, for every tool, forever. A static site with no servers has no server bill to pass on to you -- the pricing section above is one row long on purpose.",
+	},
+	{
+		question: `Which formats are supported?`,
+		answer: `${SUPPORTED_FORMATS.length} and counting -- from retro game sprites to ebooks to tabular data. The format strip and tool list on this page are generated from the same registry as the product, so they cannot go stale.`,
+	},
+	{
+		question: "Is there a file-size limit?",
+		answer:
+			"Your device's memory is the limit. The comic engines refuse files over 500MB up front rather than hanging your tab -- an honest error beats a frozen page.",
+	},
+	{
+		question: "Is there a browser extension?",
+		answer:
+			"Yes. convrtr for Chrome is live on the Chrome Web Store: side-panel docking, instant popup, right-click conversion, and address-bar lookup, all running the same local engines.",
+	},
+];
+
+export const FINAL_CTA_PROPS = {
+	eyebrow: "BEGIN // NO SIGN-UP",
+	title: {
+		lead: "Done reading.",
+		cont: "Start converting.",
+	},
+	lede: "The tab is already open. The engine is already loaded. Your files are still yours.",
+};
+
 export const HOME = {
 	hero: HERO_PROPS,
+	stats: STATS,
+	categoryCards: CATEGORY_CARDS,
+	faq: FAQ_ITEMS,
+	finalCta: FINAL_CTA_PROPS,
 	terminal: TERMINAL_PROPS,
 	features: FEATURES,
 	gridFeatures: GRID_FEATURES,

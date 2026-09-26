@@ -79,7 +79,7 @@ function toTaskItem(group: TaskGroup) {
 export function generateMetadata(): Metadata {
 	const title = "Browse by type, format, or task — convrtr";
 	const description =
-		"Every conversion convrtr supports, grouped by file type, by format, and by what it does to a file.";
+		"Every conversion convrtr supports, grouped three ways: by the kind of file you have, by the format it arrives in, and by what you need done. All in your browser — nothing is uploaded.";
 	return {
 		title,
 		description,
@@ -99,7 +99,7 @@ export default function GroupsIndexPage() {
 			<HubPage
 				breadcrumbs={[{ name: "Home", href: "/" }, { name: "Groups" }]}
 				title="Browse by type, format, or task"
-				lede="Every conversion, grouped three ways: by file type, by format, and by what it does."
+				lede="Every conversion, grouped three ways: by the kind of file you have, by the format it arrives in, and by what you need done."
 				count={{
 					value: typeGroups.length + formatGroups.length + taskGroups.length,
 					noun: "groups",

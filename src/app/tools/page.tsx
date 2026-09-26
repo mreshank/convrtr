@@ -8,9 +8,9 @@ import { SITE } from "@/lib/site";
 import { toToolRow } from "./toolRow";
 
 export function generateMetadata(): Metadata {
-	const title = "All tools — convrtr";
+	const title = "All file conversion tools — convrtr";
 	const description =
-		"Every file conversion convrtr supports, searchable in one list. Every conversion runs in your browser — nothing is uploaded.";
+		"Browse every file conversion tool convrtr supports — images, audio, video, documents and data. Each one runs 100% in your browser; your files are never uploaded.";
 	return {
 		title,
 		description,
@@ -32,8 +32,8 @@ export default function ToolsIndexPage() {
 			<JsonLd schema={buildToolsIndexJsonLd(TOOLS, `${SITE}/tools`)} />
 			<HubPage
 				breadcrumbs={[{ name: "Home", href: "/" }, { name: "All Tools" }]}
-				title="All tools"
-				lede="Every conversion runs in your browser — nothing is uploaded."
+				title="All file conversion tools"
+				lede="The full registry, searchable in one list — every tool for images, audio, video, documents and data, each running entirely in your browser."
 				count={{
 					value: rows.length,
 					noun: rows.length === 1 ? "conversion" : "conversions",

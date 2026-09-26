@@ -6,9 +6,9 @@ import { buildBlogIndexJsonLd } from "@/lib/jsonld";
 import { SITE } from "@/lib/site";
 
 export function generateMetadata(): Metadata {
-	const title = "Blog — convrtr";
+	const title = "Field notes on file formats — convrtr";
 	const description =
-		"Deep dives on the file formats and special converters convrtr supports.";
+		"Deep dives on file formats, codecs, conversion fidelity and recovery — notes from building an in-browser converter that never uploads your files.";
 	return {
 		title,
 		description,
@@ -60,8 +60,8 @@ export default function BlogIndexPage() {
 			/>
 			<HubPage
 				breadcrumbs={[{ name: "Home", href: "/" }, { name: "Blog" }]}
-				title="Blog"
-				lede="Deep dives on the file formats and special converters convrtr supports."
+				title="Field notes on file formats"
+				lede="Deep dives on the formats, codecs and containers convrtr decodes — fidelity, encryption and recovery, from building a converter that uploads nothing."
 				count={{
 					value: BLOG_GRID_ITEMS.length,
 					noun: BLOG_GRID_ITEMS.length === 1 ? "post" : "posts",

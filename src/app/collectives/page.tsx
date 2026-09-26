@@ -7,9 +7,9 @@ import { buildCollectivesIndexJsonLd } from "@/lib/jsonld";
 import { SITE } from "@/lib/site";
 
 export function generateMetadata(): Metadata {
-	const title = "Collectives — convrtr";
+	const title = "Tool kits for real jobs — convrtr";
 	const description =
-		"Curated sets of tools built around a reason, not a file type -- everything for one job.";
+		"Curated file-conversion kits built around real jobs — podcast production, metadata stripping, retro computing and more. Every tool runs in your browser; nothing is uploaded.";
 	return {
 		title,
 		description,
@@ -50,8 +50,8 @@ export default function CollectivesIndexPage() {
 			/>
 			<HubPage
 				breadcrumbs={[{ name: "Home", href: "/" }, { name: "Collectives" }]}
-				title="Collectives"
-				lede="Curated sets of tools built around a reason, not a file type."
+				title="Tool kits for real jobs"
+				lede="Curated sets of tools built around a reason, not a file type — everything for one job, from podcast episodes to retro-file recovery. Every kit runs fully in your browser."
 				count={{
 					value: COLLECTIVE_GRID_ITEMS.length,
 					noun:

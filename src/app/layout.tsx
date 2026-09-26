@@ -22,7 +22,8 @@ const geistMono = Geist_Mono({
 	display: "swap",
 });
 
-const TAGLINE = "Convert anything in your browser. Nothing is uploaded.";
+const TAGLINE =
+	"Free in-browser file converter for images, audio, video, documents and data. Every conversion runs on your device — no uploads, no accounts, no servers.";
 
 export const metadata: Metadata = {
 	metadataBase: new URL(SITE),

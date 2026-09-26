@@ -36,7 +36,8 @@ export function buildHomeJsonLd() {
 				"@id": `${SITE}/#website`,
 				name: "convrtr",
 				url: SITE,
-				description: "Convert anything in your browser. Nothing is uploaded.",
+				description:
+					"Free in-browser file converter for images, audio, video, documents and data. Every conversion runs on your device — no uploads, no accounts, no servers.",
 				potentialAction: {
 					"@type": "SearchAction",
 					target: {
@@ -320,9 +321,9 @@ export function buildToolsIndexJsonLd(tools: Tool[], url: string) {
 				"@type": "CollectionPage",
 				"@id": `${url}/#webpage`,
 				url,
-				name: "All tools — convrtr",
+				name: "All file conversion tools — convrtr",
 				description:
-					"Every file conversion convrtr supports, searchable in one list. Every conversion runs in your browser — nothing is uploaded.",
+					"Browse every file conversion tool convrtr supports — images, audio, video, documents and data. Each one runs 100% in your browser; your files are never uploaded.",
 				mainEntity: {
 					"@type": "ItemList",
 					numberOfItems: tools.length,
@@ -407,7 +408,7 @@ export function buildGroupsIndexJsonLd(url: string) {
 				url,
 				name: "Browse by type, format, or task — convrtr",
 				description:
-					"Every conversion convrtr supports, grouped by file type, by format, and by what it does to a file.",
+					"Every conversion convrtr supports, grouped three ways: by the kind of file you have, by the format it arrives in, and by what you need done. All in your browser — nothing is uploaded.",
 			},
 			{
 				"@type": "BreadcrumbList",
@@ -554,9 +555,9 @@ export function buildCollectivesIndexJsonLd(
 				"@type": "CollectionPage",
 				"@id": `${url}/#webpage`,
 				url,
-				name: "Collectives — convrtr",
+				name: "Tool kits for real jobs — convrtr",
 				description:
-					"Curated sets of tools built around a reason, not a file type -- everything for one job.",
+					"Curated file-conversion kits built around real jobs — podcast production, metadata stripping, retro computing and more. Every tool runs in your browser; nothing is uploaded.",
 				mainEntity: {
 					"@type": "ItemList",
 					numberOfItems: collectives.length,
@@ -658,7 +659,7 @@ export function buildCompareIndexJsonLd(
 				url,
 				name: "Format vs Format Technical Comparisons — convrtr",
 				description:
-					"Direct architectural comparisons between file formats. Compare compression ratios, bit depths, browser support, and quality metrics.",
+					"Head-to-head technical comparisons of file formats — compression, bit depth, transparency, browser support and quality. Know what changes before you convert.",
 				mainEntity: {
 					"@type": "ItemList",
 					numberOfItems: comparisons.length,
@@ -767,9 +768,9 @@ export function buildBlogIndexJsonLd(posts: BlogPostMeta[], url: string) {
 				"@type": "Blog",
 				"@id": `${url}/#blog`,
 				url,
-				name: "Blog — convrtr",
+				name: "Field notes on file formats — convrtr",
 				description:
-					"Deep dives on the file formats and special converters convrtr supports.",
+					"Deep dives on file formats, codecs, conversion fidelity and recovery — notes from building an in-browser converter that never uploads your files.",
 				blogPost: posts.map((p) => ({
 					"@type": "BlogPosting",
 					headline: p.title,

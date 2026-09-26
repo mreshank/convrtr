@@ -8,7 +8,7 @@ import { SITE } from "@/lib/site";
 export function generateMetadata(): Metadata {
 	const title = "Master File Converter — convrtr";
 	const description =
-		"Universal in-browser file converter. Convert images, audio, video, and documents with selective batch customization. Nothing is uploaded.";
+		"Convert single files or whole batches in your browser — images, audio, video, documents and data. Per-file or bulk target formats, ZIP download. Nothing is uploaded.";
 	return {
 		title,
 		description,
@@ -32,7 +32,7 @@ export default function MasterConvertPage() {
 				]}
 				eyebrow="Universal · Multi-File Studio"
 				title="Master File Converter"
-				lede="Convert multiple files between formats entirely in your browser. Customize your selection on the go, choose target formats individually or in bulk, and download individually or as a ZIP."
+				lede="Drop in one file or a hundred. Pick a target format per file or for the whole batch, convert everything on your own device, then download files one by one or as a single ZIP. Nothing is uploaded, ever."
 			>
 				<MasterConverterClient />
 			</ConverterPage>

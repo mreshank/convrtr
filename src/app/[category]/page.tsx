@@ -48,7 +48,7 @@ export async function generateMetadata({
 	const title = `${label(category)} tools — convrtr`;
 	const description = `${tools.length} ${
 		tools.length === 1 ? "tool" : "tools"
-	} for converting ${category} files, running entirely in your browser.`;
+	} for converting ${category} files — free, private, and running entirely in your browser. Your files are never uploaded.`;
 	return {
 		title,
 		description,
@@ -81,7 +81,7 @@ export default async function CategoryPage({
 					{ name: `${label(category)} Tools` },
 				]}
 				title={label(category)}
-				lede={`For converting ${category} files, all running in your browser.`}
+				lede={`Every ${category} conversion in the registry — each one running entirely in your browser, on your files, with nothing uploaded.`}
 				count={{
 					value: tools.length,
 					noun: tools.length === 1 ? "tool" : "tools",

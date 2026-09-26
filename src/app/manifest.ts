@@ -24,7 +24,8 @@ export default function manifest(): MetadataRoute.Manifest {
 	return {
 		name: "convrtr",
 		short_name: "convrtr",
-		description: "Convert anything in your browser. Nothing is uploaded.",
+		description:
+			"Free in-browser file converter for images, audio, video, documents and data. Every conversion runs on your device — no uploads, no accounts, no servers.",
 		start_url: "/",
 		display: "standalone",
 		background_color: "#000000",
