@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { HeroActionInput } from "@/components/home/HeroActionInput";
-import { toolsByCategory } from "@/core/registry/stats";
+import { HeroAppPreview } from "@/components/home/HeroAppPreview";
 import { PillLink } from "@/design/primitives/PillLink";
 import { RotatingHook } from "@/design/primitives/RotatingHook";
 import {
@@ -9,7 +9,6 @@ import {
 	ShaderSurface,
 } from "@/design/texture";
 import { CHROME_EXTENSION_URL } from "@/lib/site";
-import { BarChart } from "./BarChart";
 import { DotMatrix } from "./DotMatrix";
 import { FusedHeadline } from "./FusedHeadline";
 
@@ -115,14 +114,7 @@ export function HeroBand({ lead, cont, cta, secondary, hooks }: Props) {
 						gap: "var(--gap-md)",
 					}}
 				>
-					<div
-						style={{
-							display: "flex",
-							alignItems: "center",
-							gap: "var(--space-base)",
-							flexWrap: "wrap",
-						}}
-					>
+					<div className="flex items-center justify-center gap-[var(--space-base)] flex-wrap text-center">
 						<p
 							className="meta"
 							style={{ color: "var(--ink-muted)", margin: 0 }}
@@ -154,17 +146,17 @@ export function HeroBand({ lead, cont, cta, secondary, hooks }: Props) {
 						</Link>
 					</div>
 
-					<FusedHeadline as="h1" lead={lead} cont={cont} />
+					<div className="text-center flex justify-center">
+						<FusedHeadline as="h1" lead={lead} cont={cont} />
+					</div>
 
-					<HeroActionInput />
+					<div className="flex justify-center w-full">
+						<HeroActionInput />
+					</div>
 
 					<div
+						className="relative z-10 flex flex-wrap justify-center items-center gap-[var(--gap-sm)]"
 						style={{
-							position: "relative",
-							zIndex: 10,
-							display: "flex",
-							flexWrap: "wrap",
-							gap: "var(--gap-sm)",
 							marginTop: "var(--space-base)",
 						}}
 					>
@@ -177,14 +169,15 @@ export function HeroBand({ lead, cont, cta, secondary, hooks }: Props) {
 					</div>
 
 					{hooks && hooks.length > 0 && (
-						<div style={{ marginTop: "var(--gap-sm)" }}>
+						<div
+							className="flex justify-center text-center"
+							style={{ marginTop: "var(--gap-sm)" }}
+						>
 							<RotatingHook lines={hooks} />
 						</div>
 					)}
 
-					<div style={{ marginTop: "var(--gap-lg)" }}>
-						<BarChart data={toolsByCategory()} />
-					</div>
+					<HeroAppPreview />
 				</section>
 			</div>
 		</DotMatrix>

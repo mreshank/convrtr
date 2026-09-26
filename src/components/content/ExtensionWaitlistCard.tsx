@@ -8,6 +8,7 @@ import { CountUp } from "@/design/primitives/CountUp";
 import { PillLink } from "@/design/primitives/PillLink";
 import { CHROME_EXTENSION_URL } from "@/lib/site";
 import { getSubscriptionStats } from "@/lib/subscriptions";
+import Radar from "./Radar";
 import { SubscribeForm } from "./SubscribeForm";
 
 const FEATURES = [
@@ -226,33 +227,69 @@ export function ExtensionWaitlistCard() {
 				style={{
 					borderColor: "var(--rule-strong)",
 					backgroundColor: "var(--ground)",
+					position: "relative",
+					overflow: "hidden",
 				}}
 			>
-				<CardHeader
-					eyebrow="RELEASE RADAR // TECHNICAL CHANGELOGS"
-					title="Subscribe to Extension Changelogs & WASM Decoder Updates"
-					lede="Receive technical release notes, new format additions, and engine performance updates directly from the engineering team."
-				/>
-
-				<p
-					className="mono"
+				{/* The radar pun, literal: a live sweep behind the form. Dim
+				 * enough to keep input contrast intact, pointer-transparent so
+				 * the form stays fully interactive, mouse-reactive off for the
+				 * same reason -- a shifting backdrop behind inputs is noise. */}
+				<div
+					aria-hidden="true"
 					style={{
-						fontSize: "var(--mono-size)",
-						color: "var(--accent)",
-						margin: 0,
+						position: "absolute",
+						inset: 0,
+						pointerEvents: "none",
 					}}
 				>
-					<CountUp end={subCount} /> SUBSCRIBED {"//"} RELEASE RADAR
-				</p>
+					<Radar
+						color="34d59a"
+						backgroundColor="000000"
+						brightness={0.55}
+						speed={0.7}
+						scale={0.7}
+						ringCount={8}
+						spokeCount={12}
+						enableMouseInteraction={false}
+					/>
+				</div>
 
-				<SubscribeForm
-					defaultChannels={["extension", "ecosystem"]}
-					source="extension-waitlist"
-					chips={CHANNELS}
-					emailPlaceholder="engineer@domain.com"
-					submitLabel="Subscribe for Updates ➔"
-					onSubscribed={refreshCount}
-				/>
+				<div
+					style={{
+						position: "relative",
+						zIndex: 1,
+						display: "flex",
+						flexDirection: "column",
+						gap: "var(--space-base)",
+					}}
+				>
+					<CardHeader
+						eyebrow="RELEASE RADAR // TECHNICAL CHANGELOGS"
+						title="Subscribe to Extension Changelogs & WASM Decoder Updates"
+						lede="Receive technical release notes, new format additions, and engine performance updates directly from the engineering team."
+					/>
+
+					<p
+						className="mono"
+						style={{
+							fontSize: "var(--mono-size)",
+							color: "var(--accent)",
+							margin: 0,
+						}}
+					>
+						<CountUp end={subCount} /> SUBSCRIBED {"//"} RELEASE RADAR
+					</p>
+
+					<SubscribeForm
+						defaultChannels={["extension", "ecosystem"]}
+						source="extension-waitlist"
+						chips={CHANNELS}
+						emailPlaceholder="engineer@domain.com"
+						submitLabel="Subscribe for Updates ➔"
+						onSubscribed={refreshCount}
+					/>
+				</div>
 			</div>
 		</div>
 	);

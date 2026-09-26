@@ -75,10 +75,13 @@ export function BroadcastBanner() {
 			<div
 				style={{
 					display: "flex",
+					justifyContent:"center",
 					alignItems: "center",
 					gap: "var(--space-base)",
+					rowGap: "calc(var(--space-base) / 2)",
 					flexWrap: "wrap",
 					flex: 1,
+					minWidth: 0,
 				}}
 			>
 				<span
@@ -93,6 +96,8 @@ export function BroadcastBanner() {
 						borderRadius: "var(--radius-control)",
 						letterSpacing: "0.06em",
 						textTransform: "uppercase",
+						whiteSpace: "nowrap",
+						flexShrink: 0,
 					}}
 				>
 					{activeBanner.title}
@@ -117,6 +122,8 @@ export function BroadcastBanner() {
 							fontWeight: 600,
 							textDecoration: "underline",
 							textUnderlineOffset: "2px",
+							whiteSpace: "nowrap",
+							flexShrink: 0,
 						}}
 					>
 						{activeBanner.cta.label}

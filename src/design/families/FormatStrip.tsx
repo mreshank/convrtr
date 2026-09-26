@@ -34,18 +34,38 @@ export function FormatStrip({ formats }: Props) {
 		// this band or `EditorialPage` needing to know about each other's
 		// exact value -- they already agree, because they both read the same
 		// token.
-		<div style={{ marginInline: "calc(var(--gap-md) * -1)" }}>
+		<div
+			style={{
+				marginInline: "calc(var(--gap-md) * -1)",
+				borderTopWidth: "var(--rule-width)",
+				borderTopStyle: "solid",
+				borderTopColor: "var(--rule-subtle)",
+				borderBottomWidth: "var(--rule-width)",
+				borderBottomStyle: "solid",
+				borderBottomColor: "var(--rule-subtle)",
+				padding: "var(--space-base) 0",
+				backgroundColor: "var(--surface)",
+			}}
+		>
 			<Marquee ariaLabel="Supported file formats">
 				{formats.map((format) => (
 					<span
 						key={format}
-						className="meta"
+						className="meta inline-flex items-center gap-2"
 						style={{
 							color: "var(--ink-muted)",
 							padding: "0 var(--gap-md)",
 							whiteSpace: "nowrap",
+							letterSpacing: "0.08em",
 						}}
 					>
+						<span
+							className="inline-block w-1 h-1 rounded-full"
+							style={{
+								backgroundColor: "var(--rule-strong)",
+							}}
+							aria-hidden="true"
+						/>
 						{format.toUpperCase()}
 					</span>
 				))}

@@ -1,48 +1,97 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
-import { LINEAGE_SOURCES } from "@/app/home-content";
-import { conversionBranches } from "@/core/registry/stats";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+	buildConversionGraph,
+	fitTransform,
+	layoutConversionGraph,
+} from "@/core/registry/conversion-graph";
 import { LineageExplorer } from "@/design/families/LineageExplorer";
 
-describe("LineageExplorer", () => {
-	it("offers the registry-derived sources as chips", () => {
-		render(<LineageExplorer sources={LINEAGE_SOURCES} />);
-		for (const source of LINEAGE_SOURCES) {
-			expect(
-				screen.getByRole("button", { name: source.toUpperCase() }),
-			).toBeDefined();
-		}
-	});
+function mockCanvas2d() {
+	const stub = new Proxy(
+		{},
+		{
+			get: (_target, prop) => {
+				if (prop === "canvas") return {};
+				return vi.fn();
+			},
+			set: () => true,
+		},
+	);
+	vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(
+		stub as unknown as CanvasRenderingContext2D,
+	);
+}
 
-	it("draws the default source's real direct branches", () => {
-		const first = LINEAGE_SOURCES[0] ?? "heic";
-		const expected = conversionBranches(first).slice(0, 12);
-		const { container } = render(<LineageExplorer sources={LINEAGE_SOURCES} />);
-		for (const branch of expected) {
-			expect(container.textContent).toContain(branch.toUpperCase());
-		}
-		expect(container.textContent).toContain(
-			`${conversionBranches(first).length} DIRECT`,
+function mockSize(width: number) {
+	function MockObserver(callback: ResizeObserverCallback) {
+		callback(
+			[{ contentRect: { width } } as unknown as ResizeObserverEntry],
+			{} as unknown as ResizeObserver,
 		);
+		return { observe: vi.fn(), disconnect: vi.fn(), unobserve: vi.fn() };
+	}
+	vi.stubGlobal("ResizeObserver", MockObserver);
+	vi.spyOn(HTMLCanvasElement.prototype, "getBoundingClientRect").mockReturnValue({
+		left: 0,
+		top: 0,
+		width,
+		height: 440,
+		right: width,
+		bottom: 440,
+		x: 0,
+		y: 0,
+		toJSON: () => ({}),
+	});
+}
+
+beforeEach(() => {
+	vi.unstubAllGlobals();
+	vi.restoreAllMocks();
+	mockCanvas2d();
+});
+
+describe("LineageExplorer", () => {
+	it("renders source chips and a labelled canvas", () => {
+		render(<LineageExplorer sources={["jpg", "png"]} />);
+		expect(screen.getByRole("button", { name: "JPG" })).toBeDefined();
+		expect(screen.getByRole("button", { name: "PNG" })).toBeDefined();
+		const canvas = screen.getByRole("img", { name: /Conversion graph for JPG/ });
+		expect(canvas.textContent).toBe("");
+		expect(canvas.getAttribute("aria-label")).toMatch(/operations/);
 	});
 
-	it("re-branches when another source is picked", () => {
-		const second = LINEAGE_SOURCES[1] ?? LINEAGE_SOURCES[0] ?? "heic";
-		const expected = conversionBranches(second).slice(0, 12);
-		const { container } = render(<LineageExplorer sources={LINEAGE_SOURCES} />);
-		fireEvent.click(screen.getByRole("button", { name: second.toUpperCase() }));
-		for (const branch of expected) {
-			expect(container.textContent).toContain(branch.toUpperCase());
-		}
-	});
-
-	it("lists two-hop chains with the tools the router would run", () => {
-		const { container } = render(<LineageExplorer sources={["heic"]} />);
-		// Either real two-hop chains with tool slugs, or the honest empty
-		// state -- never an invented route.
-		const text = container.textContent ?? "";
+	it("re-centers the walk when another source is picked", () => {
+		render(<LineageExplorer sources={["jpg", "png"]} />);
+		fireEvent.click(screen.getByRole("button", { name: "PNG" }));
 		expect(
-			text.includes("TWO-HOP LINEAGE") || text.includes("one hop away"),
-		).toBe(true);
+			screen.getByRole("img", { name: /Conversion graph for PNG/ }),
+		).toBeDefined();
+	});
+
+	it("legends the operation kinds present in the walk", () => {
+		const { container } = render(<LineageExplorer sources={["jpg"]} />);
+		expect(container.textContent).toContain("CONVERT");
+	});
+
+	it("selects the root node on canvas click and offers a walk onward", () => {
+		mockSize(800);
+		const { container } = render(<LineageExplorer sources={["jpg"]} />);
+		// Mirror the component's own fit to land the click on the root
+		// format node (depth 0 sits alone in its column at y 0).
+		const placed = layoutConversionGraph(buildConversionGraph("jpg", 2));
+		const t = fitTransform(placed, 800, 440);
+		const root = placed.find((n) => n.id === "fmt:jpg")!;
+		const clientX = root.x * t.k + t.x + 4;
+		const clientY = root.y * t.k + t.y + 4;
+
+		const canvas = screen.getByRole("img", { name: /Conversion graph for JPG/ });
+		fireEvent.pointerDown(canvas, { clientX, clientY, pointerId: 1 });
+		fireEvent.pointerUp(canvas, { clientX, clientY, pointerId: 1 });
+
+		expect(container.textContent).toContain("FORMAT · JPG");
+		expect(
+			screen.getByRole("button", { name: "Walk PNG ➔" }),
+		).toBeDefined();
 	});
 });

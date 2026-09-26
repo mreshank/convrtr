@@ -1,4 +1,5 @@
 import { TOOLS } from "@/core/registry";
+import { canonicalExt } from "@/core/registry/conversion-graph";
 import { deriveTypeGroups } from "@/core/registry/groups";
 import { conversionBranches, supportedFormats } from "@/core/registry/stats";
 
@@ -245,12 +246,22 @@ export const PIPELINE_STAGES = [
 // The eight input formats with the richest direct lineage -- the most
 // branches out of `conversionBranches` -- so the explorer opens on graphs
 // worth looking at. Derived, like every other registry claim on this page.
-export const LINEAGE_SOURCES = supportedFormats()
-	.map((ext) => ({ ext, count: conversionBranches(ext).length }))
-	.filter((entry) => entry.count > 0)
-	.sort((a, b) => b.count - a.count || (a.ext < b.ext ? -1 : 1))
-	.slice(0, 8)
-	.map((entry) => entry.ext);
+export const LINEAGE_SOURCES = (() => {
+	// Collapse aliases (jpeg/jpg) so the explorer chips never list the same
+	// format twice under two spellings.
+	const best = new Map<string, { ext: string; count: number }>();
+	for (const ext of supportedFormats()) {
+		const canon = canonicalExt(ext);
+		const count = conversionBranches(ext).length;
+		const prev = best.get(canon);
+		if (!prev || count > prev.count) best.set(canon, { ext: canon, count });
+	}
+	return [...best.values()]
+		.filter((entry) => entry.count > 0)
+		.sort((a, b) => b.count - a.count || (a.ext < b.ext ? -1 : 1))
+		.slice(0, 8)
+		.map((entry) => entry.ext);
+})();
 
 // The proof strip directly under the hero: the landing-page logo soup,
 // replaced with numbers that can be checked. Tool and format counts are

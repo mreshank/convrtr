@@ -37,11 +37,11 @@ const DISMISSED_KEY = "convrtr_dismissed_broadcasts";
 // Default system announcements
 const INITIAL_BROADCASTS: BroadcastMessage[] = [
 	{
-		id: "broadcast-ext-live-01",
+		id: "broadcast-ext-live-02",
 		type: "banner",
 		title: "CHROME EXTENSION // NOW LIVE",
 		content:
-			"convrtr for Chrome is live. Install in 1 click — subscribe for release radar, new decoders, events, and engine updates.",
+			"convrtr for Chrome is live — 1-click install, same local engines.",
 		level: "accent",
 		target: "all",
 		active: true,
@@ -84,17 +84,22 @@ export function getBroadcasts(): BroadcastMessage[] {
 		}
 		const parsed = JSON.parse(raw);
 		if (Array.isArray(parsed)) {
-			// Migrate stale pre-launch banner cached in returning visitors.
-			// Old ID `broadcast-ext-launch-01` ("launching soon / waitlist")
-			// is replaced by `broadcast-ext-live-01` so the live copy shows.
+			// Migrate stale pre-launch / wordy banners cached in returning
+			// visitors. Old IDs `broadcast-ext-launch-01` ("launching soon /
+			// waitlist") and `broadcast-ext-live-01` (two-line content) are
+			// replaced by `broadcast-ext-live-02` so the live copy shows.
 			const hasStale = (parsed as BroadcastMessage[]).some(
-				(m) => m?.id === "broadcast-ext-launch-01",
+				(m) =>
+					m?.id === "broadcast-ext-launch-01" ||
+					m?.id === "broadcast-ext-live-01",
 			);
 			if (hasStale) {
 				const migrated = (parsed as BroadcastMessage[]).filter(
-					(m) => m?.id !== "broadcast-ext-launch-01",
+					(m) =>
+						m?.id !== "broadcast-ext-launch-01" &&
+						m?.id !== "broadcast-ext-live-01",
 				);
-				if (!migrated.some((m) => m?.id === "broadcast-ext-live-01")) {
+				if (!migrated.some((m) => m?.id === "broadcast-ext-live-02")) {
 					migrated.unshift(...INITIAL_BROADCASTS);
 				}
 				localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));

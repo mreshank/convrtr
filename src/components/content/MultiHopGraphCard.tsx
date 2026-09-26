@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { TOOLS } from "@/core/registry";
 import { CardHeader } from "@/design/families/CardHeader";
 
 interface RoutingExample {
@@ -77,7 +78,7 @@ export function MultiHopGraphCard() {
 							backgroundColor: "var(--surface)",
 						}}
 					>
-						147 WASM ENGINES ACTIVE
+						{TOOLS.length} WASM ENGINES ACTIVE
 					</span>
 				}
 			/>
