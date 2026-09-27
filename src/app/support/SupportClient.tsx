@@ -7,6 +7,10 @@ import {
 	dispatchFormSubmission,
 } from "@/lib/form-dispatch";
 import {
+	consumeStagedErrorReport,
+	saveUserTicket,
+} from "@/lib/support-tickets";
+import {
 	type DiagnosticReport,
 	formatDiagnosticMarkdown,
 	runSystemDiagnostics,
@@ -128,6 +132,18 @@ export function SupportClient() {
 		executeAudit();
 
 		try {
+			// A REPORT ISSUE action on a failed conversion stages its context
+			// and lands here: prefill the generator so the visitor describes,
+			// not retypes, the failure. Consuming deletes the handoff.
+			const staged = consumeStagedErrorReport();
+			if (staged) {
+				const stagedSummary = `[${staged.toolId}] ${staged.code}: ${staged.message}${staged.inputName ? ` (${staged.inputName})` : ""}`;
+				setRecentErrorDetected(stagedSummary);
+				setDescription(
+					`Conversion failed in ${staged.toolId} (${staged.code}). `,
+				);
+				return;
+			}
 			const history = getHistory();
 			const latestError = history.find(
 				(rec) => rec.status === "error" && rec.errorMessage,
@@ -184,6 +200,36 @@ export function SupportClient() {
 					: undefined,
 			diagnosticReportMarkdown: diagnosticMd || undefined,
 		});
+
+		// Mirror the visitor's ticket into the same local queue the
+		// automatic failure tickets feed, so the admin dashboard reads one
+		// list. Best-effort: never blocks the confirmation UI.
+		try {
+			const toolMatch = (recentErrorDetected ?? "").match(/^\[([^\]]+)\]/);
+			saveUserTicket({
+				topic: issueTopic,
+				summary: subject.trim() || description.trim().slice(0, 120),
+				userMessage: description.trim(),
+				telemetry: {
+					errorCode: "USER_REPORTED",
+					errorMessage:
+						recentErrorDetected ?? "Visitor-reported (no local error attached)",
+					toolIds: toolMatch?.[1] ? [toolMatch[1]] : [],
+					fileName: "",
+					fileSize: 0,
+					inputExt: "",
+					systemMarkdown: diagnosticMd || undefined,
+				},
+				email:
+					result.mode === "online_transmitted"
+						? "sent"
+						: result.mode === "offline_queued"
+							? "local-only"
+							: "failed",
+			});
+		} catch {
+			// Queue mirror is diagnostic, not data.
+		}
 
 		setDispatchResult(result);
 		setSubmitting(false);

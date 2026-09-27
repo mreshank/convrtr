@@ -77,6 +77,12 @@ type Props = {
 	/** Forwarded to each row's `ErrorPanel` so `UNSUPPORTED_INPUT` copy can
 	 * name the format, matching the single-file error experience. */
 	inputFormat?: string;
+	/**
+	 * Tool context for each row's `ErrorPanel` REPORT ISSUE action. The
+	 * batch table itself is tool-agnostic (rows carry no tool id), so the
+	 * host -- which always converts with one tool -- supplies it.
+	 */
+	reportToolId?: string;
 };
 
 const COLUMN_COUNT = 7;
@@ -126,6 +132,7 @@ export function BatchTable({
 	onSaveRow,
 	onContinueRow,
 	inputFormat,
+	reportToolId,
 }: Props) {
 	return (
 		<div className="m3-surface-card overflow-hidden">
@@ -298,6 +305,11 @@ export function BatchTable({
 											code={row.code}
 											detail={row.message}
 											inputFormat={inputFormat}
+											report={
+												reportToolId
+													? { toolId: reportToolId, inputName: row.name }
+													: undefined
+											}
 										/>
 									</td>
 								</tr>

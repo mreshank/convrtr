@@ -50,6 +50,7 @@ import {
 } from "@/core/registry/converter-match";
 import { ArrowUpRight } from "@/design/primitives/ArrowUpRight";
 import { formatBytes, formatDelta } from "@/lib/format";
+import { fileAutoTicket } from "@/lib/support-tickets";
 
 /**
  * Which path a conversion actually took, as observed from the engine's own
@@ -525,9 +526,23 @@ export function ToolClient({ toolId }: { toolId: string }) {
 			const cancelled =
 				caught instanceof DOMException && caught.name === "AbortError";
 			if (!cancelled) {
+				const code =
+					caught instanceof JobError ? caught.code : "ENGINE_FAILURE";
+				const detail = caught instanceof Error ? caught.message : undefined;
+				fileAutoTicket({
+					errorCode: code,
+					errorMessage: detail ?? "Conversion processing failed",
+					toolIds: [tool.id],
+					failedStepIndex: 0,
+					fileName: file?.name ?? "unknown",
+					fileSize: file?.size ?? 0,
+					inputExt: tool.accept.ext[0] ?? "",
+					target: tool.output.ext,
+					durationMs: Date.now() - (startedAtRef.current || Date.now()),
+				});
 				setError({
-					code: caught instanceof JobError ? caught.code : "ENGINE_FAILURE",
-					detail: caught instanceof Error ? caught.message : undefined,
+					code,
+					detail,
 				});
 			}
 		} finally {
@@ -700,6 +715,22 @@ export function ToolClient({ toolId }: { toolId: string }) {
 		);
 
 		for (const outcome of outcomes) {
+			if (outcome.status === "error") {
+				// Silent admin telemetry per failed file; the rows below
+				// render unchanged for the visitor.
+				const item = items.find((candidate) => candidate.id === outcome.id);
+				fileAutoTicket({
+					errorCode: outcome.code,
+					errorMessage: outcome.message,
+					toolIds: [tool.id],
+					failedStepIndex: 0,
+					fileName: item?.file.name ?? outcome.id,
+					fileSize: item?.file.size ?? 0,
+					inputExt: tool.accept.ext[0] ?? "",
+					target: tool.output.ext,
+					durationMs: Date.now() - (batchStartedAtRef.current || Date.now()),
+				});
+			}
 			if (outcome.status === "done") {
 				batchOutputsRef.current.set(outcome.id, {
 					output: outcome.output,
@@ -1049,6 +1080,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 							inputFormat={tool.accept.ext[0]?.toUpperCase()}
 							onRetry={convert}
 							onDismiss={() => setError(null)}
+							report={{ toolId: tool.id, inputName: file?.name }}
 						/>
 					)}
 
@@ -1245,6 +1277,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 							inputFormat={tool.accept.ext[0]?.toUpperCase()}
 							onRetry={convertMany}
 							onDismiss={() => setError(null)}
+							report={{ toolId: tool.id }}
 						/>
 					)}
 
@@ -1375,6 +1408,7 @@ export function ToolClient({ toolId }: { toolId: string }) {
 						onSaveRow={saveRow}
 						onContinueRow={continueBatchRow}
 						inputFormat={tool.accept.ext[0]?.toUpperCase()}
+						reportToolId={tool.id}
 					/>
 
 					{batchConverting && (

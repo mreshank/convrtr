@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import type { ErrorCode } from "@/core/pipeline/protocol";
+import { stageErrorReport } from "@/lib/support-tickets";
 
 type Props = {
 	code: ErrorCode;
@@ -9,6 +11,13 @@ type Props = {
 	inputFormat?: string;
 	onRetry?: () => void;
 	onDismiss?: () => void;
+	/**
+	 * When the caller can name the failing tool, the panel offers a
+	 * REPORT ISSUE action that stages this failure and routes to
+	 * `/support`, where the ticket generator opens prefilled. Omitted
+	 * for global errors with no tool context -- no context, no link.
+	 */
+	report?: { toolId: string; inputName?: string };
 };
 
 type Copy = {
@@ -83,6 +92,7 @@ export function ErrorPanel({
 	inputFormat,
 	onRetry,
 	onDismiss,
+	report,
 }: Props) {
 	const [detailOpen, setDetailOpen] = useState(false);
 
@@ -187,6 +197,23 @@ export function ErrorPanel({
 					>
 						DISMISS
 					</button>
+				)}
+				{report && (
+					<Link
+						href="/support"
+						onClick={() =>
+							stageErrorReport({
+								toolId: report.toolId,
+								code,
+								message: detail ?? copy.title,
+								inputName: report.inputName,
+							})
+						}
+						className="mono text-[11px] tracking-[0.08em]"
+						style={{ opacity: 0.7 }}
+					>
+						REPORT ISSUE ↗
+					</Link>
 				)}
 			</div>
 

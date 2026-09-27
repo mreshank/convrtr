@@ -30,6 +30,12 @@ import {
 	subscribeUser,
 	toggleSubscriberStatus,
 } from "@/lib/subscriptions";
+import {
+	buildAutoTicketMarkdown,
+	clearTickets,
+	getTickets,
+	type SupportTicket,
+} from "@/lib/support-tickets";
 
 type AdminTab =
 	| "kpis"
@@ -37,6 +43,7 @@ type AdminTab =
 	| "broadcasts"
 	| "extension"
 	| "campaigns"
+	| "tickets"
 	| "audit";
 
 export function AdminDashboardPage() {
@@ -80,9 +87,14 @@ export function AdminDashboardPage() {
 		Array<{ timestamp: string; action: string; actor: string }>
 	>([]);
 
+	// Support tickets state (auto-filed failures + visitor-submitted)
+	const [tickets, setTickets] = useState<SupportTicket[]>([]);
+	const [expandedTicketId, setExpandedTicketId] = useState<string | null>(null);
+
 	const refreshData = useCallback(() => {
 		setSubscribers(getSubscribers());
 		setBroadcasts(getBroadcasts());
+		setTickets(getTickets());
 	}, []);
 
 	useEffect(() => {
@@ -646,6 +658,10 @@ export function AdminDashboardPage() {
 						},
 						{ id: "extension", label: "Chrome Extension Radar" },
 						{ id: "campaigns", label: "Email Dispatcher" },
+						{
+							id: "tickets",
+							label: `Support Tickets (${tickets.length})`,
+						},
 						{ id: "audit", label: "Security Audit Log" },
 					] as const
 				).map((tab) => {
@@ -2048,6 +2064,198 @@ export function AdminDashboardPage() {
 			{/* ============================================================= */}
 			{/* TAB 6: SECURITY AUDIT LOG */}
 			{/* ============================================================= */}
+			{activeTab === "tickets" && (
+				<div
+					style={{
+						borderWidth: "var(--rule-width)",
+						borderStyle: "solid",
+						borderColor: "var(--rule)",
+						backgroundColor: "var(--surface)",
+						display: "flex",
+						flexDirection: "column",
+					}}
+				>
+					<div
+						style={{
+							padding: "var(--space-base)",
+							borderBottomWidth: "var(--rule-width)",
+							borderBottomStyle: "solid",
+							borderBottomColor: "var(--rule)",
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "space-between",
+							gap: "var(--space-base)",
+							flexWrap: "wrap",
+						}}
+					>
+						<span
+							style={{
+								fontFamily: "var(--font-mono)",
+								fontSize: "var(--mono-size)",
+								color: "var(--ink-muted)",
+							}}
+						>
+							SUPPORT TICKETS (AUTO{" "}
+							{tickets.filter((t) => t.origin === "auto").length} // USER{" "}
+							{tickets.filter((t) => t.origin === "user").length})
+						</span>
+						<div
+							style={{
+								display: "flex",
+								gap: "calc(var(--space-base) / 2)",
+							}}
+						>
+							<button
+								type="button"
+								onClick={() => setTickets(getTickets())}
+								style={{
+									fontFamily: "var(--font-mono)",
+									fontSize: "var(--mono-size)",
+									background: "transparent",
+									border: "var(--rule-width) solid var(--rule)",
+									color: "var(--ink)",
+									cursor: "pointer",
+									padding:
+										"calc(var(--space-base) / 2) var(--space-base)",
+								}}
+							>
+								REFRESH
+							</button>
+							<button
+								type="button"
+								onClick={() => {
+									clearTickets();
+									setTickets([]);
+									setExpandedTicketId(null);
+									logAction("Cleared support ticket queue");
+								}}
+								style={{
+									fontFamily: "var(--font-mono)",
+									fontSize: "var(--mono-size)",
+									background: "transparent",
+									border: "var(--rule-width) solid var(--rule)",
+									color: "var(--ink-muted)",
+									cursor: "pointer",
+									padding:
+										"calc(var(--space-base) / 2) var(--space-base)",
+								}}
+							>
+								CLEAR ALL
+							</button>
+						</div>
+					</div>
+					{tickets.length === 0 && (
+						<div
+							style={{
+								padding: "var(--gap-md)",
+								fontFamily: "var(--font-mono)",
+								fontSize: "var(--mono-size)",
+								color: "var(--ink-muted)",
+							}}
+						>
+							QUEUE EMPTY -- no failures auto-filed and no visitor tickets
+							yet on this device.
+						</div>
+					)}
+					{tickets.map((ticket) => {
+						const expanded = expandedTicketId === ticket.id;
+						return (
+							<div
+								key={ticket.id}
+								style={{
+									borderBottomWidth: "var(--rule-width)",
+									borderBottomStyle: "solid",
+									borderBottomColor: "var(--rule)",
+								}}
+							>
+								<button
+									type="button"
+									onClick={() =>
+										setExpandedTicketId(expanded ? null : ticket.id)
+									}
+									aria-expanded={expanded}
+									style={{
+										width: "100%",
+										display: "flex",
+										justifyContent: "space-between",
+										gap: "var(--space-base)",
+										padding:
+											"calc(var(--space-base) / 2) var(--space-base)",
+										background: "transparent",
+										border: "none",
+										cursor: "pointer",
+										textAlign: "left",
+										fontFamily: "var(--font-mono)",
+										fontSize: "var(--mono-size)",
+									}}
+								>
+									<span style={{ color: "var(--ink)" }}>
+										<span
+											style={{
+												color:
+													ticket.origin === "auto"
+														? "var(--accent)"
+														: "var(--ink)",
+											}}
+										>
+											[{ticket.origin.toUpperCase()}]
+										</span>{" "}
+										{ticket.summary}
+									</span>
+									<span
+										style={{
+											color: "var(--ink-muted)",
+											whiteSpace: "nowrap",
+										}}
+									>
+										{ticket.email.toUpperCase()} {"//"}{" "}
+										{new Date(ticket.createdAt).toISOString()}
+									</span>
+								</button>
+								{expanded && (
+									<div
+										style={{
+											padding: "var(--space-base)",
+											borderTopWidth: "var(--rule-width)",
+											borderTopStyle: "solid",
+											borderTopColor: "var(--rule)",
+											backgroundColor: "var(--ground)",
+											display: "flex",
+											flexDirection: "column",
+											gap: "var(--space-base)",
+										}}
+									>
+										{ticket.userMessage && (
+											<p
+												style={{
+													margin: 0,
+													fontSize: "var(--body-size)",
+													color: "var(--ink)",
+												}}
+											>
+												{ticket.userMessage}
+											</p>
+										)}
+										<pre
+											style={{
+												margin: 0,
+												whiteSpace: "pre-wrap",
+												wordBreak: "break-word",
+												fontFamily: "var(--font-mono)",
+												fontSize: "var(--mono-size)",
+												color: "var(--ink-muted)",
+											}}
+										>
+											{buildAutoTicketMarkdown(ticket)}
+										</pre>
+									</div>
+								)}
+							</div>
+						);
+					})}
+				</div>
+			)}
+
 			{activeTab === "audit" && (
 				<div
 					style={{

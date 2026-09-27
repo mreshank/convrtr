@@ -243,4 +243,28 @@ describe("monochrome state encoding", () => {
 		);
 		expect(source).not.toMatch(/--error|--lossy|--signal/);
 	});
+
+	it("offers no report action without tool context", () => {
+		render(<ErrorPanel code="ENGINE_FAILURE" detail="wasm trap" />);
+		expect(screen.queryByRole("link", { name: /report issue/i })).toBeNull();
+	});
+
+	it("stages the failure and links to support when given tool context", () => {
+		window.sessionStorage.clear();
+		render(
+			<ErrorPanel
+				code="ENGINE_FAILURE"
+				detail="wasm trap"
+				report={{ toolId: "image/png-to-webp", inputName: "photo.png" }}
+			/>,
+		);
+		const link = screen.getByRole("link", { name: /report issue/i });
+		expect(link.getAttribute("href")).toBe("/support");
+		fireEvent.click(link);
+		const staged = window.sessionStorage.getItem(
+			"convrtr_staged_error_report_v1",
+		);
+		expect(staged).toContain("image/png-to-webp");
+		expect(staged).toContain("wasm trap");
+	});
 });

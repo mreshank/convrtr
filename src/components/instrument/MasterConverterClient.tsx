@@ -46,6 +46,7 @@ import {
 	formatPercent,
 } from "@/lib/format";
 import { CHROME_EXTENSION_URL } from "@/lib/site";
+import { fileAutoTicket } from "@/lib/support-tickets";
 
 const HEAVY_DOWNLOAD_KEY = "convrtr:heavy-download-allowed";
 
@@ -474,6 +475,7 @@ export function MasterConverterClient({
 	const [topError, setTopError] = useState<{
 		code: ErrorCode;
 		detail: string;
+		report?: { toolId: string; inputName?: string };
 	} | null>(null);
 
 	// Table search, category filtering and sorting state
@@ -1137,7 +1139,26 @@ export function MasterConverterClient({
 				err instanceof JobError ? err.code : "ENGINE_FAILURE";
 			const detail =
 				err instanceof Error ? err.message : "Failed to merge PDF files";
-			setTopError({ code, detail });
+			fileAutoTicket({
+				errorCode: code,
+				errorMessage: detail,
+				toolIds: [pdfMergeTool.id],
+				operation: "merge-pdf",
+				fileName: `${selectedPdfs.length} files combined`,
+				fileSize: selectedPdfs.reduce((sum, item) => sum + item.file.size, 0),
+				inputExt: "pdf",
+				target: "pdf",
+				presetId: qualityPreset,
+				durationMs: Date.now() - startedAtRef.current,
+			});
+			setTopError({
+				code,
+				detail,
+				report: {
+					toolId: pdfMergeTool.id,
+					inputName: `${selectedPdfs.length} files combined`,
+				},
+			});
 		} finally {
 			setIsConverting(false);
 		}
@@ -1357,6 +1378,19 @@ export function MasterConverterClient({
 			const finalTool = routeInfo?.tool ?? fallbackTool;
 
 			if (!finalTool || route.length === 0) {
+				// Silent admin telemetry: the visitor's error row renders
+				// unchanged below; this only files the failure away.
+				fileAutoTicket({
+					errorCode: "UNSUPPORTED_INPUT",
+					errorMessage: "No conversion path found",
+					toolIds: route.map((t) => t.id),
+					fileName: item.file.name,
+					fileSize: item.file.size,
+					inputExt: item.ext,
+					target: item.targetId ?? item.targetExt,
+					lineage: item.lineage,
+					presetId: qualityPreset,
+				});
 				setItems((prev) =>
 					prev.map((m) =>
 						m.id === item.id
@@ -1383,9 +1417,14 @@ export function MasterConverterClient({
 				),
 			);
 
+			// Per-item wall clock and in-loop step cursor for failure
+			// telemetry. Declared outside `try` so the `catch` below can
+			// report time-to-failure and which pipeline step threw.
+			let startTime = Date.now();
+			let failedStepIndex = -1;
 			try {
 				let currentBuffer = await readFile(item.file);
-				const startTime = Date.now();
+				startTime = Date.now();
 
 				for (let stepIndex = 0; stepIndex < route.length; stepIndex++) {
 					if (controller.signal.aborted) {
@@ -1399,6 +1438,7 @@ export function MasterConverterClient({
 
 					const stepTool = route[stepIndex];
 					if (!stepTool) continue;
+					failedStepIndex = stepIndex;
 					const isFinalStep = stepIndex === route.length - 1;
 					const stepPrefix =
 						route.length > 1 ? `[Step ${stepIndex + 1}/${route.length}] ` : "";
@@ -1500,6 +1540,21 @@ export function MasterConverterClient({
 					err instanceof JobError ? err.code : "ENGINE_FAILURE";
 				const message =
 					err instanceof Error ? err.message : "Conversion processing failed";
+
+				// Silent admin telemetry -- see the no-route site above.
+				fileAutoTicket({
+					errorCode: code,
+					errorMessage: message,
+					toolIds: route.map((t) => t.id),
+					failedStepIndex: failedStepIndex >= 0 ? failedStepIndex : undefined,
+					fileName: item.file.name,
+					fileSize: item.file.size,
+					inputExt: item.ext,
+					target: item.targetId ?? item.targetExt,
+					lineage: item.lineage,
+					presetId: qualityPreset,
+					durationMs: Date.now() - startTime,
+				});
 
 				setItems((prev) =>
 					prev.map((m) =>
@@ -1795,7 +1850,13 @@ export function MasterConverterClient({
 			)}
 
 			{/* Top Error Alert */}
-			{topError && <ErrorPanel code={topError.code} detail={topError.detail} />}
+			{topError && (
+				<ErrorPanel
+					code={topError.code}
+					detail={topError.detail}
+					report={topError.report}
+				/>
+			)}
 
 			{/* Configured Instant Preset Banner */}
 			{configuredPreset && (
@@ -3569,6 +3630,14 @@ export function MasterConverterClient({
 															code={item.error.code}
 															detail={item.error.message}
 															inputFormat={item.ext}
+															report={{
+																toolId:
+																	item.tool?.id ??
+																	item.toolId ??
+																	item.targetId ??
+																	"unknown",
+																inputName: item.file.name,
+															}}
 														/>
 													</td>
 												</tr>
