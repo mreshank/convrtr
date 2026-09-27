@@ -46,8 +46,9 @@ const FEATURES = [
 
 const CHANNELS = [
 	{ value: "extension" as const, label: "Extension Updates" },
-	{ value: "ecosystem" as const, label: "Ecosystem Releases" },
-	{ value: "releases" as const, label: "WASM Decoder Changelogs" },
+	{ value: "ecosystem" as const, label: "Product Releases" },
+	{ value: "releases" as const, label: "New Codecs & WASM Engines" },
+	{ value: "security" as const, label: "Security Audits" },
 ];
 
 export function ExtensionWaitlistCard() {
@@ -264,11 +265,11 @@ export function ExtensionWaitlistCard() {
 						gap: "var(--space-base)",
 					}}
 				>
-					<CardHeader
-						eyebrow="RELEASE RADAR // TECHNICAL CHANGELOGS"
-						title="Subscribe to Extension Changelogs & WASM Decoder Updates"
-						lede="Receive technical release notes, new format additions, and engine performance updates directly from the engineering team."
-					/>
+				<CardHeader
+					eyebrow="RELEASE RADAR // TECHNICAL CHANGELOGS"
+					title="Subscribe to the release radar"
+					lede="Extension changelogs, new formats, engine upgrades and security audits — one dispatch per drop, straight from the engineering team."
+				/>
 
 					<p
 						className="mono"

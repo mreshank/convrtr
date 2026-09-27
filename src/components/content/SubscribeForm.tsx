@@ -35,10 +35,10 @@ type Props = {
 
 /**
  * The canonical subscribe block: header, channel chips, email row, status
- * feedback. `EcosystemRadarCard` and `ExtensionWaitlistCard` each owned a
- * near-verbatim copy of this state machine (email, channels with keep-one
- * minimum, submit-then-sync, dismissible status) -- two copies of the submit
- * path meant every API change had to land twice. Hosts keep only what is
+ * feedback. It exists so the release-radar panel owns exactly one copy of
+ * this state machine (email, channels with keep-one minimum,
+ * submit-then-sync, dismissible status) -- a second subscribe form on the
+ * same page would ask for the same email twice. Hosts keep only what is
  * actually theirs: defaults, source, chip labels, and surrounding content.
  */
 export function SubscribeForm({

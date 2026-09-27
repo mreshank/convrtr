@@ -1,6 +1,5 @@
 import type { HOME } from "@/app/home-content";
 import { ArchitectureManifestoCard } from "@/components/content/ArchitectureManifestoCard";
-import { EcosystemRadarCard } from "@/components/content/EcosystemRadarCard";
 import { ExtensionWaitlistCard } from "@/components/content/ExtensionWaitlistCard";
 import { MultiHopGraphCard } from "@/components/content/MultiHopGraphCard";
 import { StoryProgress } from "@/components/StoryProgress";
@@ -169,7 +168,6 @@ export function HomePage({ content }: Props) {
 									lede={chapters.carry.lede}
 								>
 									<ExtensionWaitlistCard />
-									<EcosystemRadarCard />
 								</StoryChapter>
 							</>
 						),

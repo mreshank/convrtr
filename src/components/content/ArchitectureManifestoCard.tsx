@@ -47,7 +47,7 @@ export function ArchitectureManifestoCard() {
 		>
 			<CardHeader
 				eyebrow="ARCHITECTURAL CONTRAST // THE LOCAL MANIFESTO"
-				title="Cloud converters are surveillance pipelines."
+				title="The server farm, replaced by a tab."
 				lede="Most online converters act as intermediaries that harvest file contents, charge subscription tolls, and subject sensitive documents to cloud breaches. convrtr replaces the entire cloud server farm with isolated in-browser WASM compilers."
 				wideLede
 				badge={
