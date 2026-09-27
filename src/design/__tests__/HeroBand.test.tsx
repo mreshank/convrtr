@@ -56,8 +56,11 @@ describe("HeroBand", () => {
 		}
 	});
 
-	it("renders the chart without making it the page's headline", () => {
+	it("keeps the live instrument out of the hero", () => {
+		// Section 1 is the headline on the aurora; the converter instrument
+		// (with its registry chart) is Section 2, its own band below. If the
+		// preview ever moves back into the hero this pins the separation.
 		const { container } = render(<HeroBand {...PROPS} />);
-		expect(container.querySelectorAll("[data-bar]").length).toBeGreaterThan(0);
+		expect(container.querySelectorAll("[data-bar]").length).toBe(0);
 	});
 });

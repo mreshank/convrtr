@@ -2,6 +2,7 @@ import type { HOME } from "@/app/home-content";
 import { ArchitectureManifestoCard } from "@/components/content/ArchitectureManifestoCard";
 import { ExtensionWaitlistCard } from "@/components/content/ExtensionWaitlistCard";
 import { MultiHopGraphCard } from "@/components/content/MultiHopGraphCard";
+import { LiveConverterSection } from "@/components/home/LiveConverterSection";
 import { StoryProgress } from "@/components/StoryProgress";
 import { TOOLS } from "@/core/registry";
 import {
@@ -54,6 +55,13 @@ export function HomePage({ content }: Props) {
 			<EditorialPage
 				hero={<HeroBand {...content.hero} />}
 				bands={[
+					// Section 2: the live converter on the warp. No separator:
+					// it opens directly under the hero so the aurora above and
+					// the warp below read as one continuous canvas.
+					{
+						key: "live",
+						node: <LiveConverterSection />,
+					},
 					{
 						key: "proof",
 						node: <StatsBand stats={content.stats} />,

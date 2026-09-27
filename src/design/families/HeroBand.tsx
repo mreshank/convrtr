@@ -1,7 +1,6 @@
 import Link from "next/link";
 import SoftAurora from "@/components/effects/SoftAurora";
 import { HeroActionInput } from "@/components/home/HeroActionInput";
-import { HeroAppPreview } from "@/components/home/HeroAppPreview";
 import { PillLink } from "@/design/primitives/PillLink";
 import { RotatingHook } from "@/design/primitives/RotatingHook";
 import {
@@ -29,8 +28,13 @@ type Props = {
 };
 
 /**
- * v2's first screen: the fused headline, a pill pair, and the bar chart
- * bleeding into the fold, all under the dot-matrix grain.
+ * v2's first screen: the fused headline, a pill pair, the action input and
+ * the rotating hook, all on the aurora wash.
+ *
+ * Section 1 is the headline alone. The live converter instrument used to
+ * sit inside this band; it is now Section 2 (`LiveConverterSection`), its
+ * own band directly below, so the hero never competes with the demo it
+ * introduces.
  *
  * The primary pill is white-filled and the secondary is a transparent outline.
  * v2 is explicit that "the outline variant is secondary, never primary"
@@ -197,8 +201,6 @@ export function HeroBand({ lead, cont, cta, secondary, hooks }: Props) {
 							<RotatingHook lines={hooks} />
 						</div>
 					)}
-
-					<HeroAppPreview />
 				</section>
 			</div>
 		</DotMatrix>

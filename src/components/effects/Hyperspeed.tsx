@@ -72,6 +72,14 @@ export type HyperspeedOptionsInput = Partial<
 type HyperspeedProps = {
 	effectOptions?: HyperspeedOptionsInput;
 	lightMode?: boolean;
+	/**
+	 * Conversion surge: when true the camera pushes to its speed-up field
+	 * of view and the road runs at full pace; when false it relaxes back
+	 * to cruise. Driven by whoever owns the conversion state (a press on
+	 * the showcase section, a real batch run) rather than by pointer
+	 * position on the canvas itself, which stays out of the hit path.
+	 */
+	boosted?: boolean;
 };
 
 const DEFAULT_EFFECT_OPTIONS: HyperspeedEffectOptions = {
@@ -997,6 +1005,16 @@ class App {
 		this.hasValidSize = true;
 	}
 
+	setBoosted(value: boolean) {
+		if (value) {
+			this.fovTarget = this.options.fovSpeedUp;
+			this.speedUpTarget = this.options.speedUp;
+		} else {
+			this.fovTarget = this.options.fov;
+			this.speedUpTarget = 0;
+		}
+	}
+
 	tick() {
 		if (this.disposed) return;
 
@@ -1035,9 +1053,15 @@ class App {
 	}
 }
 
-const Hyperspeed = ({ effectOptions, lightMode = false }: HyperspeedProps) => {
+const Hyperspeed = ({
+	effectOptions,
+	lightMode = false,
+	boosted = false,
+}: HyperspeedProps) => {
 	const hyperspeed = useRef<HTMLDivElement | null>(null);
 	const appRef = useRef<App | null>(null);
+	const boostedRef = useRef(boosted);
+	boostedRef.current = boosted;
 
 	useEffect(() => {
 		const mountainUniforms = {
@@ -1389,7 +1413,10 @@ const Hyperspeed = ({ effectOptions, lightMode = false }: HyperspeedProps) => {
 		appRef.current = myApp;
 		let cancelled = false;
 		myApp.loadAssets().then(() => {
-			if (!cancelled) myApp.init();
+			if (!cancelled) {
+				myApp.init();
+				myApp.setBoosted(boostedRef.current);
+			}
 		});
 
 		return () => {
@@ -1400,6 +1427,10 @@ const Hyperspeed = ({ effectOptions, lightMode = false }: HyperspeedProps) => {
 			}
 		};
 	}, [effectOptions, lightMode]);
+
+	useEffect(() => {
+		appRef.current?.setBoosted(boosted);
+	}, [boosted]);
 
 	return (
 		<div
