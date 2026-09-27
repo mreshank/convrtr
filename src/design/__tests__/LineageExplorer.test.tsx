@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { assert, beforeEach, describe, expect, it, vi } from "vitest";
 import {
 	buildConversionGraph,
 	fitTransform,
@@ -32,7 +32,10 @@ function mockSize(width: number) {
 		return { observe: vi.fn(), disconnect: vi.fn(), unobserve: vi.fn() };
 	}
 	vi.stubGlobal("ResizeObserver", MockObserver);
-	vi.spyOn(HTMLCanvasElement.prototype, "getBoundingClientRect").mockReturnValue({
+	vi.spyOn(
+		HTMLCanvasElement.prototype,
+		"getBoundingClientRect",
+	).mockReturnValue({
 		left: 0,
 		top: 0,
 		width,
@@ -56,7 +59,9 @@ describe("LineageExplorer", () => {
 		render(<LineageExplorer sources={["jpg", "png"]} />);
 		expect(screen.getByRole("button", { name: "JPG" })).toBeDefined();
 		expect(screen.getByRole("button", { name: "PNG" })).toBeDefined();
-		const canvas = screen.getByRole("img", { name: /Conversion graph for JPG/ });
+		const canvas = screen.getByRole("img", {
+			name: /Conversion graph for JPG/,
+		});
 		expect(canvas.textContent).toBe("");
 		expect(canvas.getAttribute("aria-label")).toMatch(/operations/);
 	});
@@ -81,17 +86,18 @@ describe("LineageExplorer", () => {
 		// format node (depth 0 sits alone in its column at y 0).
 		const placed = layoutConversionGraph(buildConversionGraph("jpg", 2));
 		const t = fitTransform(placed, 800, 440);
-		const root = placed.find((n) => n.id === "fmt:jpg")!;
+		const root = placed.find((n) => n.id === "fmt:jpg");
+		assert(root, "expected the jpg root node");
 		const clientX = root.x * t.k + t.x + 4;
 		const clientY = root.y * t.k + t.y + 4;
 
-		const canvas = screen.getByRole("img", { name: /Conversion graph for JPG/ });
+		const canvas = screen.getByRole("img", {
+			name: /Conversion graph for JPG/,
+		});
 		fireEvent.pointerDown(canvas, { clientX, clientY, pointerId: 1 });
 		fireEvent.pointerUp(canvas, { clientX, clientY, pointerId: 1 });
 
 		expect(container.textContent).toContain("FORMAT · JPG");
-		expect(
-			screen.getByRole("button", { name: "Walk PNG ➔" }),
-		).toBeDefined();
+		expect(screen.getByRole("button", { name: "Walk PNG ➔" })).toBeDefined();
 	});
 });

@@ -175,19 +175,32 @@ export default function Radar({
 	useEffect(() => {
 		if (!containerRef.current) return;
 		const container = containerRef.current;
-		const renderer = new Renderer({
-			alpha: true,
-			premultipliedAlpha: false,
-			dpr: Math.min(window.devicePixelRatio || 1, MAX_DEVICE_PIXEL_RATIO),
-		});
+
+		// Probe before touching ogl: happy-dom/jsdom and WebGL-less browsers
+		// return null for both contexts, and ogl's `Renderer` throws in its
+		// constructor when that happens. This is decorative texture --
+		// absence renders nothing, never an error boundary.
+		const probe = document.createElement("canvas");
+		if (!probe.getContext("webgl2") && !probe.getContext("webgl")) return;
+
+		let renderer: Renderer;
+		try {
+			renderer = new Renderer({
+				alpha: true,
+				premultipliedAlpha: false,
+				dpr: Math.min(window.devicePixelRatio || 1, MAX_DEVICE_PIXEL_RATIO),
+			});
+		} catch {
+			return;
+		}
 		const gl = renderer.gl;
 		gl.clearColor(0, 0, 0, 0);
 
 		let program: Program | undefined;
 		let animationFrameId = 0;
 		let visible = true;
-		const currentMouse = [0.5, 0.5];
-		let targetMouse = [0.5, 0.5];
+		const currentMouse: [number, number] = [0.5, 0.5];
+		let targetMouse: [number, number] = [0.5, 0.5];
 
 		function handleMouseMove(e: MouseEvent) {
 			const rect = gl.canvas.getBoundingClientRect();
@@ -287,7 +300,7 @@ export default function Radar({
 
 		const observer = new IntersectionObserver(
 			(entries) => {
-				visible = entries[0]?.isIntersecting ?? true;
+				visible = entries.some((entry) => entry.isIntersecting);
 			},
 			{ threshold: 0 },
 		);

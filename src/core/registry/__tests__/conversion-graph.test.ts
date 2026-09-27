@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { assert, describe, expect, it } from "vitest";
 import {
 	buildConversionGraph,
 	fitTransform,
@@ -95,8 +95,8 @@ describe("graphNeighbors", () => {
 	it("splits a node's edges by direction", () => {
 		const graph = buildConversionGraph("jpg", 1);
 		const tool = graph.nodes.find((n) => n.type === "tool");
-		expect(tool).toBeDefined();
-		const { incoming, outgoing } = graphNeighbors(graph, tool!.id);
+		assert(tool, "expected at least one tool node");
+		const { incoming, outgoing } = graphNeighbors(graph, tool.id);
 		expect(incoming.map((n) => n.type)).toContain("format");
 		expect(outgoing.map((n) => n.type)).toContain("format");
 	});
@@ -110,9 +110,7 @@ describe("layoutConversionGraph", () => {
 			byDepth.set(node.depth, [...(byDepth.get(node.depth) ?? []), node.y]);
 		}
 		const depths = [...byDepth.keys()].sort((a, b) => a - b);
-		const xs = depths.map(
-			(d) => placed.find((n) => n.depth === d)?.x ?? -1,
-		);
+		const xs = depths.map((d) => placed.find((n) => n.depth === d)?.x ?? -1);
 		expect([...xs].sort((a, b) => a - b)).toEqual(xs);
 		for (const ys of byDepth.values()) {
 			const mean = ys.reduce((a, b) => a + b, 0) / ys.length;
@@ -124,10 +122,9 @@ describe("layoutConversionGraph", () => {
 describe("hitTestNode", () => {
 	it("finds the box under the point and misses empty space", () => {
 		const placed = layoutConversionGraph(buildConversionGraph("jpg", 1));
-		const first = placed[0]!;
-		expect(
-			hitTestNode(placed, first.x + 2, first.y + 2)?.id,
-		).toBe(first.id);
+		const first = placed[0];
+		assert(first, "expected at least one placed node");
+		expect(hitTestNode(placed, first.x + 2, first.y + 2)?.id).toBe(first.id);
 		expect(hitTestNode(placed, -9999, -9999)).toBeUndefined();
 	});
 });

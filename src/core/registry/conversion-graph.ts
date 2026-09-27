@@ -56,7 +56,15 @@ const EXT_ALIASES: Record<string, string> = {
  * unrelated archive consumer (shapefile zips, WhatsApp exports, etc.).
  * They stay expandable only when they *are* the walk's source.
  */
-const ARCHIVE_BRIDGES = new Set(["zip", "tar", "tgz", "gz", "7z", "rar", "cbz"]);
+const ARCHIVE_BRIDGES = new Set([
+	"zip",
+	"tar",
+	"tgz",
+	"gz",
+	"7z",
+	"rar",
+	"cbz",
+]);
 
 /** Canonical file extension for graph identity and tool matching. */
 export function canonicalExt(ext: string): string {
@@ -135,15 +143,16 @@ export function buildConversionGraph(
 				}
 				const id = toolId(tool);
 				if (!nodes.has(id)) {
-					nodes.set(id, {
+					const node: ConversionGraphNode = {
 						id,
 						type: "tool",
 						label: tool.slug,
 						kind: tool.kind,
 						toolId: tool.id,
 						depth: current.depth + 1,
-					});
-					queue.push(nodes.get(id)!);
+					};
+					nodes.set(id, node);
+					queue.push(node);
 				}
 				addEdge(current.id, id, tool.kind);
 			}
@@ -158,13 +167,14 @@ export function buildConversionGraph(
 			}
 			const id = formatId(out);
 			if (!nodes.has(id)) {
-				nodes.set(id, {
+				const node: ConversionGraphNode = {
 					id,
 					type: "format",
 					label: out.toUpperCase(),
 					depth: current.depth + 1,
-				});
-				queue.push(nodes.get(id)!);
+				};
+				nodes.set(id, node);
+				queue.push(node);
 			}
 			addEdge(current.id, id, tool.kind);
 		}

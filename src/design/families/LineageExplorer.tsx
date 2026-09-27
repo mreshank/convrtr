@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { getTool } from "@/core/registry";
 import type { Tool } from "@/core/registry";
+import { getTool } from "@/core/registry";
 import {
 	buildConversionGraph,
 	canonicalExt,
@@ -191,16 +191,16 @@ export function LineageExplorer({ sources }: Props) {
 			if (node.type === "format") {
 				if (ground) ctx.fillStyle = ground;
 				ctx.fill();
-				ctx.strokeStyle = isSelected
-					? accent
-					: isHover
-						? ruleStrong
-						: rule;
+				ctx.strokeStyle = isSelected ? accent : isHover ? ruleStrong : rule;
 				ctx.lineWidth = isSelected ? 1.5 : 1;
 				ctx.stroke();
 				if (ink) ctx.fillStyle = ink;
 				ctx.textAlign = "center";
-				ctx.fillText(node.label, node.x + node.w / 2, node.y + node.h / 2 + 0.5);
+				ctx.fillText(
+					node.label,
+					node.x + node.w / 2,
+					node.y + node.h / 2 + 0.5,
+				);
 			} else {
 				if (surface) ctx.fillStyle = surface;
 				ctx.fill();
@@ -222,7 +222,16 @@ export function LineageExplorer({ sources }: Props) {
 			}
 		}
 		ctx.restore();
-	}, [placed, byId, graph.edges, selectedId, selected, hoverId, transform, size]);
+	}, [
+		placed,
+		byId,
+		graph.edges,
+		selectedId,
+		selected,
+		hoverId,
+		transform,
+		size,
+	]);
 
 	const toWorld = (clientX: number, clientY: number) => {
 		const canvas = canvasRef.current;
@@ -313,7 +322,11 @@ export function LineageExplorer({ sources }: Props) {
 				const k = Math.min(2.5, Math.max(0.3, t.k * (dist / pinch.dist)));
 				const wx = (mx - rect.left - t.x) / t.k;
 				const wy = (my - rect.top - t.y) / t.k;
-				return { k, x: mx - rect.left - wx * k + (mx - pinch.mx), y: my - rect.top - wy * k + (my - pinch.my) };
+				return {
+					k,
+					x: mx - rect.left - wx * k + (mx - pinch.mx),
+					y: my - rect.top - wy * k + (my - pinch.my),
+				};
 			});
 			pinchRef.current = { dist, mx, my };
 			return;
@@ -473,7 +486,14 @@ export function LineageExplorer({ sources }: Props) {
 					ref={canvasRef}
 					role="img"
 					aria-label={`Conversion graph for ${active.toUpperCase()}: ${formats} formats connected through ${operations} operations.`}
-					style={{ display: "block", width: "100%", height: `${CANVAS_H}px` }}
+					style={{
+						display: "block",
+						width: "100%",
+						height: `${CANVAS_H}px`,
+						// Claim touch gestures: without this, a finger drag
+						// pans the page instead of the graph.
+						touchAction: "none",
+					}}
 					onPointerDown={onPointerDown}
 					onPointerMove={onPointerMove}
 					onPointerUp={endPointer}
@@ -672,13 +692,11 @@ export function LineageExplorer({ sources }: Props) {
 									...new Map(
 										neighbors.outgoing
 											.flatMap(
-												(tool) =>
-													graphNeighbors(graph, tool.id).outgoing,
+												(tool) => graphNeighbors(graph, tool.id).outgoing,
 											)
 											.filter(
 												(format) =>
-													format.type === "format" &&
-													format.id !== selected.id,
+													format.type === "format" && format.id !== selected.id,
 											)
 											.map((format) => [format.id, format] as const),
 									).values(),
