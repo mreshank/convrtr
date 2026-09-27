@@ -1,4 +1,5 @@
 import Link from "next/link";
+import SoftAurora from "@/components/effects/SoftAurora";
 import { HeroActionInput } from "@/components/home/HeroActionInput";
 import { HeroAppPreview } from "@/components/home/HeroAppPreview";
 import { PillLink } from "@/design/primitives/PillLink";
@@ -97,6 +98,26 @@ export function HeroBand({ lead, cont, cta, secondary, hooks }: Props) {
 					intensity={0.75}
 					label="hero-halftone"
 				/>
+				{/* Ambient aurora wash behind the hero content. Dimmed and
+				    slowed so the headline keeps its measured contrast and the
+				    call-to-action stays the brightest thing on screen. Mouse
+				    interaction is off: this is atmosphere, not an instrument. */}
+				<div
+					aria-hidden="true"
+					style={{
+						position: "absolute",
+						inset: 0,
+						opacity: 0.5,
+						pointerEvents: "none",
+					}}
+				>
+					<SoftAurora
+						speed={0.4}
+						scale={1.2}
+						brightness={0.55}
+						enableMouseInteraction={false}
+					/>
+				</div>
 				<section
 					style={{
 						position: "relative",

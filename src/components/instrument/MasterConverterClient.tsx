@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { Fragment, useEffect, useId, useMemo, useRef, useState } from "react";
 import { ErrorPanel } from "@/components/instrument/ErrorPanel";
 import { HeavyDownloadGate } from "@/components/instrument/HeavyDownloadGate";
@@ -49,6 +50,15 @@ import { CHROME_EXTENSION_URL } from "@/lib/site";
 import { fileAutoTicket } from "@/lib/support-tickets";
 
 const HEAVY_DOWNLOAD_KEY = "convrtr:heavy-download-allowed";
+
+// The warp behind the in-progress readout: the visual form of "the engines
+// are working locally". Mounted only while a batch converts, so completion
+// tears the whole WebGL context down instead of idling it beside real work.
+// Dynamic with no SSR keeps the 3D stack out of the initial bundle.
+const ConversionWarp = dynamic(
+	() => import("@/components/effects/Hyperspeed"),
+	{ ssr: false },
+);
 
 export type MasterItem = {
 	id: string;
@@ -2300,9 +2310,29 @@ export function MasterConverterClient({
 								borderColor: "var(--accent)",
 								borderRadius: "var(--radius)",
 								background: "var(--surface)",
+								position: "relative",
+								overflow: "hidden",
 							}}
 						>
-							<div className="flex justify-between items-center">
+							{/* Light-trail warp behind the readout: the heavy lifting
+						    is WebAssembly running on this device, drawn as motion.
+						    Hidden from assistive tech; the readout below stays the
+						    source of truth for state. */}
+							<div
+								aria-hidden="true"
+								style={{
+									position: "absolute",
+									inset: 0,
+									opacity: 0.45,
+									pointerEvents: "none",
+								}}
+							>
+								<ConversionWarp />
+							</div>
+							<div
+								className="flex justify-between items-center"
+								style={{ position: "relative" }}
+							>
 								<div className="flex items-center gap-2">
 									<span
 										style={{
@@ -2331,7 +2361,7 @@ export function MasterConverterClient({
 
 							<div
 								className="h-1.5 w-full overflow-hidden"
-								style={{ background: "var(--ground)" }}
+								style={{ background: "var(--ground)", position: "relative" }}
 							>
 								<div
 									className="h-full transition-all duration-150"

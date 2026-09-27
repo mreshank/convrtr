@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useState } from "react";
 import { ToolsDualMarquee } from "@/components/home/ToolsDualMarquee";
 import { toolsByCategory } from "@/core/registry/stats";
@@ -19,7 +20,6 @@ export function HeroAppPreview() {
 	const [activeTab, setActiveTab] = useState<"instrument" | "registry">(
 		"instrument",
 	);
-
 	return (
 		<div className="w-full max-w-4xl mx-auto mt-[var(--gap-md)] rounded-[var(--radius)] border border-rule bg-surface overflow-hidden">
 			{/* Window Chrome Header Bar */}

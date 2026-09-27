@@ -1,3 +1,5 @@
+import GhostFibers from "@/components/effects/GhostFibers";
+
 export type PipelineStage = {
 	/** Short mono code painted on the rail, e.g. "ROUTE". */
 	code: string;
@@ -28,125 +30,152 @@ export function PipelineTimeline({ stages }: Props) {
 	const last = stages.length - 1;
 
 	return (
-		<ol
-			aria-label="Stages of a conversion"
+		<div
 			style={{
+				position: "relative",
+				overflow: "hidden",
+				borderRadius: "var(--radius)",
 				maxWidth: "var(--max-width)",
 				margin: "0 auto",
 				width: "100%",
-				listStyle: "none",
-				paddingTop: 0,
-				paddingBottom: 0,
-				paddingLeft: 0,
-				paddingRight: 0,
 			}}
 		>
-			{stages.map((stage, index) => {
-				const isLast = index === last;
-				return (
-					<li
-						key={stage.code}
-						style={{
-							display: "grid",
-							gridTemplateColumns: "3.5rem 1fr",
-							gap: "var(--gap-sm)",
-							position: "relative",
-							paddingBottom: isLast ? 0 : "var(--gap-md)",
-						}}
-					>
-						{/* Rail: node glyph over a hairline that stops at the last node. */}
-						<div
-							aria-hidden="true"
+			{/* Fiber field behind the timeline: local-only pathways, drawn as
+			    light on the black ground. Dimmed so the stage copy stays the
+			    readable layer; the canvas itself is hidden from assistive
+			    tech and takes no pointer input. */}
+			<div
+				aria-hidden="true"
+				style={{
+					position: "absolute",
+					inset: 0,
+					opacity: 0.35,
+					pointerEvents: "none",
+				}}
+			>
+				<GhostFibers speed={0.15} />
+			</div>
+			<ol
+				aria-label="Stages of a conversion"
+				style={{
+					position: "relative",
+					maxWidth: "var(--max-width)",
+					margin: "0 auto",
+					width: "100%",
+					listStyle: "none",
+					paddingTop: 0,
+					paddingBottom: 0,
+					paddingLeft: 0,
+					paddingRight: 0,
+				}}
+			>
+				{stages.map((stage, index) => {
+					const isLast = index === last;
+					return (
+						<li
+							key={stage.code}
 							style={{
-								display: "flex",
-								flexDirection: "column",
-								alignItems: "center",
+								display: "grid",
+								gridTemplateColumns: "3.5rem 1fr",
+								gap: "var(--gap-sm)",
+								position: "relative",
+								paddingBottom: isLast ? 0 : "var(--gap-md)",
 							}}
 						>
-							<span
-								className="mono"
-								style={{
-									fontSize: "var(--body-size)",
-									lineHeight: 1.4,
-									color: isLast ? "var(--accent)" : "var(--ink-muted)",
-								}}
-							>
-								{isLast ? "●" : "○"}
-							</span>
-							{!isLast && (
-								<span
-									style={{
-										flex: 1,
-										minHeight: "var(--gap-sm)",
-										borderLeftWidth: "var(--rule-width)",
-										borderLeftStyle: "solid",
-										borderLeftColor: "var(--rule)",
-									}}
-								/>
-							)}
-						</div>
-
-						<div
-							style={{
-								display: "flex",
-								flexDirection: "column",
-								gap: "calc(var(--space-base) / 2)",
-								paddingBottom: isLast ? 0 : "var(--space-base)",
-							}}
-						>
+							{/* Rail: node glyph over a hairline that stops at the last node. */}
 							<div
+								aria-hidden="true"
 								style={{
 									display: "flex",
-									alignItems: "baseline",
-									gap: "var(--space-base)",
-									flexWrap: "wrap",
+									flexDirection: "column",
+									alignItems: "center",
 								}}
 							>
 								<span
 									className="mono"
 									style={{
-										fontSize: "var(--mono-size)",
-										letterSpacing: "0.1em",
+										fontSize: "var(--body-size)",
+										lineHeight: 1.4,
 										color: isLast ? "var(--accent)" : "var(--ink-muted)",
 									}}
 								>
-									{String(index + 1).padStart(2, "0")} · {stage.code}
+									{isLast ? "●" : "○"}
 								</span>
-								<span
+								{!isLast && (
+									<span
+										style={{
+											flex: 1,
+											minHeight: "var(--gap-sm)",
+											borderLeftWidth: "var(--rule-width)",
+											borderLeftStyle: "solid",
+											borderLeftColor: "var(--rule)",
+										}}
+									/>
+								)}
+							</div>
+
+							<div
+								style={{
+									display: "flex",
+									flexDirection: "column",
+									gap: "calc(var(--space-base) / 2)",
+									paddingBottom: isLast ? 0 : "var(--space-base)",
+								}}
+							>
+								<div
 									style={{
-										fontSize: "var(--body-size)",
-										fontWeight: 500,
-										color: "var(--ink)",
+										display: "flex",
+										alignItems: "baseline",
+										gap: "var(--space-base)",
+										flexWrap: "wrap",
 									}}
 								>
-									{stage.title}
-								</span>
+									<span
+										className="mono"
+										style={{
+											fontSize: "var(--mono-size)",
+											letterSpacing: "0.1em",
+											color: isLast ? "var(--accent)" : "var(--ink-muted)",
+										}}
+									>
+										{String(index + 1).padStart(2, "0")} · {stage.code}
+									</span>
+									<span
+										style={{
+											fontSize: "var(--body-size)",
+											fontWeight: 500,
+											color: "var(--ink)",
+										}}
+									>
+										{stage.title}
+									</span>
+								</div>
+								<p
+									style={{
+										color: "var(--ink-muted)",
+										fontSize: "var(--mono-size)",
+										lineHeight: 1.6,
+										margin: 0,
+										maxWidth: "65ch",
+									}}
+								>
+									{stage.body}
+								</p>
+								<p
+									className="mono"
+									style={{
+										fontSize: "var(--mono-size)",
+										color: "var(--rule-strong)",
+										margin: 0,
+									}}
+								>
+									{stage.detail}
+								</p>
 							</div>
-							<p
-								style={{
-									color: "var(--ink-muted)",
-									fontSize: "var(--mono-size)",
-									lineHeight: 1.6,
-									margin: 0,
-									maxWidth: "65ch",
-								}}
-							>
-								{stage.body}
-							</p>
-							<p
-								className="mono"
-								style={{
-									fontSize: "var(--mono-size)",
-									color: "var(--rule-strong)",
-									margin: 0,
-								}}
-							>
-								{stage.detail}
-							</p>
-						</div>
-					</li>
-				);
-			})}
-		</ol>
+						</li>
+					);
+				})}
+			</ol>
+		</div>
 	);
 }
