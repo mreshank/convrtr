@@ -699,8 +699,20 @@ class App {
 			alpha: true,
 		});
 		this.renderer.setSize(initW, initH, false);
-		this.renderer.setPixelRatio(window.devicePixelRatio);
+		// Capped the way the texture layer caps its own canvases: a warp
+		// illustrating local work must not outspend the codecs themselves.
+		this.renderer.setPixelRatio(
+			Math.min(window.devicePixelRatio || 1, 1.5),
+		);
 		this.composer = new EffectComposer(this.renderer);
+		// The canvas must fill its box through CSS. Without this it paints
+		// at its backing-store size, and the per-frame resize check then
+		// reads that size back as the layout size -- on displays above a
+		// 1x ratio the canvas grows without bound and only a corner of the
+		// scene stays visible.
+		this.renderer.domElement.style.width = "100%";
+		this.renderer.domElement.style.height = "100%";
+		this.renderer.domElement.style.display = "block";
 		container.append(this.renderer.domElement);
 
 		this.camera = new THREE.PerspectiveCamera(

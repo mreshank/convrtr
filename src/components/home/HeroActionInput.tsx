@@ -1,14 +1,15 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
+import { findToolForConversion } from "@/core/registry/converter-match";
 
 const SUGGESTIONS = [
-	{ label: "HEIC ➔ JPG", href: "/heic-to-jpg" },
-	{ label: "MP4 ➔ MP3", href: "/mp4-to-mp3" },
-	{ label: "PDF MERGE", href: "/merge-pdf" },
-	{ label: "WEBP ➔ PNG", href: "/webp-to-png" },
-	{ label: "MKV ➔ MP4", href: "/mkv-to-mp4" },
-	{ label: "CSV ➔ PARQUET", href: "/csv-to-parquet" },
+	{ label: "HEIC ➔ JPG", href: "/image/heic-to-jpg" },
+	{ label: "MP4 ➔ GIF", href: "/video/mp4-to-gif" },
+	{ label: "PDF MERGE", href: "/document/merge-pdf" },
+	{ label: "WEBP ➔ PNG", href: "/image/webp-to-png" },
+	{ label: "MKV ➔ MP4", href: "/video/mkv-to-mp4" },
+	{ label: "WAV ➔ MP3", href: "/audio/wav-to-mp3" },
 ];
 
 export function HeroActionInput() {
@@ -24,11 +25,17 @@ export function HeroActionInput() {
 			return;
 		}
 
-		// Normalize queries like "heic to jpg" -> "/heic-to-jpg"
+		// Resolve queries like "heic to jpg" against the registry so the
+		// input lands on the tool page itself. Unmatched pairs fall through
+		// to tool search rather than a route that does not exist.
 		const match = trimmed.match(/^([a-z0-9]+)\s+(?:to|->|➔)\s+([a-z0-9]+)$/);
 		if (match) {
 			const [, from, to] = match;
-			window.location.href = `/${from}-to-${to}`;
+			const tool =
+				from && to ? findToolForConversion(from, to) : undefined;
+			window.location.href = tool
+				? `/${tool.id}`
+				: `/tools?search=${encodeURIComponent(trimmed)}`;
 			return;
 		}
 
@@ -79,7 +86,7 @@ export function HeroActionInput() {
 					type="text"
 					value={query}
 					onChange={(e) => setQuery(e.target.value)}
-					placeholder="Type conversion (e.g. HEIC to JPG, MP4 to MP3)..."
+					placeholder="Type conversion (e.g. HEIC to JPG, WAV to MP3)..."
 					aria-label="Find or start conversion"
 					className="h-12 flex-1 px-[var(--gap-sm)] bg-transparent border-0 outline-none text-[var(--body-size)] font-sans text-[var(--ink)]"
 				/>

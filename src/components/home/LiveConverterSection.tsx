@@ -8,12 +8,12 @@ import { toolsByCategory } from "@/core/registry/stats";
 import { BarChart } from "@/design/families/BarChart";
 
 const QUICK_ACTIONS = [
-	{ label: "HEIC ➔ JPG", href: "/heic-to-jpg", category: "image" },
-	{ label: "MP4 ➔ MP3", href: "/mp4-to-mp3", category: "audio" },
-	{ label: "PDF ➔ PNG", href: "/pdf-to-png", category: "document" },
-	{ label: "WEBP ➔ PNG", href: "/webp-to-png", category: "image" },
-	{ label: "MKV ➔ MP4", href: "/mkv-to-mp4", category: "video" },
-	{ label: "CSV ➔ PARQUET", href: "/csv-to-parquet", category: "data" },
+	{ label: "HEIC ➔ JPG", href: "/image/heic-to-jpg", category: "image" },
+	{ label: "MP4 ➔ GIF", href: "/video/mp4-to-gif", category: "video" },
+	{ label: "PNG ➔ JPG", href: "/image/png-to-jpg", category: "image" },
+	{ label: "WEBP ➔ PNG", href: "/image/webp-to-png", category: "image" },
+	{ label: "MKV ➔ MP4", href: "/video/mkv-to-mp4", category: "video" },
+	{ label: "WAV ➔ MP3", href: "/audio/wav-to-mp3", category: "audio" },
 ];
 
 // The warp is this section's background, not the panel's: it fills the
@@ -279,7 +279,7 @@ export function LiveConverterSection() {
 									</div>
 
 									<Link
-										href="/heic-to-jpg"
+										href="/image/heic-to-jpg"
 										className="shrink-0 mono text-xs px-2.5 py-1.5 rounded-[var(--radius-control)] font-semibold transition-colors"
 										style={{
 											backgroundColor: "var(--ink)",

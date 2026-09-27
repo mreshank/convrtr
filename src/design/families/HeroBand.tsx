@@ -102,23 +102,27 @@ export function HeroBand({ lead, cont, cta, secondary, hooks }: Props) {
 					intensity={0.75}
 					label="hero-halftone"
 				/>
-				{/* Ambient aurora wash behind the hero content. Dimmed and
-				    slowed so the headline keeps its measured contrast and the
-				    call-to-action stays the brightest thing on screen. Mouse
-				    interaction is off: this is atmosphere, not an instrument. */}
+				{/* Ambient aurora wash behind the hero content: the full-bleed
+				    background of Section 1. The spread is wide on purpose so
+				    the glow covers the whole band rather than sitting as one
+				    stripe; the peak stays dimmed so the pills and headline
+				    keep their contrast and the call-to-action stays the
+				    brightest thing on screen. Mouse interaction is off: this
+				    is atmosphere, not an instrument. */}
 				<div
 					aria-hidden="true"
 					style={{
 						position: "absolute",
 						inset: 0,
-						opacity: 0.5,
+						opacity: 0.45,
 						pointerEvents: "none",
 					}}
 				>
 					<SoftAurora
 						speed={0.4}
-						scale={1.2}
+						scale={1.0}
 						brightness={0.55}
+						bandSpread={2.4}
 						enableMouseInteraction={false}
 					/>
 				</div>
