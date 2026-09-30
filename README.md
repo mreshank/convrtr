@@ -18,7 +18,7 @@
 [![Next.js: 16](https://img.shields.io/badge/NEXT.JS-16-000000.svg?style=flat-square&logo=nextdotjs&logoColor=ffffff)](https://nextjs.org/)
 [![WebAssembly: SIMD](https://img.shields.io/badge/WEBASSEMBLY-SIMD-000000.svg?style=flat-square&logo=webassembly&logoColor=ffffff)](https://webassembly.org/)
 [![Zero Uploads: Verified](https://img.shields.io/badge/NETWORK_LEAK-0_BYTES-000000.svg?style=flat-square)](https://github.com/mreshank/convrtr)
-[![Chrome Extension](https://img.shields.io/badge/CHROME_STORE-v0.2.8-000000.svg?style=flat-square&logo=googlechrome&logoColor=ffffff)](https://chromewebstore.google.com/detail/convrtr/pgoadfnhcalnheeepcbngchmhlkgboal)
+[![Chrome Extension](https://img.shields.io/badge/CHROME_STORE-v0.2.9-000000.svg?style=flat-square&logo=googlechrome&logoColor=ffffff)](https://chromewebstore.google.com/detail/convrtr/pgoadfnhcalnheeepcbngchmhlkgboal)
 
 [Web App ↗](https://convrtr.mreshank.com) • [Chrome Web Store ↗](https://chromewebstore.google.com/detail/convrtr/pgoadfnhcalnheeepcbngchmhlkgboal) • [Architecture Specs ↗](./docs) • [Format Registry ↗](./src/core/registry)
 

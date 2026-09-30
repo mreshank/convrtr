@@ -67,11 +67,10 @@ export const extensionContent: SectionedPageContent = {
 			lead: "Strictly minimal permissions per Chrome Web Store guidelines.",
 			cont: "No access to browsing history, passwords, or personal data.",
 			paragraphs: [
-				`The extension requires only activeTab (for user-initiated context menu staging),
-				sidePanel (to display the dock), contextMenus (for right-click staging),
-				scripting (to stage media or text snippets on user request), and storage (ephemeral session
-				coordination). We request zero host permissions and omit both tabs and
-				downloads permissions.`,
+				`The extension requires only sidePanel (to display the dock),
+				contextMenus (for right-click staging), and storage (ephemeral session
+				coordination). We request zero host permissions and omit tabs, scripting,
+				activeTab, and downloads permissions.`,
 			],
 		},
 	],

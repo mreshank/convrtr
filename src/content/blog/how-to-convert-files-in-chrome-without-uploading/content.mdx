@@ -77,10 +77,9 @@ Following least-privilege principles, the convrtr extension requests only the mi
 | `sidePanel` | Displays the converter interface alongside your active tab. |
 | `storage` | Uses `chrome.storage.session` to pass temporary, ephemeral file references between background events and the converter. No browsing history or personal data is persisted. |
 | `contextMenus` | Creates context menu entries to stage clicked media into the converter. |
-| `scripting` | Inspects media elements on the active page only upon explicit user request. |
-| `activeTab` | Grants temporary permission to stage clicked media or code snippets upon an explicit user gesture (such as context menu clicks). |
 
 Noticeably absent from our manifest:
+- **No `scripting` or `activeTab` permissions:** convrtr executes all logic in isolated extension pages and Web Workers, requiring zero script injection or tab inspection.
 - **No `tabs` permission:** convrtr never reads your open tabs, navigation URLs, or browsing history.
 - **No `downloads` permission:** Output files are created as client-side Blob anchors (`<a download>`), avoiding privileged filesystem access.
 - **No host permissions:** Zero remote domains are allowed to receive traffic from the extension.

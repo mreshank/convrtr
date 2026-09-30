@@ -20,25 +20,25 @@ describe("convrtr Chrome Extension Manifest & Configuration", () => {
 
 		expect(manifest.manifest_version).toBe(3);
 		expect(manifest.name).toBe("convrtr");
-		expect(manifest.version).toBe("0.2.8");
+		expect(manifest.version).toBe("0.2.9");
 		expect(typeof manifest.description).toBe("string");
 		expect(manifest.description.length).toBeGreaterThan(10);
 	});
 
-	it("declares necessary permissions for native Chrome surfaces, tab capture, and offline capability", () => {
+	it("declares minimal permissions for native Chrome surfaces, session storage, and context menu staging", () => {
 		const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"));
 		const permissions = manifest.permissions as string[];
 
 		expect(permissions).toContain("sidePanel");
 		expect(permissions).toContain("storage");
 		expect(permissions).toContain("contextMenus");
-		expect(permissions).toContain("scripting");
-		expect(permissions).toContain("activeTab");
 
-		// "tabs" and "downloads" omitted to comply strictly with CWS Use of Permissions policy
+		// "scripting", "activeTab", "tabs", and "downloads" omitted to comply strictly with CWS Use of Permissions policy
+		expect(permissions).not.toContain("scripting");
+		expect(permissions).not.toContain("activeTab");
 		expect(permissions).not.toContain("tabs");
 		expect(permissions).not.toContain("downloads");
-		expect(permissions.length).toBe(5);
+		expect(permissions.length).toBe(3);
 
 		// Broad host permissions omitted to eliminate Chrome Web Store review delays
 		expect(manifest.host_permissions).toBeUndefined();
