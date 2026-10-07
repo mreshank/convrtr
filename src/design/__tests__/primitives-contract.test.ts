@@ -209,6 +209,8 @@ const CLIENT_COMPONENT_ALLOWLIST = new Set([
 	// `ScrollReveal` owns an IntersectionObserver per mount -- state a
 	// server component cannot hold.
 	"ScrollReveal.tsx",
+	// `ToolGrid` holds interactive category filter and search query state.
+	"ToolGrid.tsx",
 ]);
 
 function filesDeclaringUseClient(dir: string): string[] {

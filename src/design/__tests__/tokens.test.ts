@@ -70,6 +70,8 @@ const TOKENS_FILE = join("src", "design", "tokens.css");
  */
 const LITERAL_HEX_ALLOWED = new Set([
 	join("src", "app", "manifest.ts"),
+	// Root viewport meta tag consumed by browser chrome/operating system
+	join("src", "app", "layout.tsx"),
 	// `mix-blend-mode: difference` inverts against white specifically —
 	// this is the blend operand, not a palette choice, and a token would
 	// change with the theme and break the inversion.

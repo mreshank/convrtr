@@ -108,8 +108,8 @@ export function FreeForeverBand() {
 							margin: "calc(var(--space-base) / 2) 0 0",
 						}}
 					>
-						For everyone converting in a browser. Your files, your
-						device, our engines.
+						For everyone converting in a browser. Your files, your device, our
+						engines.
 					</p>
 				</div>
 
@@ -209,8 +209,8 @@ export function FreeForeverBand() {
 							margin: "calc(var(--space-base) / 2) 0 0",
 						}}
 					>
-						For teams whose files cannot reach a browser. We run the
-						pipelines for you.
+						For teams whose files cannot reach a browser. We run the pipelines
+						for you.
 					</p>
 				</div>
 

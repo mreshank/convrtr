@@ -20,5 +20,12 @@ describe("web app manifest", () => {
 				id: CHROME_EXTENSION_ID,
 			},
 		]);
+		expect(m.id).toBe("/");
+		expect(m.scope).toBe("/");
+		expect(m.shortcuts).toBeDefined();
+		expect(m.shortcuts?.length).toBeGreaterThanOrEqual(3);
+		expect(m.file_handlers).toBeDefined();
+		expect(m.file_handlers?.length).toBeGreaterThan(0);
+		expect(m.categories).toContain("utilities");
 	});
 });

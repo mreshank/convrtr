@@ -265,11 +265,11 @@ export function ExtensionWaitlistCard() {
 						gap: "var(--space-base)",
 					}}
 				>
-				<CardHeader
-					eyebrow="RELEASE RADAR // TECHNICAL CHANGELOGS"
-					title="Subscribe to the release radar"
-					lede="Extension changelogs, new formats, engine upgrades and security audits — one dispatch per drop, straight from the engineering team."
-				/>
+					<CardHeader
+						eyebrow="RELEASE RADAR // TECHNICAL CHANGELOGS"
+						title="Subscribe to the release radar"
+						lede="Extension changelogs, new formats, engine upgrades and security audits — one dispatch per drop, straight from the engineering team."
+					/>
 
 					<p
 						className="mono"

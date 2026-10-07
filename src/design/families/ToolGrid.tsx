@@ -36,7 +36,8 @@ export function ToolGrid({ tools, eyebrow, title }: Props) {
 			const q = searchQuery.toLowerCase().trim();
 			list = list.filter(
 				(t) =>
-					t.name.toLowerCase().includes(q) ||
+					t.slug.toLowerCase().includes(q) ||
+					t.seo.title.toLowerCase().includes(q) ||
 					t.id.toLowerCase().includes(q) ||
 					t.accept.ext.some((ext) => ext.toLowerCase().includes(q)) ||
 					t.output.ext.toLowerCase().includes(q),

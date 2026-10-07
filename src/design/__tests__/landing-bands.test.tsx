@@ -9,8 +9,8 @@ describe("FreeForeverBand", () => {
 		const { container } = render(<FreeForeverBand />);
 		expect(container.textContent).toContain("$0");
 		expect(container.textContent).toContain("/ forever");
-		expect(screen.getByText("THE ONLY PLAN")).toBeDefined();
-		expect(screen.getByText("THE CLOUD TOLL")).toBeDefined();
+		expect(screen.getByText("CONVRTR LOCAL")).toBeDefined();
+		expect(screen.getByText("CONVRTR CLOUD")).toBeDefined();
 		expect(
 			screen.getByRole("link", { name: "Start converting" }),
 		).toBeDefined();

@@ -701,9 +701,7 @@ class App {
 		this.renderer.setSize(initW, initH, false);
 		// Capped the way the texture layer caps its own canvases: a warp
 		// illustrating local work must not outspend the codecs themselves.
-		this.renderer.setPixelRatio(
-			Math.min(window.devicePixelRatio || 1, 1.5),
-		);
+		this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
 		this.composer = new EffectComposer(this.renderer);
 		// The canvas must fill its box through CSS. Without this it paints
 		// at its backing-store size, and the per-frame resize check then

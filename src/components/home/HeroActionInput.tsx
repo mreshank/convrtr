@@ -31,8 +31,7 @@ export function HeroActionInput() {
 		const match = trimmed.match(/^([a-z0-9]+)\s+(?:to|->|➔)\s+([a-z0-9]+)$/);
 		if (match) {
 			const [, from, to] = match;
-			const tool =
-				from && to ? findToolForConversion(from, to) : undefined;
+			const tool = from && to ? findToolForConversion(from, to) : undefined;
 			window.location.href = tool
 				? `/${tool.id}`
 				: `/tools?search=${encodeURIComponent(trimmed)}`;

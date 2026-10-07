@@ -77,8 +77,11 @@ async function main() {
 
 	await mkdir(outDir, { recursive: true });
 	await writeFile(join(outDir, "sw.js"), source);
+	const publicDir = join(here, "..", "public");
+	await mkdir(publicDir, { recursive: true });
+	await writeFile(join(publicDir, "sw.js"), source);
 	console.log(
-		`wrote out/sw.js — ${precacheUrls.length} precached URLs, caches "${shellCache}" / "${runtimeCache}" / "${workerScriptCache}"`,
+		`wrote out/sw.js & public/sw.js — ${precacheUrls.length} precached URLs, caches "${shellCache}" / "${runtimeCache}" / "${workerScriptCache}"`,
 	);
 }
 

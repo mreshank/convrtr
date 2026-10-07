@@ -47,9 +47,20 @@ async function loadFlac() {
 	return Flac;
 }
 
-function clampCompression(value: ParamValue | undefined): number {
+function clampCompression(
+	value: ParamValue | undefined,
+): 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 {
 	if (typeof value !== "number" || !Number.isFinite(value)) return 5;
-	return Math.min(8, Math.max(0, Math.round(value)));
+	return Math.min(8, Math.max(0, Math.round(value))) as
+		| 0
+		| 1
+		| 2
+		| 3
+		| 4
+		| 5
+		| 6
+		| 7
+		| 8;
 }
 
 /**

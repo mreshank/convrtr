@@ -75,7 +75,7 @@ export function BroadcastBanner() {
 			<div
 				style={{
 					display: "flex",
-					justifyContent:"center",
+					justifyContent: "center",
 					alignItems: "center",
 					gap: "var(--space-base)",
 					rowGap: "calc(var(--space-base) / 2)",

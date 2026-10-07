@@ -1,9 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Inter } from "next/font/google";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { UserMenu } from "@/components/auth/UserMenu";
 import { BroadcastBanner } from "@/components/broadcasts/BroadcastBanner";
 import { NetworkStatusBanner } from "@/components/NetworkStatusBanner";
+import { PwaInstallBanner } from "@/components/pwa/PwaInstallBanner";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import { RouteAwareFooter, SiteHeader } from "@/design/primitives";
 import { DifferenceCursor } from "@/design/primitives/DifferenceCursor";
@@ -24,6 +25,14 @@ const geistMono = Geist_Mono({
 
 const TAGLINE =
 	"Private by design. Free in-browser file converter for images, audio, video, documents and data — every conversion runs on your device, with no uploads, no accounts, no servers.";
+
+export const viewport: Viewport = {
+	themeColor: "#000000",
+	colorScheme: "dark",
+	width: "device-width",
+	initialScale: 1,
+	viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
 	metadataBase: new URL(SITE),
@@ -48,6 +57,21 @@ export const metadata: Metadata = {
 	publisher: "convrtr",
 	alternates: {
 		canonical: SITE,
+	},
+	icons: {
+		icon: [
+			{ url: "/icon.svg", type: "image/svg+xml" },
+			{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+			{ url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+		],
+		apple: [
+			{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+		],
+	},
+	appleWebApp: {
+		capable: true,
+		statusBarStyle: "black-translucent",
+		title: "convrtr",
 	},
 	openGraph: {
 		type: "website",
@@ -161,6 +185,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 					<DifferenceCursor />
 					<BroadcastBanner />
 					<NetworkStatusBanner />
+					<PwaInstallBanner />
 					<SiteHeader links={NAV} cta={CTA} authSlot={<UserMenu />} />
 					<main id="main-content" className="flex-1">
 						{children}

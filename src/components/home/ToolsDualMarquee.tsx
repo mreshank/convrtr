@@ -39,8 +39,16 @@ const ROW_TWO_IDS = [
 ];
 
 function getToolSafe(id: string) {
-	const found = TOOLS.find((t) => t.id === id);
-	if (found) return found;
+	const found = TOOLS.find((t) => t.id === id || t.slug === id);
+	if (found) {
+		return {
+			id: found.id,
+			name: found.slug.toUpperCase().replace(/-/g, " "),
+			inputFormat: found.accept.ext[0] ?? "raw",
+			outputFormat: found.output.ext,
+			category: found.category,
+		};
+	}
 	// Fallback representation if tool id format varies
 	const parts = id.split("-to-");
 	return {

@@ -1,0 +1,71 @@
+{
+	"name": "convrtr",
+	"version": "0.1.0",
+	"description": "Universal private client-side & local file conversion library and CLI for 270+ formats",
+	"author": "convrtr",
+	"license": "AGPL-3.0",
+	"homepage": "https://convrtr.mreshank.com",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/mreshank/convrtr.git"
+	},
+	"bugs": {
+		"url": "https://github.com/mreshank/convrtr/issues"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"keywords": [
+		"converter",
+		"file-converter",
+		"offline-converter",
+		"client-side",
+		"image-converter",
+		"audio-converter",
+		"video-converter",
+		"document-converter",
+		"wasm",
+		"private"
+	],
+	"type": "module",
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"bin": {
+		"convrtr": "./bin/convrtr.js"
+	},
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		},
+		"./registry": {
+			"types": "./dist/registry.d.ts",
+			"import": "./dist/registry.js",
+			"require": "./dist/registry.cjs"
+		},
+		"./engines": {
+			"types": "./dist/engines.d.ts",
+			"import": "./dist/engines.js",
+			"require": "./dist/engines.cjs"
+		}
+	},
+	"files": [
+		"dist",
+		"bin",
+		"README.md",
+		"LICENSE"
+	],
+	"scripts": {
+		"build": "node ../../scripts/build-package.mjs",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"apache-arrow": "^21.2.0",
+		"fflate": "^0.8.3",
+		"hyparquet": "^1.31.1",
+		"silk-wasm": "^3.7.1",
+		"zod": "^4.4.3"
+	}
+}

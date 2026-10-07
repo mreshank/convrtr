@@ -2,11 +2,11 @@
 
 ```
 ================================================================================
-   ____ ___  _   ___   ______ _____ _____ ____  
-  / ___/ _ \| \ | \ \ / /  _ \_   _|  _ \___ \ 
- | |  | | | |  \| |\ V /| |_) || | | |_) |__) |
- | |__| |_| | |\  | | | |  _ < | | |  _ </ __/ 
-  \____\___/|_| \_| |_| |_| \_\|_| |_| \_\_____|
+   ____ ___  _   ___     ______ _____ ____
+  / ___/ _ \| \ | \ \   / /  _ \_   _|  _ \
+ | |  | | | |  \| |\ \ / /| |_) || | | |_) |
+ | |__| |_| | |\  | \ V / |  _ < | | |  _ <
+  \____\___/|_| \_|  \_/  |_| \_\|_| |_| \_\
                                                 
    PRIVATE, IN-BROWSER FILE CONVERSION INSTRUMENT
    ZERO SERVER UPLOADS. 100% WEBASSEMBLY ENGINES.
@@ -20,13 +20,13 @@
 [![Zero Uploads: Verified](https://img.shields.io/badge/NETWORK_LEAK-0_BYTES-000000.svg?style=flat-square)](https://github.com/mreshank/convrtr)
 [![Chrome Extension](https://img.shields.io/badge/CHROME_STORE-v0.2.9-000000.svg?style=flat-square&logo=googlechrome&logoColor=ffffff)](https://chromewebstore.google.com/detail/convrtr/pgoadfnhcalnheeepcbngchmhlkgboal)
 
-[Web App ↗](https://convrtr.mreshank.com) • [Chrome Web Store ↗](https://chromewebstore.google.com/detail/convrtr/pgoadfnhcalnheeepcbngchmhlkgboal) • [Architecture Specs ↗](./docs) • [Format Registry ↗](./src/core/registry)
+[Web App ↗](https://convrtr.mreshank.com) • [Chrome Web Store ↗](https://chromewebstore.google.com/detail/convrtr/pgoadfnhcalnheeepcbngchmhlkgboal) • [NPM Package ↗](./packages/convrtr) • [Architecture Specs ↗](./docs) • [Format Registry ↗](./src/core/registry)
 
 ---
 
 ## Overview
 
-convrtr is an open-source, brutalist, privacy-first file conversion instrument. Every conversion executes entirely inside the client browser. No file byte is ever transmitted across the network, because there is no server to receive it. The application is compiled as a static client bundle, executing WebAssembly binaries and native browser codecs inside dedicated Web Workers on your local hardware.
+convrtr is an open-source, brutalist, privacy-first file conversion instrument. Every conversion executes entirely inside the client browser or local Node.js environment. No file byte is ever transmitted across the network, because there is no server to receive it. The application is compiled as a static client bundle, executing WebAssembly binaries and native codecs inside dedicated Web Workers on your local hardware.
 
 ### Key Highlights
 
@@ -37,6 +37,7 @@ convrtr is an open-source, brutalist, privacy-first file conversion instrument. 
 - **Offline Capable:** Full Progressive Web App (PWA) and Service Worker architecture operates without internet connectivity.
 - **Lossless Default:** All tools default to mathematically lossless output where achievable, and visually lossless where bounded by format constraints.
 - **Chrome Extension Companion:** Side Panel, Omnibox quick dispatch, right-click context menu staging, and viewport capture.
+- **NPM Package & CLI:** Standalone universal Node.js/browser package (`convrtr`) and CLI instrument for headless automation.
 
 ---
 

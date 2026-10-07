@@ -22,14 +22,77 @@ export const dynamic = "force-static";
 // to name has been removed from tokens.css entirely.
 export default function manifest(): MetadataRoute.Manifest {
 	return {
+		id: "/",
 		name: "convrtr",
 		short_name: "convrtr",
 		description:
 			"Private by design. Free in-browser file converter for images, audio, video, documents and data — every conversion runs on your device, with no uploads, no accounts, no servers.",
 		start_url: "/",
+		scope: "/",
 		display: "standalone",
+		display_override: ["window-controls-overlay", "standalone", "minimal-ui"],
+		orientation: "any",
+		dir: "ltr",
+		lang: "en",
+		categories: ["utilities", "productivity", "photo", "video"],
 		background_color: "#000000",
 		theme_color: "#000000",
+		shortcuts: [
+			{
+				name: "Start Converting",
+				short_name: "Convert",
+				description: "Convert files privately in-browser",
+				url: "/convert",
+				icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }],
+			},
+			{
+				name: "All Tools",
+				short_name: "Tools",
+				description: "Browse 270+ converter instruments",
+				url: "/tools",
+				icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }],
+			},
+			{
+				name: "Format Groups",
+				short_name: "Groups",
+				description: "Browse conversions by category",
+				url: "/groups",
+				icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }],
+			},
+		],
+		file_handlers: [
+			{
+				action: "/convert",
+				accept: {
+					"image/*": [
+						".png",
+						".jpg",
+						".jpeg",
+						".webp",
+						".avif",
+						".svg",
+						".gif",
+						".ico",
+						".tiff",
+						".bmp",
+						".jxl",
+						".heic",
+					],
+					"audio/*": [
+						".mp3",
+						".wav",
+						".flac",
+						".ogg",
+						".m4a",
+						".aac",
+						".opus",
+						".weba",
+					],
+					"video/*": [".mp4", ".webm", ".mov", ".mkv", ".avi"],
+					"application/pdf": [".pdf"],
+				},
+			},
+		],
 		related_applications: [
 			{
 				platform: "chrome_web_store",

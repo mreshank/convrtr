@@ -16,6 +16,8 @@
 # next.js
 /.next/
 /out/
+/dist/
+/packages/*/dist/
 /dist-extension/
 /convrtr-extension*.zip
 

@@ -53,10 +53,6 @@ export const svgOptimiseEngine: Engine = {
 					name: "preset-default",
 					params: {
 						overrides: {
-							// Keeping viewBox is not optional in practice: removing it
-							// breaks responsive scaling, which is the main reason
-							// anyone uses SVG on the web. SVGO's default removes it.
-							removeViewBox: false,
 							// IDs are frequently referenced from external CSS, JS, or
 							// by <use> in another document. Renaming them shrinks the
 							// file and silently breaks those references, so this is

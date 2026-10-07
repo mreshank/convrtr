@@ -2096,7 +2096,8 @@ export function AdminDashboardPage() {
 							}}
 						>
 							SUPPORT TICKETS (AUTO{" "}
-							{tickets.filter((t) => t.origin === "auto").length} // USER{" "}
+							{tickets.filter((t) => t.origin === "auto").length}
+							{" // USER "}
 							{tickets.filter((t) => t.origin === "user").length})
 						</span>
 						<div
@@ -2115,8 +2116,7 @@ export function AdminDashboardPage() {
 									border: "var(--rule-width) solid var(--rule)",
 									color: "var(--ink)",
 									cursor: "pointer",
-									padding:
-										"calc(var(--space-base) / 2) var(--space-base)",
+									padding: "calc(var(--space-base) / 2) var(--space-base)",
 								}}
 							>
 								REFRESH
@@ -2136,8 +2136,7 @@ export function AdminDashboardPage() {
 									border: "var(--rule-width) solid var(--rule)",
 									color: "var(--ink-muted)",
 									cursor: "pointer",
-									padding:
-										"calc(var(--space-base) / 2) var(--space-base)",
+									padding: "calc(var(--space-base) / 2) var(--space-base)",
 								}}
 							>
 								CLEAR ALL
@@ -2153,8 +2152,8 @@ export function AdminDashboardPage() {
 								color: "var(--ink-muted)",
 							}}
 						>
-							QUEUE EMPTY -- no failures auto-filed and no visitor tickets
-							yet on this device.
+							QUEUE EMPTY -- no failures auto-filed and no visitor tickets yet
+							on this device.
 						</div>
 					)}
 					{tickets.map((ticket) => {
@@ -2179,8 +2178,7 @@ export function AdminDashboardPage() {
 										display: "flex",
 										justifyContent: "space-between",
 										gap: "var(--space-base)",
-										padding:
-											"calc(var(--space-base) / 2) var(--space-base)",
+										padding: "calc(var(--space-base) / 2) var(--space-base)",
 										background: "transparent",
 										border: "none",
 										cursor: "pointer",
